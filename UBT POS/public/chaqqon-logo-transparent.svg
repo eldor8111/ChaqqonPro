@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 100" width="100%" height="100%">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&amp;display=swap');
+    .logo-text {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-weight: 900;
+      font-size: 72px;
+      letter-spacing: -2px;
+    }
+    .brand-dark { fill: #0f172a; }
+    .brand-blue { fill: #0ea5e9; }
+  </style>
+  <text x="10" y="75" class="logo-text">
+    <tspan class="brand-dark">Chaqqon</tspan><tspan class="brand-blue">Pro</tspan>
+  </text>
+</svg>

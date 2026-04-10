@@ -1,0 +1,574 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── SYSTEM THEME (Light) ─────────────────────────────────────── */
+:root {
+  --bg-primary: #f0f4f8;
+  --bg-card: #ffffff;
+  --bg-elevated: #e8eef5;
+  --border: #c8d8e8;
+  --text-primary: #0f1c2e;
+  --text-secondary: #4a6a8a;
+  --text-muted: #8aaac0;
+  --brand: #1a65e0;
+  --brand-dark: #0d4cbf;
+  --accent: #a040f0;
+  --success: #00b87a;
+  --warning: #e08800;
+  --danger: #e02040;
+
+  --glass-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.97) 0%, rgba(240, 244, 248, 0.99) 100%);
+  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.10), 0 1px 0 rgba(29, 101, 224, 0.08);
+  --table-head-bg: rgba(232, 238, 245, 0.8);
+  --table-hover-bg: rgba(220, 230, 242, 0.6);
+  --btn-sec-bg: rgba(232, 238, 245, 0.9);
+  --input-bg: rgba(232, 238, 245, 0.9);
+  --scrollbar-track: #e8eef5;
+  --scrollbar-thumb: #c8d8e8;
+  --scrollbar-hover: #a8c0d4;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
+
+@layer components {
+
+  /* ── Glass Card ──────────────────────────────────────────────── */
+  .glass-card {
+    @apply rounded-2xl backdrop-blur-sm transition-all duration-300;
+    background: var(--glass-bg);
+    border: 1px solid var(--border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* ── Buttons ─────────────────────────────────────────────────── */
+  .btn-primary {
+    @apply bg-gradient-brand text-white font-semibold px-5 py-2 rounded-full hover:opacity-90 active:scale-95 transition-all duration-200 shadow-glow flex items-center gap-2 text-sm;
+  }
+
+  .btn-secondary {
+    @apply font-medium px-5 py-2 rounded-full active:scale-95 transition-all duration-200 flex items-center gap-2 text-sm;
+    background: var(--btn-sec-bg);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+  }
+
+  .btn-secondary:hover {
+    background: var(--bg-elevated);
+  }
+
+  .btn-danger {
+    @apply bg-gradient-danger text-white font-semibold px-5 py-2 rounded-full hover:opacity-90 active:scale-95 transition-all duration-200 flex items-center gap-2 text-sm;
+  }
+
+  .btn-ghost {
+    @apply font-semibold px-5 py-2 rounded-full active:scale-95 transition-all duration-200 flex items-center gap-2 text-sm;
+    background: transparent;
+    border: 1.5px solid var(--brand);
+    color: var(--brand);
+  }
+
+  .btn-ghost:hover {
+    background: rgba(26, 101, 224, 0.08);
+  }
+
+  .btn-success {
+    @apply bg-gradient-success text-white font-semibold px-5 py-2 rounded-full hover:opacity-90 active:scale-95 transition-all duration-200 flex items-center gap-2 text-sm;
+  }
+
+  /* ── Liquid Glass ─────────────────────────────────────────────── */
+  .btn-liquid-glass {
+    @apply flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold active:scale-[0.97] transition-all duration-200;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: white;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.4);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  }
+
+  .btn-liquid-glass:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.55);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.5);
+    transform: translateY(-1px);
+  }
+
+  .btn-liquid-glass-dark {
+    @apply flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold active:scale-[0.97] transition-all duration-200;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255,255,255,0.9);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  .btn-liquid-glass-dark:hover {
+    background: rgba(30, 41, 59, 0.55);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+    transform: translateY(-1px);
+  }
+
+  .liquid-glass-card {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.4);
+    border-radius: 1.5rem;
+  }
+
+
+  /* ── Input ───────────────────────────────────────────────────── */
+  .input-field {
+    @apply w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500/30 transition-all duration-200;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+  }
+
+  .input-field::placeholder {
+    color: var(--text-muted);
+  }
+
+  .input-field:focus {
+    border-color: var(--brand);
+  }
+
+  /* ── Badge ───────────────────────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full;
+  }
+
+  .badge-blue {
+    @apply badge bg-brand-500/20 text-brand-400;
+  }
+
+  .badge-green {
+    @apply badge bg-success/20 text-success;
+  }
+
+  .badge-yellow {
+    @apply badge bg-warning/20 text-warning;
+  }
+
+  .badge-red {
+    @apply badge bg-danger/20 text-danger;
+  }
+
+  .badge-purple {
+    @apply badge bg-purple-500/20 text-purple-500;
+  }
+
+  .badge-gray {
+    @apply badge;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+  }
+
+  /* ── Table ───────────────────────────────────────────────────── */
+  .data-table {
+    @apply w-full text-sm;
+  }
+
+  .data-table th {
+    @apply text-left text-xs font-semibold uppercase tracking-wider px-4 py-3;
+    background: var(--table-head-bg);
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  .data-table td {
+    @apply px-4 py-3.5;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border);
+    opacity: 0.5;
+  }
+
+  .data-table td {
+    opacity: 1;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .data-table tbody tr:hover {
+    @apply transition-colors duration-150;
+    background: var(--table-hover-bg);
+  }
+
+  /* ── KPI Card ────────────────────────────────────────────────── */
+  .kpi-card {
+    @apply glass-card p-4 flex flex-col gap-2.5 hover:border-brand-500/30 transition-all duration-300 cursor-default hover:shadow-glow;
+  }
+
+  /* ── Sidebar nav item ────────────────────────────────────────── */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium cursor-pointer;
+    color: var(--text-secondary);
+    background-color: transparent;
+  }
+
+  .nav-item:hover {
+    background-color: var(--bg-elevated) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .nav-item.active {
+    @apply bg-gradient-brand shadow-glow;
+    color: #ffffff !important;
+  }
+
+  .nav-item.active:hover {
+    color: #ffffff !important;
+  }
+
+  /* ── Section titles ──────────────────────────────────────────── */
+  .section-title {
+    @apply text-lg font-semibold;
+    color: var(--text-primary);
+  }
+
+  .section-subtitle {
+    @apply text-sm;
+    color: var(--text-secondary);
+  }
+
+  /* ── Gradient text ───────────────────────────────────────────── */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-brand;
+  }
+}
+
+/* ── Animations ───────────────────────────────────────────────── */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+/* ── Chart tooltip ────────────────────────────────────────────── */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  color: var(--text-primary) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   THEME-AWARE TAILWIND OVERRIDES
+   Tailwind utility classlari CSS variable orqali ishlashi uchun
+──────────────────────────────────────────────────────────────────*/
+.bg-surface {
+  background-color: var(--bg-primary) !important;
+}
+
+.bg-surface-card {
+  background-color: var(--bg-card) !important;
+}
+
+.bg-surface-elevated {
+  background-color: var(--bg-elevated) !important;
+}
+
+/* Tailwind hover variantini ham tutib olamiz */
+.hover\:bg-surface-elevated:hover {
+  background-color: var(--bg-elevated) !important;
+}
+
+.border-surface-border,
+.border-surface {
+  border-color: var(--border) !important;
+}
+
+/* Key text colors – theme ga mos o'zgaradi */
+.text-slate-100 {
+  color: var(--text-primary) !important;
+}
+
+.text-slate-200 {
+  color: var(--text-primary) !important;
+}
+
+.text-slate-300 {
+  color: var(--text-secondary) !important;
+}
+
+.text-slate-400 {
+  color: var(--text-secondary) !important;
+}
+
+.text-slate-500 {
+  color: var(--text-muted) !important;
+}
+
+/* ── HOVER ustidagi matn kontrasti ─────────────────────────────────
+   Har qanday hover state'da matn aniq koʻrinsin
+──────────────────────────────────────────────────────────────────*/
+/* btn-secondary hover */
+.btn-secondary:hover {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Sidebar & Header backgrounds */
+aside,
+header {
+  background-color: var(--bg-card) !important;
+  border-color: var(--border) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Input backgrounds for light mode */
+select,
+input[type="text"],
+input[type="number"],
+input[type="date"] {
+  background-color: var(--input-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+
+/* Password inputs – do NOT force bg here since dark modals use inline styles */
+input[type="password"]:not([style*="background"]) {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+select option {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* ── Tooltips – cursor o'tganda hint matnlari ─────────────────── */
+[title]:hover::after {
+  color: var(--text-primary);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HARDCODED DARK CLASS OVERRIDES (ikkala rejimda ishlaydi)
+   Qo'lda yozilgan bg-slate-8xx / bg-slate-9xx ni
+   CSS variable bilan almashtiramiz.
+══════════════════════════════════════════════════════════════ */
+
+.bg-slate-800 {
+  background-color: var(--bg-elevated) !important;
+}
+
+.bg-slate-900 {
+  background-color: var(--bg-primary) !important;
+}
+
+.bg-slate-700 {
+  background-color: var(--bg-elevated) !important;
+}
+
+/* opacity-modifier versiyalar */
+.bg-slate-800\/50,
+.bg-slate-800\/60 {
+  background-color: var(--bg-elevated) !important;
+}
+
+.bg-slate-900\/40,
+.bg-slate-900\/50,
+.bg-slate-900\/60 {
+  background-color: var(--bg-primary) !important;
+}
+
+.bg-slate-700\/50 {
+  background-color: var(--bg-elevated) !important;
+}
+
+/* border ranglar */
+.border-slate-600,
+.border-slate-700,
+.border-slate-800 {
+  border-color: var(--border) !important;
+}
+
+.border-slate-700\/50 {
+  border-color: var(--border) !important;
+}
+
+/* matn ranglari – faqat dashboard ichida (login sahifasini buzmaydi) */
+.text-slate-600 {
+  color: var(--text-muted) !important;
+}
+
+/* hover versiyalar */
+.hover\:bg-slate-800:hover,
+.hover\:bg-slate-700:hover {
+  background-color: var(--bg-elevated) !important;
+}
+
+/* placeholder */
+.placeholder-slate-500::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* bg-brand qisqa – tailwind default yoʻqligi sabab fallback */
+.bg-brand {
+  background-color: var(--brand) !important;
+}
+
+/* Qoʻshimcha fon ranglari */
+.bg-\[\#0f172a\],
+.bg-\[\#0a1625\],
+.bg-\[\#102035\] {
+  background-color: var(--bg-card) !important;
+}
+
+/* Jadval ajratuvchi chiziq */
+.divide-slate-700>*+* {
+  border-color: var(--border) !important;
+}
+
+/* Recharts fon shaffof */
+.recharts-wrapper {
+  background: transparent !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AGENT-PORTAL DARK SCOPE
+   agent-portal-dark ichida global light-theme override'larni
+   bekor qilamiz – dark dizayn to'g'ri ko'rinishi uchun.
+══════════════════════════════════════════════════════════════ */
+.agent-portal-dark,
+.agent-portal-dark * {
+  --tw-text-opacity: 1;
+}
+
+/* Matn ranglari */
+.agent-portal-dark .text-white {
+  color: #ffffff !important;
+}
+.agent-portal-dark .text-slate-100 {
+  color: #f1f5f9 !important;
+}
+.agent-portal-dark .text-slate-200 {
+  color: #e2e8f0 !important;
+}
+.agent-portal-dark .text-slate-300 {
+  color: #cbd5e1 !important;
+}
+.agent-portal-dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+.agent-portal-dark .text-slate-500 {
+  color: #64748b !important;
+}
+.agent-portal-dark .text-sky-400 {
+  color: #38bdf8 !important;
+}
+.agent-portal-dark .text-green-400 {
+  color: #4ade80 !important;
+}
+.agent-portal-dark .text-red-400 {
+  color: #f87171 !important;
+}
+
+/* Fon ranglari */
+.agent-portal-dark .bg-slate-900 {
+  background-color: #0f172a !important;
+}
+.agent-portal-dark .bg-slate-800 {
+  background-color: #1e293b !important;
+}
+.agent-portal-dark .bg-slate-800\/80 {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+}
+.agent-portal-dark .bg-slate-800\/50 {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+}
+.agent-portal-dark .bg-slate-700 {
+  background-color: #334155 !important;
+}
+.agent-portal-dark .bg-slate-700\/50 {
+  background-color: rgba(51, 65, 85, 0.5) !important;
+}
+
+/* Border ranglari */
+.agent-portal-dark .border-slate-700 {
+  border-color: #334155 !important;
+}
+.agent-portal-dark .border-slate-700\/50 {
+  border-color: rgba(51, 65, 85, 0.5) !important;
+}
+
+/* Hover */
+.agent-portal-dark .hover\:bg-slate-700\/50:hover {
+  background-color: rgba(51, 65, 85, 0.5) !important;
+}
+.agent-portal-dark .hover\:text-white:hover {
+  color: #ffffff !important;
+}
+
+/* Aside – global aside override'ni bekor qilamiz */
+.agent-portal-dark aside {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Active nav link */
+.agent-portal-dark .bg-sky-500\/10 {
+  background-color: rgba(14, 165, 233, 0.1) !important;
+}
+
+/* Fade-in animatsiya */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out both;
+}
