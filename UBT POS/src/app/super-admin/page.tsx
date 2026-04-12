@@ -329,6 +329,7 @@ export default function SuperAdminPage() {
     const handleSave = async () => {
         if (!formData.shopCode||!formData.shopName||!formData.ownerName||!formData.phone) { alert("Barcha majburiy maydonlarni to'ldiring"); return; }
         if (!editingTenant&&!formData.adminPassword) { alert("Admin parolini kiriting"); return; }
+        if (!editingTenant&&formData.adminPassword.length<6) { alert("Admin paroli kamida 6 ta belgi bo'lishi kerak"); return; }
         const payload = { shopCode: formData.shopCode, shopName: formData.shopName, ownerName: formData.ownerName, phone: formData.phone, email: "", address: formData.address, plan: formData.plan, status: formData.status, shopType: formData.shopType, adminUsername: formData.phone, adminPassword: formData.adminPassword||undefined, settings: { ...formData.settings, shopType: formData.shopType } };
         if (editingTenant) await updateMutation.mutateAsync({ id: editingTenant.id, data: payload });
         else await createMutation.mutateAsync(payload);
@@ -812,6 +813,9 @@ export default function SuperAdminPage() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div><label className={labelClass}>Tashkilot nomi *</label><input type="text" value={formData.shopName} onChange={(e)=>f("shopName",e.target.value)} className={inputClass} placeholder="Tashkilot nomi"/></div>
                                     <div><label className={labelClass}>Egasi *</label><input type="text" value={formData.ownerName} onChange={(e)=>f("ownerName",e.target.value)} className={inputClass} placeholder="Egasi ismi"/></div>
+
+                                    <div><label className={labelClass}>Telefon * <span className="text-sky-400 font-normal">(login sifatida)</span></label><input type="text" value={formData.phone} onChange={(e)=>f("phone",e.target.value)} className={inputClass} placeholder="+998901234567"/></div>
+                                    {!editingTenant && <div><label className={labelClass}>Admin paroli *</label><input type="password" value={formData.adminPassword} onChange={(e)=>f("adminPassword",e.target.value)} className={inputClass} placeholder="Kamida 6 ta belgi" autoComplete="new-password"/></div>}
 
                                     <div><label className={labelClass}>Tarif narxi (UZS)</label><input type="number" value={formData.settings.tariffPrice||""} onChange={(e)=>fs("tariffPrice",+e.target.value)} className={inputClass} placeholder="0"/></div>
                                     <div><label className={labelClass}>Holati</label>
