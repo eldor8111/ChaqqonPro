@@ -15,11 +15,13 @@ import { PhoneInput } from "@/components/ui/PhoneInput";
 
 /* ─── Constants ─────────────────────────────────────────────────────── */
 const PLANS = {
-    starter: { label: "Starter", color: "bg-green-500/10 text-green-400", price: "Bepul", amount: 0 },
-    basic: { label: "Basic", color: "bg-blue-500/10 text-blue-400", price: "99,000 UZS", amount: 99000 },
-    pro: { label: "Pro", color: "bg-sky-500/10 text-sky-400", price: "199,000 UZS", amount: 199000 },
-    enterprise: { label: "Enterprise", color: "bg-indigo-500/10 text-indigo-400", price: "Custom", amount: 300000 },
+    starter:    { label: "Starter",    color: "bg-green-500/10 text-green-400",   price: "Bepul",        amount: 0,      yearlyAmount: 0 },
+    basic:      { label: "Basic",      color: "bg-blue-500/10 text-blue-400",     price: "99,000 UZS",   amount: 99000,  yearlyAmount: 79000 },
+    pro:        { label: "Pro",        color: "bg-sky-500/10 text-sky-400",       price: "199,000 UZS",  amount: 199000, yearlyAmount: 159000 },
+    enterprise: { label: "Enterprise", color: "bg-indigo-500/10 text-indigo-400", price: "300,000 UZS",  amount: 300000, yearlyAmount: 240000 },
 };
+// Oylik variant: to'liq narx
+// Yillik variant: oyiga ~20% chegirma (12 oy to'lansa 10 oy narxiga)
 const STATUS_COLORS: Record<string, string> = {
     active: "bg-green-500/10 text-green-400",
     trial: "bg-yellow-500/10 text-yellow-400",
@@ -136,8 +138,9 @@ export default function SuperAdminPage() {
     // ── Billing state
     const [billingSearch, setBillingSearch] = useState("");
     const [billingStatusFilter, setBillingStatusFilter] = useState("all");
-    const [extendingId, setExtendingId] = useState<string | null>(null);
-    const [extendDays, setExtendDays] = useState(30);
+    const [extendModal, setExtendModal] = useState<{ tenantId: string; shopName: string; plan: string; monthlyPrice: number } | null>(null);
+    const [extendPeriod, setExtendPeriod] = useState<"monthly" | "yearly">("monthly");
+    const [extendMonths, setExtendMonths] = useState(1);
 
     // ── Settings state
     const [settingsFormData, setSettingsFormData] = useState({
@@ -254,7 +257,9 @@ export default function SuperAdminPage() {
         },
         onSuccess: (data) => {
             alert(data.message);
-            setExtendingId(null);
+            setExtendModal(null);
+            setExtendMonths(1);
+            setExtendPeriod("monthly");
             queryClient.invalidateQueries({ queryKey: ["super-billing"] });
             queryClient.invalidateQueries({ queryKey: ["tenants"] });
         },
@@ -769,18 +774,12 @@ export default function SuperAdminPage() {
                                                             </span>
                                                         </td>
                                                         <td className="px-5 py-4 text-sm">
-                                                            <div className="flex gap-1.5">
-                                                                {[30, 60, 90].map(d => (
-                                                                    <button
-                                                                        key={d}
-                                                                        onClick={() => extendMutation.mutate({ tenantId: b.tenantId, days: d })}
-                                                                        disabled={extendMutation.isPending}
-                                                                        className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/25 transition-colors border border-emerald-500/20 disabled:opacity-40"
-                                                                    >
-                                                                        +{d}k
-                                                                    </button>
-                                                                ))}
-                                                            </div>
+                                                            <button
+                                                                onClick={() => setExtendModal({ tenantId: b.tenantId, shopName: b.shopName, plan: b.plan, monthlyPrice: b.monthlyPrice })}
+                                                                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/25 transition-colors border border-emerald-500/20 flex items-center gap-1"
+                                                            >
+                                                                <CreditCard size={12}/> Uzaytirish
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -1176,6 +1175,119 @@ export default function SuperAdminPage() {
                     </div>
                 </div>
             )}
+            {/* ── EXTEND SUBSCRIPTION MODAL ───────────────────────────── */}
+            {extendModal && (() => {
+                const plan = PLANS[extendModal.plan as keyof typeof PLANS];
+                const monthlyAmt = extendModal.monthlyPrice || plan?.amount || 0;
+                const yearlyAmt = plan?.yearlyAmount ?? Math.round(monthlyAmt * 0.8);
+                const unitPrice = extendPeriod === "yearly" ? yearlyAmt : monthlyAmt;
+                const totalDays = extendMonths * 30;
+                const totalPrice = unitPrice * extendMonths;
+                const savingsPerMonth = monthlyAmt - yearlyAmt;
+                const totalSavings = savingsPerMonth * extendMonths;
+                return (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl border border-slate-200 w-full max-w-md shadow-2xl">
+                            {/* Header */}
+                            <div className="p-5 border-b border-slate-200 flex items-center justify-between">
+                                <h2 className="text-lg font-bold flex items-center gap-2">
+                                    <CreditCard size={20} className="text-emerald-500"/>
+                                    Obunani uzaytirish
+                                </h2>
+                                <button onClick={() => setExtendModal(null)} className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-400 hover:text-slate-600"><X size={18}/></button>
+                            </div>
+
+                            <div className="p-6 space-y-5">
+                                {/* Shop info */}
+                                <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                                    <div className="font-bold text-slate-800">{extendModal.shopName}</div>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${plan?.color||"bg-slate-100 text-slate-600"}`}>{plan?.label || extendModal.plan}</span>
+                                        <span className="text-xs text-slate-400">• Joriy narx: {monthlyAmt > 0 ? `${fmtMoney(monthlyAmt)} UZS/oy` : "Bepul"}</span>
+                                    </div>
+                                </div>
+
+                                {/* Period toggle */}
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">To'lov davri</label>
+                                    <div className="flex rounded-xl border border-slate-200 overflow-hidden">
+                                        <button
+                                            onClick={() => setExtendPeriod("monthly")}
+                                            className={`flex-1 py-2.5 text-sm font-bold transition-colors ${extendPeriod === "monthly" ? "bg-sky-500 text-white" : "bg-white text-slate-500 hover:bg-slate-50"}`}
+                                        >
+                                            Oylik
+                                        </button>
+                                        <button
+                                            onClick={() => setExtendPeriod("yearly")}
+                                            className={`flex-1 py-2.5 text-sm font-bold transition-colors relative ${extendPeriod === "yearly" ? "bg-emerald-500 text-white" : "bg-white text-slate-500 hover:bg-slate-50"}`}
+                                        >
+                                            Yillik
+                                            {monthlyAmt > 0 && <span className={`ml-1.5 text-xs font-black ${extendPeriod === "yearly" ? "text-emerald-100" : "text-emerald-500"}`}>–20%</span>}
+                                        </button>
+                                    </div>
+                                    {extendPeriod === "yearly" && monthlyAmt > 0 && (
+                                        <p className="text-xs text-emerald-600 mt-1.5 font-medium">
+                                            Yillik to'lovda {fmtMoney(savingsPerMonth)} UZS/oy tejaysiz
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Months selector */}
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Necha oy uzaytirish</label>
+                                    <div className="flex gap-2 flex-wrap">
+                                        {[1, 2, 3, 6, 12].map(m => (
+                                            <button
+                                                key={m}
+                                                onClick={() => setExtendMonths(m)}
+                                                className={`px-4 py-2 rounded-xl text-sm font-bold border transition-colors ${extendMonths === m ? "bg-sky-500 text-white border-sky-500" : "bg-white border-slate-200 text-slate-600 hover:border-sky-400 hover:text-sky-500"}`}
+                                            >
+                                                {m} oy
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Price breakdown */}
+                                {monthlyAmt > 0 && (
+                                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-slate-500">{extendPeriod === "yearly" ? "Yillik narx" : "Oylik narx"} × {extendMonths} oy</span>
+                                            <span className="font-semibold text-slate-700">{fmtMoney(unitPrice)} × {extendMonths}</span>
+                                        </div>
+                                        {extendPeriod === "yearly" && (
+                                            <div className="flex justify-between text-sm text-emerald-600">
+                                                <span>Tejamkorlik</span>
+                                                <span className="font-bold">–{fmtMoney(totalSavings)} UZS</span>
+                                            </div>
+                                        )}
+                                        <div className="border-t border-slate-200 pt-2 flex justify-between">
+                                            <span className="font-bold text-slate-700">Jami to'lov</span>
+                                            <span className="text-lg font-black text-emerald-500">{fmtMoney(totalPrice)} UZS</span>
+                                        </div>
+                                        <div className="text-xs text-slate-400 text-right">30 kun × {extendMonths} oy = +{totalDays} kun</div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Footer */}
+                            <div className="p-5 border-t border-slate-200 flex gap-3 justify-end">
+                                <button onClick={() => setExtendModal(null)} className="px-4 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-colors">
+                                    Bekor qilish
+                                </button>
+                                <button
+                                    onClick={() => extendMutation.mutate({ tenantId: extendModal.tenantId, days: totalDays })}
+                                    disabled={extendMutation.isPending}
+                                    className="px-5 py-2.5 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-sky-500 text-white hover:opacity-90 transition-opacity flex items-center gap-2 disabled:opacity-50"
+                                >
+                                    {extendMutation.isPending ? "Saqlanmoqda..." : `+${totalDays} kun uzaytirish`}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
+
             {/* ── MY PROFILE MODAL ────────────────────────────────────── */}
             {showProfileModal && currentUser && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
