@@ -44,13 +44,13 @@ export async function GET(request: NextRequest) {
         }
         
         const tablesWithFee = tables.map(t => {
-            const z = ubtZones.find(zone => zone.name === t.section);
+            const z = ubtZones.find((zone: any) => zone.name === t.section);
             const fee = z?.serviceFee ? Number(z.serviceFee) : 10;
-            const tableJson = z?.tables?.find((tb: any) => tb.name === t.tableNumber);
-            let isActive = false;
-            if (tableJson && tableJson.isActive !== false) {
-                isActive = true;
+            let tableJson: any = null;
+            if (z?.tables && Array.isArray(z.tables)) {
+                tableJson = z.tables.find((tb: any) => tb.name === t.tableNumber) ?? null;
             }
+            const isActive = tableJson ? tableJson.isActive !== false : false;
             return { ...t, serviceFee: fee, isActive };
         }).filter(t => t.isActive);
 
@@ -97,6 +97,14 @@ export async function PUT(request: NextRequest) {
         if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const { id, status, order, amount, since, waiter } = await request.json();
+
+        if (!id) return NextResponse.json({ error: "id majburiy" }, { status: 400 });
+        if (status && !["free", "occupied", "reserved"].includes(status)) {
+            return NextResponse.json({ error: "Status noto'g'ri" }, { status: 400 });
+        }
+        if (amount !== undefined && amount !== null && Number(amount) < 0) {
+            return NextResponse.json({ error: "Summa manfiy bo'lishi mumkin emas" }, { status: 400 });
+        }
 
         const table = await prisma.ubtTable.update({
             where: { id, tenantId },

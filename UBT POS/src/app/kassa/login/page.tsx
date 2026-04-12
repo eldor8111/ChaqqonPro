@@ -78,8 +78,11 @@ export default function KassirLoginPage() {
             if (!res.ok) { setError(data.error || "Login yoki parol xato"); return; }
             setDeviceSession({ ...data.session.user, token: data.session.token, shopCode: data.shopCode, shopType: data.shopType });
             setUsername(""); setPassword("");
-        } catch { setError("Server bilan ulanishda xato!"); }
-        finally { setLoading(false); }
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : "Server bilan ulanishda xato";
+            console.error("[kassir-login]", msg);
+            setError("Server bilan ulanishda xato!");
+        } finally { setLoading(false); }
     };
 
     // Open staff list

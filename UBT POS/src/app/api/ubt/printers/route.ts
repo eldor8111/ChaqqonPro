@@ -41,10 +41,10 @@ export async function GET(req: NextRequest) {
         await _tableReady;
         const tenantId = await getAuthTenantId(req);
         if (!tenantId) return NextResponse.json([], { status: 200 });
-        const rows: any[] = await prisma.$queryRawUnsafe(
-            `SELECT id, name, ipAddress, port, description, createdAt FROM UbtPrinter WHERE tenantId=? ORDER BY createdAt ASC`,
-            tenantId
-        );
+        const rows: any[] = await prisma.$queryRaw`
+            SELECT id, name, ipAddress, port, description, createdAt
+            FROM UbtPrinter WHERE tenantId=${tenantId} ORDER BY createdAt ASC
+        `;
         return NextResponse.json(rows);
     } catch (e) {
         return NextResponse.json({ error: String(e) }, { status: 500 });
@@ -61,10 +61,10 @@ export async function POST(req: NextRequest) {
         if (!name || !ipAddress) return NextResponse.json({ error: "Nomi va IP manzil kiritilishi shart" }, { status: 400 });
         const id = `prn_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
         const portNum = Number(port) || 9100;
-        await prisma.$executeRawUnsafe(
-            `INSERT INTO UbtPrinter (id, tenantId, name, ipAddress, port, description) VALUES (?,?,?,?,?,?)`,
-            id, tenantId, name, ipAddress, portNum, description || ""
-        );
+        await prisma.$executeRaw`
+            INSERT INTO UbtPrinter (id, tenantId, name, ipAddress, port, description)
+            VALUES (${id}, ${tenantId}, ${name}, ${ipAddress}, ${portNum}, ${description || ""})
+        `;
         return NextResponse.json({ success: true, id });
     } catch (e) {
         return NextResponse.json({ error: String(e) }, { status: 500 });
@@ -78,7 +78,7 @@ export async function DELETE(req: NextRequest) {
         if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         const { id } = await req.json();
         if (!id) return NextResponse.json({ error: "ID kiritilmagan" }, { status: 400 });
-        await prisma.$executeRawUnsafe(`DELETE FROM UbtPrinter WHERE id=? AND tenantId=?`, id, tenantId);
+        await prisma.$executeRaw`DELETE FROM UbtPrinter WHERE id=${id} AND tenantId=${tenantId}`;
         return NextResponse.json({ success: true });
     } catch (e) {
         return NextResponse.json({ error: String(e) }, { status: 500 });

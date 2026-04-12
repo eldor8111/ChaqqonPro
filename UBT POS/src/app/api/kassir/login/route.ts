@@ -12,20 +12,23 @@ function getJwtSecret(): Uint8Array {
 
 // ─── Rate limiting: IP bo'yicha 5 urinish / 60 soniya ───────────────────────
 const _rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+// Har 60 soniyada eskirgan yozuvlarni tozalash (memory leak oldini olish)
+setInterval(() => {
+    const now = Date.now();
+    _rateLimitMap.forEach((v, k) => {
+        if (v.resetAt < now) _rateLimitMap.delete(k);
+    });
+}, 60_000);
+
 function checkRateLimit(ip: string): boolean {
     const now = Date.now();
     const entry = _rateLimitMap.get(ip);
     if (!entry || entry.resetAt < now) {
-        // Expired yozuvlarni tozalash — Map 1000 dan oshganda (memory leak oldini olish)
-        if (_rateLimitMap.size > 1000) {
-            _rateLimitMap.forEach((v, k) => {
-                if (v.resetAt < now) _rateLimitMap.delete(k);
-            });
-        }
         _rateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 });
-        return true; // allowed
+        return true;
     }
-    if (entry.count >= 5) return false; // blocked
+    if (entry.count >= 5) return false;
     entry.count++;
     return true;
 }

@@ -43,15 +43,22 @@ export async function GET(req: NextRequest) {
             tenantId
         ) as Promise<any[]>).catch(() => []);
 
-        const results = await Promise.all(
-            rows.map(async (p) => ({
-                id: p.id,
-                name: p.name,
-                ip: p.ipAddress,
-                port: p.port || 9100,
-                online: await checkPrinter(p.ipAddress, p.port || 9100),
-            }))
-        );
+        // Batch processing — 5 tadan bir vaqtda (socket resource limit)
+        const results: { id: string; name: string; ip: string; port: number; online: boolean }[] = [];
+        const batchSize = 5;
+        for (let i = 0; i < rows.length; i += batchSize) {
+            const batch = rows.slice(i, i + batchSize);
+            const batchResults = await Promise.all(
+                batch.map(async (p) => ({
+                    id: p.id,
+                    name: p.name,
+                    ip: p.ipAddress,
+                    port: p.port || 9100,
+                    online: await checkPrinter(p.ipAddress, p.port || 9100),
+                }))
+            );
+            results.push(...batchResults);
+        }
 
         return NextResponse.json(results);
     } catch (e) {

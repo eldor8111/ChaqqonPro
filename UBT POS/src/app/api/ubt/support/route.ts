@@ -69,13 +69,16 @@ export async function POST(req: NextRequest) {
         });
 
         if (!tgRes.ok) {
-            const tgErr = await tgRes.json();
-            return NextResponse.json({ error: "Telegramga ulana olmadik: " + (tgErr.description || "Noma'lum xatolik") }, { status: 500 });
+            const tgErr = await tgRes.json().catch(() => ({}));
+            console.error("[support] Telegram error:", tgErr);
+            return NextResponse.json({ error: "Telegramga ulana olmadik. Keyinroq urinib ko'ring." }, { status: 500 });
         }
 
         return NextResponse.json({ success: true, message: "Xabar muvaffaqiyatli yetkazildi!" });
 
-    } catch (e: any) {
-        return NextResponse.json({ error: "Ichki server xatoligi: " + e.message }, { status: 500 });
+    } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error("[support]", msg);
+        return NextResponse.json({ error: "Xabarni yuborishda xatolik yuz berdi" }, { status: 500 });
     }
 }

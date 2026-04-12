@@ -16,6 +16,11 @@ export default function PosSupportPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!kassirSession?.token) {
+            setErrMsg("Siz tizimga kirmagansiz. Iltimos qayta kiring.");
+            setStatus("error");
+            return;
+        }
         if (!clientPhone || !messageBody) {
             setErrMsg("Iltimos barcha maydonlarni to'ldiring.");
             setStatus("error");
@@ -42,9 +47,11 @@ export default function PosSupportPage() {
             setClientPhone("");
             setMessageBody("");
             setTimeout(() => setStatus("idle"), 3000);
-        } catch (e: any) {
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : "Server bilan ulanishda xato";
+            console.error("[support]", msg);
             setStatus("error");
-            setErrMsg(e.message);
+            setErrMsg(msg);
         }
     };
 

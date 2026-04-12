@@ -32,12 +32,6 @@ export default function KassaLayout({ children }: { children: React.ReactNode })
             return;
         }
 
-        if (session) {
-            redirected.current = true;
-            router.replace("/ubt-pos");
-            return;
-        }
-
         setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pathname]);

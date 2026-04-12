@@ -36,6 +36,10 @@ export default function UbtPosStartPage() {
 
     useEffect(() => {
         setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
         if (!deviceSession || deviceSession.shopType !== "ubt") {
             router.replace("/ubt-pos/login");
             return;
@@ -58,7 +62,7 @@ export default function UbtPosStartPage() {
         };
 
         fetchStaff();
-    }, [deviceSession, router]);
+    }, [mounted, deviceSession, router]);
 
     const handleStaffClick = (staff: StaffMember) => {
         setSelectedStaff(staff);

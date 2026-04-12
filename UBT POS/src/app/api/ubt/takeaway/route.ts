@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
             num:    i + 1,
             total:  tx.amount,
             name:   tx.kassirName || "Noma'lum",
-            phone:  tx.notes?.match(/Tel: ([^|]+)/)?.[1]?.trim() || "",
+            phone:  (tx.notes?.match(/Tel:\s*([^|]+)/) ?? [])[1]?.trim() || "",
             time:   new Date(tx.createdAt).toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" }),
             status: "done" as const,
             items:  tx.items.map(it => ({

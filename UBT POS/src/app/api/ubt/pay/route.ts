@@ -161,8 +161,9 @@ export async function POST(request: NextRequest) {
             transactionId: transaction.id,
             amount: grandTotal,
         });
-    } catch (error) {
-        console.error("UBT pay error:", error);
-        return NextResponse.json({ error: "Server xatoligi" }, { status: 500 });
+    } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : String(error);
+        console.error("[pay]", msg);
+        return NextResponse.json({ error: "To'lov amalga oshirishda xatolik yuz berdi" }, { status: 500 });
     }
 }

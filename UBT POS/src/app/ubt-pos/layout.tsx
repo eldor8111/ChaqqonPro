@@ -25,7 +25,7 @@ export default function UbtPosLayout({ children }: { children: React.ReactNode }
             return;
         }
 
-        if (!session) {
+        if (!session?.id || !session?.shopCode) {
             redirected.current = true;
             router.replace("/ubt-pos/login");
             return;
