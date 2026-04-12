@@ -52,7 +52,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Barcha majburiy maydonlarni to'ldiring" }, { status: 400 });
         }
 
-        const existing = await prisma.platformUser.findUnique({ where: { phone: data.phone } });
+        const normalizedPhone = data.phone.replace(/\s+/g, "");
+        const existing = await prisma.platformUser.findUnique({ where: { phone: normalizedPhone } });
         if (existing) {
             return NextResponse.json({ error: "Bu telefon raqam allaqachon ro'yxatdan o'tgan" }, { status: 400 });
         }
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
         const newUser = await prisma.platformUser.create({
             data: {
                 name: data.name,
-                phone: data.phone,
+                phone: normalizedPhone,
                 passwordHash: pHash,
                 role: data.role,
                 agentCode: data.role === "Agent" ? (data.agentCode || null) : null,
@@ -90,12 +91,13 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ error: "Barcha majburiy maydonlarni to'ldiring" }, { status: 400 });
         }
 
-        const existing = await prisma.platformUser.findUnique({ where: { phone } });
+        const normalizedPhone = phone.replace(/\s+/g, "");
+        const existing = await prisma.platformUser.findUnique({ where: { phone: normalizedPhone } });
         if (existing && existing.id !== id) {
             return NextResponse.json({ error: "Bu telefon raqam allaqachon boshqa foydalanuvchida ro'yxatdan o'tgan" }, { status: 400 });
         }
 
-        const updateData: any = { name, phone, role, permissions: JSON.stringify(permissions || []) };
+        const updateData: any = { name, phone: normalizedPhone, role, permissions: JSON.stringify(permissions || []) };
         if (status) updateData.status = status;
         // Agent kodini yangilash
         if (role === "Agent") {
