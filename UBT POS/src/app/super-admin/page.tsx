@@ -887,6 +887,84 @@ export default function SuperAdminPage() {
                                 </div>
                             </section>
 
+                            {/* Section 3: Qo'shimcha sozlamalar */}
+                            <section>
+                                <button type="button" onClick={() => setShowExtra(v => !v)}
+                                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors text-sm font-bold text-slate-600">
+                                    <span className="flex items-center gap-2">
+                                        <Settings size={15}/> Qo&apos;shimcha sozlamalar
+                                    </span>
+                                    <span className="text-slate-400">{showExtra ? "▲" : "▼"}</span>
+                                </button>
+                                {showExtra && (
+                                    <div className="mt-4 space-y-5">
+                                        {/* Address */}
+                                        <div><label className={labelClass}>Manzil</label>
+                                            <input type="text" value={formData.address} onChange={(e) => f("address", e.target.value)} className={inputClass} placeholder="Shahar, ko'cha, uy raqami"/>
+                                        </div>
+
+                                        {/* Location */}
+                                        <div className="grid grid-cols-3 gap-3">
+                                            <div><label className={labelClass}>Mamlakat</label>
+                                                <input type="text" value={formData.settings.country} onChange={(e) => fs("country", e.target.value)} className={inputClass} placeholder="Uzbekiston"/>
+                                            </div>
+                                            <div><label className={labelClass}>Viloyat</label>
+                                                <input type="text" value={formData.settings.region} onChange={(e) => fs("region", e.target.value)} className={inputClass} placeholder="Toshkent"/>
+                                            </div>
+                                            <div><label className={labelClass}>Shahar</label>
+                                                <input type="text" value={formData.settings.city} onChange={(e) => fs("city", e.target.value)} className={inputClass} placeholder="Chilonzor"/>
+                                            </div>
+                                        </div>
+
+                                        {/* Work days */}
+                                        <div>
+                                            <label className={labelClass}>Ish kunlari</label>
+                                            <div className="flex flex-wrap gap-2 mt-1">
+                                                {[{k:"mon",l:"Du"},{k:"tue",l:"Se"},{k:"wed",l:"Ch"},{k:"thu",l:"Pa"},{k:"fri",l:"Ju"},{k:"sat",l:"Sha"},{k:"sun",l:"Ya"}].map(d => (
+                                                    <button key={d.k} type="button" onClick={() => toggleWorkDay(d.k)}
+                                                        className={`w-10 h-10 rounded-xl text-xs font-bold transition-colors ${formData.settings.workDays.includes(d.k) ? "bg-sky-500 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>
+                                                        {d.l}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Telegram group ID */}
+                                        <div><label className={labelClass}>Telegram guruh ID <span className="text-sky-400 font-normal">(bildirishnomalar uchun)</span></label>
+                                            <input type="text" value={formData.settings.telegramGroupId} onChange={(e) => fs("telegramGroupId", e.target.value)} className={inputClass} placeholder="-1001234567890"/>
+                                        </div>
+
+                                        {/* Contacts */}
+                                        <div>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <label className={labelClass}>Kontakt raqamlar</label>
+                                                <button type="button" onClick={addContact}
+                                                    className="text-xs font-bold text-sky-500 hover:text-sky-700">+ Qo&apos;shish</button>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {formData.settings.contacts.map((c: any, i: number) => (
+                                                    <div key={i} className="flex gap-2">
+                                                        <select value={c.type} onChange={(e) => updateContact(i, "type", e.target.value)} className={`${inputClass} w-28 shrink-0`}>
+                                                            <option value="phone">Telefon</option>
+                                                            <option value="email">Email</option>
+                                                            <option value="telegram">Telegram</option>
+                                                        </select>
+                                                        <input type="text" value={c.value} onChange={(e) => updateContact(i, "value", e.target.value)} className={`${inputClass} flex-1`} placeholder={c.type === "email" ? "email@example.com" : "+998901234567"}/>
+                                                        <button type="button" onClick={() => removeContact(i)} className="px-3 py-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors">✕</button>
+                                                    </div>
+                                                ))}
+                                                {formData.settings.contacts.length === 0 && <p className="text-xs text-slate-400 italic">Kontakt qo&apos;shilmagan</p>}
+                                            </div>
+                                        </div>
+
+                                        {/* Description */}
+                                        <div><label className={labelClass}>Tavsif</label>
+                                            <textarea value={formData.settings.description} onChange={(e) => fs("description", e.target.value)} className={`${inputClass} resize-none`} rows={2} placeholder="Qo'shimcha ma'lumot..."/>
+                                        </div>
+                                    </div>
+                                )}
+                            </section>
+
                             {/* Soliq integratsiyasi (O'zbekiston Virtual Kassa) */}
                                      <div className={`p-5 rounded-2xl border transition-all duration-300 ${(formData.settings as any).taxEnabled ? "bg-emerald-500/5 border-emerald-500/30" : "bg-slate-50 border-slate-200"}`}>
                                          <div className="flex items-center justify-between mb-4">
