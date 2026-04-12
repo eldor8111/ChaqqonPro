@@ -28,15 +28,19 @@ export default function AgentDashboard() {
 
     useEffect(() => {
         setMounted(true);
-        if (mounted && !isAuthenticated) {
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
+        if (!isAuthenticated || currentUser?.role !== "Agent") {
             router.push("/super-admin/staff-login");
-        } else if (mounted && currentUser?.agentCode) {
+        } else if (currentUser?.agentCode) {
             fetchLeads(currentUser.agentCode);
             fetchTenants(currentUser.agentCode);
         }
-    }, [isAuthenticated, mounted, router, currentUser?.agentCode, fetchLeads, fetchTenants]);
+    }, [isAuthenticated, mounted, router, currentUser, fetchLeads, fetchTenants]);
 
-    if (!mounted || !currentUser) return null;
+    if (!mounted || !isAuthenticated || currentUser?.role !== "Agent") return null;
 
     // Stats calculations
     const totalLeads = leads.length;
