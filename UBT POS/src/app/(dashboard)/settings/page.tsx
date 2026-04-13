@@ -78,6 +78,7 @@ export default function SettingsPage() {
 
     const [newUser, setNewUser] = useState({ name: "", phone: "", username: "", password: "", role: "Kassir", branch: "Asosiy Filial", printerIp: "", status: true, isMainMonoblock: false, showCashiersList: false, hasChefPrinter: false, printOrderCancellations: false, photoBase64: null as string | null, serviceFeePct: 10 });
     const [newBranch, setNewBranch] = useState({ name: "", city: "", manager: "" });
+    const [newPayment, setNewPayment] = useState("");
 
     // Permissions modal state
     const [permTarget, setPermTarget] = useState<any>(null);
