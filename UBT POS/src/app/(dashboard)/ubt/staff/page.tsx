@@ -416,7 +416,7 @@ function UbtStaffContent() {
     const buildPayload = () => {
         const isPosDevice = form.role === "POS apparati";
         const permissions = isPosDevice ? form.posPerms : form.simplePerms;
-        const base: any = { name: form.name, role: form.role, branch: form.branch, phone: form.phone || "", status: form.status, permissions };
+        const base: any = { name: form.name, username: form.username, role: form.role, branch: form.branch, phone: form.phone || "", status: form.status, permissions };
         if (form.password) base.password = form.password;
         return base;
     };
