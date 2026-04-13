@@ -7,7 +7,7 @@ import {
     LayoutDashboard, Package, BarChart3,
     UserCheck, Coffee, Warehouse,
     Settings, ChevronLeft, ChevronRight, Printer,
-    DollarSign, Bike, CalendarCheck, Clock, Zap, Headset, CreditCard,
+    DollarSign, Bike, CalendarCheck, Clock, Zap, Headset, CreditCard, Building2,
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import clsx from "clsx";
@@ -58,6 +58,9 @@ const NAV_ITEMS = [
         subItems: [
             { href: "/ubt/moliya", label: "Kassa & P&L" },
         ]
+    },
+    {
+        href: "/ubt/kontragent", icon: Building2, key: "Kontragentlar",
     },
     {
         href: "/ubt/support", icon: Headset, key: "Tex yordam",

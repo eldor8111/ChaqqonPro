@@ -155,6 +155,24 @@ export const api = {
             }),
     },
 
+    // KONTRAGENT ENDPOINTS
+    kontragent: {
+        list: () =>
+            apiFetch("/ubt/kontragent"),
+        create: (data: { name: string; phone?: string; info?: string }) =>
+            apiFetch("/ubt/kontragent", {
+                method: "POST",
+                body: JSON.stringify(data),
+            }),
+        update: (id: string, data: { name: string; phone?: string; info?: string }) =>
+            apiFetch(`/ubt/kontragent/${id}`, {
+                method: "PUT",
+                body: JSON.stringify(data),
+            }),
+        delete: (id: string) =>
+            apiFetch(`/ubt/kontragent/${id}`, { method: "DELETE" }),
+    },
+
     // TRANSACTIONS ENDPOINTS
     transactions: {
         list: () =>
