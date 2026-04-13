@@ -5,8 +5,53 @@ import { ThemeProvider } from "@/lib/LangContext";
 import QueryProvider from "./QueryProvider";
 
 export const metadata: Metadata = {
-    title: "ChaqqonPro – Professional POS & ERP System",
-    description: "O'zbekiston bozori uchun professional savdo va boshqaruv tizimi",
+    title: "ChaqqonPro – Restoran va Kafe uchun POS & ERP Tizimi",
+    description: "ChaqqonPro — O'zbekistondagi restoran, kafe va mehmonxonalar uchun eng qulay POS va ERP tizimi. Buyurtma boshqaruvi, ombor, moliya va xodimlar hisobi bir joyda.",
+    keywords: [
+        "POS tizimi", "ERP tizimi", "restoran dasturi", "kafe boshqaruvi",
+        "savdo tizimi", "ChaqqonPro", "O'zbekiston POS", "ombor boshqaruvi",
+        "moliya hisobi", "buyurtma tizimi", "restaurant software", "uzbekistan pos",
+    ],
+    authors: [{ name: "ChaqqonPro", url: "https://chaqqonpro.e-code.uz" }],
+    creator: "ChaqqonPro",
+    publisher: "ChaqqonPro",
+    metadataBase: new URL("https://chaqqonpro.e-code.uz"),
+    alternates: {
+        canonical: "https://chaqqonpro.e-code.uz",
+    },
+    openGraph: {
+        title: "ChaqqonPro – Restoran va Kafe uchun POS & ERP Tizimi",
+        description: "O'zbekistondagi restoran, kafe va mehmonxonalar uchun eng qulay POS va ERP tizimi. Buyurtma boshqaruvi, ombor, moliya va xodimlar hisobi bir joyda.",
+        url: "https://chaqqonpro.e-code.uz",
+        siteName: "ChaqqonPro",
+        locale: "uz_UZ",
+        type: "website",
+        images: [
+            {
+                url: "/logo.jpg",
+                width: 1200,
+                height: 630,
+                alt: "ChaqqonPro – POS & ERP Tizimi",
+            },
+        ],
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "ChaqqonPro – Restoran va Kafe uchun POS & ERP Tizimi",
+        description: "O'zbekistondagi restoran, kafe va mehmonxonalar uchun eng qulay POS va ERP tizimi.",
+        images: ["/logo.jpg"],
+    },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+            index: true,
+            follow: true,
+            "max-video-preview": -1,
+            "max-image-preview": "large",
+            "max-snippet": -1,
+        },
+    },
 };
 
 export default function RootLayout({
@@ -22,6 +67,31 @@ export default function RootLayout({
                 <link
                     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
                     rel="stylesheet"
+                />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify({
+                            "@context": "https://schema.org",
+                            "@type": "SoftwareApplication",
+                            "name": "ChaqqonPro",
+                            "description": "O'zbekistondagi restoran, kafe va mehmonxonalar uchun POS va ERP tizimi",
+                            "url": "https://chaqqonpro.e-code.uz",
+                            "applicationCategory": "BusinessApplication",
+                            "operatingSystem": "Web",
+                            "inLanguage": "uz",
+                            "offers": {
+                                "@type": "Offer",
+                                "priceCurrency": "UZS",
+                                "availability": "https://schema.org/InStock"
+                            },
+                            "provider": {
+                                "@type": "Organization",
+                                "name": "ChaqqonPro",
+                                "url": "https://chaqqonpro.e-code.uz"
+                            }
+                        })
+                    }}
                 />
             </head>
             <body className="min-h-screen antialiased" style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)" }}>
