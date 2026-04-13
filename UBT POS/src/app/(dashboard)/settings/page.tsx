@@ -78,8 +78,6 @@ export default function SettingsPage() {
 
     const [newUser, setNewUser] = useState({ name: "", phone: "", username: "", password: "", role: "Kassir", branch: "Asosiy Filial", printerIp: "", status: true, isMainMonoblock: false, showCashiersList: false, hasChefPrinter: false, printOrderCancellations: false, photoBase64: null as string | null, serviceFeePct: 10 });
     const [newBranch, setNewBranch] = useState({ name: "", city: "", manager: "" });
-    const [newPayment, setNewPayment] = useState("");
-    const [showPaymentModal, setShowPaymentModal] = useState(false);
 
     // Permissions modal state
     const [permTarget, setPermTarget] = useState<any>(null);
@@ -213,7 +211,6 @@ export default function SettingsPage() {
                             { key: "receipt", label: "Chek sozlamalari", icon: Printer },
                             ...(shopType === "ubt" ? [{ key: "ubt", label: "UBT sozlamalari", icon: UtensilsCrossed }] : []),
                             { key: "audit", label: t("settings.auditLog") || "Audit Jurnali", icon: ClipboardList },
-                            { key: "obuna", label: "Obuna va To'lov", icon: CreditCard },
                         ].map(tab => (
                             <button
                                 key={tab.key}
@@ -786,115 +783,6 @@ export default function SettingsPage() {
                         </div>
                     )}
 
-                    {/* Obuna (Subscription) Tab */}
-                    {activeTab === "obuna" && (() => {
-                        const expiresAt = shopSettings?.expiresAt ? new Date(shopSettings.expiresAt) : null;
-                        const daysLeft = expiresAt ? Math.ceil((expiresAt.getTime() - Date.now()) / 86400000) : null;
-                        const isExpired = daysLeft !== null && daysLeft < 0;
-                        return (
-                            <div className="max-w-lg mx-auto space-y-5">
-                                <h2 className="section-title">Obuna va To&apos;lov</h2>
-
-                                {/* Expiry status banner */}
-                                {isExpired ? (
-                                    <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl">
-                                        <span className="text-2xl">⚠️</span>
-                                        <div>
-                                            <p className="font-bold text-red-400">Obuna muddati tugagan!</p>
-                                            <p className="text-xs text-red-300">To&apos;lov qilgach admin tasdiqlaydi va tizim yoqiladi</p>
-                                        </div>
-                                    </div>
-                                ) : daysLeft !== null && daysLeft <= 7 ? (
-                                    <div className="flex items-center gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-2xl">
-                                        <span className="text-2xl">⏳</span>
-                                        <div>
-                                            <p className="font-bold text-yellow-400">Obuna muddati {daysLeft} kunda tugaydi</p>
-                                            <p className="text-xs text-yellow-300">Xizmat to&apos;xtatilmasligi uchun to&apos;lov qiling</p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl">
-                                        <span className="text-2xl">✅</span>
-                                        <div>
-                                            <p className="font-bold text-emerald-400">Obuna faol</p>
-                                            <p className="text-xs text-emerald-300">
-                                                {expiresAt ? `Tugash sanasi: ${expiresAt.toLocaleDateString("uz-UZ")}` : "Muddati belgilanmagan"}
-                                                {daysLeft !== null ? ` (${daysLeft} kun)` : ""}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Payment card */}
-                                <div className="glass-card p-8 space-y-6 border border-surface-border">
-                                    <h3 className="text-lg font-bold text-slate-800 text-center">To&apos;lov</h3>
-
-                                    {/* Payment ID field */}
-                                    <div className="space-y-2">
-                                        <label className="block text-sm font-semibold text-slate-400">Payment ID</label>
-                                        <div className="relative">
-                                            <input
-                                                type="text"
-                                                readOnly
-                                                value={shopSettings?.billingId || "—"}
-                                                className="w-full bg-surface-elevated border border-surface-border rounded-xl px-4 py-3 text-xl font-black text-slate-800 tracking-widest focus:outline-none cursor-default select-all"
-                                            />
-                                        </div>
-                                        <p className="text-xs text-slate-500">Bu kodni to&apos;lov izohida yozing</p>
-                                    </div>
-
-                                    {/* Payment method selector */}
-                                    <div className="space-y-2">
-                                        <label className="block text-sm font-semibold text-slate-400">To&apos;lov turi</label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {/* UzCard / Humo */}
-                                            <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-brand bg-brand/5 cursor-pointer">
-                                                <input type="radio" name="payType" defaultChecked className="accent-brand w-4 h-4" />
-                                                <div className="flex items-center gap-2">
-                                                    <div className="flex gap-1">
-                                                        <span className="px-2 py-0.5 rounded text-[10px] font-black bg-blue-600 text-white">UZ</span>
-                                                        <span className="px-2 py-0.5 rounded text-[10px] font-black bg-green-600 text-white">HUMO</span>
-                                                    </div>
-                                                </div>
-                                            </label>
-                                            {/* Visa / MC */}
-                                            <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-surface-border hover:border-slate-300 cursor-pointer transition-colors">
-                                                <input type="radio" name="payType" className="accent-brand w-4 h-4" />
-                                                <div className="flex items-center gap-2">
-                                                    <span className="italic font-black text-blue-400 text-sm">VISA</span>
-                                                    <div className="flex -space-x-1">
-                                                        <div className="w-5 h-5 rounded-full bg-red-500 opacity-80" />
-                                                        <div className="w-5 h-5 rounded-full bg-yellow-500 opacity-80" />
-                                                    </div>
-                                                </div>
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    {/* Pay button */}
-                                    <button
-                                        onClick={() => setShowPaymentModal(true)}
-                                        className="w-full py-3.5 rounded-xl bg-brand hover:brightness-110 text-white font-black text-base transition-all shadow-glow active:scale-[0.98]"
-                                    >
-                                        To&apos;lov qilish
-                                    </button>
-
-                                    <p className="text-center text-xs text-slate-500">
-                                        To&apos;lov tasdiqlangach admin muddatingizni uzaytiradi
-                                    </p>
-                                </div>
-
-                                {/* Contact */}
-                                <div className="glass-card p-4 flex items-center justify-between">
-                                    <div>
-                                        <p className="text-xs text-slate-500">Murojaat uchun</p>
-                                        <p className="font-semibold text-slate-200">UBT Solutions</p>
-                                    </div>
-                                    <a href="tel:+998900000000" className="text-brand font-bold text-sm hover:underline">+998 90 000 00 00</a>
-                                </div>
-                            </div>
-                        );
-                    })()}
 
 
 
@@ -1670,77 +1558,6 @@ export default function SettingsPage() {
                     </div>
                 )}
 
-                {/* PAYMENT MODAL (Light Theme Replica) */}
-                {showPaymentModal && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[460px] overflow-hidden text-[#1e293b]">
-                            {/* Header */}
-                            <div className="flex items-center justify-between p-5 border-b border-gray-100">
-                                <h2 className="text-xl font-bold">Оплата</h2>
-                                <button 
-                                    onClick={() => setShowPaymentModal(false)}
-                                    className="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-                                >
-                                    <X size={20} />
-                                </button>
-                            </div>
-                            
-                            {/* Body */}
-                            <div className="p-6 space-y-5">
-                                {/* Payment ID */}
-                                <div className="space-y-1.5">
-                                    <label className="block text-[13px] font-semibold text-gray-600">Payment ID</label>
-                                    <input 
-                                        type="text"
-                                        readOnly
-                                        value={shopSettings?.billingId || shopSettings?.shopCode || "—"}
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-800 text-[15px] focus:outline-none"
-                                    />
-                                </div>
-                                
-                                {/* Payment Type */}
-                                <div className="space-y-3">
-                                    <label className="block text-[13px] font-semibold text-gray-600">Тип оплаты</label>
-                                    <div className="flex gap-3">
-                                        {/* UzCard/Humo Option */}
-                                        <label className="flex-1 border border-gray-200 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-blue-500 transition-colors has-[:checked]:border-blue-500 has-[:checked]:ring-1 has-[:checked]:ring-blue-500">
-                                            <input type="radio" name="payment_type_modal" defaultChecked className="w-4 h-4 accent-blue-500" />
-                                            <div className="flex items-center gap-1.5">
-                                                <div className="h-6 px-1.5 bg-[#001D47] rounded flex pb-[1px] items-center justify-center text-[10px] font-extrabold text-white leading-none">UZCARD</div>
-                                                <div className="h-6 px-1.5 bg-[#FFB82B] rounded flex pb-[1px] items-center justify-center text-[10px] font-extrabold text-[#001D47] leading-none">HUMO</div>
-                                            </div>
-                                        </label>
-                                        
-                                        {/* Visa/MasterCard Option */}
-                                        <label className="flex-1 border border-gray-200 rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-blue-500 transition-colors has-[:checked]:border-blue-500 has-[:checked]:ring-1 has-[:checked]:ring-blue-500">
-                                            <input type="radio" name="payment_type_modal" className="w-4 h-4 accent-blue-500" />
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="font-black text-[#1434CB] italic tracking-tighter text-sm ml-1 pr-1">VISA</span>
-                                                <div className="flex -space-x-[5px]">
-                                                    <div className="w-[18px] h-[18px] rounded-full bg-[#EB001B] opacity-90 mix-blend-multiply" />
-                                                    <div className="w-[18px] h-[18px] rounded-full bg-[#F79E1B] opacity-90 mix-blend-multiply" />
-                                                </div>
-                                            </div>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                {/* Submit Button */}
-                                <div className="flex justify-end pt-4">
-                                    <button
-                                        onClick={() => {
-                                            window.open("https://t.me/ubt_support", "_blank");
-                                            setShowPaymentModal(false);
-                                        }}
-                                        className="bg-[#007AFF] hover:bg-blue-600 active:scale-95 transition-all text-white font-medium py-[13px] px-8 rounded-xl w-[140px]"
-                                    >
-                                        Оплатить
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
         </div>
     );
 }
