@@ -59,6 +59,11 @@ model Tenant {
   createdAt        DateTime @default(now())
   expiresAt        DateTime?
 
+  // ── Billing (ERP uslubida) ──
+  balance          Float   @default(0)   // Joriy hisob balansi (so'm)
+  tariffId         String?               // Tanlangan tarif ID
+  isTrial          Boolean @default(false) // Sinov muddatida ekanmi
+
   @@index([adminUsername])
   @@index([phone])
   @@index([agentCode])
@@ -74,14 +79,16 @@ model Tenant {
   inventoryCounts  InventoryCount[]
   writeoffs        InventoryWriteoff[]
   pharmacyDrugs    PharmacyDrug[]
-  ubtTables     UbtTable[]
+  ubtTables        UbtTable[]
   kdsOrders        KDSOrder[]
-  ubtReservations UbtReservation[]
+  ubtReservations  UbtReservation[]
   auditLogs        AuditLog[]
   kassiHarakatlar  KassiHarakat[]
   deliveryOrders   DeliveryOrder[]
   smartRecommendations SmartRecommendation[]
   attendances      Attendance[]
+  balanceLogs      BalanceLog[]
+  tariff           Tariff?  @relation(fields: [tariffId], references: [id])
 }
 
 // ===== PRODUCTS & INVENTORY =====
@@ -575,3 +582,46 @@ model PotentialClient {
   @@index([status])
 }
 
+// ===== BILLING TIZIMI =====
+
+model Tariff {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  pricePerMonth  Float    @default(0)
+  durationDays   Int      @default(30)
+  maxUsers       Int      @default(10)
+  maxBranches    Int      @default(1)
+  isActive       Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  // Relations
+  tenants        Tenant[]
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model BalanceLog {
+  id             String   @id @default(cuid())
+  tenantId       String
+  amount         Float    // Musbat = kirim, Manfiy = chiqim
+  logType        String   // top_up | trial | subscription | adjustment
+  note           String?
+  createdById    String?  // SuperAdmin yoki PlatformUser ID
+  createdByName  String?  // Ism (cache)
+  createdAt      DateTime @default(now())
+
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, createdAt])
+}
+
+model PlatformSettings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String?
+  updatedAt DateTime @updatedAt
+}

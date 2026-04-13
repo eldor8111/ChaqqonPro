@@ -7,7 +7,7 @@ import {
     LayoutDashboard, Package, BarChart3,
     UserCheck, Coffee, Warehouse,
     Settings, ChevronLeft, ChevronRight, Printer,
-    DollarSign, Bike, CalendarCheck, Clock, Zap, Headset
+    DollarSign, Bike, CalendarCheck, Clock, Zap, Headset, CreditCard,
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import clsx from "clsx";
@@ -61,6 +61,9 @@ const NAV_ITEMS = [
     },
     {
         href: "/ubt/support", icon: Headset, key: "Tex yordam",
+    },
+    {
+        href: "/billing", icon: CreditCard, key: "Obuna va Tariflar",
     },
 ];
 

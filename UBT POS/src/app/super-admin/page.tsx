@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
     Plus, Search, Edit2, Trash2, LogIn, LogOut, X,
@@ -74,7 +74,7 @@ const PERMISSIONS_LIST = [
 ];
 
 type ContactItem = { type: string; value: string };
-type SideTab = "tenants" | "users" | "billing" | "settings";
+type SideTab = "tenants" | "users" | "billing" | "tariffs" | "settings";
 
 const inputClass = "w-full bg-slate-100 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-800 placeholder-slate-500 focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/30";
 const labelClass = "block text-sm font-medium mb-1.5 text-slate-600";
@@ -141,12 +141,21 @@ export default function SuperAdminPage() {
     const [extendModal, setExtendModal] = useState<{ tenantId: string; shopName: string; plan: string; monthlyPrice: number } | null>(null);
     const [extendPeriod, setExtendPeriod] = useState<"monthly" | "yearly">("monthly");
     const [extendMonths, setExtendMonths] = useState(1);
+    // Billing action modal (ERP uslubida: +Pul, 7kun sinov, Obuna)
+    const [billingActionModal, setBillingActionModal] = useState<{ company: any; type: "trial" | "topup" | "subscribe" } | null>(null);
+    const [billingTopupForm, setBillingTopupForm] = useState({ amount: "", note: "" });
+    const [billingSubForm, setBillingSubForm] = useState({ tariffId: "", months: 1 });
+    const [billingActionSaving, setBillingActionSaving] = useState(false);
 
     // ── Settings state
     const [settingsFormData, setSettingsFormData] = useState({
         supportBotToken: "",
         supportChatId: "",
-        
+        card_number: "",
+        card_owner: "",
+        tg_username: "",
+        phone: "",
+        phone_raw: "",
     });
 
     /* ── Queries ─────────────────────────────────────────────────────── */
@@ -193,6 +202,11 @@ export default function SuperAdminPage() {
                 setSettingsFormData({
                     supportBotToken: data.settings.supportBotToken || "",
                     supportChatId: data.settings.supportChatId || "",
+                    card_number: data.settings.card_number || "",
+                    card_owner: data.settings.card_owner || "",
+                    tg_username: data.settings.tg_username || "",
+                    phone: data.settings.phone || "",
+                    phone_raw: data.settings.phone_raw || "",
                 });
             }
             return data;
@@ -265,6 +279,66 @@ export default function SuperAdminPage() {
         },
         onError: (e: any) => alert(e.message),
     });
+
+    // ── Billing action handlers (ERP uslubida)
+    const handleBillingTrial = async () => {
+        if (!billingActionModal) return;
+        setBillingActionSaving(true);
+        try {
+            const res = await fetch("/api/super-admin/billing/activate-trial", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tenantId: billingActionModal.company.tenantId }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Xatolik");
+            alert(data.message);
+            setBillingActionModal(null);
+            queryClient.invalidateQueries({ queryKey: ["super-billing"] });
+            queryClient.invalidateQueries({ queryKey: ["tenants"] });
+        } catch (e: any) { alert(e.message); }
+        finally { setBillingActionSaving(false); }
+    };
+    const handleBillingTopup = async () => {
+        if (!billingActionModal) return;
+        const amount = Number(billingTopupForm.amount);
+        if (!amount || amount <= 0) { alert("Miqdor kiriting!"); return; }
+        setBillingActionSaving(true);
+        try {
+            const res = await fetch("/api/super-admin/billing/top-up", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tenantId: billingActionModal.company.tenantId, amount, note: billingTopupForm.note || undefined }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Xatolik");
+            alert(data.message);
+            setBillingActionModal(null);
+            setBillingTopupForm({ amount: "", note: "" });
+            queryClient.invalidateQueries({ queryKey: ["super-billing"] });
+        } catch (e: any) { alert(e.message); }
+        finally { setBillingActionSaving(false); }
+    };
+    const handleBillingSubscribe = async () => {
+        if (!billingActionModal) return;
+        if (!billingSubForm.tariffId) { alert("Tarif tanlang!"); return; }
+        setBillingActionSaving(true);
+        try {
+            const res = await fetch("/api/super-admin/billing/subscribe", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tenantId: billingActionModal.company.tenantId, tariffId: billingSubForm.tariffId, months: billingSubForm.months }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Xatolik");
+            alert(data.message);
+            setBillingActionModal(null);
+            setBillingSubForm({ tariffId: "", months: 1 });
+            queryClient.invalidateQueries({ queryKey: ["super-billing"] });
+            queryClient.invalidateQueries({ queryKey: ["tenants"] });
+        } catch (e: any) { alert(e.message); }
+        finally { setBillingActionSaving(false); }
+    };
 
     const updateSettingsMutation = useMutation({
         mutationFn: async (payload: any) => {
@@ -397,6 +471,7 @@ export default function SuperAdminPage() {
                     <>
                         <p className="text-[10px] uppercase tracking-widest text-slate-600 font-bold px-2 mb-1 mt-3">Moliya</p>
                         <NavItem icon={CreditCard} label="Billing" active={activeTab==="billing"} onClick={()=>{setActiveTab("billing");refetchBilling();}} />
+                        <NavItem icon={BarChart3} label="Tariflar" active={activeTab==="tariffs"} onClick={()=>setActiveTab("tariffs")} />
                     </>
                 )}
 
@@ -456,6 +531,7 @@ export default function SuperAdminPage() {
                                 {activeTab === "tenants" ? "Tashkilotlar" :
                                  activeTab === "users" ? "Foydalanuvchilar" :
                                  activeTab === "billing" ? "Billing va To'lovlar" :
+                                 activeTab === "tariffs" ? "Tariflar boshqaruvi" :
                                  activeTab === "settings" ? "Sozlamalar" : ""}
                             </h1>
                             <p className="text-xs sm:text-sm text-slate-500 hidden sm:block">Chaqqon platformasi umumlashgan boshqaruvi</p>
@@ -774,12 +850,26 @@ export default function SuperAdminPage() {
                                                             </span>
                                                         </td>
                                                         <td className="px-5 py-4 text-sm">
-                                                            <button
-                                                                onClick={() => setExtendModal({ tenantId: b.tenantId, shopName: b.shopName, plan: b.plan, monthlyPrice: b.monthlyPrice })}
-                                                                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/25 transition-colors border border-emerald-500/20 flex items-center gap-1"
-                                                            >
-                                                                <CreditCard size={12}/> Uzaytirish
-                                                            </button>
+                                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                                <button
+                                                                    onClick={() => { setBillingActionModal({ company: b, type: "trial" }); }}
+                                                                    className="text-xs px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg font-semibold border border-amber-100 transition-all"
+                                                                >
+                                                                    7kun sinov
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => { setBillingActionModal({ company: b, type: "subscribe" }); setBillingSubForm({ tariffId: b.tariffId || "", months: 1 }); }}
+                                                                    className="text-xs px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg font-semibold border border-blue-100 transition-all"
+                                                                >
+                                                                    Obuna
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => { setBillingActionModal({ company: b, type: "topup" }); setBillingTopupForm({ amount: "", note: "" }); }}
+                                                                    className="text-xs px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg font-semibold border border-emerald-100 transition-all"
+                                                                >
+                                                                    + Pul
+                                                                </button>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -791,8 +881,91 @@ export default function SuperAdminPage() {
                             </div>
                         </div>
                     )}
+
+                    {/* ══ TARIFFS TAB ══════════════════════════════════ */}
+                    {activeTab === "tariffs" && <TariffsTab />}
+
                 </div>
             </main>
+
+            {/* ── BILLING ACTION MODAL (ERP uslubida) ────────────────── */}
+            {billingActionModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold text-slate-800">
+                                {billingActionModal.type === "trial" ? "7 kunlik sinov" :
+                                 billingActionModal.type === "topup" ? "Balansni to'ldirish" :
+                                 "Obunani faollashtirish"}
+                            </h3>
+                            <button onClick={() => setBillingActionModal(null)} className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100">
+                                <X size={18}/>
+                            </button>
+                        </div>
+
+                        {/* Tashkilot info */}
+                        <div className="bg-slate-50 rounded-xl p-3 mb-4 flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center font-black text-sm">
+                                {billingActionModal.company.shopName?.[0]?.toUpperCase()}
+                            </div>
+                            <div>
+                                <div className="font-semibold text-slate-800 text-sm">{billingActionModal.company.shopName}</div>
+                                <div className="text-xs text-slate-400">
+                                    Balans: <span className="font-bold text-emerald-600">{(billingActionModal.company.balance ?? 0).toLocaleString("uz-UZ")} so&apos;m</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {billingActionModal.type === "trial" && (
+                            <div className="mb-5">
+                                <p className="text-sm text-slate-600">Bu tashkilotga <span className="font-bold text-amber-600">7 kunlik bepul sinov muddati</span> beriladi. Hozirgi obuna muddatiga qo&apos;shiladi.</p>
+                            </div>
+                        )}
+                        {billingActionModal.type === "topup" && (
+                            <div className="space-y-3 mb-5">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Miqdor (so&apos;m)</label>
+                                    <input type="number" min="1" placeholder="Masalan: 150000"
+                                        value={billingTopupForm.amount}
+                                        onChange={e => setBillingTopupForm(p => ({ ...p, amount: e.target.value }))}
+                                        className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-emerald-300"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Izoh (ixtiyoriy)</label>
+                                    <input type="text" placeholder="To'lov sababi..."
+                                        value={billingTopupForm.note}
+                                        onChange={e => setBillingTopupForm(p => ({ ...p, note: e.target.value }))}
+                                        className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-300"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        {billingActionModal.type === "subscribe" && (
+                            <BillingSubscribeForm
+                                subForm={billingSubForm}
+                                setSubForm={setBillingSubForm}
+                            />
+                        )}
+
+                        <div className="flex gap-2 mt-2">
+                            <button onClick={() => setBillingActionModal(null)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-sm transition-all">
+                                Bekor
+                            </button>
+                            <button
+                                onClick={billingActionModal.type === "trial" ? handleBillingTrial : billingActionModal.type === "topup" ? handleBillingTopup : handleBillingSubscribe}
+                                disabled={billingActionSaving}
+                                className={`flex-1 py-2.5 text-white font-bold rounded-xl text-sm transition-all disabled:opacity-50 ${billingActionModal.type === "topup" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-blue-600 hover:bg-blue-700"}`}
+                            >
+                                {billingActionSaving ? "Saqlanmoqda..." :
+                                 billingActionModal.type === "trial" ? "Sinov berish" :
+                                 billingActionModal.type === "topup" ? "Balans qo'shish" :
+                                 "Obunani yoqish"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ── ADD/EDIT TENANT MODAL ─────────────────────────────── */}
             {showAddModal && (
@@ -1018,61 +1191,105 @@ export default function SuperAdminPage() {
             {/* ══ SETTINGS TAB ══════════════════════════════════ */}
             {activeTab === "settings" && (
                 <div className="max-w-3xl space-y-6">
+                    {/* Platform sozlamalari (karta, telegram, telefon) */}
+                    <div className="bg-white rounded-2xl border border-slate-200 p-6">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
+                                <CreditCard size={20} className="text-indigo-500" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold">Platform sozlamalari</h3>
+                                <p className="text-sm text-slate-400">Karta, Telegram va telefon — mijozlar billing sahifasida ko&apos;radi</p>
+                            </div>
+                        </div>
+                        {settingsLoading ? (
+                            <div className="py-8 text-center text-slate-400">Yuklanmoqda...</div>
+                        ) : (
+                            <div className="space-y-4">
+                                {/* Karta preview */}
+                                <div className="bg-slate-900 rounded-2xl p-5">
+                                    <div className="text-slate-400 text-[10px] font-semibold uppercase tracking-widest mb-3">To&apos;lov kartasi</div>
+                                    <div className="text-white font-mono text-xl font-bold tracking-[0.2em] mb-1">
+                                        {settingsFormData.card_number || "— — — —"}
+                                    </div>
+                                    <div className="text-slate-400 text-sm">{settingsFormData.card_owner || "—"}</div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className={labelClass}>Karta raqami</label>
+                                        <input type="text" value={settingsFormData.card_number}
+                                            onChange={e => {
+                                                const raw = e.target.value.replace(/\D/g, "").slice(0, 16);
+                                                const formatted = raw.replace(/(.{4})/g, "$1 ").trim();
+                                                setSettingsFormData(p => ({ ...p, card_number: formatted }));
+                                            }}
+                                            placeholder="8600 0000 0000 0000" maxLength={19}
+                                            className={inputClass} />
+                                    </div>
+                                    <div>
+                                        <label className={labelClass}>Karta egasi</label>
+                                        <input type="text" value={settingsFormData.card_owner}
+                                            onChange={e => setSettingsFormData(p => ({ ...p, card_owner: e.target.value }))}
+                                            placeholder="Abdualimov Eldorbek" className={inputClass} />
+                                    </div>
+                                    <div>
+                                        <label className={labelClass}>Telegram username (@ siz)</label>
+                                        <input type="text" value={settingsFormData.tg_username}
+                                            onChange={e => setSettingsFormData(p => ({ ...p, tg_username: e.target.value.trim() }))}
+                                            placeholder="chaqqon_support" className={inputClass} />
+                                    </div>
+                                    <div>
+                                        <label className={labelClass}>Telefon (ko&apos;rsatish uchun)</label>
+                                        <input type="text" value={settingsFormData.phone}
+                                            onChange={e => setSettingsFormData(p => ({ ...p, phone: e.target.value }))}
+                                            placeholder="+998 99 000 00 00" className={inputClass} />
+                                    </div>
+                                    <div>
+                                        <label className={labelClass}>Telefon (tel: link uchun)</label>
+                                        <input type="text" value={settingsFormData.phone_raw}
+                                            onChange={e => setSettingsFormData(p => ({ ...p, phone_raw: e.target.value.trim() }))}
+                                            placeholder="+998990000000" className={inputClass} />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Texnik yordam bot */}
                     <div className="bg-white rounded-2xl border border-slate-200 p-6">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center flex-shrink-0">
                                 <Settings size={20} className="text-sky-500" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold">Xizmat va API sozlamalari</h3>
-                                <p className="text-sm text-slate-400">Butun tizim uchun umumiy kalitlar va integratsiyalar</p>
+                                <h3 className="text-lg font-bold">Texnik yordam bot</h3>
+                                <p className="text-sm text-slate-400">Telegram bot orqali bildirishnomalar</p>
                             </div>
                         </div>
-
-                        {settingsLoading ? (
-                            <div className="py-8 text-center text-slate-400">Yuklanmoqda...</div>
-                        ) : (
-                            <div className="space-y-6">
-                                {/* Tex yordam */}
-                                <div className="border border-slate-200 rounded-xl p-5 bg-slate-50">
-                                    <h4 className="text-sm font-bold mb-4 flex items-center gap-2">
-                                        Texnik yordam bot integratsiyasi (Telegram)
-                                    </h4>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className={labelClass}>Bot Token (Faqat raqam va harf)</label>
-                                            <input 
-                                                type="text" 
-                                                value={settingsFormData.supportBotToken} 
-                                                onChange={(e) => setSettingsFormData(p => ({ ...p, supportBotToken: e.target.value.trim() }))}
-                                                className={inputClass} 
-                                                placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" 
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className={labelClass}>Chat ID (Lichka yoki Guruh raqami)</label>
-                                            <input 
-                                                type="text" 
-                                                value={settingsFormData.supportChatId} 
-                                                onChange={(e) => setSettingsFormData(p => ({ ...p, supportChatId: e.target.value.trim() }))}
-                                                className={inputClass} 
-                                                placeholder="-1001234567" 
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                 <div className="pt-4 border-t border-slate-200 flex">
-                                    <button 
-                                        onClick={() => updateSettingsMutation.mutate({ settings: settingsFormData })} 
-                                        disabled={updateSettingsMutation.isPending}
-                                        className="px-6 py-2.5 rounded-xl text-white font-bold bg-gradient-to-r from-sky-500 to-indigo-500 shadow-md hover:opacity-90 disabled:opacity-50"
-                                    >
-                                        {updateSettingsMutation.isPending ? "Saqlanmoqda..." : "Saqlash"}
-                                    </button>
-                                </div>
+                        <div className="space-y-4">
+                            <div>
+                                <label className={labelClass}>Bot Token</label>
+                                <input type="text" value={settingsFormData.supportBotToken}
+                                    onChange={(e) => setSettingsFormData(p => ({ ...p, supportBotToken: e.target.value.trim() }))}
+                                    className={inputClass} placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" />
                             </div>
-                        )}
+                            <div>
+                                <label className={labelClass}>Chat ID (Lichka yoki Guruh raqami)</label>
+                                <input type="text" value={settingsFormData.supportChatId}
+                                    onChange={(e) => setSettingsFormData(p => ({ ...p, supportChatId: e.target.value.trim() }))}
+                                    className={inputClass} placeholder="-1001234567" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex">
+                        <button
+                            onClick={() => updateSettingsMutation.mutate({ settings: settingsFormData })}
+                            disabled={updateSettingsMutation.isPending}
+                            className="px-6 py-2.5 rounded-xl text-white font-bold bg-gradient-to-r from-sky-500 to-indigo-500 shadow-md hover:opacity-90 disabled:opacity-50"
+                        >
+                            {updateSettingsMutation.isPending ? "Saqlanmoqda..." : "Saqlash"}
+                        </button>
                     </div>
                 </div>
             )}
@@ -1325,6 +1542,207 @@ export default function SuperAdminPage() {
                                 updateUserMutation.mutate({ id: currentUser.id, name: currentUser.name, phone: currentUser.phone, role: currentUser.role, password: profileForm.password });
                             }} disabled={updateUserMutation.isPending} className="w-full mt-2 bg-gradient-to-r from-sky-500 to-indigo-500 text-white py-2.5 rounded-xl font-bold hover:shadow-glow transition-all disabled:opacity-50">
                                 {updateUserMutation.isPending ? "Saqlanmoqda..." : "Parolni Yangilash"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ─── Yordamchi ─────────────────────────────────────────── */
+const fmtM = (v: number) => new Intl.NumberFormat("uz-UZ").format(v || 0);
+
+/* ─── BillingSubscribeForm ─────────────────────────────── */
+function BillingSubscribeForm({ subForm, setSubForm }: { subForm: { tariffId: string; months: number }; setSubForm: (v: any) => void }) {
+    const [tariffs, setTariffs] = useState<any[]>([]);
+    useEffect(() => {
+        fetch("/api/super-admin/tariffs").then(r => r.json()).then(d => setTariffs(d.tariffs || [])).catch(() => {});
+    }, []);
+    const selectedTariff = tariffs.find(t => t.id === subForm.tariffId);
+    const total = selectedTariff ? (subForm.months === 12 ? selectedTariff.pricePerMonth * 10 : selectedTariff.pricePerMonth * subForm.months) : 0;
+    return (
+        <div className="space-y-3 mb-5">
+            <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1.5">Tarif</label>
+                <select value={subForm.tariffId} onChange={e => setSubForm((p: any) => ({ ...p, tariffId: e.target.value }))}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-300 bg-white">
+                    <option value="">— Tarif tanlang —</option>
+                    {tariffs.filter(t => t.pricePerMonth > 0 && t.isActive).map(t => (
+                        <option key={t.id} value={t.id}>{t.name} — {fmtM(t.pricePerMonth)} s/oy</option>
+                    ))}
+                </select>
+            </div>
+            <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1.5">Muddat (oy)</label>
+                <select value={subForm.months} onChange={e => setSubForm((p: any) => ({ ...p, months: Number(e.target.value) }))}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-300 bg-white">
+                    {[1, 2, 3, 6, 12].map(m => <option key={m} value={m}>{m} oy{m === 12 ? " (20% chegirma)" : ""}</option>)}
+                </select>
+            </div>
+            {subForm.tariffId && total > 0 && (
+                <div className="bg-blue-50 rounded-xl p-3 text-sm">
+                    <span className="text-slate-500">Jami yechiladi: </span>
+                    <span className="font-black text-blue-700">{fmtM(total)} so&apos;m</span>
+                </div>
+            )}
+        </div>
+    );
+}
+
+/* ─── TariffsTab ─────────────────────────────────────────── */
+function TariffsTab() {
+    const [tariffs, setTariffs] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showForm, setShowForm] = useState(false);
+    const [editItem, setEditItem] = useState<any>(null);
+    const [form, setForm] = useState({ name: "", description: "", pricePerMonth: 0, durationDays: 30, maxUsers: 10, maxBranches: 2, sortOrder: 0 });
+    const [saving, setSaving] = useState(false);
+
+    const load = () => {
+        setLoading(true);
+        fetch("/api/super-admin/tariffs").then(r => r.json()).then(d => setTariffs(d.tariffs || [])).catch(() => {}).finally(() => setLoading(false));
+    };
+    useEffect(() => { load(); }, []);
+
+    const openNew = () => {
+        setEditItem(null);
+        setForm({ name: "", description: "", pricePerMonth: 0, durationDays: 30, maxUsers: 10, maxBranches: 2, sortOrder: 0 });
+        setShowForm(true);
+    };
+    const openEdit = (tariff: any) => {
+        setEditItem(tariff);
+        setForm({ name: tariff.name, description: tariff.description || "", pricePerMonth: tariff.pricePerMonth, durationDays: tariff.durationDays, maxUsers: tariff.maxUsers, maxBranches: tariff.maxBranches, sortOrder: tariff.sortOrder });
+        setShowForm(true);
+    };
+    const save = async () => {
+        if (!form.name.trim()) { alert("Tarif nomini kiriting!"); return; }
+        setSaving(true);
+        try {
+            if (editItem) {
+                await fetch(`/api/super-admin/tariffs/${editItem.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+            } else {
+                await fetch("/api/super-admin/tariffs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+            }
+            load();
+            setShowForm(false);
+        } catch { alert("Xatolik"); }
+        finally { setSaving(false); }
+    };
+    const deactivate = async (id: string) => {
+        if (!confirm("Tarifni o'chirishni tasdiqlaysizmi?")) return;
+        await fetch(`/api/super-admin/tariffs/${id}`, { method: "DELETE" });
+        load();
+    };
+
+    const inp = "w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-300 bg-white";
+
+    return (
+        <div className="space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                    <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                        <span className="w-7 h-7 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <BarChart3 size={16} className="text-indigo-600" />
+                        </span>
+                        Tariflar
+                    </h3>
+                    <button onClick={openNew} className="text-xs px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all flex items-center gap-1.5">
+                        <Plus size={14} /> Yangi tarif
+                    </button>
+                </div>
+                {loading ? (
+                    <div className="flex justify-center py-16"><div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" /></div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 p-5">
+                        {tariffs.length === 0 && (
+                            <div className="col-span-4 text-center py-12 text-slate-400">
+                                <p className="text-sm">Tariflar yo&apos;q. Yangi tarif qo&apos;shing.</p>
+                            </div>
+                        )}
+                        {tariffs.map(tariff => (
+                            <div key={tariff.id} className="border border-slate-200 rounded-2xl p-5 flex flex-col gap-3 hover:border-indigo-300 hover:shadow-md transition-all">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <h4 className="font-black text-slate-800 text-base">{tariff.name}</h4>
+                                        {tariff.description && <p className="text-xs text-slate-400 mt-1">{tariff.description}</p>}
+                                    </div>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${tariff.isActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-600"}`}>
+                                        {tariff.isActive ? "Faol" : "Nofaol"}
+                                    </span>
+                                </div>
+                                <div className={`text-2xl font-black ${tariff.pricePerMonth > 0 ? "text-indigo-600" : "text-emerald-600"}`}>
+                                    {tariff.pricePerMonth > 0 ? <>{fmtM(tariff.pricePerMonth)} <span className="text-sm font-semibold text-slate-400">s/oy</span></> : "Bepul"}
+                                </div>
+                                <div className="space-y-1 text-xs text-slate-500">
+                                    <div>Muddat: <span className="font-bold">{tariff.durationDays} kun</span></div>
+                                    <div>Max xodim: <span className="font-bold">{tariff.maxUsers >= 9999 ? "Cheksiz" : tariff.maxUsers}</span></div>
+                                    <div>Max filial: <span className="font-bold">{tariff.maxBranches >= 9999 ? "Cheksiz" : tariff.maxBranches}</span></div>
+                                    <div>Tartib: <span className="font-bold">{tariff.sortOrder}</span></div>
+                                </div>
+                                <div className="flex gap-2 mt-auto pt-2 border-t border-slate-100">
+                                    <button onClick={() => openEdit(tariff)} className="flex-1 text-xs py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg font-bold border border-indigo-100 transition-all flex items-center justify-center gap-1">
+                                        <Edit2 size={12} /> Tahrirlash
+                                    </button>
+                                    <button onClick={() => deactivate(tariff.id)} className="text-xs py-1.5 px-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg font-bold border border-red-100 transition-all">
+                                        O&apos;chirish
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Form modal */}
+            {showForm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                            <h3 className="font-black text-slate-800">{editItem ? "Tarifni tahrirlash" : "Yangi tarif"}</h3>
+                            <button onClick={() => setShowForm(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400">
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <div className="px-6 py-5 space-y-4 max-h-[65vh] overflow-y-auto">
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Tarif nomi *</label>
+                                <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Masalan: Basic" className={inp} />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Tavsif</label>
+                                <input value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Qisqacha tavsif..." className={inp} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Narx (so&apos;m/oy)</label>
+                                    <input type="number" min="0" value={form.pricePerMonth} onChange={e => setForm(p => ({ ...p, pricePerMonth: Number(e.target.value) }))} className={inp} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Muddat (kun)</label>
+                                    <input type="number" min="1" value={form.durationDays} onChange={e => setForm(p => ({ ...p, durationDays: Number(e.target.value) }))} className={inp} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Max xodim</label>
+                                    <input type="number" min="1" value={form.maxUsers} onChange={e => setForm(p => ({ ...p, maxUsers: Number(e.target.value) }))} className={inp} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Max filial</label>
+                                    <input type="number" min="1" value={form.maxBranches} onChange={e => setForm(p => ({ ...p, maxBranches: Number(e.target.value) }))} className={inp} />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Tartib raqami</label>
+                                    <input type="number" min="0" value={form.sortOrder} onChange={e => setForm(p => ({ ...p, sortOrder: Number(e.target.value) }))} className={inp} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="px-6 pb-5 flex gap-3">
+                            <button onClick={() => setShowForm(false)} className="flex-1 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold rounded-xl text-sm">
+                                Bekor
+                            </button>
+                            <button onClick={save} disabled={saving} className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm">
+                                {saving ? "Saqlanmoqda..." : "Saqlash"}
                             </button>
                         </div>
                     </div>

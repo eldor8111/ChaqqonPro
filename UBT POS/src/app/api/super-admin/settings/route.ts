@@ -1,60 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/backend/db";
-import { getSession } from "@/lib/backend/auth";
+import { getSuperSession } from "@/lib/backend/auth";
 
-// Boot up sequence for SystemSettings if missing
-const _ensureSettingsDB = prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS SystemSettings (
-        id TEXT PRIMARY KEY,
-        settingKey TEXT UNIQUE NOT NULL,
-        settingValue TEXT NOT NULL,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`).catch(() => {});
+const DEFAULT_SETTINGS: Record<string, string> = {
+    card_number: "8600 0000 0000 0000",
+    card_owner:  "Karta egasi",
+    tg_username: "chaqqon_support",
+    phone:       "+998 99 000 00 00",
+    phone_raw:   "+998990000000",
+};
 
-// Barcha settinglarni olish
+async function getSettings() {
+    const rows = await prisma.platformSettings.findMany();
+    const result = { ...DEFAULT_SETTINGS };
+    for (const r of rows) {
+        if (r.value !== null) result[r.key] = r.value;
+    }
+    return result;
+}
+
+// GET /api/super-admin/settings
 export async function GET(req: NextRequest) {
     try {
-        const session = await getSession();
-        if (session?.userId !== "superadmin") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        const rawSettings: any[] = await prisma.$queryRawUnsafe(`SELECT settingKey, settingValue FROM SystemSettings`);
-        const settingsMap: Record<string, string> = {};
-        rawSettings.forEach(r => {
-            settingsMap[r.settingKey] = r.settingValue;
-        });
-
-        return NextResponse.json({ settings: settingsMap });
+        const session = await getSuperSession();
+        if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const settings = await getSettings();
+        return NextResponse.json({ settings });
     } catch (e: any) {
         return NextResponse.json({ error: e.message }, { status: 500 });
     }
 }
 
-// Bitta yoki birnechta settinglarni saqlash
+// POST /api/super-admin/settings — sozlamalarni saqlash
 export async function POST(req: NextRequest) {
     try {
-        const session = await getSession();
-        if (session?.userId !== "superadmin") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const session = await getSuperSession();
+        if (!session || session.role !== "SUPER_ADMIN") {
+            return NextResponse.json({ error: "Faqat Super Admin uchun" }, { status: 403 });
         }
-
-        const body = await req.json();
-        const settingsToUpdate = body.settings; // = { supportBotToken: "123", supportChatId: "-100" }
-
-        for (const [key, value] of Object.entries(settingsToUpdate)) {
-            const uuid = crypto.randomUUID();
-            await prisma.$executeRawUnsafe(
-                `INSERT INTO SystemSettings (id, settingKey, settingValue) 
-                 VALUES (?, ?, ?) 
-                 ON CONFLICT(settingKey) DO UPDATE SET settingValue=excluded.settingValue, updatedAt=CURRENT_TIMESTAMP`,
-                uuid, key, String(value)
-            );
+        const { settings } = await req.json();
+        if (!settings || typeof settings !== "object") {
+            return NextResponse.json({ error: "settings object kerak" }, { status: 400 });
         }
-
-        return NextResponse.json({ success: true });
+        for (const [key, value] of Object.entries(settings)) {
+            await prisma.platformSettings.upsert({
+                where: { key },
+                update: { value: String(value) },
+                create: { key, value: String(value) },
+            });
+        }
+        return NextResponse.json({ ok: true, settings: await getSettings() });
     } catch (e: any) {
         return NextResponse.json({ error: e.message }, { status: 500 });
     }
