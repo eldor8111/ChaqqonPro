@@ -36,13 +36,15 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Ma'lumotlar to'liq emas (clientPhone yoki messageBody yetishmaydi)" }, { status: 400 });
         }
 
-        // Fetch support credentials from SystemSettings config
-        const sysRaw: any[] = await prisma.$queryRawUnsafe(`SELECT settingKey, settingValue FROM SystemSettings WHERE settingKey IN ('supportBotToken', 'supportChatId')`);
+        // Fetch support credentials from PlatformSettings
+        const sysRows = await prisma.platformSettings.findMany({
+            where: { key: { in: ["supportBotToken", "supportChatId"] } }
+        });
         let supportBotToken = "";
         let supportChatId = "";
-        sysRaw.forEach((row) => {
-            if (row.settingKey === "supportBotToken") supportBotToken = row.settingValue;
-            if (row.settingKey === "supportChatId") supportChatId = row.settingValue;
+        sysRows.forEach((row) => {
+            if (row.key === "supportBotToken") supportBotToken = row.value || "";
+            if (row.key === "supportChatId") supportChatId = row.value || "";
         });
 
         if (!supportBotToken || !supportChatId) {
