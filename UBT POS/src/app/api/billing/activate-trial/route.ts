@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const tenant = await prisma.tenant.findUnique({ where: { id: session.tenantId } });
+        const tenant = await prisma.tenant.findUnique({ where: { id: session.tenantId } }) as any;
         if (!tenant) {
             return NextResponse.json({ error: "Tashkilot topilmadi" }, { status: 404 });
         }
