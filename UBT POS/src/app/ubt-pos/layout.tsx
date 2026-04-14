@@ -12,13 +12,6 @@ export default function UbtPosLayout({ children }: { children: React.ReactNode }
 
     useEffect(() => {
         const session = useStore.getState().kassirSession;
-        const isLoginPage = pathname.startsWith("/ubt-pos/login");
-
-        // Login sahifasi — har doim ko'rsatiladi
-        if (isLoginPage) {
-            setHydrated(true);
-            return;
-        }
 
         // Redirect faqat bir marta
         if (redirected.current) {
@@ -27,7 +20,7 @@ export default function UbtPosLayout({ children }: { children: React.ReactNode }
 
         if (!session?.id || !session?.shopCode) {
             redirected.current = true;
-            router.replace("/ubt-pos/login");
+            router.replace("/");
             return;
         }
 
