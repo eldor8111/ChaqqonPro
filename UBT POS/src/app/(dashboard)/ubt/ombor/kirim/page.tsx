@@ -88,8 +88,13 @@ export default function OmborKirimPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Modal
+    // ── Modal state + open handler ────────────────────────────────────────────
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const openModal = () => {
+        setIsModalOpen(true);
+        // Always reload products when modal opens (fresh from DB)
+        loadProducts();
+    };
     const [formHeader, setFormHeader] = useState({
         supplier: "",
         warehouse: "Asosiy Ombor",
@@ -274,7 +279,7 @@ export default function OmborKirimPage() {
                             <FileSpreadsheet size={18} /> Excel
                         </button>
                         <button
-                            onClick={() => setIsModalOpen(true)}
+                            onClick={() => openModal()}
                             className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 hover:-translate-y-0.5">
                             <Plus size={18} strokeWidth={2.5} /> Yangi Kirim
                         </button>
@@ -390,8 +395,13 @@ export default function OmborKirimPage() {
                                     <Package size={22} />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-bold text-slate-800">Yangi Kirim Hujjati</h2>
-                                    <p className="text-xs text-slate-400">Faqat xomashyo va polfabrikat qabul qilinadi</p>
+                                    <h3 className="text-lg font-black text-slate-900">Yangi Kirim Hujjati</h3>
+                                    <p className="text-xs text-slate-500 mt-0.5">
+                                        Faqat xomashyo va mahsulotlar qabul qilinadi
+                                        {productsLoading
+                                            ? " · ⏳ Mahsulotlar yuklanmoqda..."
+                                            : ` · ${allProducts.length} ta mahsulot yuklandi`}
+                                    </p>
                                 </div>
                             </div>
                             <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
@@ -473,8 +483,15 @@ export default function OmborKirimPage() {
                                                     </div>
                                                     {item.isOpen && (
                                                         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-52 overflow-y-auto">
-                                                            {filteredProds.length === 0 ? (
-                                                                <div className="px-4 py-3 text-sm text-slate-400">Mahsulot topilmadi</div>
+                                                            {productsLoading ? (
+                                                                <div className="px-4 py-4 text-sm text-slate-400 flex items-center gap-2">
+                                                                    <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                                                                    Mahsulotlar yuklanmoqda...
+                                                                </div>
+                                                            ) : filteredProds.length === 0 ? (
+                                                                <div className="px-4 py-3 text-sm text-slate-400">
+                                                                    {allProducts.length === 0 ? "⚠️ Hech qanday mahsulot topilmadi. Avval nomenklaturaga qo'shing." : "Qidiruv natijasi yo'q"}
+                                                                </div>
                                                             ) : filteredProds.map(prod => (
                                                                 <button
                                                                     key={prod.id}
