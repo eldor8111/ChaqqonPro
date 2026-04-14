@@ -77,7 +77,7 @@ async function isProductInActiveOrder(tenantId: string, productName: string, pro
     return false;
 }
 
-// GET - fetch menu items for POS
+// GET - fetch menu items for POS (or all products for kirim with ?all=1)
 export async function GET(request: NextRequest) {
     await _ensurePrinterIpColumn; // resolves instantly after first run
     try {
@@ -89,15 +89,20 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ categories: [], items: [], cancelCode: "" });
         }
 
+        // ?all=1 => kirim sahifasi uchun: barcha productlarni qaytarish (type filtrsiz)
+        const returnAll = request.nextUrl.searchParams.get("all") === "1";
+
         let cancelCode = "";
         let paymentMethods: any[] = [];
-        const tObj = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { settings: true } });
-        if (tObj?.settings) {
-            try {
-                const parsed = JSON.parse(tObj.settings as string);
-                if (parsed.cancelCode) cancelCode = parsed.cancelCode;
-                if (parsed.paymentMethods) paymentMethods = parsed.paymentMethods;
-            } catch {}
+        if (!returnAll) {
+            const tObj = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { settings: true } });
+            if (tObj?.settings) {
+                try {
+                    const parsed = JSON.parse(tObj.settings as string);
+                    if (parsed.cancelCode) cancelCode = parsed.cancelCode;
+                    if (parsed.paymentMethods) paymentMethods = parsed.paymentMethods;
+                } catch {}
+            }
         }
 
         const products2: any[] = await prisma.$queryRawUnsafe(
@@ -156,6 +161,11 @@ export async function GET(request: NextRequest) {
             isSetMenu: p.isSetMenu === 1 || p.isSetMenu === true,
             modifiers: (() => { try { return p.modifiers ? JSON.parse(p.modifiers) : []; } catch { return []; } })(),
         }));
+
+        // ?all=1 bo'lsa — kirim sahifasi uchun barcha productlarni qaytarish
+        if (returnAll) {
+            return NextResponse.json({ categories, items, cancelCode: "", paymentMethods: [] });
+        }
 
         return NextResponse.json({ categories, items, cancelCode, paymentMethods });
     } catch (error) {

@@ -41,11 +41,20 @@ export async function GET(req: NextRequest) {
         const tenantId = await getAuthTenantId(req);
         if (!tenantId) return NextResponse.json([], { status: 200 });
         
-        const type = req.nextUrl.searchParams.get("type") || "xomashyo";
-        const rows: any[] = await prisma.$queryRawUnsafe(
-            "SELECT id, name, unit, stock, price, type, categoryId, createdAt FROM UbtIngredient WHERE tenantId=? AND type=? ORDER BY createdAt ASC",
-            tenantId, type
-        );
+        const type = req.nextUrl.searchParams.get("type");
+        let rows: any[];
+        if (type) {
+            rows = await prisma.$queryRawUnsafe(
+                "SELECT id, name, unit, stock, price, type, categoryId, createdAt FROM UbtIngredient WHERE tenantId=? AND type=? ORDER BY createdAt ASC",
+                tenantId, type
+            );
+        } else {
+            // type parametr yo'q — barcha ingredientlarni qaytarish (xomashyo + polfabrikat)
+            rows = await prisma.$queryRawUnsafe(
+                "SELECT id, name, unit, stock, price, type, categoryId, createdAt FROM UbtIngredient WHERE tenantId=? ORDER BY type ASC, createdAt ASC",
+                tenantId
+            );
+        }
         return NextResponse.json(rows);
     } catch (e) {
         return NextResponse.json({ error: String(e) }, { status: 500 });

@@ -13,7 +13,7 @@ interface Product {
     unit: string;
     price: number;
     stock: number;
-    productType: "xomashyo" | "polfabrikat" | "mahsulot";
+    productType: "xomashyo" | "polfabrikat" | "mahsulot" | "taom";
     categoryId?: string;
 }
 
@@ -41,28 +41,31 @@ export default function OmborKirimPage() {
 
     const loadProducts = useCallback(async () => {
         try {
+            setProductsLoading(true);
+            // xomashyo API — type parametrsiz = barcha ingredientlar (xomashyo + polfabrikat)
+            // menu API — ?all=1 = barcha Product'lar (taom + mahsulot, sotilishi mumkin bo'lgan)
             const [xomRes, menuRes] = await Promise.all([
                 fetch("/api/ubt/xomashyo"),
-                fetch("/api/ubt/menu"),
+                fetch("/api/ubt/menu?all=1"),
             ]);
             const xomData = xomRes.ok ? await xomRes.json() : [];
             const menuData = menuRes.ok ? await menuRes.json() : { items: [] };
             const menuItems: any[] = Array.isArray(menuData.items) ? menuData.items : [];
 
+            // Xomashyo va polfabrikatlar — UbtIngredient jadvalidan
             const xomashyo: Product[] = (Array.isArray(xomData) ? xomData : [])
-                .filter((x: any) => x.type !== "polfabrikat")
                 .map((x: any) => ({
                     id: x.id,
                     name: x.name,
                     unit: x.unit || "kg",
                     price: Number(x.price) || 0,
                     stock: Number(x.stock) || 0,
-                    productType: "xomashyo" as const,
+                    productType: (x.type === "polfabrikat" ? "polfabrikat" : "xomashyo") as any,
                     categoryId: x.categoryId,
                 }));
 
+            // Tayyor mahsulotlar — Product jadvalidan (taom + mahsulot type'lar)
             const mahsulot: Product[] = menuItems
-                .filter((t: any) => t.type === "mahsulot" || t.hasBarcode)
                 .map((t: any) => ({
                     id: t.id,
                     name: t.name,
@@ -502,9 +505,14 @@ export default function OmborKirimPage() {
                                                                     <div>
                                                                         <span className="text-sm font-semibold text-slate-800 group-hover:text-blue-700">{prod.name}</span>
                                                                         <span className={`ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                                                                            prod.productType === "xomashyo" ? "bg-orange-100 text-orange-600" : "bg-emerald-100 text-emerald-600"
+                                                                            prod.productType === "xomashyo" ? "bg-orange-100 text-orange-600" :
+                                                                            prod.productType === "polfabrikat" ? "bg-purple-100 text-purple-600" :
+                                                                            prod.productType === "taom" ? "bg-blue-100 text-blue-600" :
+                                                                            "bg-emerald-100 text-emerald-600"
                                                                         }`}>
-                                                                            {prod.productType === "xomashyo" ? "XOMASHYO" : "MAHSULOT"}
+                                                                            {prod.productType === "xomashyo" ? "XOMASHYO" :
+                                                                             prod.productType === "polfabrikat" ? "POLFABRIKAT" :
+                                                                             prod.productType === "taom" ? "TAOM" : "MAHSULOT"}
                                                                         </span>
                                                                     </div>
                                                                     <span className="text-xs text-slate-400">{prod.stock} {prod.unit}</span>
@@ -519,10 +527,13 @@ export default function OmborKirimPage() {
                                                     {item.productType ? (
                                                         <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${
                                                             item.productType === "xomashyo" ? "bg-orange-100 text-orange-600" :
-                                                            item.productType === "mahsulot" ? "bg-emerald-100 text-emerald-600" :
-                                                            "bg-purple-100 text-purple-600"
+                                                            item.productType === "polfabrikat" ? "bg-purple-100 text-purple-600" :
+                                                            item.productType === "taom" ? "bg-blue-100 text-blue-600" :
+                                                            "bg-emerald-100 text-emerald-600"
                                                         }`}>
-                                                            {item.productType === "xomashyo" ? "XOM" : item.productType === "mahsulot" ? "MAH" : "POL"}
+                                                            {item.productType === "xomashyo" ? "XOM" :
+                                                             item.productType === "polfabrikat" ? "POL" :
+                                                             item.productType === "taom" ? "TAOM" : "MAH"}
                                                         </span>
                                                     ) : <span className="text-slate-300 text-xs">—</span>}
                                                 </div>
