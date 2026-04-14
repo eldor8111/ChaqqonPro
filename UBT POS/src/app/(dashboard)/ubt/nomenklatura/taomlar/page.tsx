@@ -438,11 +438,10 @@ export default function TaomlarPage() {
                         </button>
                     </div>
 
-                    <div className="flex-1 overflow-hidden p-6 max-w-7xl mx-auto w-full min-h-0">
-                        <form onSubmit={handleSave} className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <form onSubmit={handleSave} className="flex-1 flex gap-6 overflow-hidden min-h-0 px-6 py-4">
 
                             {/* Left column - 2/3 width */}
-                            <div className="lg:col-span-2 overflow-y-auto space-y-6 pb-4">
+                            <div className="flex-[2] overflow-y-auto space-y-6 pb-4">
                                 <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm space-y-8">
                                     {/* Image upload box - drag & drop */}
                                     <div>
@@ -626,7 +625,7 @@ export default function TaomlarPage() {
                             </div>
 
                             {/* Right column - 1/3 width */}
-                            <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm space-y-6 overflow-y-auto h-full">
+                            <div className="flex-[1] bg-white rounded-2xl p-8 border border-slate-200 shadow-sm space-y-6 overflow-y-auto">
 
                                 {/* Type toggle */}
                                 <div className="flex p-1 bg-slate-200 rounded-xl max-w-sm">
@@ -740,8 +739,7 @@ export default function TaomlarPage() {
                                     </button>
                                 </div>
                             </div>
-                        </form>
-                    </div>
+                    </form>
                 </div>
             )}
 
