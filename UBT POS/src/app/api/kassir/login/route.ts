@@ -53,29 +53,29 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Find active staff by username OR phone OR name (case-insensitive for name)
+        // Normalize input: strip all non-digits, take last 9 chars
+        const inputDigits = username.replace(/\D/g, "").slice(-9);
+
+        // Find active staff by username OR phone OR name
         const staffByUsername = await prisma.staff.findMany({
             where: { username, status: "active" },
         });
 
-        // Search by phone — strip spaces/dashes, try exact and last-9-digits match
-        const staffByPhone = staffByUsername.length === 0
-            ? await prisma.$queryRawUnsafe<any[]>(
-                `SELECT * FROM Staff WHERE status='active' AND (phone=? OR phone LIKE ?)`,
-                username,
-                `%${username.replace(/\D/g, "").slice(-9)}`
-              ).then((rows: any[]) => rows.filter((s: any) =>
-                  s.phone && s.phone.replace(/\D/g, "").slice(-9) === username.replace(/\D/g, "").slice(-9)
-              ))
-            : [];
+        // Search by phone (last 9 digits match)
+        const staffByPhone: typeof staffByUsername = [];
+        if (staffByUsername.length === 0 && inputDigits.length >= 7) {
+            const allActive = await prisma.staff.findMany({ where: { status: "active" } });
+            for (const s of allActive) {
+                if (s.phone && s.phone.replace(/\D/g, "").slice(-9) === inputDigits) {
+                    staffByPhone.push(s);
+                }
+            }
+        }
 
-        // Also try searching by name — SQLite LIKE bilan (case-insensitive yaqin)
+        // Also try searching by name
         const staffByName = staffByUsername.length === 0 && staffByPhone.length === 0
             ? await prisma.staff.findMany({
-                where: {
-                    status: "active",
-                    name: { contains: username },
-                },
+                where: { status: "active", name: { contains: username } },
             }).then(all => all.filter(s => s.name.toLowerCase() === username.toLowerCase()))
             : [];
 
