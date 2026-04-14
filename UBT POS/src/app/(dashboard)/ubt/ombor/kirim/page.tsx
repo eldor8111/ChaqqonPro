@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
     Plus, Search, FileSpreadsheet, X, Check, Package,
     RotateCw, AlertTriangle, Printer, Trash2, TrendingUp, ChevronDown
 } from "lucide-react";
-import { useStore } from "@/lib/store";
+
 
 interface Product {
     id: string;
@@ -35,35 +35,53 @@ const emptyItem = (): FormItem => ({
 });
 
 export default function OmborKirimPage() {
-    const { nomenklaturaXomashyo, nomenklaturaTaomlar, updateNomenklaturaXomashyo } = useStore();
+    // ── API-based product loading (real DB data, not mock store) ─────────────
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
+    const [productsLoading, setProductsLoading] = useState(true);
 
-    // Build unified product list (xomashyo + mahsulot goods like Pepsi, Kola)
-    // Polfabrikat is NOT here — it's made in the kitchen, never purchased from supplier
-    const allProducts: Product[] = useMemo(() => [
-        ...nomenklaturaXomashyo
-            .filter(x => (x as any).type !== "polfabrikat")
-            .map(x => ({
-                id: x.id,
-                name: x.name,
-                unit: (x as any).unit || "kg",
-                price: Number((x as any).price || 0),
-                stock: Number((x as any).stock || 0),
-                productType: "xomashyo" as const,
-                categoryId: (x as any).categoryId,
-            })),
-        // Mahsulot (type='mahsulot' or hasBarcode) from nomenklaturaTaomlar — goods sold as-is
-        ...nomenklaturaTaomlar
-            .filter(t => t.type === "mahsulot" || (t as any).hasBarcode)
-            .map(t => ({
-                id: t.id,
-                name: t.name,
-                unit: (t as any).unit || "dona",
-                price: Number(t.cost || t.price) || 0,
-                stock: Number((t as any).stock || 0),
-                productType: "mahsulot" as const,
-                categoryId: t.categoryId,
-            })),
-    ], [nomenklaturaXomashyo, nomenklaturaTaomlar]);
+    const loadProducts = useCallback(async () => {
+        try {
+            const [xomRes, menuRes] = await Promise.all([
+                fetch("/api/ubt/xomashyo"),
+                fetch("/api/ubt/menu"),
+            ]);
+            const xomData = xomRes.ok ? await xomRes.json() : [];
+            const menuData = menuRes.ok ? await menuRes.json() : { items: [] };
+            const menuItems: any[] = Array.isArray(menuData.items) ? menuData.items : [];
+
+            const xomashyo: Product[] = (Array.isArray(xomData) ? xomData : [])
+                .filter((x: any) => x.type !== "polfabrikat")
+                .map((x: any) => ({
+                    id: x.id,
+                    name: x.name,
+                    unit: x.unit || "kg",
+                    price: Number(x.price) || 0,
+                    stock: Number(x.stock) || 0,
+                    productType: "xomashyo" as const,
+                    categoryId: x.categoryId,
+                }));
+
+            const mahsulot: Product[] = menuItems
+                .filter((t: any) => t.type === "mahsulot" || t.hasBarcode)
+                .map((t: any) => ({
+                    id: t.id,
+                    name: t.name,
+                    unit: t.unit || "dona",
+                    price: Number(t.cost || t.price) || 0,
+                    stock: Number(t.stock) || 0,
+                    productType: "mahsulot" as const,
+                    categoryId: t.categoryId,
+                }));
+
+            setAllProducts([...xomashyo, ...mahsulot]);
+        } catch (e) {
+            console.error("Mahsulotlar yuklanmadi:", e);
+        } finally {
+            setProductsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => { loadProducts(); }, [loadProducts]);
 
     // Kirim history
     const [kirimlar, setKirimlar] = useState<any[]>([]);
@@ -164,14 +182,12 @@ export default function OmborKirimPage() {
                 body: JSON.stringify(payload),
             });
             if (res.ok) {
-                // Update Zustand store (client-side cache)
-                valid.forEach(it => {
-                    const prod = allProducts.find(p => p.id === it.productId);
-                    if (prod) {
-                        const newStock = (prod.stock || 0) + Number(it.quantity);
-                        updateNomenklaturaXomashyo(prod.id, { stock: newStock });
-                    }
-                });
+                // Update local product stock (client-side optimistic update)
+                setAllProducts(prev => prev.map(p => {
+                    const match = valid.find(it => it.productId === p.id);
+                    if (match) return { ...p, stock: (p.stock || 0) + Number(match.quantity) };
+                    return p;
+                }));
                 setIsModalOpen(false);
                 setFormHeader({ supplier: "", warehouse: "Asosiy Ombor", currency: "UZS", notes: "", invoiceNo: "" });
                 setFormItems([emptyItem()]);
