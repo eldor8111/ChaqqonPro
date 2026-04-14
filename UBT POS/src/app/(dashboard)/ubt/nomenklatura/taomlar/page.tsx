@@ -426,9 +426,9 @@ export default function TaomlarPage() {
 
             {/* Full Screen Modal matched with the User's Screenshot */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex flex-col bg-slate-100 animate-fade-in">
+                <div className="fixed inset-0 z-[100] bg-slate-100 overflow-y-auto animate-fade-in">
                     {/* Modal Header */}
-                    <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 z-10 shadow-sm shrink-0">
+                    <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 z-10 shadow-sm">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
                             <h2 className="text-xl font-black text-slate-900">{editingItem ? "Taomni o'zgartirish" : "Yangi taom qo'shing"}</h2>
@@ -438,7 +438,6 @@ export default function TaomlarPage() {
                         </button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto">
                     <div className="p-6 max-w-7xl mx-auto w-full pb-10">
                         <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
@@ -742,7 +741,6 @@ export default function TaomlarPage() {
                                 </div>
                             </div>
                         </form>
-                    </div>
                     </div>
                 </div>
             )}
