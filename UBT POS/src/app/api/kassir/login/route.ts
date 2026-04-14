@@ -53,13 +53,24 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Find active staff by username OR name (case-insensitive for name)
+        // Find active staff by username OR phone OR name (case-insensitive for name)
         const staffByUsername = await prisma.staff.findMany({
             where: { username, status: "active" },
         });
 
+        // Search by phone — strip spaces/dashes, try exact and last-9-digits match
+        const staffByPhone = staffByUsername.length === 0
+            ? await prisma.$queryRawUnsafe<any[]>(
+                `SELECT * FROM Staff WHERE status='active' AND (phone=? OR phone LIKE ?)`,
+                username,
+                `%${username.replace(/\D/g, "").slice(-9)}`
+              ).then((rows: any[]) => rows.filter((s: any) =>
+                  s.phone && s.phone.replace(/\D/g, "").slice(-9) === username.replace(/\D/g, "").slice(-9)
+              ))
+            : [];
+
         // Also try searching by name — SQLite LIKE bilan (case-insensitive yaqin)
-        const staffByName = staffByUsername.length === 0
+        const staffByName = staffByUsername.length === 0 && staffByPhone.length === 0
             ? await prisma.staff.findMany({
                 where: {
                     status: "active",
@@ -68,7 +79,7 @@ export async function POST(request: NextRequest) {
             }).then(all => all.filter(s => s.name.toLowerCase() === username.toLowerCase()))
             : [];
 
-        const staffList = [...staffByUsername, ...staffByName];
+        const staffList = [...staffByUsername, ...staffByPhone, ...staffByName];
 
         if (staffList.length === 0) {
             return NextResponse.json({ success: false, error: "Foydalanuvchi topilmadi. Login: @username yoki qurilma nomi bilan kiring" }, { status: 401 });
@@ -79,7 +90,7 @@ export async function POST(request: NextRequest) {
         let authenticatedTenant = null;
 
         for (const staff of staffList) {
-            const result = await authenticateKassir(username, password, staff.tenantId);
+            const result = await authenticateKassir(staff.username, password, staff.tenantId);
             if (result.success && result.staff) {
                 const tenant = await prisma.tenant.findUnique({
                     where: { id: staff.tenantId },
