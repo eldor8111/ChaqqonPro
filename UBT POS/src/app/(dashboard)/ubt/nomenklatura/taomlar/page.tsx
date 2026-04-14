@@ -65,10 +65,11 @@ export default function TaomlarPage() {
     const [modifierItemSearch, setModifierItemSearch] = useState("");
 
     const [editingItem, setEditingItem] = useState<NomenklaturaTaom | null>(null);
-    const [formData, setFormData] = useState<Partial<NomenklaturaTaom> & { modifiers?: ModifierGroup[] }>({
+    const [formData, setFormData] = useState<Partial<NomenklaturaTaom> & { modifiers?: ModifierGroup[]; warehouse?: string }>({
         name: "", categoryId: "", price: 0, cost: 0,
         type: "taom", sortOrder: "", stock: 0, unit: "", printer: "", printers: "",
-        inStock: true, hasBarcode: false, autoCalculate: true, isSetMenu: false, image: null, recipes: [], modifiers: []
+        inStock: true, hasBarcode: false, autoCalculate: true, isSetMenu: false, image: null, recipes: [], modifiers: [],
+        warehouse: ""
     });
 
     // Filter — over DB items
@@ -99,7 +100,8 @@ export default function TaomlarPage() {
                 inStock: item.inStock ?? true, hasBarcode: item.hasBarcode ?? false,
                 autoCalculate: item.autoCalculate ?? true, isSetMenu: item.isSetMenu ?? false, image: item.image || null,
                 recipes: item.recipes || [],
-                modifiers: (item as any).modifiers || []
+                modifiers: (item as any).modifiers || [],
+                warehouse: (item as any).warehouse || ""
             });
         } else {
             setEditingItem(null);
@@ -107,7 +109,8 @@ export default function TaomlarPage() {
                 name: "", categoryId: "", price: 0, cost: 0,
                 type: "taom", sortOrder: "", stock: 0, unit: "", printer: "", printers: "",
                 inStock: true, hasBarcode: false, autoCalculate: true, isSetMenu: false, image: null,
-                recipes: [], modifiers: []
+                recipes: [], modifiers: [],
+                warehouse: ""
             });
         }
         setIsModalOpen(true);
@@ -189,7 +192,8 @@ export default function TaomlarPage() {
                     category: categoryName,
                     sellingPrice: taomData.price,
                     costPrice: taomData.cost,
-                    type: taomData.type || "taom",          // ✅ FIXED: was missing!
+                    type: taomData.type || "taom",
+                    warehouse: (formData as any).warehouse || null,
                     stock: taomData.stock || 99,
                     unit: taomData.unit || "dona",
                     image: taomData.image || null,
@@ -201,7 +205,7 @@ export default function TaomlarPage() {
             if (!res.ok) {
                 const data = await res.json();
                 alert(data.error || "Saqlashda xatolik yuz berdi");
-                return; // Halt execution and keep modal open
+                return;
             }
         } catch (err) {
             console.error("Menu API fetch error:", err);
@@ -651,6 +655,42 @@ export default function TaomlarPage() {
                                     <label className="block text-sm font-black text-slate-900 mb-2">Sotish narxi <span className="text-red-600">*</span></label>
                                     <input type="number" placeholder="Sotish narxini kiriting" value={formData.price || ""} onChange={e => setFormData({ ...formData, price: Number(e.target.value) })} required className="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-600 transition placeholder:text-slate-400 font-bold text-slate-900" />
                                 </div>
+
+                                {/* Sarflanish ombori — only for mahsulot type */}
+                                {formData.type === "mahsulot" && (
+                                    <div>
+                                        <label className="block text-sm font-black text-slate-900 mb-2 flex items-center gap-2">
+                                            🏭 Sarflanish ombori
+                                            <span className="text-[10px] font-normal text-slate-400">(omborda ko&apos;rinishi uchun tanlang)</span>
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <select
+                                                value={(formData as any).warehouse || ""}
+                                                onChange={e => setFormData({ ...formData, warehouse: e.target.value } as any)}
+                                                className="flex-1 border-2 border-blue-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-600 transition appearance-none bg-white font-bold text-slate-900"
+                                            >
+                                                <option value="">Ombor tanlanmagan (ko&apos;rinmaydi)</option>
+                                                <option value="Asosiy Ombor">🏭 Asosiy Ombor (Glavniy)</option>
+                                                <option value="Zaxira Ombor">📦 Zaxira Ombor</option>
+                                                <option value="Bufet Ombor">🍹 Bufet Ombor</option>
+                                            </select>
+                                            {!(formData as any).warehouse && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, warehouse: "Asosiy Ombor" } as any)}
+                                                    className="px-4 py-3 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition whitespace-nowrap shadow-md"
+                                                >
+                                                    ✅ Glavniy
+                                                </button>
+                                            )}
+                                        </div>
+                                        {(formData as any).warehouse && (
+                                            <p className="text-xs text-emerald-600 font-bold mt-1.5">
+                                                ✅ Bu mahsulot &quot;{(formData as any).warehouse}&quot;da ombor qoldiqlarda ko&apos;rinadi
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
 
                                 {formData.type === "mahsulot" && (
                                     <div>

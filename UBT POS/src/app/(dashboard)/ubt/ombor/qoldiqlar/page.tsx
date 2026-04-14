@@ -27,13 +27,14 @@ export default function OmborQoldiqlarPage() {
     useEffect(() => {
         const load = async () => {
             try {
-                // Fetch: xomashyo (raw materials) + mahsulot (products like Pepsi, Kola)
+                // Fetch xomashyo (raw materials) + mahsulot goods (Pepsi, Kola etc.) in warehouse
                 const [xomashyoRes, mahsulotRes] = await Promise.all([
                     fetch("/api/ubt/xomashyo?type=xomashyo"),
-                    fetch("/api/ubt/menu?type=mahsulot"),   // products from Taomlar section
+                    fetch("/api/ubt/menu"),   // {categories, items}
                 ]);
                 const xomashyoData = xomashyoRes.ok ? await xomashyoRes.json() : [];
-                const mahsulotData = mahsulotRes.ok ? await mahsulotRes.json() : [];
+                const menuData = mahsulotRes.ok ? await mahsulotRes.json() : { items: [] };
+                const menuItems: any[] = Array.isArray(menuData.items) ? menuData.items : [];
 
                 // Map xomashyo (raw materials)
                 const xomashyo: StockItem[] = (Array.isArray(xomashyoData) ? xomashyoData : []).map((x: any) => ({
@@ -47,10 +48,10 @@ export default function OmborQoldiqlarPage() {
                     costPrice: Number(x.price) || 0,
                 }));
 
-                // Map mahsulot — items from Taomlar section with type='mahsulot' or hasBarcode=true
-                // These are sellable goods (Pepsi, Cola, water, etc.)
-                const mahsulot: StockItem[] = (Array.isArray(mahsulotData) ? mahsulotData : [])
-                    .filter((m: any) => m.type === "mahsulot" || m.hasBarcode)
+                // Map mahsulot — only type='mahsulot' AND has warehouse assigned
+                // (warehouse field means it was registered in the storage system)
+                const mahsulot: StockItem[] = menuItems
+                    .filter((m: any) => m.type === "mahsulot" && m.warehouse)
                     .map((m: any) => ({
                         id: m.id,
                         name: m.name,
