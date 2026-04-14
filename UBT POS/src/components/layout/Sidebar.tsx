@@ -35,7 +35,6 @@ const NAV_ITEMS = [
         subItems: [
             { href: "/ubt/ombor/qoldiqlar", label: "nav.ombor_qoldiqlar", isI18n: true },
             { href: "/ubt/ombor/kirim", label: "nav.ombor_kirim", isI18n: true },
-            { href: "/ubt/ombor/chiqim", label: "nav.ombor_chiqim", isI18n: true },
             { href: "/ubt/ombor/kochirish", label: "nav.ombor_kochirish", isI18n: true },
             { href: "/ubt/ombor/inventarizatsiya", label: "nav.ombor_inventarizatsiya", isI18n: true },
             { href: "/ubt/ombor/sjisaniya", label: "nav.ombor_sjisaniya", isI18n: true },
