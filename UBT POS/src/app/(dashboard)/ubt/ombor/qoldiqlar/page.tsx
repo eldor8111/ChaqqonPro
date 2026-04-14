@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Search, FileSpreadsheet, PackageX, TrendingUp, Layers, ArrowUpDown } from "lucide-react";
+import { Plus, Search, FileSpreadsheet, PackageX, TrendingUp, Layers, ArrowUpDown, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+
+type FilterType = "all" | "xomashyo" | "polfabrikat";
 
 interface StockItem {
     id: string;
@@ -10,16 +12,17 @@ interface StockItem {
     type: "xomashyo" | "polfabrikat";
     category: string;
     stock: number;
+    minStock: number;
     unit: string;
     costPrice: number;
-    sellPrice: number;
 }
 
 export default function OmborQoldiqlarPage() {
     const [searchQuery, setSearchQuery] = useState("");
+    const [activeFilter, setActiveFilter] = useState<FilterType>("all");
     const [items, setItems] = useState<StockItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [sortRule, setSortRule] = useState({key: 'name', dir: 'asc'});
+    const [sortRule, setSortRule] = useState({ key: "name", dir: "asc" });
 
     useEffect(() => {
         const load = async () => {
@@ -28,30 +31,25 @@ export default function OmborQoldiqlarPage() {
                     fetch("/api/ubt/xomashyo?type=xomashyo"),
                     fetch("/api/ubt/xomashyo?type=polfabrikat"),
                 ]);
-
                 const xomashyoData = xomashyoRes.ok ? await xomashyoRes.json() : [];
                 const polfabrikatData = polfabrikatRes.ok ? await polfabrikatRes.json() : [];
 
                 const xomashyo: StockItem[] = (Array.isArray(xomashyoData) ? xomashyoData : []).map((x: any) => ({
-                    id: x.id,
-                    name: x.name,
-                    type: "xomashyo" as const,
+                    id: x.id, name: x.name, type: "xomashyo" as const,
                     category: x.categoryId || "Xomashyo",
                     stock: Number(x.stock) || 0,
+                    minStock: Number(x.minStock) || 5,
                     unit: x.unit || "kg",
                     costPrice: Number(x.price) || 0,
-                    sellPrice: 0,
                 }));
 
                 const polfabrikat: StockItem[] = (Array.isArray(polfabrikatData) ? polfabrikatData : []).map((p: any) => ({
-                    id: p.id,
-                    name: p.name,
-                    type: "polfabrikat" as const,
+                    id: p.id, name: p.name, type: "polfabrikat" as const,
                     category: p.categoryId || "Polfabrikat",
                     stock: Number(p.stock) || 0,
+                    minStock: Number(p.minStock) || 2,
                     unit: p.unit || "kg",
                     costPrice: Number(p.price) || 0,
-                    sellPrice: 0,
                 }));
 
                 setItems([...xomashyo, ...polfabrikat]);
@@ -65,183 +63,260 @@ export default function OmborQoldiqlarPage() {
     }, []);
 
     const filteredAndSorted = useMemo(() => {
-        let res = items.filter(p =>
-            p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            p.category?.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+        let res = items.filter(p => {
+            const matchType = activeFilter === "all" || p.type === activeFilter;
+            const matchSearch = !searchQuery ||
+                p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                p.category?.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchType && matchSearch;
+        });
         res.sort((a, b) => {
-            const vA = sortRule.key === 'totalValue' ? (a.stock * a.costPrice) : (a as any)[sortRule.key];
-            const vB = sortRule.key === 'totalValue' ? (b.stock * b.costPrice) : (b as any)[sortRule.key];
-            if (vA < vB) return sortRule.dir === 'asc' ? -1 : 1;
-            if (vA > vB) return sortRule.dir === 'asc' ? 1 : -1;
+            const vA = sortRule.key === "totalValue" ? (a.stock * a.costPrice) : (a as any)[sortRule.key];
+            const vB = sortRule.key === "totalValue" ? (b.stock * b.costPrice) : (b as any)[sortRule.key];
+            if (vA < vB) return sortRule.dir === "asc" ? -1 : 1;
+            if (vA > vB) return sortRule.dir === "asc" ? 1 : -1;
             return 0;
         });
         return res;
-    }, [items, searchQuery, sortRule]);
+    }, [items, searchQuery, sortRule, activeFilter]);
 
-    const getTypeColor = (type: string) => {
-        if (type === "xomashyo") return "bg-orange-100 text-orange-700 border-orange-200";
-        if (type === "polfabrikat") return "bg-purple-100 text-purple-700 border-purple-200";
-        return "bg-slate-100 text-slate-700 border-slate-200";
+    const handleSort = (key: string) => {
+        setSortRule(prev => ({ key, dir: prev.key === key && prev.dir === "asc" ? "desc" : "asc" }));
     };
 
-    const getTypeLabel = (type: string) => {
-        if (type === "xomashyo") return "XOMASHYO";
-        if (type === "polfabrikat") return "POLFABRIKAT";
-        return "NOMA'LUM";
-    };
+    // Metrics
+    const totalValue = items.reduce((s, i) => s + i.stock * i.costPrice, 0);
+    const xomashyoCount = items.filter(i => i.type === "xomashyo").length;
+    const polfabrikatCount = items.filter(i => i.type === "polfabrikat").length;
+    const criticalCount = items.filter(i => i.stock <= i.minStock && i.stock > 0).length;
+    const emptyCount = items.filter(i => i.stock <= 0).length;
 
-    const handleSort = (key: keyof StockItem | 'totalValue') => {
-        setSortRule(prev => ({ key, dir: prev.key === key && prev.dir === 'asc' ? 'desc' : 'asc' }));
-    };
+    const TABS: { key: FilterType; label: string; count: number; color: string }[] = [
+        { key: "all", label: "Barchasi", count: items.length, color: "blue" },
+        { key: "xomashyo", label: "Xomashyo", count: xomashyoCount, color: "orange" },
+        { key: "polfabrikat", label: "Polfabrikat", count: polfabrikatCount, color: "purple" },
+    ];
 
-    const totalPortfolioValue = items.reduce((acc, curr) => acc + (curr.stock * curr.costPrice), 0);
-    const lowStockCount = items.filter(u => u.stock <= 5 && u.stock > 0).length;
-    const outOfStockCount = items.filter(u => u.stock <= 0).length;
+    const SortTh = ({ label, field }: { label: string; field: string }) => (
+        <th
+            className="px-5 py-4 cursor-pointer hover:bg-slate-100 transition-colors select-none"
+            onClick={() => handleSort(field)}>
+            <div className="flex items-center gap-1.5">
+                {label}
+                <ArrowUpDown size={13} className={sortRule.key === field ? "opacity-100 text-blue-500" : "opacity-30"} />
+            </div>
+        </th>
+    );
 
     return (
         <div className="animate-fade-in relative bg-slate-50 min-h-full flex flex-col">
-            {/* Header Area */}
+            {/* Header */}
             <div className="bg-white border-b border-slate-200 px-6 py-5">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Ombor Qoldiqlari</h1>
                         <p className="text-sm text-slate-500 mt-1 font-medium">Barcha xomashyo va yarim tayyor mahsulotlar (Polfabrikat) balansi</p>
                     </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-emerald-500 text-emerald-600 rounded-xl text-sm hover:bg-emerald-50 transition-all font-bold shadow-sm">
-                        <FileSpreadsheet size={18} /> Excel ga yuklab olish
-                    </button>
-                    <Link href="/ubt/nomenklatura/xomashyo">
-                        <button className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm hover:bg-blue-700 transition-all font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5">
-                            <Plus size={18} strokeWidth={2.5} /> Yangi xomashyo
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-emerald-500 text-emerald-600 rounded-xl text-sm hover:bg-emerald-50 transition-all font-bold shadow-sm">
+                            <FileSpreadsheet size={18} /> Excel ga yuklab olish
                         </button>
-                    </Link>
-                </div>
+                        <Link href="/ubt/nomenklatura/xomashyo">
+                            <button className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm hover:bg-blue-700 transition-all font-bold shadow-lg shadow-blue-500/30 hover:-translate-y-0.5">
+                                <Plus size={18} strokeWidth={2.5} /> Yangi xomashyo
+                            </button>
+                        </Link>
+                    </div>
                 </div>
             </div>
 
-            {/* Metrics Dashboard */}
-            <div className="px-6 py-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5 border-b border-slate-200 bg-white/50 backdrop-blur-sm">
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between group hover:shadow-md transition-all">
+            {/* Metrics */}
+            <div className="px-6 py-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-slate-200 bg-white/50">
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between group hover:shadow-md transition-all">
                     <div>
-                        <p className="text-sm text-slate-500 font-medium mb-1">Ombordagi jami qiymat</p>
-                        <h3 className="text-2xl font-black text-slate-800">{loading ? "..." : totalPortfolioValue.toLocaleString()} <span className="text-sm font-semibold text-slate-500">UZS</span></h3>
-                    </div>
-                    <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <TrendingUp size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between group hover:shadow-md transition-all">
-                    <div>
-                        <p className="text-sm text-slate-500 font-medium mb-1">Aktiv mahsulotlar</p>
-                        <h3 className="text-2xl font-black text-slate-800">{loading ? "..." : items.length} <span className="text-sm font-semibold text-slate-500">tur</span></h3>
-                    </div>
-                    <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Layers size={24} />
-                    </div>
-                </div>
-                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between group hover:shadow-md transition-all">
-                    <div>
-                        <p className="text-sm text-slate-500 font-medium mb-1">Kam zaxira / Tugagan</p>
-                        <h3 className="text-2xl font-black text-slate-800">
-                            {loading ? "..." : <><span className="text-amber-500">{lowStockCount}</span> / <span className="text-red-500">{outOfStockCount}</span></>}
+                        <p className="text-xs text-slate-500 font-medium mb-1">Ombordagi jami qiymat</p>
+                        <h3 className="text-xl font-black text-slate-800">
+                            {loading ? "..." : totalValue.toLocaleString()} <span className="text-sm font-semibold text-slate-400">UZS</span>
                         </h3>
                     </div>
-                    <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <PackageX size={24} />
+                    <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <TrendingUp size={22} />
+                    </div>
+                </div>
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between group hover:shadow-md transition-all">
+                    <div>
+                        <p className="text-xs text-slate-500 font-medium mb-1">Aktiv mahsulotlar</p>
+                        <h3 className="text-xl font-black text-slate-800">
+                            {loading ? "..." : items.length} <span className="text-sm font-semibold text-slate-400">tur</span>
+                        </h3>
+                    </div>
+                    <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Layers size={22} />
+                    </div>
+                </div>
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-amber-100 flex items-center justify-between group hover:shadow-md transition-all">
+                    <div>
+                        <p className="text-xs text-slate-500 font-medium mb-1">Kritik kam qoldiq</p>
+                        <h3 className="text-xl font-black text-amber-500">
+                            {loading ? "..." : criticalCount} <span className="text-sm font-semibold text-amber-300">ta</span>
+                        </h3>
+                    </div>
+                    <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <AlertTriangle size={22} />
+                    </div>
+                </div>
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-red-100 flex items-center justify-between group hover:shadow-md transition-all">
+                    <div>
+                        <p className="text-xs text-slate-500 font-medium mb-1">Tugagan mahsulotlar</p>
+                        <h3 className="text-xl font-black text-red-600">
+                            {loading ? "..." : emptyCount} <span className="text-sm font-semibold text-red-300">ta</span>
+                        </h3>
+                    </div>
+                    <div className="w-11 h-11 rounded-xl bg-red-50 text-red-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <PackageX size={22} />
                     </div>
                 </div>
             </div>
 
             {/* Table Area */}
             <div className="flex-1 flex flex-col p-6 bg-slate-50">
-                <div className="flex items-center justify-between mb-4 gap-4 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
-                    <div className="flex-1 max-w-[400px] relative">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                        <input
-                            type="text"
-                            placeholder="Qidiruv (Mahsulot yoki kategoriya nomi bilan)..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-lg text-sm font-medium outline-none focus:ring-2 focus:ring-blue-100 transition-all text-slate-700"
-                        />
+                {/* Filter Tabs + Search */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
+                    {/* Tabs */}
+                    <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 shadow-sm gap-1">
+                        {TABS.map(tab => (
+                            <button
+                                key={tab.key}
+                                onClick={() => setActiveFilter(tab.key)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                    activeFilter === tab.key
+                                        ? tab.color === "orange"
+                                            ? "bg-orange-500 text-white shadow-md shadow-orange-200"
+                                            : tab.color === "purple"
+                                            ? "bg-purple-500 text-white shadow-md shadow-purple-200"
+                                            : "bg-blue-600 text-white shadow-md shadow-blue-200"
+                                        : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                                }`}>
+                                {tab.label}
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-black ${
+                                    activeFilter === tab.key ? "bg-white/20" : "bg-slate-100 text-slate-500"
+                                }`}>{tab.count}</span>
+                            </button>
+                        ))}
                     </div>
-                    <div className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-bold border border-blue-100">
-                        Topildi: {filteredAndSorted.length} ta
+
+                    {/* Search */}
+                    <div className="flex-1 flex items-center gap-3 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
+                        <div className="flex-1 relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                            <input
+                                type="text"
+                                placeholder="Mahsulot yoki kategoriya nomi bilan qidirish..."
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 pr-4 py-2 bg-slate-50 rounded-lg text-sm font-medium outline-none focus:ring-2 focus:ring-blue-100 text-slate-700 transition-all"
+                            />
+                        </div>
+                        <div className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-bold border border-blue-100 whitespace-nowrap">
+                            {filteredAndSorted.length} ta
+                        </div>
                     </div>
                 </div>
 
+                {/* Table */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-1">
-                {loading ? (
-                    <div className="flex items-center justify-center py-16 text-slate-400 text-sm">
-                        Yuklanmoqda...
-                    </div>
-                ) : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold sticky top-0">
-                            <tr>
-                                <th className="px-5 py-4 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('name')}>
-                                    <div className="flex items-center gap-1">Nomi <ArrowUpDown size={14} className="opacity-50" /></div>
-                                </th>
-                                <th className="px-5 py-4 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('category')}>
-                                    <div className="flex items-center gap-1">Kategoriya / Turi <ArrowUpDown size={14} className="opacity-50" /></div>
-                                </th>
-                                <th className="px-5 py-4 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('stock')}>
-                                    <div className="flex items-center gap-1">Joriy qoldiq <ArrowUpDown size={14} className="opacity-50" /></div>
-                                </th>
-                                <th className="px-5 py-4 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('costPrice')}>
-                                    <div className="flex items-center gap-1">Kelish narxi (Tannarx) <ArrowUpDown size={14} className="opacity-50" /></div>
-                                </th>
-                                <th className="px-5 py-4 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('totalValue')}>
-                                    <div className="flex items-center gap-1">Ombordagi Jami Summa <ArrowUpDown size={14} className="opacity-50" /></div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
-                            {filteredAndSorted.length === 0 ? (
-                            <tr>
-                                <td colSpan={6} className="text-center py-16">
-                                    <div className="flex flex-col items-center justify-center text-slate-400 space-y-3">
-                                        <PackageX size={48} className="text-slate-300" />
-                                        <span className="text-sm font-medium text-slate-500">Omborda yoki Nomenklaturada hech qanday mahsulot mavjud emas.</span>
-                                        <Link href="/ubt/nomenklatura/xomashyo" className="text-blue-600 font-semibold hover:underline">Hozir Nomenklaturadan qo&apos;shish</Link>
-                                    </div>
-                                </td>
-                            </tr>
-                        ) : (
-                            filteredAndSorted.map((item) => (
-                                <tr key={item.id} className="hover:bg-blue-50/30 transition-colors">
-                                    <td className="px-5 py-4 whitespace-nowrap font-bold text-slate-800">
-                                        {item.name}
-                                    </td>
-                                    <td className="px-5 py-4 whitespace-nowrap">
-                                        <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border ${getTypeColor(item.type)}`}>
-                                            {getTypeLabel(item.type)}
-                                        </span>
-                                    </td>
-                                    <td className="px-5 py-4 whitespace-nowrap">
-                                        <div className="flex flex-col">
-                                            <span className={`text-base font-black ${item.stock <= 5 ? "text-red-600" : "text-emerald-600"}`}>
-                                                {item.stock} <span className="text-xs font-semibold opacity-60 ml-0.5">{item.unit}</span>
-                                            </span>
-                                            {item.stock <= 5 && <span className="text-[10px] text-red-500 tracking-wider font-bold mt-0.5">⚠️ Kam zaxira</span>}
-                                        </div>
-                                    </td>
-                                    <td className="px-5 py-4 whitespace-nowrap font-medium text-slate-600">{item.costPrice.toLocaleString()} <span className="text-xs opacity-70">so&apos;m / {item.unit}</span></td>
-                                    <td className="px-5 py-4 whitespace-nowrap font-black text-slate-800">
-                                        {(item.stock * item.costPrice).toLocaleString()} <span className="text-xs text-slate-500 font-semibold">UZS</span>
-                                    </td>
+                    <div className="overflow-x-auto h-full">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold sticky top-0">
+                                <tr>
+                                    <th className="px-5 py-4 w-8 text-center">#</th>
+                                    <SortTh label="Nomi" field="name" />
+                                    <SortTh label="Kategoriya / Turi" field="category" />
+                                    <SortTh label="Joriy qoldiq" field="stock" />
+                                    <SortTh label="Kelish narxi" field="costPrice" />
+                                    <SortTh label="Ombordagi Jami" field="totalValue" />
+                                    <th className="px-5 py-4">Holati</th>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={7} className="py-16 text-center">
+                                            <div className="flex flex-col items-center gap-3 text-slate-400">
+                                                <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
+                                                <span className="text-sm">Yuklanmoqda...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : filteredAndSorted.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={7} className="py-16 text-center">
+                                            <div className="flex flex-col items-center justify-center text-slate-400 space-y-3">
+                                                <PackageX size={48} className="text-slate-300" />
+                                                <span className="text-sm font-medium text-slate-500">Hech qanday mahsulot topilmadi</span>
+                                                <Link href="/ubt/nomenklatura/xomashyo" className="text-blue-600 font-semibold hover:underline text-sm">
+                                                    Nomenklaturadan qo&apos;shish
+                                                </Link>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredAndSorted.map((item, idx) => {
+                                        const isLow = item.stock > 0 && item.stock <= item.minStock;
+                                        const isEmpty = item.stock <= 0;
+                                        return (
+                                            <tr key={item.id} className={`hover:bg-blue-50/20 transition-colors ${isEmpty ? "bg-red-50/40" : isLow ? "bg-amber-50/40" : ""}`}>
+                                                <td className="px-5 py-3.5 text-center text-xs text-slate-400 font-medium">{idx + 1}</td>
+                                                <td className="px-5 py-3.5 whitespace-nowrap">
+                                                    <div className="flex items-center gap-2">
+                                                        {(isEmpty || isLow) && (
+                                                            <AlertTriangle size={14} className={isEmpty ? "text-red-500" : "text-amber-500"} />
+                                                        )}
+                                                        <span className="font-bold text-slate-800">{item.name}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-5 py-3.5 whitespace-nowrap">
+                                                    <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border ${
+                                                        item.type === "xomashyo"
+                                                            ? "bg-orange-100 text-orange-700 border-orange-200"
+                                                            : "bg-purple-100 text-purple-700 border-purple-200"
+                                                    }`}>
+                                                        {item.type === "xomashyo" ? "Xomashyo" : "Polfabrikat"}
+                                                    </span>
+                                                </td>
+                                                <td className="px-5 py-3.5 whitespace-nowrap">
+                                                    <div className="flex flex-col">
+                                                        <span className={`text-base font-black ${isEmpty ? "text-red-600" : isLow ? "text-amber-600" : "text-emerald-600"}`}>
+                                                            {item.stock.toLocaleString()} <span className="text-xs font-semibold opacity-60">{item.unit}</span>
+                                                        </span>
+                                                        {isEmpty && <span className="text-[10px] text-red-500 font-bold">🔴 Tugagan</span>}
+                                                        {isLow && !isEmpty && <span className="text-[10px] text-amber-500 font-bold">⚠️ Min: {item.minStock} {item.unit}</span>}
+                                                    </div>
+                                                </td>
+                                                <td className="px-5 py-3.5 whitespace-nowrap font-medium text-slate-600">
+                                                    {item.costPrice.toLocaleString()} <span className="text-xs opacity-60">UZS/{item.unit}</span>
+                                                </td>
+                                                <td className="px-5 py-3.5 whitespace-nowrap font-black text-slate-800">
+                                                    {(item.stock * item.costPrice).toLocaleString()} <span className="text-xs text-slate-400 font-semibold">UZS</span>
+                                                </td>
+                                                <td className="px-5 py-3.5">
+                                                    {isEmpty ? (
+                                                        <span className="px-2.5 py-1 bg-red-100 text-red-700 rounded-lg text-[10px] font-bold uppercase tracking-wider">Tugagan</span>
+                                                    ) : isLow ? (
+                                                        <span className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-bold uppercase tracking-wider">Kam qoldiq</span>
+                                                    ) : (
+                                                        <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold uppercase tracking-wider">Normal</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                )}
             </div>
-        </div>
         </div>
     );
 }
