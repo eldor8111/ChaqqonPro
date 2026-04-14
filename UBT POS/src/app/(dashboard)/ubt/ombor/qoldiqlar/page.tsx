@@ -19,7 +19,7 @@ export default function OmborQoldiqlarPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [items, setItems] = useState<StockItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [sortRule, setSortRule] = useState<{key: keyof StockItem | 'totalValue', dir: 'asc'|'desc'}>({key: 'name', dir: 'asc'});
+    const [sortRule, setSortRule] = useState({key: 'name', dir: 'asc'});
 
     useEffect(() => {
         const load = async () => {
@@ -117,6 +117,7 @@ export default function OmborQoldiqlarPage() {
                             <Plus size={18} strokeWidth={2.5} /> Yangi xomashyo
                         </button>
                     </Link>
+                </div>
                 </div>
             </div>
 
@@ -240,6 +241,7 @@ export default function OmborQoldiqlarPage() {
                 </div>
                 )}
             </div>
+        </div>
         </div>
     );
 }
