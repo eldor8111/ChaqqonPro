@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Plus, Search, Pencil, Trash2, X, CheckCircle, AlertCircle, FileSpreadsheet, ChevronRight, ChevronsUpDown, List, RotateCw, Image as ImageIcon, Layers, Check } from "lucide-react";
 import { useStore, NomenklaturaTaom } from "@/lib/store";
 import { formatCurrency } from "@/lib/mockData";
@@ -425,7 +426,7 @@ export default function TaomlarPage() {
             </div>
 
             {/* Full Screen Modal matched with the User's Screenshot */}
-            {isModalOpen && (
+            {isModalOpen && createPortal(
                 <div className="fixed inset-0 z-[100] bg-slate-100 animate-fade-in flex flex-col">
                     {/* Modal Header */}
                     <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0 shadow-sm">
@@ -740,11 +741,12 @@ export default function TaomlarPage() {
                                 </div>
                             </div>
                     </form>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Sub Modal: Modifikator Guruhi qo'shish */}
-            {isModifierModalOpen && (
+            {isModifierModalOpen && createPortal(
                 <div className="fixed inset-0 z-[130] flex items-start justify-center pt-[10vh] bg-black/40 backdrop-blur-sm animate-fade-in">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[85vh] flex flex-col border border-purple-200">
                         {/* Header */}
@@ -839,11 +841,12 @@ export default function TaomlarPage() {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Sub Modal: Retsept Qo'shish matched with screenshot */}
-            {isRecipeModalOpen && (
+            {isRecipeModalOpen && createPortal(
                 <div className="fixed inset-0 z-[120] flex items-start justify-center pt-[15vh] bg-black/40 backdrop-blur-sm animate-fade-in shadow-2xl drop-shadow-2xl">
                     <div className="bg-white rounded-lg shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col border border-slate-200">
                         {/* Header Box */}
@@ -914,7 +917,8 @@ export default function TaomlarPage() {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
