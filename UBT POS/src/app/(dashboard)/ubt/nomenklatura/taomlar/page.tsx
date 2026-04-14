@@ -426,9 +426,9 @@ export default function TaomlarPage() {
 
             {/* Full Screen Modal matched with the User's Screenshot */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] bg-slate-100 overflow-y-auto animate-fade-in">
+                <div className="fixed inset-0 z-[100] bg-slate-100 animate-fade-in flex flex-col">
                     {/* Modal Header */}
-                    <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+                    <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0 shadow-sm">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
                             <h2 className="text-xl font-black text-slate-900">{editingItem ? "Taomni o'zgartirish" : "Yangi taom qo'shing"}</h2>
@@ -438,11 +438,11 @@ export default function TaomlarPage() {
                         </button>
                     </div>
 
-                    <div className="p-6 max-w-7xl mx-auto w-full pb-10">
-                        <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                    <div className="flex-1 overflow-hidden p-6 max-w-7xl mx-auto w-full min-h-0">
+                        <form onSubmit={handleSave} className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                             {/* Left column - 2/3 width */}
-                            <div className="lg:col-span-2 space-y-6">
+                            <div className="lg:col-span-2 overflow-y-auto space-y-6 pb-4">
                                 <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm space-y-8">
                                     {/* Image upload box - drag & drop */}
                                     <div>
@@ -626,7 +626,7 @@ export default function TaomlarPage() {
                             </div>
 
                             {/* Right column - 1/3 width */}
-                            <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm space-y-6">
+                            <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm space-y-6 overflow-y-auto h-full">
 
                                 {/* Type toggle */}
                                 <div className="flex p-1 bg-slate-200 rounded-xl max-w-sm">
