@@ -1,32 +1,96 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search, FileSpreadsheet, PackageX } from "lucide-react";
 import Link from "next/link";
-import { useStore } from "@/lib/store";
+
+interface StockItem {
+    id: string;
+    name: string;
+    type: "taom" | "xomashyo" | "polfabrikat";
+    category: string;
+    stock: number;
+    unit: string;
+    costPrice: number;
+    sellPrice: number;
+}
 
 export default function OmborQoldiqlarPage() {
     const [searchQuery, setSearchQuery] = useState("");
-    
-    // Nomenklaturadan real ma'lumotlarni olish
-    const { nomenklaturaTaomlar, nomenklaturaXomashyo } = useStore();
+    const [items, setItems] = useState<StockItem[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // Ikkala ro'yxatni birlashtiramiz (Tayyor taomlar va Xomashyolar)
-    const products = [
-        ...nomenklaturaTaomlar.map(t => ({ ...t, type: t.type || 'taom', category: t.categoryId })),
-        ...nomenklaturaXomashyo.map(x => ({ ...x, type: 'xomashyo', category: 'Xomashyo' }))
-    ];
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const [menuRes, xomashyoRes, polfabrikatRes] = await Promise.all([
+                    fetch("/api/ubt/menu"),
+                    fetch("/api/ubt/xomashyo?type=xomashyo"),
+                    fetch("/api/ubt/xomashyo?type=polfabrikat"),
+                ]);
 
-    const filtered = products.filter(p => 
-        p.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                const menuData = menuRes.ok ? await menuRes.json() : { items: [] };
+                const xomashyoData = xomashyoRes.ok ? await xomashyoRes.json() : [];
+                const polfabrikatData = polfabrikatRes.ok ? await polfabrikatRes.json() : [];
+
+                const taomlar: StockItem[] = (menuData.items ?? []).map((p: any) => ({
+                    id: p.id,
+                    name: p.name,
+                    type: "taom" as const,
+                    category: p.category || "Kategoriyasiz",
+                    stock: Number(p.stock) || 0,
+                    unit: p.unit || "sht",
+                    costPrice: Number(p.costPrice) || 0,
+                    sellPrice: Number(p.sellingPrice) || 0,
+                }));
+
+                const xomashyo: StockItem[] = (Array.isArray(xomashyoData) ? xomashyoData : []).map((x: any) => ({
+                    id: x.id,
+                    name: x.name,
+                    type: "xomashyo" as const,
+                    category: x.categoryId || "Xomashyo",
+                    stock: Number(x.stock) || 0,
+                    unit: x.unit || "kg",
+                    costPrice: Number(x.price) || 0,
+                    sellPrice: 0,
+                }));
+
+                const polfabrikat: StockItem[] = (Array.isArray(polfabrikatData) ? polfabrikatData : []).map((p: any) => ({
+                    id: p.id,
+                    name: p.name,
+                    type: "polfabrikat" as const,
+                    category: p.categoryId || "Polfabrikat",
+                    stock: Number(p.stock) || 0,
+                    unit: p.unit || "kg",
+                    costPrice: Number(p.price) || 0,
+                    sellPrice: 0,
+                }));
+
+                setItems([...taomlar, ...xomashyo, ...polfabrikat]);
+            } catch (e) {
+                console.error("Qoldiqlar yuklanmadi:", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
+
+    const filtered = items.filter(p =>
+        p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.category?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Xomashyo va Mahsulotlarni farqlash uchun ranglar
     const getTypeColor = (type: string) => {
-        if (type === 'xomashyo') return "bg-orange-100 text-orange-700 border-orange-200";
-        if (type === 'taom') return "bg-blue-100 text-blue-700 border-blue-200";
-        return "bg-slate-100 text-slate-700 border-slate-200";
+        if (type === "xomashyo") return "bg-orange-100 text-orange-700 border-orange-200";
+        if (type === "polfabrikat") return "bg-purple-100 text-purple-700 border-purple-200";
+        return "bg-blue-100 text-blue-700 border-blue-200";
+    };
+
+    const getTypeLabel = (type: string) => {
+        if (type === "xomashyo") return "XOMASHYO";
+        if (type === "polfabrikat") return "POLFABRIKAT";
+        return "TAYYOR TAOM";
     };
 
     return (
@@ -69,6 +133,11 @@ export default function OmborQoldiqlarPage() {
             </div>
 
             <div className="p-4 overflow-x-auto flex-1">
+                {loading ? (
+                    <div className="flex items-center justify-center py-16 text-slate-400 text-sm">
+                        Yuklanmoqda...
+                    </div>
+                ) : (
                 <table className="w-full text-xs text-left whitespace-nowrap border-separate border-spacing-y-2">
                     <thead className="bg-slate-50 text-slate-600 font-bold">
                         <tr>
@@ -87,45 +156,40 @@ export default function OmborQoldiqlarPage() {
                                     <div className="flex flex-col items-center justify-center text-slate-400 space-y-3">
                                         <PackageX size={48} className="text-slate-300" />
                                         <span className="text-sm font-medium">Omborda yoki Nomenklaturada hech qanday mahsulot mavjud emas.</span>
-                                        <Link href="/ubt/nomenklatura/taomlar" className="text-blue-500 hover:underline">Hozir Nomenklaturadan qo'shish</Link>
+                                        <Link href="/ubt/nomenklatura/taomlar" className="text-blue-500 hover:underline">Hozir Nomenklaturadan qo&apos;shish</Link>
                                     </div>
                                 </td>
                             </tr>
                         ) : (
-                            filtered.map((item) => {
-                                const stockVal = (item as any).stock || 0;
-                                const costVal = (item as any).cost || (item as any).price || 0; // xomashyo uses price as cost
-                                const sellVal = (item as any).type === 'taom' ? (item as any).price : 0;
-                                
-                                return (
+                            filtered.map((item) => (
                                 <tr key={item.id} className="bg-white border hover:shadow-sm transition-all group">
                                     <td className="px-4 py-3 border-y border-l rounded-l-xl border-slate-100 font-bold text-slate-800">
                                         {item.name}
                                     </td>
                                     <td className="px-4 py-3 border-y border-slate-100">
                                         <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md border ${getTypeColor(item.type)}`}>
-                                            {item.type === 'xomashyo' ? 'XOMASHYO' : 'TAYYOR TAOM'}
+                                            {getTypeLabel(item.type)}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3 border-y border-slate-100">
                                         <div className="flex flex-col">
-                                            <span className={`text-sm font-black ${stockVal <= 5 ? 'text-red-500' : 'text-emerald-600'}`}>
-                                                {stockVal} <span className="text-xs font-normal opacity-70">{(item as any).unit || 'sht'}</span>
+                                            <span className={`text-sm font-black ${item.stock <= 5 ? "text-red-500" : "text-emerald-600"}`}>
+                                                {item.stock} <span className="text-xs font-normal opacity-70">{item.unit}</span>
                                             </span>
-                                            {stockVal <= 5 && <span className="text-[9px] text-red-500 tracking-wider uppercase font-bold mt-0.5">Kam zaxira</span>}
+                                            {item.stock <= 5 && <span className="text-[9px] text-red-500 tracking-wider uppercase font-bold mt-0.5">Kam zaxira</span>}
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 border-y border-slate-100 font-medium">{costVal.toLocaleString()} so'm / {(item as any).unit || 'sht'}</td>
-                                    <td className="px-4 py-3 border-y border-slate-100">{sellVal.toLocaleString()} so'm</td>
+                                    <td className="px-4 py-3 border-y border-slate-100 font-medium">{item.costPrice.toLocaleString()} so&apos;m / {item.unit}</td>
+                                    <td className="px-4 py-3 border-y border-slate-100">{item.sellPrice.toLocaleString()} so&apos;m</td>
                                     <td className="px-4 py-3 border-y border-r rounded-r-xl border-slate-100 font-bold text-slate-800">
-                                        {(stockVal * costVal).toLocaleString()} so'm
+                                        {(item.stock * item.costPrice).toLocaleString()} so&apos;m
                                     </td>
                                 </tr>
-                                )
-                            })
+                            ))
                         )}
                     </tbody>
                 </table>
+                )}
             </div>
         </div>
     );
