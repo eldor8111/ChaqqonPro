@@ -70,8 +70,8 @@ export default function OmborQoldiqlarPage() {
             p.category?.toLowerCase().includes(searchQuery.toLowerCase())
         );
         res.sort((a, b) => {
-            const vA = sortRule.key === 'totalValue' ? (a.stock * a.costPrice) : a[sortRule.key];
-            const vB = sortRule.key === 'totalValue' ? (b.stock * b.costPrice) : b[sortRule.key];
+            const vA = sortRule.key === 'totalValue' ? (a.stock * a.costPrice) : (a as any)[sortRule.key];
+            const vB = sortRule.key === 'totalValue' ? (b.stock * b.costPrice) : (b as any)[sortRule.key];
             if (vA < vB) return sortRule.dir === 'asc' ? -1 : 1;
             if (vA > vB) return sortRule.dir === 'asc' ? 1 : -1;
             return 0;
