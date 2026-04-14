@@ -189,6 +189,7 @@ export default function TaomlarPage() {
                     category: categoryName,
                     sellingPrice: taomData.price,
                     costPrice: taomData.cost,
+                    type: taomData.type || "taom",          // ✅ FIXED: was missing!
                     stock: taomData.stock || 99,
                     unit: taomData.unit || "dona",
                     image: taomData.image || null,

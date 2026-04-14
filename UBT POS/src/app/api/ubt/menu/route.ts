@@ -28,7 +28,8 @@ const _ensurePrinterIpColumn = prisma
     .$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN printerIp TEXT`)
     .catch(() => {})
     .then(() => prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN isSetMenu INTEGER DEFAULT 0`)).catch(() => {})
-    .then(() => prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN modifiers TEXT`)).catch(() => {});
+    .then(() => prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN modifiers TEXT`)).catch(() => {})
+    .then(() => prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN type TEXT DEFAULT 'taom'`)).catch(() => {});
 
 
 async function isProductInActiveOrder(tenantId: string, productName: string, productId?: string) {
@@ -100,6 +101,7 @@ export async function GET(request: NextRequest) {
 
         const products2: any[] = await prisma.$queryRawUnsafe(
             `SELECT id, name, category, sellingPrice, costPrice, stock, unit,
+                    COALESCE(type, 'taom') as type,
                     CASE WHEN image IS NOT NULL THEN image ELSE NULL END as image,
                     CASE WHEN printerIp IS NOT NULL THEN printerIp ELSE NULL END as printerIp,
                     isSetMenu, modifiers
@@ -142,6 +144,7 @@ export async function GET(request: NextRequest) {
             categoryId: catNameToId[p.category] ?? "0",
             price: Number(p.sellingPrice),
             cost: Number(p.costPrice),
+            type: p.type || "taom",
             inStock: true,
             stock: Number(p.stock),
             unit: p.unit,
@@ -167,7 +170,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { name, category, sellingPrice, costPrice, stock, unit, image, printerIp, isSetMenu, modifiers } = body;
+        const { name, category, sellingPrice, costPrice, type, stock, unit, image, printerIp, isSetMenu, modifiers } = body;
 
         if (!name) return NextResponse.json({ error: "Nomi kiritilishi shart" }, { status: 400 });
 
@@ -179,6 +182,7 @@ export async function POST(request: NextRequest) {
         const imgVal = image ?? null;
         const piVal = printerIp || null;
         const isSetMenuVal = isSetMenu ? 1 : 0;
+        const typeVal = (type === "mahsulot" ? "mahsulot" : "taom");  // ✅ type field
         const modifiersVal = modifiers && Array.isArray(modifiers) && modifiers.length > 0 ? JSON.stringify(modifiers) : null;
 
         await _ensurePrinterIpColumn;
@@ -196,16 +200,16 @@ export async function POST(request: NextRequest) {
             }
 
             await prisma.$executeRawUnsafe(
-                `UPDATE Product SET category=?, sellingPrice=?, costPrice=?, stock=?, unit=?, image=?, printerIp=?, isSetMenu=?, modifiers=? WHERE id=? AND tenantId=?`,
-                catVal, sellPrice, costPr, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, existing[0].id, tenantId
+                `UPDATE Product SET category=?, sellingPrice=?, costPrice=?, type=?, stock=?, unit=?, image=?, printerIp=?, isSetMenu=?, modifiers=? WHERE id=? AND tenantId=?`,
+                catVal, sellPrice, costPr, typeVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, existing[0].id, tenantId
             );
             return NextResponse.json({ success: true, action: "updated", id: existing[0].id });
         } else {
             const newId = `prod_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
             await prisma.$executeRawUnsafe(
-                `INSERT INTO Product (id, tenantId, name, category, sellingPrice, costPrice, stock, minStock, unit, image, printerIp, isSetMenu, modifiers, createdAt)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, 10, ?, ?, ?, ?, ?, datetime('now'))`,
-                newId, tenantId, name, catVal, sellPrice, costPr, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal
+                `INSERT INTO Product (id, tenantId, name, category, sellingPrice, costPrice, type, stock, minStock, unit, image, printerIp, isSetMenu, modifiers, createdAt)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 10, ?, ?, ?, ?, ?, datetime('now'))`,
+                newId, tenantId, name, catVal, sellPrice, costPr, typeVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal
             );
             return NextResponse.json({ success: true, action: "created", id: newId }, { status: 201 });
         }
