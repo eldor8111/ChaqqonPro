@@ -13,7 +13,7 @@ interface Product {
     unit: string;
     price: number;
     stock: number;
-    productType: "xomashyo" | "polfabrikat";
+    productType: "xomashyo" | "polfabrikat" | "mahsulot";
     categoryId?: string;
 }
 
@@ -35,12 +35,13 @@ const emptyItem = (): FormItem => ({
 });
 
 export default function OmborKirimPage() {
-    const { nomenklaturaXomashyo, updateNomenklaturaXomashyo } = useStore();
+    const { nomenklaturaXomashyo, nomenklaturaTaomlar, updateNomenklaturaXomashyo } = useStore();
 
-    // Build unified product list (only xomashyo + polfabrikat)
+    // Build unified product list (xomashyo + mahsulot goods like Pepsi, Kola)
+    // Polfabrikat is NOT here — it's made in the kitchen, never purchased from supplier
     const allProducts: Product[] = useMemo(() => [
         ...nomenklaturaXomashyo
-            .filter(x => (x as any).type === "xomashyo" || !(x as any).type)
+            .filter(x => (x as any).type !== "polfabrikat")
             .map(x => ({
                 id: x.id,
                 name: x.name,
@@ -50,18 +51,19 @@ export default function OmborKirimPage() {
                 productType: "xomashyo" as const,
                 categoryId: (x as any).categoryId,
             })),
-        ...nomenklaturaXomashyo
-            .filter(x => (x as any).type === "polfabrikat")
-            .map(x => ({
-                id: x.id,
-                name: x.name,
-                unit: (x as any).unit || "kg",
-                price: Number((x as any).price || 0),
-                stock: Number((x as any).stock || 0),
-                productType: "polfabrikat" as const,
-                categoryId: (x as any).categoryId,
+        // Mahsulot (type='mahsulot' or hasBarcode) from nomenklaturaTaomlar — goods sold as-is
+        ...nomenklaturaTaomlar
+            .filter(t => t.type === "mahsulot" || (t as any).hasBarcode)
+            .map(t => ({
+                id: t.id,
+                name: t.name,
+                unit: (t as any).unit || "dona",
+                price: Number(t.cost || t.price) || 0,
+                stock: Number((t as any).stock || 0),
+                productType: "mahsulot" as const,
+                categoryId: t.categoryId,
             })),
-    ], [nomenklaturaXomashyo]);
+    ], [nomenklaturaXomashyo, nomenklaturaTaomlar]);
 
     // Kirim history
     const [kirimlar, setKirimlar] = useState<any[]>([]);
@@ -249,7 +251,7 @@ export default function OmborKirimPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Kirim Hujjatlari</h1>
-                        <p className="text-sm text-slate-500 mt-1">Xomashyo va polfabrikat kirim tarixi</p>
+                        <p className="text-sm text-slate-500 mt-1">Xomashyo va tayyor mahsulotlar (Pepsi, Kola va h.k.) kirim tarixi</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                         <button className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-emerald-500 text-emerald-600 rounded-xl text-sm font-bold hover:bg-emerald-50 transition-all shadow-sm">
@@ -466,8 +468,10 @@ export default function OmborKirimPage() {
                                                                 >
                                                                     <div>
                                                                         <span className="text-sm font-semibold text-slate-800 group-hover:text-blue-700">{prod.name}</span>
-                                                                        <span className={`ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded ${prod.productType === "xomashyo" ? "bg-orange-100 text-orange-600" : "bg-purple-100 text-purple-600"}`}>
-                                                                            {prod.productType === "xomashyo" ? "XOMASHYO" : "POLFABRIKAT"}
+                                                                        <span className={`ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                                                            prod.productType === "xomashyo" ? "bg-orange-100 text-orange-600" : "bg-emerald-100 text-emerald-600"
+                                                                        }`}>
+                                                                            {prod.productType === "xomashyo" ? "XOMASHYO" : "MAHSULOT"}
                                                                         </span>
                                                                     </div>
                                                                     <span className="text-xs text-slate-400">{prod.stock} {prod.unit}</span>
@@ -480,8 +484,12 @@ export default function OmborKirimPage() {
                                                 {/* Type badge */}
                                                 <div className="col-span-1">
                                                     {item.productType ? (
-                                                        <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${item.productType === "xomashyo" ? "bg-orange-100 text-orange-600" : "bg-purple-100 text-purple-600"}`}>
-                                                            {item.productType === "xomashyo" ? "XOM" : "POL"}
+                                                        <span className={`text-[10px] font-bold px-2 py-1 rounded-lg ${
+                                                            item.productType === "xomashyo" ? "bg-orange-100 text-orange-600" :
+                                                            item.productType === "mahsulot" ? "bg-emerald-100 text-emerald-600" :
+                                                            "bg-purple-100 text-purple-600"
+                                                        }`}>
+                                                            {item.productType === "xomashyo" ? "XOM" : item.productType === "mahsulot" ? "MAH" : "POL"}
                                                         </span>
                                                     ) : <span className="text-slate-300 text-xs">—</span>}
                                                 </div>
