@@ -426,9 +426,9 @@ export default function TaomlarPage() {
 
             {/* Full Screen Modal matched with the User's Screenshot */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex flex-col bg-slate-100 overflow-y-auto animate-fade-in pb-10">
+                <div className="fixed inset-0 z-[100] flex flex-col bg-slate-100 animate-fade-in">
                     {/* Modal Header */}
-                    <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+                    <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 z-10 shadow-sm shrink-0">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
                             <h2 className="text-xl font-black text-slate-900">{editingItem ? "Taomni o'zgartirish" : "Yangi taom qo'shing"}</h2>
@@ -438,7 +438,8 @@ export default function TaomlarPage() {
                         </button>
                     </div>
 
-                    <div className="p-6 max-w-7xl mx-auto w-full flex-1">
+                    <div className="flex-1 overflow-y-auto">
+                    <div className="p-6 max-w-7xl mx-auto w-full pb-10">
                         <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
                             {/* Left column - 2/3 width */}
@@ -742,15 +743,16 @@ export default function TaomlarPage() {
                             </div>
                         </form>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Sub Modal: Modifikator Guruhi qo'shish */}
             {isModifierModalOpen && (
                 <div className="fixed inset-0 z-[130] flex items-start justify-center pt-[10vh] bg-black/40 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden flex flex-col border border-purple-200">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[85vh] flex flex-col border border-purple-200">
                         {/* Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-purple-50">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-purple-50 shrink-0">
                             <div className="flex items-center gap-2">
                                 <Layers size={18} className="text-purple-500" />
                                 <h3 className="text-base font-black text-slate-900">
@@ -762,7 +764,7 @@ export default function TaomlarPage() {
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-4">
+                        <div className="p-6 space-y-4 overflow-y-auto flex-1">
                             {/* Group name */}
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 mb-1.5">Guruh nomi <span className="text-red-500">*</span></label>
@@ -847,7 +849,7 @@ export default function TaomlarPage() {
             {/* Sub Modal: Retsept Qo'shish matched with screenshot */}
             {isRecipeModalOpen && (
                 <div className="fixed inset-0 z-[120] flex items-start justify-center pt-[15vh] bg-black/40 backdrop-blur-sm animate-fade-in shadow-2xl drop-shadow-2xl">
-                    <div className="bg-white rounded-lg shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col border border-slate-200">
+                    <div className="bg-white rounded-lg shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col border border-slate-200">
                         {/* Header Box */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white relative">
                             <div className="flex items-center gap-12">
@@ -870,7 +872,7 @@ export default function TaomlarPage() {
                         </div>
 
                         {/* Form Box */}
-                        <div className="p-6 bg-white flex items-end gap-5 overflow-visible pb-8">
+                        <div className="p-6 bg-white flex items-end gap-5 overflow-y-auto pb-8">
                             <div className="flex-[1.2]">
                                 <label className="block text-xs font-bold text-slate-700 mb-2">Ombor</label>
                                 <select value={recipeForm.ombor} onChange={e => setRecipeForm({ ...recipeForm, ombor: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#007bff] text-slate-500 bg-white shadow-sm font-medium">
