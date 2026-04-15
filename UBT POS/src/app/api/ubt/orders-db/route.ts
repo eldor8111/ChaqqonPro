@@ -56,15 +56,16 @@ export async function GET(request: NextRequest) {
             } catch {}
         }
 
-        // Deduplicate by item.id, summing quantities
+        // Deduplicate by item.id + saboy + shotId, summing quantities
         const merged: Record<string, any> = {};
         for (const entry of allItems) {
             const id = entry.item?.id || entry.id;
             if (!id) continue;
-            if (merged[id]) {
-                merged[id].qty = (merged[id].qty || 0) + (entry.qty || 1);
+            const key = `${id}-${!!entry.isSaboy}-${entry.shotId || 1}`;
+            if (merged[key]) {
+                merged[key].qty = (merged[key].qty || 0) + (entry.qty || 1);
             } else {
-                merged[id] = { ...entry };
+                merged[key] = { ...entry };
             }
         }
 
