@@ -12,7 +12,7 @@ import {
     FileText, Search, Printer
 } from "lucide-react";
 import {
-    AreaChart, Area, BarChart, Bar, Legend, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    AreaChart, Area, BarChart, Bar, Cell, Legend, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { useStore } from "@/lib/store";
 import type { UbtTable } from "@/lib/store";
@@ -196,8 +196,8 @@ function HourlyChart({ data }: { data: { hour: string; amount: number }[] }) {
         const val: number = payload[0].value;
         const isPeak = label === peak.hour;
         return (
-            <div style={{ background: "rgba(10,14,26,0.97)", border: "1px solid rgba(99,102,241,0.4)", borderRadius: 14, padding: "10px 14px", boxShadow: "0 8px 30px rgba(0,0,0,0.5)" }}>
-                <p style={{ color: "#94a3b8", fontSize: 10, fontWeight: 700, letterSpacing: 1, marginBottom: 4, textTransform: "uppercase" }}>{label}</p>
+            <div style={{ background: "rgba(255,255,255,0.97)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 14, padding: "10px 14px", boxShadow: "0 8px 30px rgba(59,130,246,0.15)" }}>
+                <p style={{ color: "#64748b", fontSize: 10, fontWeight: 700, letterSpacing: 1, marginBottom: 4, textTransform: "uppercase" }}>{label}</p>
                 <p style={{ color: isPeak ? "#fbbf24" : "#a78bfa", fontSize: 15, fontWeight: 900 }}>
                     {isPeak ? "⚡ " : ""}{val.toLocaleString()} <span style={{ fontSize: 10, fontWeight: 600, color: "#64748b" }}>so&apos;m</span>
                 </p>
@@ -208,34 +208,34 @@ function HourlyChart({ data }: { data: { hour: string; amount: number }[] }) {
 
     return (
         <div className="rounded-2xl overflow-hidden"
-            style={{ background: "linear-gradient(135deg, rgba(15,23,42,0.98) 0%, rgba(30,27,75,0.95) 100%)", border: "1px solid rgba(99,102,241,0.2)", boxShadow: "0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)" }}>
+            style={{ background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 60%, #bfdbfe 100%)", border: "1px solid rgba(59,130,246,0.3)", boxShadow: "0 20px 60px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.8)" }}>
 
             {/* Header */}
             <div className="px-5 pt-5 pb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)" }}>
+                    <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg,#3b82f6,#6366f1)" }}>
                         <TrendingUp size={15} className="text-white" />
                     </div>
                     <div>
-                        <p className="text-white font-bold text-sm leading-none">Soatlik savdo</p>
-                        <p className="text-indigo-400 text-[10px] font-semibold mt-0.5">Bugungi dinamika</p>
+                        <p className="text-slate-800 font-bold text-sm leading-none">Soatlik savdo</p>
+                        <p className="text-blue-600 text-[10px] font-semibold mt-0.5">Bugungi dinamika</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-amber-300"
-                    style={{ background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)" }}>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-amber-600"
+                    style={{ background: "rgba(251,191,36,0.15)", border: "1px solid rgba(251,191,36,0.3)" }}>
                     ⚡ {peak.hour} da eng yuqori
                 </div>
             </div>
 
             {/* KPI strip */}
-            <div className="grid grid-cols-3 gap-0 mx-5 mb-4 rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
+            <div className="grid grid-cols-3 gap-0 mx-5 mb-4 rounded-xl overflow-hidden" style={{ border: "1px solid rgba(59,130,246,0.15)" }}>
                 {[
-                    { label: "Jami tushum",  value: `${Math.round(total / 1000)}K so'm`, color: "#a78bfa" },
-                    { label: "Eng yuqori",   value: `${Math.round(peak.amount / 1000)}K`, color: "#fbbf24" },
-                    { label: "O'rtacha/soat", value: `${Math.round(avgHour / 1000)}K`, color: "#34d399" },
+                    { label: "Jami tushum",  value: `${Math.round(total / 1000)}K so'm`, color: "#6366f1" },
+                    { label: "Eng yuqori",   value: `${Math.round(peak.amount / 1000)}K`, color: "#d97706" },
+                    { label: "O'rtacha/soat", value: `${Math.round(avgHour / 1000)}K`, color: "#059669" },
                 ].map((kpi, i) => (
-                    <div key={i} className={`px-3 py-2.5 text-center ${i < 2 ? "border-r border-surface-border" : ""}`}
-                        style={{ background: "rgba(255,255,255,0.03)" }}>
+                    <div key={i} className={`px-3 py-2.5 text-center ${i < 2 ? "border-r border-blue-200/50" : ""}`}
+                        style={{ background: "rgba(255,255,255,0.5)" }}>
                         <p className="font-black text-sm" style={{ color: kpi.color }}>{kpi.value}</p>
                         <p className="text-[9px] font-semibold text-slate-500 mt-0.5 uppercase tracking-wider">{kpi.label}</p>
                     </div>
@@ -261,20 +261,20 @@ function HourlyChart({ data }: { data: { hour: string; amount: number }[] }) {
                             <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
                         </filter>
                     </defs>
-                    <CartesianGrid vertical={false} strokeDasharray="2 6" stroke="rgba(255,255,255,0.04)" />
+                    <CartesianGrid vertical={false} strokeDasharray="2 6" stroke="rgba(59,130,246,0.12)" />
                     <XAxis
                         dataKey="hour"
-                        tick={{ fontSize: 9, fill: "#475569", fontWeight: 600 }}
+                        tick={{ fontSize: 9, fill: "#64748b", fontWeight: 600 }}
                         axisLine={false} tickLine={false}
                         interval={3}
                     />
                     <YAxis
-                        tick={{ fontSize: 9, fill: "#475569", fontWeight: 600 }}
+                        tick={{ fontSize: 9, fill: "#64748b", fontWeight: 600 }}
                         axisLine={false} tickLine={false}
                         tickFormatter={(v: number) => v >= 1000 ? `${Math.round(v / 1000)}K` : `${v}`}
                         width={36}
                     />
-                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: "rgba(99,102,241,0.3)", strokeWidth: 1, strokeDasharray: "4 4" }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: "rgba(59,130,246,0.3)", strokeWidth: 1, strokeDasharray: "4 4" }} />
                     <Area
                         type="monotone"
                         dataKey="amount"
@@ -288,7 +288,7 @@ function HourlyChart({ data }: { data: { hour: string; amount: number }[] }) {
             </ResponsiveContainer>
 
             {/* Bottom glow bar */}
-            <div className="h-px mx-5 mb-1 rounded-full" style={{ background: "linear-gradient(90deg, transparent, rgba(99,102,241,0.6), transparent)" }} />
+            <div className="h-px mx-5 mb-1 rounded-full" style={{ background: "linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent)" }} />
         </div>
     );
 }
@@ -631,6 +631,145 @@ function DebtDetailsModal({ type, onClose, data, loading, onRefresh, onSverkaGen
     );
 }
 
+// ─── Stats Overview Chart ─────────────────────────────────────────────────────
+function StatsOverviewChart({ finance, tables, byMethod }: {
+    finance: { totalIncome: number; totalExpense: number; netProfit: number };
+    tables: { total: number; occupied: number; reserved: number; free: number };
+    byMethod: Record<string, { total: number; count: number }>;
+}) {
+    const financeRows = [
+        { label: "Pul kirimi",  value: finance.totalIncome,  color: "#10b981" },
+        { label: "Pul chiqimi", value: finance.totalExpense, color: "#f43f5e" },
+        { label: "Sof foyda",   value: Math.max(finance.netProfit, 0), color: "#3b82f6" },
+    ];
+    const maxFin = Math.max(...financeRows.map(r => r.value), 1);
+
+    const methodEntries = Object.entries(byMethod)
+        .sort((a, b) => b[1].total - a[1].total)
+        .slice(0, 5);
+    const totalMethod = methodEntries.reduce((s, [, d]) => s + d.total, 0);
+    const methodColors = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#f43f5e"];
+
+    const tableRows = [
+        { label: "Bo'sh", value: tables.free,     color: "#64748b", bg: "rgba(100,116,139,0.12)" },
+        { label: "Band",  value: tables.occupied, color: "#10b981", bg: "rgba(16,185,129,0.12)"  },
+        { label: "Bron",  value: tables.reserved, color: "#f59e0b", bg: "rgba(245,158,11,0.12)"  },
+    ];
+
+    const financeChartData = [
+        { name: "Kirim",  value: finance.totalIncome  },
+        { name: "Chiqim", value: finance.totalExpense },
+        { name: "Foyda",  value: Math.max(finance.netProfit, 0) },
+    ];
+
+    return (
+        <div className="rounded-2xl p-5"
+            style={{ background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 60%, #e0f2fe 100%)", border: "1px solid rgba(59,130,246,0.25)", boxShadow: "0 4px 24px rgba(59,130,246,0.1)" }}>
+
+            {/* Header */}
+            <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                    style={{ background: "linear-gradient(135deg,#3b82f6,#6366f1)" }}>
+                    <TrendingUp size={15} className="text-white" />
+                </div>
+                <div>
+                    <p className="text-slate-800 font-bold text-sm leading-none">Moliyaviy statistika</p>
+                    <p className="text-blue-600 text-[10px] font-semibold mt-0.5">Bugun · Barcha ko&apos;rsatkichlar</p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-5">
+                {/* Finance bars */}
+                <div>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Moliya</p>
+                    <div className="space-y-3">
+                        {financeRows.map(row => {
+                            const pct = maxFin > 0 ? (row.value / maxFin) * 100 : 0;
+                            return (
+                                <div key={row.label}>
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-xs font-bold text-slate-600">{row.label}</span>
+                                        <span className="text-xs font-black" style={{ color: row.color }}>{fmt(row.value)}</span>
+                                    </div>
+                                    <div className="h-2 rounded-full" style={{ background: "rgba(255,255,255,0.7)" }}>
+                                        <div className="h-full rounded-full transition-all duration-700"
+                                            style={{ width: `${Math.max(pct, 2)}%`, background: row.color, opacity: 0.85 }} />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Mini bar chart */}
+                    <div className="mt-4 rounded-xl overflow-hidden" style={{ background: "rgba(255,255,255,0.5)" }}>
+                        <ResponsiveContainer width="100%" height={80}>
+                            <BarChart data={financeChartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }} barCategoryGap="30%">
+                                <CartesianGrid vertical={false} strokeDasharray="2 4" stroke="rgba(59,130,246,0.1)" />
+                                <XAxis dataKey="name" tick={{ fontSize: 9, fill: "#64748b", fontWeight: 700 }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 8, fill: "#94a3b8" }} axisLine={false} tickLine={false} tickFormatter={(v: number) => v >= 1000 ? `${Math.round(v / 1000)}K` : `${v}`} />
+                                <Tooltip
+                                    contentStyle={{ background: "rgba(255,255,255,0.97)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: 10, fontSize: 11, fontWeight: 700, boxShadow: "0 4px 16px rgba(59,130,246,0.12)" }}
+                                    formatter={(v: any) => [`${fmt(v)} so'm`, ""]}
+                                    labelStyle={{ color: "#64748b", fontSize: 10, fontWeight: 700 }}
+                                />
+                                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                    {financeChartData.map((_, i) => (
+                                        <Cell key={i} fill={["#10b981","#f43f5e","#3b82f6"][i]} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Payment methods + Table status */}
+                <div className="flex flex-col gap-4">
+                    {/* Payment methods */}
+                    <div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">To&apos;lov turlari</p>
+                        {methodEntries.length === 0 ? (
+                            <p className="text-xs text-slate-400 text-center py-4">Ma&apos;lumot yo&apos;q</p>
+                        ) : (
+                            <div className="space-y-3">
+                                {methodEntries.map(([name, d], i) => {
+                                    const pct = totalMethod > 0 ? (d.total / totalMethod) * 100 : 0;
+                                    return (
+                                        <div key={name}>
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className="text-xs font-bold text-slate-600 truncate max-w-[90px]">{name}</span>
+                                                <span className="text-[10px] font-bold text-slate-500">{Math.round(pct)}%</span>
+                                            </div>
+                                            <div className="h-2 rounded-full" style={{ background: "rgba(255,255,255,0.7)" }}>
+                                                <div className="h-full rounded-full transition-all duration-700"
+                                                    style={{ width: `${Math.max(pct, 2)}%`, background: methodColors[i % methodColors.length], opacity: 0.85 }} />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Table status */}
+                    {tables.total > 0 && (
+                        <div className="pt-3 border-t border-blue-200/50">
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2.5">Stollar holati</p>
+                            <div className="grid grid-cols-3 gap-2">
+                                {tableRows.map(t => (
+                                    <div key={t.label} className="text-center py-2.5 rounded-xl" style={{ background: t.bg }}>
+                                        <p className="text-xl font-black" style={{ color: t.color }}>{t.value}</p>
+                                        <p className="text-[10px] font-bold text-slate-500 mt-0.5">{t.label}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ─── Timeframe Selector ───────────────────────────────────────────────────────
 function TimeframeSelector({ value, onChange }: { value: string, onChange: (v: string) => void }) {
     const [open, setOpen] = useState(false);
@@ -865,7 +1004,14 @@ export default function UbtPage() {
                     {/* Right Column: Hourly Chart Hero (8 width) */}
                     <div className="col-span-12 lg:col-span-8 flex flex-col gap-5">
                         <HourlyChart data={stats.hourly} />
-                        
+
+                        {/* Stats Overview Chart */}
+                        <StatsOverviewChart
+                            finance={stats.finance}
+                            tables={stats.tables}
+                            byMethod={stats.today.byMethod}
+                        />
+
                         {/* Debt Trackers (Moved to right column) */}
                         <div className="grid grid-cols-2 gap-5 h-28 shrink-0">
                             <div onClick={() => openDebtModal("qarzdorlar")}
