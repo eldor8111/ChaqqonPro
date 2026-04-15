@@ -75,6 +75,12 @@ export async function POST(request: NextRequest) {
         const grandTotal = Math.round((total || 0) * (1 + (serviceFee ?? 0)));
         const methodName = METHOD_MAP[paymentMethod] || paymentMethod;
 
+        if (paymentMethod === "qarz" || methodName === "qarz") {
+            if (!customerId) {
+                return NextResponse.json({ error: "Qarzga berish uchun ro'yxatdan mijoz tanlashingiz shart!" }, { status: 400 });
+            }
+        }
+
         // 1. Create Transaction
         const transaction = await prisma.transaction.create({
             data: {

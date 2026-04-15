@@ -154,10 +154,17 @@ export async function GET(req: NextRequest) {
             include: { product: true }
         });
         
-        const writingOffs = expRecords.reduce((sum, e) => {
-            const cost = e.product?.costPrice || 5000;
+        const writingOffsFromExpenditures = expRecords.reduce((sum, e) => {
+            const cost = e.product?.costPrice || 0;
             return sum + (e.quantity * cost); 
         }, 0);
+
+        const realWriteoffs = await prisma.inventoryWriteoff.findMany({
+            where: { tenantId: session.tenantId, createdAt: filterClause, status: "approved" }
+        });
+        const writingOffsFromTable = realWriteoffs.reduce((sum, w) => sum + (Number(w.totalLoss) || 0), 0);
+        
+        const writingOffs = writingOffsFromExpenditures + writingOffsFromTable;
         
         const totalSalaries = 0; // Salary logic
 

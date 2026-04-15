@@ -8,15 +8,32 @@ import {
 import { useStore } from "@/lib/store";
 
 export default function OmborInventarizatsiyaPage() {
-    const { nomenklaturaXomashyo, updateNomenklaturaXomashyo } = useStore();
+    const { updateNomenklaturaXomashyo } = useStore();
 
-    const allProducts = useMemo(() => nomenklaturaXomashyo.map(x => ({
-        id: x.id,
-        name: x.name,
-        unit: (x as any).unit || "kg",
-        stock: Number((x as any).stock || 0),
-        productType: (x as any).type === "polfabrikat" ? "polfabrikat" : "xomashyo",
-    })), [nomenklaturaXomashyo]);
+    const [allProducts, setAllProducts] = useState<any[]>([]);
+    const [productsLoading, setProductsLoading] = useState(true);
+
+    const loadProducts = async () => {
+        try {
+            setProductsLoading(true);
+            const [xomRes, menuRes] = await Promise.all([
+                fetch("/api/ubt/xomashyo"),
+                fetch("/api/ubt/menu?all=1"),
+            ]);
+            const xomData = xomRes.ok ? await xomRes.json() : [];
+            const menuData = menuRes.ok ? await menuRes.json() : { items: [] };
+            const menuItems: any[] = Array.isArray(menuData.items) ? menuData.items : [];
+
+            const xomashyo = (Array.isArray(xomData) ? xomData : []).map((x: any) => ({
+                id: x.id, name: x.name, unit: x.unit || "kg", stock: Number(x.stock) || 0, productType: x.type === "polfabrikat" ? "polfabrikat" : "xomashyo", categoryId: x.categoryId,
+            }));
+            const mahsulot = menuItems.map((t: any) => ({
+                id: t.id, name: t.name, unit: t.unit || "dona", stock: Number(t.stock) || 0, productType: "mahsulot", categoryId: t.categoryId,
+            }));
+            setAllProducts([...xomashyo, ...mahsulot]);
+        } catch (e) { console.error(e); }
+        finally { setProductsLoading(false); }
+    };
 
     const [items, setItems] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -41,7 +58,7 @@ export default function OmborInventarizatsiyaPage() {
         finally { setIsLoading(false); }
     };
 
-    useEffect(() => { fetchItems(); }, []);
+    useEffect(() => { fetchItems(); loadProducts(); }, []);
 
     useEffect(() => {
         const handler = (e: MouseEvent) => {
@@ -94,9 +111,9 @@ export default function OmborInventarizatsiyaPage() {
                 body: JSON.stringify(payload),
             });
             if (res.ok) {
-                // ✅ AUTO STOCK CORRECTION: set stock = actualStock
                 if (formData.productId && formData.actualStock !== "") {
-                    updateNomenklaturaXomashyo(formData.productId, { stock: Number(formData.actualStock) });
+                    // Muvaffaqiyatli saqlangandan so'ng qayta yuklash
+                    loadProducts();
                 }
                 setIsModalOpen(false);
                 setFormData({ productId: "", productName: "", systemStock: "", actualStock: "", warehouse: "Asosiy Ombor", employee: "", unit: "kg" });

@@ -188,6 +188,7 @@ export default function TaomlarPage() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
+                    id: editingItem?.id || undefined,
                     name: taomData.name,
                     category: categoryName,
                     sellingPrice: taomData.price,

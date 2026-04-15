@@ -1,23 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/backend/auth";
 import { prisma } from "@/lib/backend/db";
+import { jwtVerify } from "jose";
+import { JWT_SECRET } from "@/lib/backend/jwt";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+async function getAuthTenantId(request: NextRequest): Promise<string | null> {
     try {
         const session = await getSession();
-        if (!session?.tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        if (session?.tenantId) return session.tenantId;
+    } catch {}
+
+    const authHeader = request.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+        try {
+            const { payload } = await jwtVerify(authHeader.slice(7), JWT_SECRET);
+            if (payload.tenantId) return payload.tenantId as string;
+        } catch {}
+    }
+    return null;
+}
+
+export async function GET(req: NextRequest) {
+    try {
+        const tenantId = await getAuthTenantId(req);
+        if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const orders = await prisma.deliveryOrder.findMany({
-            where: { tenantId: session.tenantId },
+            where: { tenantId },
             orderBy: { createdAt: "desc" },
             take: 100,
         });
 
         // Build staff list for couriers
         const couriers = await prisma.staff.findMany({
-            where: { tenantId: session.tenantId },
+            where: { tenantId },
             select: { id: true, name: true, role: true },
         });
 
@@ -29,8 +47,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const session = await getSession();
-        if (!session?.tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const tenantId = await getAuthTenantId(req);
+        if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const body = await req.json();
         const { customerName, customerPhone, address, items, totalAmount, paymentMethod, notes } = body;
@@ -39,7 +57,7 @@ export async function POST(req: NextRequest) {
 
         const order = await prisma.deliveryOrder.create({
             data: {
-                tenantId: session.tenantId,
+                tenantId,
                 orderNumber,
                 customerName: customerName || "Noma'lum",
                 customerPhone: customerPhone || "",
@@ -61,14 +79,14 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
     try {
-        const session = await getSession();
-        if (!session?.tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const tenantId = await getAuthTenantId(req);
+        if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const body = await req.json();
         const { id, status, courierId, courierName, isPaid } = body;
 
         const updated = await prisma.deliveryOrder.update({
-            where: { id, tenantId: session.tenantId },
+            where: { id, tenantId },
             data: {
                 ...(status ? { status } : {}),
                 ...(courierId !== undefined ? { courierId, courierName } : {}),

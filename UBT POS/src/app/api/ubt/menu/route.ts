@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { name, category, sellingPrice, costPrice, type, warehouse, stock, unit, image, printerIp, isSetMenu, modifiers } = body;
+        const { id, name, category, sellingPrice, costPrice, type, warehouse, stock, unit, image, printerIp, isSetMenu, modifiers } = body;
 
         if (!name) return NextResponse.json({ error: "Nomi kiritilishi shart" }, { status: 400 });
 
@@ -201,23 +201,27 @@ export async function POST(request: NextRequest) {
 
         await _ensurePrinterIpColumn;
 
-        // Check if product with same name exists for this tenant (UPSERT by name)
-        const existing: any[] = await prisma.$queryRawUnsafe(
-            `SELECT id FROM Product WHERE tenantId=? AND name=? LIMIT 1`,
-            tenantId, name
-        );
+        // UPSERT by id OR name
+        let targetId = id;
+        if (!targetId) {
+            const existingByName: any[] = await prisma.$queryRawUnsafe(
+                `SELECT id FROM Product WHERE tenantId=? AND name=? LIMIT 1`,
+                tenantId, name
+            );
+            if (existingByName.length > 0) targetId = existingByName[0].id;
+        }
 
-        if (existing.length > 0) {
-            const active = await isProductInActiveOrder(tenantId, name, existing[0].id);
+        if (targetId) {
+            const active = await isProductInActiveOrder(tenantId, name, targetId);
             if (active) {
                 return NextResponse.json({ error: "Ushbu mahsulot ayni paytda faol zakazlar (band stollar yoki yetkazish) ichida mavjud! Mijoz to'lov qilmaguncha uni tahrirlash mumkin emas." }, { status: 400 });
             }
 
             await prisma.$executeRawUnsafe(
-                `UPDATE Product SET category=?, sellingPrice=?, costPrice=?, type=?, warehouse=?, stock=?, unit=?, image=?, printerIp=?, isSetMenu=?, modifiers=? WHERE id=? AND tenantId=?`,
-                catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, existing[0].id, tenantId
+                `UPDATE Product SET name=?, category=?, sellingPrice=?, costPrice=?, type=?, warehouse=?, stock=?, unit=?, image=?, printerIp=?, isSetMenu=?, modifiers=? WHERE id=? AND tenantId=?`,
+                name, catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, targetId, tenantId
             );
-            return NextResponse.json({ success: true, action: "updated", id: existing[0].id });
+            return NextResponse.json({ success: true, action: "updated", id: targetId });
         } else {
             const newId = `prod_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
             await prisma.$executeRawUnsafe(
