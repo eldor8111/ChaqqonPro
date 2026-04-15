@@ -118,7 +118,11 @@ const printKitchenReceipt = async (items: {item:any; qty:number}[], tableName: s
 // ─── Pay Modal ─────────────────────────────────────────────────────────────────
 interface MenuItem { id: string; name: string; categoryId: string; price: number; inStock: boolean; image?: string | null; stock?: number; unit?: string; printerIp?: string | null; isSetMenu?: boolean; modifiers?: any[]; }
 interface MenuCategory { id: string; name: string; }
-interface CartItem { item: MenuItem; qty: number; selectedModifiers?: Record<string, any>; isSaboy?: boolean; }
+interface CartItem { item: MenuItem; qty: number; selectedModifiers?: Record<string, any>; isSaboy?: boolean; shotId?: number; }
+
+// ─── Multi-Shot (Split Bill) ──────────────────────────────────────────────────
+interface Shot { id: number; label: string; cart: CartItem[]; isPaid: boolean; paymentMethod?: string; }
+interface TableShotState { shots: Shot[]; activeShot: number; }
 
 function PayModal({ total, onPay, onClose, loading, servicePct = 0 }: { total: number; onPay: (m: string, customerId?: string) => void; onClose: () => void; loading: boolean; servicePct?: number }) {
     const { lang, dark } = usePos();
@@ -986,6 +990,7 @@ export default function UbtPosPage() {
     const [tab, setTab] = useState<"tables" | "takeaway" | "delivery" | "reservation">("tables");
     const [zone, setZone] = useState("all");
     const [selTable, setSelTable] = useState<UbtTable | null>(null);
+    const [activeShot, setActiveShot] = useState<number>(1);
     const [actionTable, setActionTable] = useState<UbtTable | null>(null);
     const [showReservation, setShowReservation] = useState(false);
     const [reservations, setReservations] = useState<any[]>([]);
@@ -1063,18 +1068,29 @@ export default function UbtPosPage() {
     const handleUpdateTableItem = async (c: any, delta: number) => {
         if (!selTable) return;
         const updateLocalAndDb = async () => {
-            const currentOrders = tableOrders[selTable.id] || [];
+            // Multi-shot: update active shot's cart; else update tableOrders
+            const shotState = tableShotMap[selTable.id];
+            const activeShotObj = shotState?.shots.find(s => s.id === shotState.activeShot);
+            const currentOrders: any[] = activeShotObj ? activeShotObj.cart : (tableOrders[selTable.id] || []);
+
             let newQty = c.qty + delta;
             const isWt = c.item?.unit?.toLowerCase().match(/kg|gr|g|litr|l|кг|гр/);
-            if (!isWt) { newQty = Math.max(0, Math.round(newQty)); } 
+            if (!isWt) { newQty = Math.max(0, Math.round(newQty)); }
             else { newQty = Math.max(0, parseFloat(newQty.toFixed(3))); }
-            
+
             const cancelledQty = c.qty - newQty;
-            
+
             let nextOrders = currentOrders.map((o: any) => o.item.id === c.item.id && !!o.isSaboy === !!c.isSaboy ? { ...o, qty: newQty, printedQty: Math.min(o.printedQty || 0, newQty) } : o);
             nextOrders = nextOrders.filter((o: any) => o.qty > 0);
-            
-            setTableOrders({ ...tableOrders, [selTable.id]: nextOrders });
+
+            if (activeShotObj) {
+                setTableShotMap(prev => ({
+                    ...prev,
+                    [selTable.id]: { ...prev[selTable.id], shots: prev[selTable.id].shots.map(s => s.id === shotState.activeShot ? { ...s, cart: nextOrders } : s) }
+                }));
+            } else {
+                setTableOrders({ ...tableOrders, [selTable.id]: nextOrders });
+            }
             const token = store.kassirSession?.token || store.deviceSession?.token;
             const hdrs: Record<string, string> = { "Content-Type": "application/json" };
             if (token) hdrs["Authorization"] = `Bearer ${token}`;
@@ -1204,7 +1220,9 @@ export default function UbtPosPage() {
     };
 
     // ─── Table orders — DB-backed ─────────────────────────────────────────────
-    const [tableOrders, setTableOrders] = useState<Record<string, { item: any; qty: number; unit?: string }[]>>({});
+    const [tableOrders, setTableOrders] = useState<Record<string, { item: any; qty: number; unit?: string; shotId?: number; printedQty?: number; isSaboy?: boolean; }[]>>({});
+    // ─── Multi-Shot (Split Bill) state ────────────────────────────────────────
+    const [tableShotMap, setTableShotMap] = useState<Record<string, TableShotState>>({});
 
     // Fetch table orders from DB for a specific table
     const fetchTableOrdersFromDB = useCallback(async (tableId: string) => {
@@ -1239,6 +1257,43 @@ export default function UbtPosPage() {
                 }),
             }).catch(() => {});
         }
+    };
+
+    // ─── Multi-Shot helpers ───────────────────────────────────────────────────
+    const initShots = (tableId: string) => {
+        setTableShotMap(prev => ({
+            ...prev,
+            [tableId]: { shots: [{ id: 1, label: "1-shot", cart: [], isPaid: false }], activeShot: 1 }
+        }));
+    };
+    const addShot = (tableId: string) => {
+        setTableShotMap(prev => {
+            const ex = prev[tableId];
+            if (!ex) return prev;
+            if (ex.shots.length >= 8) { alert("Maksimal 8-shot"); return prev; }
+            const newId = ex.shots.length + 1;
+            return { ...prev, [tableId]: { shots: [...ex.shots, { id: newId, label: `${newId}-shot`, cart: [], isPaid: false }], activeShot: newId } };
+        });
+    };
+    const removeShot = (tableId: string, shotId: number) => {
+        setTableShotMap(prev => {
+            const ex = prev[tableId];
+            if (!ex || ex.shots.length <= 1) return prev;
+            const shot = ex.shots.find(s => s.id === shotId);
+            if (shot && shot.cart.length > 0 && !shot.isPaid) { alert("Avval taomlarni o'chiring yoki to'lovni amalga oshiring"); return prev; }
+            const newShots = ex.shots.filter(s => s.id !== shotId);
+            const newActive = ex.activeShot === shotId ? (newShots[newShots.length - 1]?.id ?? 1) : ex.activeShot;
+            return { ...prev, [tableId]: { shots: newShots, activeShot: newActive } };
+        });
+    };
+    const setActiveShotFn = (tableId: string, shotId: number) => {
+        setTableShotMap(prev => prev[tableId] ? { ...prev, [tableId]: { ...prev[tableId], activeShot: shotId } } : prev);
+    };
+    const updateShotCart = (tableId: string, shotId: number, newCart: CartItem[]) => {
+        setTableShotMap(prev => {
+            if (!prev[tableId]) return prev;
+            return { ...prev, [tableId]: { ...prev[tableId], shots: prev[tableId].shots.map(s => s.id === shotId ? { ...s, cart: newCart } : s) } };
+        });
     };
 
     const fetchPrinterStatus = () => {
@@ -1412,19 +1467,23 @@ export default function UbtPosPage() {
     const handleTablePayDirect = async (method: string, customerId?: string) => {
         if (!selTable) return;
         setTablePayLoading(true);
-        const orders = tableOrders[selTable.id] || [];
+        const allOrders = tableOrders[selTable.id] || [];
+        const activeOrders = allOrders.filter((c: any) => (c.shotId || 1) === activeShot);
+        
         const token = store.kassirSession?.token || store.deviceSession?.token;
         const hdrs: Record<string, string> = { "Content-Type": "application/json" };
         if (token) hdrs["Authorization"] = `Bearer ${token}`;
-        const subtotal = orders.reduce((s: number, c: any) => s + c.item.price * c.qty, 0);
+        
+        const subtotal = activeOrders.reduce((s: number, c: any) => s + c.item.price * c.qty, 0);
         const svcPct = (selTable.serviceFee ?? 0) / 100;
         const grandTotal = Math.round(subtotal * (1 + svcPct));
+        
         try {
             const payRes = await fetch("/api/ubt/pay", {
                 method: "POST", headers: hdrs,
                 body: JSON.stringify({
                     tableId: selTable.id,
-                    items: orders.filter((c: any) => c?.item).map((c: any) => ({ menuItemId: c.item.id, name: c.item.name, qty: c.qty, price: c.item.price })),
+                    items: activeOrders.filter((c: any) => c?.item).map((c: any) => ({ menuItemId: c.item.id, name: c.item.name, qty: c.qty, price: c.item.price })),
                     paymentMethod: method,
                     customerId,
                     total: subtotal,
@@ -1446,11 +1505,20 @@ export default function UbtPosPage() {
             return;
         }
         // ✅ To'lov muvaffaqiyatli — buyurtmalarni o'chirish va UI yangilash
-        // 🗳️ Delete cart orders from DB
-        fetch(`/api/ubt/orders-db?tableId=${selTable.id}`, { method: "DELETE", headers: hdrs }).catch(() => {});
+        // 🗳️ Update cart orders in DB to only delete the paid shot
+        const remainingOrders = allOrders.filter((c: any) => (c.shotId || 1) !== activeShot);
+        if (remainingOrders.length === 0) {
+            fetch(`/api/ubt/orders-db?tableId=${selTable.id}`, { method: "DELETE", headers: hdrs }).catch(() => {});
+        } else {
+            fetch("/api/ubt/orders-db", {
+                method: "PUT", headers: hdrs,
+                body: JSON.stringify({ tableId: selTable.id, items: remainingOrders, waiterName: store.kassirSession?.name })
+            }).catch(() => {});
+        }
+        
         // Chek print
         const printerIp = store.kassirSession?.printerIp || "";
-        if (printerIp && orders.length > 0) {
+        if (printerIp && activeOrders.length > 0) {
             const now = new Date();
             const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
             fetch("/api/ubt/print", {
@@ -1467,24 +1535,131 @@ export default function UbtPosPage() {
                     paymentMethod: method,
                     cashAmount: method === "Naqd" ? grandTotal : 0,
                     cardAmount: method === "Karta" ? grandTotal : 0,
-                    items: orders.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
+                    items: activeOrders.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
                     total: grandTotal,
                 }),
             }).catch(() => {});
         }
-        const updated = { ...tableOrders }; delete updated[selTable.id];
-        setTableOrders(updated);
+        if (remainingOrders.length === 0) {
+            const updated = { ...tableOrders }; delete updated[selTable.id];
+            setTableOrders(updated);
+            setSelTable(null);
+            setActiveShot(1);
+        } else {
+            setTableOrders({ ...tableOrders, [selTable.id]: remainingOrders });
+            setActiveShot(remainingOrders[0]?.shotId || 1);
+        }
         setShowTablePay(false);
         setTablePayLoading(false);
         setSelTable(null);
         store.fetchUbtTables();
     };
 
+    // ─── Multi-shot payment ───────────────────────────────────────────────────
+    const handleShotPay = async (method: string, customerId?: string) => {
+        if (!selTable) return;
+        const shotState = tableShotMap[selTable.id];
+        if (!shotState) { return handleTablePayDirect(method, customerId); }
+
+        const activeShotObj = shotState.shots.find(s => s.id === shotState.activeShot);
+        if (!activeShotObj || activeShotObj.cart.length === 0) { alert("Bu shot bo'sh — avval taom qo'shing"); return; }
+
+        setTablePayLoading(true);
+        const token = store.kassirSession?.token || store.deviceSession?.token;
+        const hdrs: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) hdrs["Authorization"] = `Bearer ${token}`;
+        const subtotal = activeShotObj.cart.reduce((s: number, c: any) => s + c.item.price * c.qty, 0);
+        const svcPct = (selTable.serviceFee ?? 0) / 100;
+        const grandTotal = Math.round(subtotal * (1 + svcPct));
+
+        try {
+            const payRes = await fetch("/api/ubt/pay", {
+                method: "POST", headers: hdrs,
+                body: JSON.stringify({
+                    tableId: selTable.id,
+                    items: activeShotObj.cart.filter((c: any) => c?.item).map((c: any) => ({ menuItemId: c.item.id, name: c.item.name, qty: c.qty, price: c.item.price })),
+                    paymentMethod: method,
+                    customerId,
+                    total: subtotal,
+                    waiterName: store.kassirSession?.name,
+                    tableLabel: `${selTable.name} / ${activeShotObj.label}`,
+                    serviceFee: svcPct,
+                }),
+            });
+            if (!payRes.ok) {
+                const errData = await payRes.json().catch(() => ({}));
+                alert(errData.error || "To'lov amalga oshmadi. Qayta urinib ko'ring.");
+                setTablePayLoading(false);
+                return;
+            }
+        } catch {
+            alert("Server bilan bog'lanishda xatolik.");
+            setTablePayLoading(false);
+            return;
+        }
+
+        // Chek chop etish (faqat shu shot uchun)
+        const printerIp = store.kassirSession?.printerIp || "";
+        if (printerIp && activeShotObj.cart.length > 0) {
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            fetch("/api/ubt/print", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    printerIp, port: 9100, receiptType: "client",
+                    tableName: `${selTable.name} / ${activeShotObj.label}`,
+                    tableZone: selTable.zone || "", tableType: "Na stol",
+                    waiter: store.kassirSession?.name || "",
+                    time: timeStr, orderNum: Math.floor(Math.random() * 9000) + 1000,
+                    paymentMethod: method,
+                    cashAmount: method === "Naqd" ? grandTotal : 0,
+                    cardAmount: method === "Karta" ? grandTotal : 0,
+                    items: activeShotObj.cart.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
+                    total: grandTotal,
+                }),
+            }).catch(() => {});
+        }
+
+        // Ushbu shotni paid deb belgilash
+        const updatedShots = shotState.shots.map(s => s.id === activeShotObj.id ? { ...s, isPaid: true, paymentMethod: method } : s);
+        const allPaid = updatedShots.every(s => s.isPaid);
+
+        if (allPaid) {
+            // Barcha shotlar to'langan — stolni bo'shatish
+            fetch(`/api/ubt/orders-db?tableId=${selTable.id}`, { method: "DELETE", headers: hdrs }).catch(() => {});
+            const updated = { ...tableOrders }; delete updated[selTable.id];
+            setTableOrders(updated);
+            const updatedMap = { ...tableShotMap }; delete updatedMap[selTable.id];
+            setTableShotMap(updatedMap);
+            setShowTablePay(false);
+            setTablePayLoading(false);
+            setSelTable(null);
+            store.fetchUbtTables();
+        } else {
+            // Qolgan shotlar bor — birinchi to'lanmaganga o'tish
+            const remainingCart = updatedShots.filter(s => !s.isPaid).flatMap(s => s.cart);
+            await fetch("/api/ubt/orders-db", {
+                method: "PUT", headers: hdrs,
+                body: JSON.stringify({ tableId: selTable.id, items: remainingCart, waiterName: store.kassirSession?.name }),
+            }).catch(() => {});
+            setTableOrders(prev => ({ ...prev, [selTable.id]: remainingCart }));
+            const firstUnpaid = updatedShots.find(s => !s.isPaid);
+            setTableShotMap(prev => ({
+                ...prev,
+                [selTable.id]: { shots: updatedShots, activeShot: firstUnpaid?.id ?? updatedShots[0].id }
+            }));
+            setShowTablePay(false);
+            setTablePayLoading(false);
+            store.fetchUbtTables();
+        }
+    };
+
         // Chek chop etish (to'lov qilmasdan)
     const handlePrintReceipt = async (overrideIp?: string) => {
         if (!selTable) return;
-        const orders = tableOrders[selTable.id] || [];
-        if (orders.length === 0) { alert("Zakaz bo'sh — avval taom qo'shing"); return; }
+        const allOrders = tableOrders[selTable.id] || [];
+        const activeOrders = allOrders.filter((c: any) => (c.shotId || 1) === activeShot);
+        if (activeOrders.length === 0) { alert("Chek bo'sh — avval taom qo'shing"); return; }
         const printerIp = overrideIp || store.kassirSession?.printerIp || "";
         if (!printerIp) {
             // printerIp yo'q — printer tanlash modal ochish
@@ -1493,7 +1668,7 @@ export default function UbtPosPage() {
         }
         const now = new Date();
         const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-        const total = orders.reduce((s: number, c: any) => s + c.item.price * c.qty, 0);
+        const total = activeOrders.reduce((s: number, c: any) => s + c.item.price * c.qty, 0);
         fetch("/api/ubt/print", {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -1505,7 +1680,7 @@ export default function UbtPosPage() {
                 waiter: store.kassirSession?.name || "",
                 time: timeStr,
                 orderNum: Math.floor(Math.random() * 9000) + 1000,
-                items: orders.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
+                items: activeOrders.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
                 total,
             }),
         }).catch(() => {});
@@ -1755,7 +1930,7 @@ export default function UbtPosPage() {
                                                         if (t.status === "reserved") {
                                                             setActionTable(t);
                                                         } else {
-                                                            setSelTable(t); 
+                                                            setSelTable(t); setActiveShot(1);
                                                             setTableView(t.status === "free" ? "menu" : "order"); 
                                                             fetchTableOrdersFromDB(t.id);
                                                         }
@@ -1814,7 +1989,7 @@ export default function UbtPosPage() {
                                                 const hdrs: Record<string, string> = { "Content-Type": "application/json" };
                                                 if (token) hdrs["Authorization"] = `Bearer ${token}`;
                                                 
-                                                const modCart = isSaboyMode ? cart.map(c => ({...c, isSaboy: true})) : cart;
+                                                const modCart = isSaboyMode ? cart.map(c => ({...c, isSaboy: true, shotId: activeShot})) : cart.map(c => ({...c, shotId: activeShot}));
 
                                                 // Persist cart to DB (marks table occupied)
                                                 await fetch("/api/ubt/orders-db", {
@@ -1829,7 +2004,7 @@ export default function UbtPosPage() {
                                                 // Update local state
                                                 const prev = tableOrders[selTable.id] || [];
                                                 const merged = [...prev];
-                                                modCart.forEach(c => { const ex = merged.find((m: any) => m.item.id === c.item.id && !!m.isSaboy === !!c.isSaboy); if (ex) ex.qty += c.qty; else merged.push({ ...c }); });
+                                                modCart.forEach(c => { const ex = merged.find((m: any) => m.item.id === c.item.id && !!m.isSaboy === !!c.isSaboy && (m.shotId || 1) === activeShot); if (ex) ex.qty += c.qty; else merged.push({ ...c }); });
                                                 setTableOrders({ ...tableOrders, [selTable.id]: merged });
                                                 store.fetchUbtTables();
                                             }}
@@ -1884,73 +2059,104 @@ export default function UbtPosPage() {
                                             </div>
                                             {selTable.amount > 0 && (
                                                 <div className="flex flex-col items-end">
-                                                    <span className={`text-[10px] font-bold uppercase tracking-widest leading-none mb-1 ${dark ? "text-emerald-500/80" : "text-emerald-600/80"}`}>Joriy Hisob</span>
+                                                    <span className={`text-[10px] font-bold uppercase tracking-widest leading-none mb-1 ${dark ? "text-emerald-500/80" : "text-emerald-600/80"}`}>Stol Jami</span>
                                                     <span className={`text-sm font-black tracking-tight ${dark ? "text-emerald-400" : "text-emerald-600"}`}>{fmt(selTable.amount)}</span>
                                                 </div>
                                             )}
                                         </div>
 
+                                        {/* Multi-Shot Tabs */}
+                                        {(() => {
+                                            const tableOps = tableOrders[selTable.id] || [];
+                                            const distinctShots = Array.from(new Set(tableOps.map((o: any) => o.shotId || 1))).sort((a: any, b: any) => a - b);
+                                            return (
+                                                <div className={`px-3 py-2.5 flex items-center gap-2 overflow-x-auto border-b shrink-0 custom-scrollbar ${dark ? "border-white/5 bg-black/20" : "border-slate-200 bg-sky-100/30"}`}>
+                                                    {distinctShots.map(shot => (
+                                                        <button key={shot as number} onClick={() => setActiveShot(shot as number)}
+                                                            className={`px-3 px-3.5 py-1.5 rounded-full text-xs font-black transition-all whitespace-nowrap flex-shrink-0 ${activeShot === shot ? (dark ? "bg-sky-500 text-white shadow-md shadow-black/50" : "bg-sky-500 text-white shadow-md shadow-sky-500/20") : (dark ? "bg-slate-800 text-slate-400 hover:bg-slate-700" : "bg-white text-slate-500 hover:bg-slate-100 border border-slate-200")}`}>
+                                                            {shot}-Chek
+                                                        </button>
+                                                    ))}
+                                                    {(!distinctShots.includes(activeShot)) && (
+                                                        <button className={`px-3.5 py-1.5 rounded-full text-xs font-black transition-all whitespace-nowrap flex-shrink-0 ${dark ? "bg-sky-500 text-white shadow-md shadow-black/50" : "bg-sky-500 text-white shadow-md shadow-sky-500/20"}`}>
+                                                            {activeShot}-Chek
+                                                        </button>
+                                                    )}
+                                                    <button onClick={() => setActiveShot(Math.max(...(distinctShots.length ? distinctShots as number[] : [1]), activeShot) + 1)}
+                                                        className={`px-2 py-1.5 rounded-full text-xs font-black transition-all flex items-center justify-center shrink-0 ${dark ? "bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/60" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-100 tooltip-trigger"}`} title="Yangi chek qo'shish">
+                                                        <Plus size={14} strokeWidth={3} />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })()}
+
                                         {/* Buyurtma tarkibi */}
                                         <div className="flex-1 overflow-y-auto custom-scrollbar">
-                                            {(tableOrders[selTable.id] || []).length === 0 ? (
-                                                <div className="flex flex-col items-center justify-center h-full gap-4 py-12 opacity-80">
-                                                    <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center border-2 border-dashed ${dark ? "bg-slate-800/50 border-slate-700 text-slate-600" : "bg-slate-100 border-slate-300 text-slate-400"}`}>
-                                                        <ShoppingBag size={32} />
-                                                    </div>
-                                                    <div className="text-center">
-                                                        <p className={`text-base font-bold mb-1 ${dark ? "text-slate-300" : "text-slate-600"}`}>Hali zakaz qilinmagan</p>
-                                                        <p className={`text-xs font-semibold ${dark ? "text-slate-500" : "text-slate-400"}`}>Chapdan taom tanlang</p>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="px-3 pt-4 pb-2">
-                                                    <p className={`text-[10px] font-black uppercase tracking-widest text-center mb-3 opacity-60 ${dark ? "text-slate-400" : "text-slate-500"}`}>— Buyurtma Tarkibi —</p>
-                                                    <div className="flex flex-col gap-2.5">
-                                                        {(tableOrders[selTable.id] || []).map((c: any, i: number) => c?.item && (
-                                                            <div key={i} className={`flex flex-col gap-1.5 p-2.5 rounded-2xl border transition-all hover:scale-[1.02] ${dark ? "bg-[#111827] border-white/5 shadow-lg shadow-black/30" : "bg-white border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)]"}`}>
-                                                                <div className="flex items-start gap-2.5">
-                                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden shadow-inner border border-black/5 ${dark ? "bg-[#1e293b]" : "bg-orange-50"}`}>
-                                                                        {c.item.imageUrl ? <img src={c.item.imageUrl} alt="" className="w-full h-full object-cover" /> : <UtensilsCrossed size={16} className="text-orange-400" />}
-                                                                    </div>
-                                                                    <div className="flex-1 min-w-0 pt-0.5">
-                                                                        <p className={`text-sm font-black leading-snug truncate ${dark ? "text-emerald-400" : "text-emerald-600"}`}>
-                                                                            {c.isSaboy && <span className="mr-1 inline-flex transform -translate-y-0.5">📦</span>}
-                                                                            {c.item.name}
-                                                                            {c.isSaboy && <span className="ml-1.5 text-[9px] text-amber-500 font-bold uppercase border border-amber-500/30 px-1 rounded bg-amber-500/10">Saboy</span>}
-                                                                        </p>
-                                                                        <p className={`text-[11px] font-bold mt-0.5 ${dark ? "text-emerald-500" : "text-emerald-700"}`}>
-                                                                            {c.qty} {c.item.unit || "ta"} <span className="opacity-50 mx-1">×</span> {fmt(c.item.price)}
-                                                                        </p>
-                                                                    </div>
-                                                                    <p className={`text-sm font-black shrink-0 tabular-nums pt-0.5 ${dark ? "text-emerald-400" : "text-emerald-600"}`}>{fmt(c.item.price * c.qty)}</p>
-                                                                </div>
-                                                                {/* Compact Quantity Controls */}
-                                                                <div className={`mt-1.5 flex items-center justify-between pt-1.5 border-t px-1 ${dark ? "border-white/5" : "border-slate-100"}`}>
-                                                                    <span className={`text-[9px] font-bold uppercase tracking-widest ${dark ? "text-emerald-500/80" : "text-emerald-600"}`}>Miqdor</span>
-                                                                    <div className="flex items-center gap-1.5 bg-slate-100/50 px-1 py-0.5 rounded-xl dark:bg-emerald-900/40 border dark:border-emerald-800/50">
-                                                                        <button onClick={() => handleUpdateTableItem(c, isWeightUnit(c.item?.unit) ? -0.1 : -1)} className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${dark ? "bg-red-500/10 text-red-400 hover:bg-red-500/20" : "bg-white text-red-500 hover:bg-red-50 shadow-sm"}`}>
-                                                                            <Minus size={14} strokeWidth={3} />
-                                                                        </button>
-                                                                        <span className={`text-[13px] w-7 text-center font-black tabular-nums ${dark ? "text-emerald-400" : "text-emerald-700"}`}>{c.qty}</span>
-                                                                        <button onClick={() => handleUpdateTableItem(c, isWeightUnit(c.item?.unit) ? 0.1 : 1)} className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${dark ? "bg-sky-500/10 text-sky-400 hover:bg-sky-500/20" : "bg-white text-sky-600 hover:bg-sky-50 shadow-sm"}`}>
-                                                                            <Plus size={14} strokeWidth={3} />
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
+                                            {(() => {
+                                                const activeOrders = (tableOrders[selTable.id] || []).filter((c: any) => (c.shotId || 1) === activeShot);
+                                                if (activeOrders.length === 0) {
+                                                    return (
+                                                        <div className="flex flex-col items-center justify-center h-full gap-4 py-12 opacity-80">
+                                                            <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center border-2 border-dashed ${dark ? "bg-slate-800/50 border-slate-700 text-slate-600" : "bg-slate-100 border-slate-300 text-slate-400"}`}>
+                                                                <ShoppingBag size={32} />
                                                             </div>
-                                                        ))}
+                                                            <div className="text-center">
+                                                                <p className={`text-base font-bold mb-1 ${dark ? "text-slate-300" : "text-slate-600"}`}>{activeShot}-Chek hali bo'sh</p>
+                                                                <p className={`text-xs font-semibold ${dark ? "text-slate-500" : "text-slate-400"}`}>Chapdan taom tanlang</p>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
+                                                return (
+                                                    <div className="px-3 pt-4 pb-2">
+                                                        <p className={`text-[10px] font-black uppercase tracking-widest text-center mb-3 opacity-60 ${dark ? "text-slate-400" : "text-slate-500"}`}>— Buyurtma Tarkibi —</p>
+                                                        <div className="flex flex-col gap-2.5">
+                                                            {activeOrders.map((c: any, i: number) => c?.item && (
+                                                                <div key={i} className={`flex flex-col gap-1.5 p-2.5 rounded-2xl border transition-all hover:scale-[1.02] ${dark ? "bg-[#111827] border-white/5 shadow-lg shadow-black/30" : "bg-white border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)]"}`}>
+                                                                    <div className="flex items-start gap-2.5">
+                                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden shadow-inner border border-black/5 ${dark ? "bg-[#1e293b]" : "bg-orange-50"}`}>
+                                                                            {c.item.imageUrl ? <img src={c.item.imageUrl} alt="" className="w-full h-full object-cover" /> : <UtensilsCrossed size={16} className="text-orange-400" />}
+                                                                        </div>
+                                                                        <div className="flex-1 min-w-0 pt-0.5">
+                                                                            <p className={`text-sm font-black leading-snug truncate ${dark ? "text-emerald-400" : "text-emerald-600"}`}>
+                                                                                {c.isSaboy && <span className="mr-1 inline-flex transform -translate-y-0.5">📦</span>}
+                                                                                {c.item.name}
+                                                                                {c.isSaboy && <span className="ml-1.5 text-[9px] text-amber-500 font-bold uppercase border border-amber-500/30 px-1 rounded bg-amber-500/10">Saboy</span>}
+                                                                            </p>
+                                                                            <p className={`text-[11px] font-bold mt-0.5 ${dark ? "text-emerald-500" : "text-emerald-700"}`}>
+                                                                                {c.qty} {c.item.unit || "ta"} <span className="opacity-50 mx-1">×</span> {fmt(c.item.price)}
+                                                                            </p>
+                                                                        </div>
+                                                                        <p className={`text-sm font-black shrink-0 tabular-nums pt-0.5 ${dark ? "text-emerald-400" : "text-emerald-600"}`}>{fmt(c.item.price * c.qty)}</p>
+                                                                    </div>
+                                                                    {/* Compact Quantity Controls */}
+                                                                    <div className={`mt-1.5 flex items-center justify-between pt-1.5 border-t px-1 ${dark ? "border-white/5" : "border-slate-100"}`}>
+                                                                        <span className={`text-[9px] font-bold uppercase tracking-widest ${dark ? "text-emerald-500/80" : "text-emerald-600"}`}>Miqdor</span>
+                                                                        <div className="flex items-center gap-1.5 bg-slate-100/50 px-1 py-0.5 rounded-xl dark:bg-emerald-900/40 border dark:border-emerald-800/50">
+                                                                            <button onClick={() => handleUpdateTableItem(c, isWeightUnit(c.item?.unit) ? -0.1 : -1)} className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${dark ? "bg-red-500/10 text-red-400 hover:bg-red-500/20" : "bg-white text-red-500 hover:bg-red-50 shadow-sm"}`}>
+                                                                                <Minus size={14} strokeWidth={3} />
+                                                                            </button>
+                                                                            <span className={`text-[13px] w-7 text-center font-black tabular-nums ${dark ? "text-emerald-400" : "text-emerald-700"}`}>{c.qty}</span>
+                                                                            <button onClick={() => handleUpdateTableItem(c, isWeightUnit(c.item?.unit) ? 0.1 : 1)} className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${dark ? "bg-sky-500/10 text-sky-400 hover:bg-sky-500/20" : "bg-white text-sky-600 hover:bg-sky-50 shadow-sm"}`}>
+                                                                                <Plus size={14} strokeWidth={3} />
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
                                                     </div>
 
                                                     {/* Total Area */}
-                                                    <div className={`mt-4 p-4 rounded-xl flex flex-col items-center justify-center text-center border ${dark ? "bg-[#111827] border-white/5" : "bg-slate-50 border-slate-200"}`}>
-                                                        <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1 z-10">Umumiy Jami</span>
+                                                    <div className={`mt-4 mb-4 mx-3 p-4 rounded-xl flex flex-col items-center justify-center text-center border ${dark ? "bg-[#111827] border-white/5" : "bg-slate-50 border-slate-200"}`}>
+                                                        <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-1 z-10">Stol bo'yicha Umumiy Jami</span>
                                                         <span className={`text-2xl font-bold tabular-nums tracking-tighter z-10 ${dark ? "text-emerald-400" : "text-emerald-600"}`}>
                                                             {fmt((tableOrders[selTable.id] || []).reduce((s: number, c: any) => s + c.item.price * c.qty, 0))} <span className="text-[14px] text-emerald-600/70 uppercase font-semibold tracking-widest ml-1">UZS</span>
                                                         </span>
                                                     </div>
-                                                </div>
-                                            )}
-                                        </div>
 
                                         {/* Action buttons footer */}
                                         <div className={`shrink-0 border-t p-4 flex flex-col gap-3 ${dark ? "border-white/5 bg-[#0F172A]" : "border-slate-200 bg-white"}`}>
@@ -1966,13 +2172,14 @@ export default function UbtPosPage() {
                                                     disabled={tableConfirming}
                                                     onClick={async () => {
                                                         if (!selTable) return;
-                                                        const orders = tableOrders[selTable.id] || [];
-                                                        if (orders.length === 0) return;
+                                                        const allOrders = tableOrders[selTable.id] || [];
+                                                        const activeOrders = allOrders.filter((c: any) => (c.shotId || 1) === activeShot);
+                                                        if (activeOrders.length === 0) return;
                                                         setTableConfirming(true);
                                                         try {
-                                                            const groups: Record<string, typeof orders> = {};
+                                                            const groups: Record<string, typeof activeOrders> = {};
                                                             let hasNewItems = false;
-                                                            orders.forEach((c: any) => {
+                                                            activeOrders.forEach((c: any) => {
                                                                 const unprinted = c.qty - (c.printedQty || 0);
                                                                 if (unprinted > 0) {
                                                                     const ip = c.item?.printerIp;
@@ -1991,7 +2198,7 @@ export default function UbtPosPage() {
                                                                     fetch("/api/ubt/print", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ printerIp, port: 9100, receiptType: "kitchen", tableName: selTable.name, time: timeStr, items: items.filter((c: any) => c?.item).map((c: any) => ({ name: c.isSaboy ? `📦 ${c.item.name} (- Saboy -)` : c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })), total: items.reduce((s: number, c: any) => s + c.item.price * c.qty, 0) }) }).catch(() => {});
                                                                 }
 
-                                                                const updatedOrders = orders.map((o:any) => ({ ...o, printedQty: o.qty }));
+                                                                const updatedOrders = allOrders.map((o:any) => (o.shotId || 1) === activeShot ? { ...o, printedQty: o.qty } : o);
                                                                 const token = store.kassirSession?.token || store.deviceSession?.token;
                                                                 const hdrs: Record<string, string> = { "Content-Type": "application/json" };
                                                                 if (token) hdrs["Authorization"] = `Bearer ${token}`;
@@ -2041,7 +2248,7 @@ export default function UbtPosPage() {
 
                                             {showTablePay && (
                                                 <PayModal
-                                                    total={(tableOrders[selTable.id] || []).reduce((s: number, c: any) => s + c.item.price * c.qty, 0)}
+                                                    total={(tableOrders[selTable.id] || []).filter((c: any) => (c.shotId || 1) === activeShot).reduce((s: number, c: any) => s + c.item.price * c.qty, 0)}
                                                     onPay={handleTablePayDirect}
                                                     onClose={() => setShowTablePay(false)}
                                                     loading={tablePayLoading}
