@@ -1112,12 +1112,13 @@ export default function UbtPosPage() {
     const [dlOrders, setDlOrders] = useState<LocalOrder[]>([]);
     const twCounterRef = useRef(1);
 
-    // saveTwOrders: POST to /api/ubt/takeaway then refresh local list
+    // saveTwOrders: POST paid takeaway order to DB (Transaction). Does NOT refresh local list —
+    // local pending orders are managed in session state via setTwOrders directly.
     const saveTwOrders = async (cartItems: CartItem[], custName: string, custPhone: string, payMethod: string, customerId?: string) => {
         const token = store.kassirSession?.token || store.deviceSession?.token;
         const hdrs: Record<string, string> = { "Content-Type": "application/json" };
         if (token) hdrs["Authorization"] = `Bearer ${token}`;
-        const total = Math.round(cartItems.reduce((s, c) => s + c.item.price * c.qty, 0)); // Takeaway is physically handed, no service fee usually
+        const total = Math.round(cartItems.reduce((s, c) => s + c.item.price * c.qty, 0));
         try {
             await fetch("/api/ubt/takeaway", {
                 method: "POST", headers: hdrs,
@@ -1131,18 +1132,8 @@ export default function UbtPosPage() {
                 }),
             });
         } catch {}
-        // Refresh local list from DB
-        try {
-            const res = await fetch("/api/ubt/takeaway", { headers: hdrs });
-            if (res.ok) {
-                const data = await res.json();
-                setTwOrders(Array.isArray(data.orders) ? data.orders.map((o: any, i: number) => ({
-                    id: i + 1, num: i + 1, total: o.total ?? 0, name: o.name ?? "",
-                    phone: o.phone ?? "", time: o.time ?? "", status: "done" as const,
-                    items: o.items ?? [],
-                })) : []);
-            }
-        } catch {}
+        // Local state is NOT refreshed from DB here — the caller removes the paid order
+        // from twOrders directly so it disappears immediately without reappearing.
     };
 
     // saveDlOrders: POST to /api/ubt/yetkazish then update local state
@@ -1355,26 +1346,31 @@ export default function UbtPosPage() {
         const hdrs: Record<string, string> = { "Content-Type": "application/json" };
         if (token) hdrs["Authorization"] = `Bearer ${token}`;
 
-        try {
-            const resTw = await fetch("/api/ubt/takeaway", { headers: hdrs });
-            if (resTw.ok) {
-                const data = await resTw.json();
-                setTwOrders(Array.isArray(data.orders) ? data.orders.map((o: any, i: number) => ({
-                    id: o.id || i + 1, num: o.num || i + 1, total: o.total ?? 0, name: o.name ?? "",
-                    phone: o.phone ?? "", time: o.time ?? "", status: o.status === "DONE" ? "done" : "pending" as const,
-                    items: o.items ?? [],
-                })) : []);
-            }
-        } catch {}
+        // Takeaway orders are managed entirely in local session state.
+        // The DB stores completed Transactions, not pending orders — so we skip
+        // the DB fetch for takeaway to avoid overwriting locally-added pending orders.
 
         try {
             const resDl = await fetch("/api/ubt/yetkazish", { headers: hdrs });
             if (resDl.ok) {
                 const data = await resDl.json();
+                // Normalize DB delivery items: DB stores [{name,qty,price}], display expects [{item,qty}]
+                const normalizeItems = (raw: any[]): any[] => raw.map((it: any) =>
+                    it?.item ? it : {
+                        item: { id: it.name || "", name: it.name || "", price: Number(it.price) || 0, categoryId: "", inStock: true },
+                        qty: Number(it.qty ?? it.quantity ?? 1),
+                    }
+                );
                 setDlOrders(Array.isArray(data.orders) ? data.orders.map((o: any, i: number) => ({
-                    id: o.id || i + 1, num: o.num || i + 1, total: o.totalAmount ?? o.total ?? 0, name: o.customerName ?? o.name ?? "",
-                    phone: o.customerPhone ?? o.phone ?? "", addr: o.address ?? o.addr ?? "", time: o.createdAt ? new Date(o.createdAt).toLocaleTimeString("uz-UZ", {hour:'2-digit',minute:'2-digit'}) : (o.time ?? ""), status: o.status === "delivered" || o.status === "cancelled" ? "done" : "pending" as const,
-                    items: typeof o.items === "string" ? JSON.parse(o.items) : (o.items ?? []),
+                    id: o.id || i + 1,
+                    num: o.num || i + 1,
+                    total: o.totalAmount ?? o.total ?? 0,
+                    name: o.customerName ?? o.name ?? "",
+                    phone: o.customerPhone ?? o.phone ?? "",
+                    addr: o.address ?? o.addr ?? "",
+                    time: o.createdAt ? new Date(o.createdAt).toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" }) : (o.time ?? ""),
+                    status: (o.status === "delivered" || o.status === "cancelled") ? "done" as const : "pending" as const,
+                    items: normalizeItems(typeof o.items === "string" ? JSON.parse(o.items) : (o.items ?? [])),
                 })) : []);
             }
         } catch {}
@@ -2258,7 +2254,16 @@ export default function UbtPosPage() {
                                                     onClick={async () => {
                                                         if (newOrderCart.length === 0) return;
                                                         await printKitchenReceipt(newOrderCart, `Olib ketish${custName ? ' (' + custName + ')' : ''}`);
-                                                        await saveTwOrders(newOrderCart, custName, custPhone, "Naqd pul");
+                                                        // Add to local pending list (NO Transaction yet — payment happens separately)
+                                                        const _now = new Date();
+                                                        const _time = `${String(_now.getHours()).padStart(2,"0")}:${String(_now.getMinutes()).padStart(2,"0")}`;
+                                                        setTwOrders(prev => [{
+                                                            id: Date.now(), num: prev.length + 1,
+                                                            total: Math.round(newOrderCart.reduce((s, c) => s + c.item.price * c.qty, 0)),
+                                                            name: custName, phone: custPhone,
+                                                            time: _time, status: "pending" as const,
+                                                            items: newOrderCart,
+                                                        }, ...prev]);
                                                         setNewOrderCart([]); setCustName(""); setCustPhone("");
                                                         setShowTwMenu(false);
                                                     }}
@@ -2284,10 +2289,12 @@ export default function UbtPosPage() {
                                         loading={false}
                                         onClose={() => setNewOrderPaying(false)}
                                         onPay={async (method, customerId) => {
-                                            const total = Math.round(newOrderCart.reduce((s, c) => s + c.item.price * c.qty, 0));
+                                            // Create Transaction in DB (records the payment)
                                             await saveTwOrders(newOrderCart, custName, custPhone, method, customerId);
                                             setNewOrderCart([]); setCustName(""); setCustPhone("");
                                             setNewOrderPaying(false); setShowTwMenu(false);
+                                            // NOTE: No pending list entry was added (user went straight to payment),
+                                            // so nothing to remove from twOrders here.
                                         }}
                                     />
                                 )}
@@ -2675,8 +2682,22 @@ export default function UbtPosPage() {
                                         <button
                                             onClick={() => {
                                                 const isTw = twOrders.some(o => o.id === selOrder.id);
-                                                if (isTw) setTwOrders((prev: any[]) => prev.map((x: any) => x.id === selOrder.id ? { ...x, status: "done" } : x));
-                                                else setDlOrders((prev: any[]) => prev.map((x: any) => x.id === selOrder.id ? { ...x, status: "done" } : x));
+                                                if (isTw) {
+                                                    // Takeaway: mark done locally (order picked up, will pay separately or was free)
+                                                    setTwOrders((prev: any[]) => prev.filter((x: any) => x.id !== selOrder.id));
+                                                } else {
+                                                    // Delivery: mark delivered in DB + update local state
+                                                    const token = (store.kassirSession as any)?.token || (store.deviceSession as any)?.token;
+                                                    const hdrs: Record<string, string> = { "Content-Type": "application/json" };
+                                                    if (token) hdrs["Authorization"] = `Bearer ${token}`;
+                                                    if (typeof selOrder.id === "string") {
+                                                        fetch("/api/ubt/yetkazish", {
+                                                            method: "PATCH", headers: hdrs,
+                                                            body: JSON.stringify({ id: selOrder.id, status: "delivered" }),
+                                                        }).catch(() => {});
+                                                    }
+                                                    setDlOrders((prev: any[]) => prev.filter((x: any) => x.id !== selOrder.id));
+                                                }
                                                 setSelOrder(null);
                                             }}
                                             className="py-4 rounded-2xl font-black text-base text-white flex items-center justify-center gap-2 shadow active:scale-[0.98] transition"
@@ -2702,22 +2723,49 @@ export default function UbtPosPage() {
                                 total={selOrder.total}
                                 loading={false}
                                 onClose={() => setPayingOrder(false)}
-                                onPay={async (method) => {
+                                onPay={async (method, customerId) => {
                                     const isTw = twOrders.some(o => o.id === selOrder.id);
-                                    await fetch("/api/ubt/pay", {
-                                        method: "POST",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({
-                                            tableId: null,
-                                            items: selOrder.items.filter((c: any) => c?.item).map((c: any) => ({ menuItemId: c.item.id, name: c.item.name, qty: c.qty, price: c.item.price })),
-                                            paymentMethod: method,
-                                            total: Math.round(selOrder.total * 1.1),
-                                            orderType: selOrder.addr ? "delivery" : "takeaway",
-                                            customerName: selOrder.name,
-                                            customerPhone: selOrder.phone,
-                                            deliveryAddress: selOrder.addr,
-                                        }),
-                                    });
+                                    const token = store.kassirSession?.token || store.deviceSession?.token;
+                                    const hdrs: Record<string, string> = { "Content-Type": "application/json" };
+                                    if (token) hdrs["Authorization"] = `Bearer ${token}`;
+                                    try {
+                                        if (isTw) {
+                                            // Takeaway pending order: create Transaction via takeaway API
+                                            await saveTwOrders(selOrder.items, selOrder.name, selOrder.phone, method, customerId);
+                                        } else {
+                                            // Delivery order: pay via pay API + update delivery status
+                                            const payRes = await fetch("/api/ubt/pay", {
+                                                method: "POST", headers: hdrs,
+                                                body: JSON.stringify({
+                                                    tableId: null,
+                                                    items: selOrder.items.filter((c: any) => c?.item).map((c: any) => ({ menuItemId: c.item.id, name: c.item.name, qty: c.qty, price: c.item.price })),
+                                                    paymentMethod: method,
+                                                    customerId,
+                                                    total: Math.round(selOrder.total),
+                                                    orderType: "delivery",
+                                                    customerName: selOrder.name,
+                                                    customerPhone: selOrder.phone,
+                                                    deliveryAddress: selOrder.addr,
+                                                }),
+                                            });
+                                            if (!payRes.ok) {
+                                                const e = await payRes.json().catch(() => ({}));
+                                                alert(e.error || "To'lov amalga oshmadi");
+                                                return;
+                                            }
+                                            // Mark delivery order as delivered in DB
+                                            if (typeof selOrder.id === "string") {
+                                                fetch("/api/ubt/yetkazish", {
+                                                    method: "PATCH", headers: hdrs,
+                                                    body: JSON.stringify({ id: selOrder.id, status: "delivered", isPaid: true }),
+                                                }).catch(() => {});
+                                            }
+                                        }
+                                    } catch {
+                                        alert("Server bilan bog'lanishda xatolik");
+                                        return;
+                                    }
+                                    // Remove from local state immediately
                                     if (isTw) setTwOrders((prev: any[]) => prev.filter((x: any) => x.id !== selOrder.id));
                                     else setDlOrders((prev: any[]) => prev.filter((x: any) => x.id !== selOrder.id));
                                     setPayingOrder(false);
