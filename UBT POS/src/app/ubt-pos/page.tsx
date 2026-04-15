@@ -2328,7 +2328,8 @@ export default function UbtPosPage() {
                         </div>
                         {/* Orders grid */}
                         <div className="flex-1 overflow-y-auto p-4">
-                            {dlOrders.length === 0 ? (
+                            {/* Faqat pending (yetkazilmagan) orderlarni ko'rsatamiz */}
+                            {dlOrders.filter(o => o.status === "pending").length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full gap-4">
                                     <div className={`w-20 h-20 rounded-3xl flex items-center justify-center ${dark ? "bg-purple-900/40" : "bg-purple-50"}`}>
                                         <Bike size={40} className="text-purple-200" />
@@ -2342,7 +2343,7 @@ export default function UbtPosPage() {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-                                    {dlOrders.map(o => (
+                                    {dlOrders.filter(o => o.status === "pending").map(o => (
                                         <button key={o.id} onClick={() => setSelOrder(o)}
                                             className={`p-3 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] active:scale-[0.98] shadow-sm
                                                 ${o.status === "done" ? (dark ? "bg-gray-800 border-emerald-900 shadow-none" : "bg-white border-emerald-200") : (dark ? "bg-gray-800 border-amber-900 shadow-none" : "bg-white border-amber-200")}`}>
@@ -2687,20 +2688,18 @@ export default function UbtPosPage() {
                                             onClick={() => {
                                                 const isTw = twOrders.some(o => o.id === selOrder.id);
                                                 if (isTw) {
-                                                    // Takeaway: mark done locally (order picked up, will pay separately or was free)
                                                     setTwOrders((prev: any[]) => prev.filter((x: any) => x.id !== selOrder.id));
                                                 } else {
-                                                    // Delivery: mark delivered in DB + update local state
+                                                    // Darhol local state'dan o'chirish (UI darhol yopilsin)
+                                                    setDlOrders((prev: any[]) => prev.filter((x: any) => x.id !== selOrder.id));
+                                                    // DB'da "delivered" ga yangilash (id string bo'lsa = DB orderi)
                                                     const token = (store.kassirSession as any)?.token || (store.deviceSession as any)?.token;
                                                     const hdrs: Record<string, string> = { "Content-Type": "application/json" };
                                                     if (token) hdrs["Authorization"] = `Bearer ${token}`;
-                                                    if (typeof selOrder.id === "string") {
-                                                        fetch("/api/ubt/yetkazish", {
-                                                            method: "PATCH", headers: hdrs,
-                                                            body: JSON.stringify({ id: selOrder.id, status: "delivered" }),
-                                                        }).catch(() => {});
-                                                    }
-                                                    setDlOrders((prev: any[]) => prev.filter((x: any) => x.id !== selOrder.id));
+                                                    fetch("/api/ubt/yetkazish", {
+                                                        method: "PATCH", headers: hdrs,
+                                                        body: JSON.stringify({ id: String(selOrder.id), status: "delivered" }),
+                                                    }).catch(() => {});
                                                 }
                                                 setSelOrder(null);
                                             }}
@@ -2757,13 +2756,11 @@ export default function UbtPosPage() {
                                                 alert(e.error || "To'lov amalga oshmadi");
                                                 return;
                                             }
-                                            // Mark delivery order as delivered in DB
-                                            if (typeof selOrder.id === "string") {
-                                                fetch("/api/ubt/yetkazish", {
-                                                    method: "PATCH", headers: hdrs,
-                                                    body: JSON.stringify({ id: selOrder.id, status: "delivered", isPaid: true }),
-                                                }).catch(() => {});
-                                            }
+                                            // Mark delivery order as delivered in DB (always attempt)
+                                            fetch("/api/ubt/yetkazish", {
+                                                method: "PATCH", headers: hdrs,
+                                                body: JSON.stringify({ id: String(selOrder.id), status: "delivered", isPaid: true }),
+                                            }).catch(() => {});
                                         }
                                     } catch {
                                         alert("Server bilan bog'lanishda xatolik");
