@@ -1,30 +1,60 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
     Plus, Search, FileSpreadsheet, X, Check, ArrowRightLeft,
     RotateCw, AlertTriangle, ChevronDown
 } from "lucide-react";
-import { useStore } from "@/lib/store";
 
 interface Product {
     id: string;
     name: string;
     unit: string;
     stock: number;
-    productType: "xomashyo" | "polfabrikat";
+    productType: "xomashyo" | "polfabrikat" | "mahsulot";
 }
 
 export default function OmborKochirishPage() {
-    const { nomenklaturaXomashyo, updateNomenklaturaXomashyo } = useStore();
+    // ── Mahsulotlar ro'yxati — API dan fresh data ────────────────────────────
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
+    const [productsLoading, setProductsLoading] = useState(true);
 
-    const allProducts: Product[] = useMemo(() => nomenklaturaXomashyo.map(x => ({
-        id: x.id,
-        name: x.name,
-        unit: (x as any).unit || "kg",
-        stock: Number((x as any).stock || 0),
-        productType: ((x as any).type === "polfabrikat" ? "polfabrikat" : "xomashyo") as "xomashyo" | "polfabrikat",
-    })), [nomenklaturaXomashyo]);
+    const loadProducts = useCallback(async () => {
+        try {
+            setProductsLoading(true);
+            const [xomRes, menuRes] = await Promise.all([
+                fetch("/api/ubt/xomashyo"),
+                fetch("/api/ubt/menu?all=1"),
+            ]);
+            const xomData = xomRes.ok ? await xomRes.json() : [];
+            const menuData = menuRes.ok ? await menuRes.json() : { items: [] };
+            const menuItems: any[] = Array.isArray(menuData.items) ? menuData.items : [];
+
+            const xomashyo: Product[] = (Array.isArray(xomData) ? xomData : []).map((x: any) => ({
+                id: x.id,
+                name: x.name,
+                unit: x.unit || "kg",
+                stock: Number(x.stock) || 0,
+                productType: x.type === "polfabrikat" ? "polfabrikat" : "xomashyo",
+            }));
+
+            const mahsulot: Product[] = menuItems
+                .filter((m: any) => m.type === "mahsulot" || !m.type)
+                .map((m: any) => ({
+                    id: m.id,
+                    name: m.name,
+                    unit: m.unit || "dona",
+                    stock: Number(m.stock) || 0,
+                    productType: "mahsulot" as const,
+                }));
+
+            setAllProducts([...xomashyo, ...mahsulot]);
+        } catch (e) {
+            console.error("Mahsulotlar yuklanmadi:", e);
+        } finally {
+            setProductsLoading(false);
+        }
+    }, []);
 
     const [transfers, setTransfers] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +80,7 @@ export default function OmborKochirishPage() {
         finally { setIsLoading(false); }
     };
 
-    useEffect(() => { fetchTransfers(); }, []);
+    useEffect(() => { fetchTransfers(); loadProducts(); }, [loadProducts]);
 
     useEffect(() => {
         const handler = (e: MouseEvent) => {
@@ -84,13 +114,15 @@ export default function OmborKochirishPage() {
                 body: JSON.stringify({ date: new Date(), ...formData, quantity: qty }),
             });
             if (res.ok) {
-                // Update local cache: same total stock, just transferred
-                // In a multi-warehouse system the API handles location; here we log only
                 setIsModalOpen(false);
                 setFormData({ productId: "", productName: "", quantity: "", fromWarehouse: "Asosiy Ombor", toWarehouse: "Oshxona Ombori", employee: "", notes: "", unit: "kg", productType: "" });
                 setProdSearch("");
-                fetchTransfers();
-            } else { alert("Xatolik yuz berdi"); }
+                // DB dan fresh ma'lumot yuklash
+                await Promise.all([fetchTransfers(), loadProducts()]);
+            } else {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || "Xatolik yuz berdi");
+            }
         } catch (err) { console.error(err); }
         finally { setIsSaving(false); }
     };
@@ -116,7 +148,7 @@ export default function OmborKochirishPage() {
                         <button className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-emerald-500 text-emerald-600 rounded-xl text-sm font-bold hover:bg-emerald-50 transition-all shadow-sm">
                             <FileSpreadsheet size={18} /> Excel
                         </button>
-                        <button onClick={() => setIsModalOpen(true)}
+                        <button onClick={() => { setIsModalOpen(true); loadProducts(); }}
                             className="flex items-center gap-2 px-5 py-2.5 bg-sky-600 text-white rounded-xl text-sm font-bold hover:bg-sky-700 transition-all shadow-lg shadow-sky-500/30 hover:-translate-y-0.5">
                             <Plus size={18} strokeWidth={2.5} /> Yangi Ko&apos;chirish
                         </button>

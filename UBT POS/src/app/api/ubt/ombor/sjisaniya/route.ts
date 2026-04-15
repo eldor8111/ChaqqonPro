@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/backend/db";
 import { getSession } from "@/lib/backend/auth";
@@ -24,38 +25,50 @@ export async function POST(req: Request) {
         const session = await getSession();
         if (!session?.tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        if (session.role === "KASSIR") {
-            const staff = await prisma.staff.findUnique({ where: { id: session.userId } });
-            if (staff && staff.role === "Omborchi") {
-                const perms = staff.permissions ? (typeof staff.permissions === 'string' ? JSON.parse(staff.permissions) : staff.permissions) : [];
-                if (!Array.isArray(perms) || !perms.includes("sjisaniya")) {
-                    return NextResponse.json({ error: "Sizda hisobdan chiqarish ruxsati yo'q" }, { status: 403 });
-                }
-            }
-        }
-
         const body = await req.json();
-        const { date, productId, productName, quantity, unit, reason, approvedBy } = body;
+        const { date, productId, productName, quantity, unit, reason, approvedBy, productType } = body;
 
         let pId = productId;
         let pName = productName || "NOMA'LUM";
         let pUnit = unit || "dona";
         let itemCost = 0;
+        // productId null bo'lishi kerak bo'lsa (xomashyo/polfabrikat uchun FK yo'q)
+        let writeoffProductId: string | null = pId || null;
 
         if (productId) {
-            const product = await prisma.product.findUnique({
-                where: { id: productId, tenantId: session.tenantId }
-            });
-            if (product) {
-                pName = product.name;
-                pUnit = product.unit;
-                itemCost = product.costPrice || 0;
+            const isIngredient = productType === "xomashyo" || productType === "polfabrikat";
 
-                // Svisaniya qilganda mahsulot kamayadi
-                await prisma.product.update({
-                    where: { id: productId },
-                    data: { stock: product.stock - Number(quantity) }
+            if (isIngredient) {
+                // UbtIngredient jadvalidan stock ayirish
+                writeoffProductId = null; // FK yo'q xomashyo uchun
+                const ingRows: any[] = await prisma.$queryRawUnsafe(
+                    "SELECT id, name, unit, stock, price FROM UbtIngredient WHERE id=? AND tenantId=? LIMIT 1",
+                    productId, session.tenantId
+                );
+                if (ingRows.length > 0) {
+                    pName = ingRows[0].name;
+                    pUnit = ingRows[0].unit;
+                    itemCost = Number(ingRows[0].price) || 0;
+                    const newStock = Math.max(0, Number(ingRows[0].stock) - Number(quantity));
+                    await prisma.$executeRawUnsafe(
+                        "UPDATE UbtIngredient SET stock=? WHERE id=? AND tenantId=?",
+                        newStock, productId, session.tenantId
+                    );
+                }
+            } else {
+                // Product jadvalidan stock ayirish (taom / mahsulot)
+                const product = await prisma.product.findUnique({
+                    where: { id: productId, tenantId: session.tenantId }
                 });
+                if (product) {
+                    pName = product.name;
+                    pUnit = product.unit;
+                    itemCost = product.costPrice || 0;
+                    await prisma.product.update({
+                        where: { id: productId },
+                        data: { stock: Math.max(0, product.stock - Number(quantity)) }
+                    });
+                }
             }
         }
 
@@ -65,7 +78,7 @@ export async function POST(req: Request) {
             data: {
                 tenantId: session.tenantId,
                 date: new Date(date || Date.now()),
-                productId: pId,
+                productId: writeoffProductId,
                 productName: pName,
                 quantity: Number(quantity),
                 unit: pUnit,

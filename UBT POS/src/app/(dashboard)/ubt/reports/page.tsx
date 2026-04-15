@@ -3,7 +3,6 @@ import { useState, useMemo, useEffect, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { useLang } from "@/lib/LangContext";
 import { formatCurrency, formatCurrencyShort } from "@/lib/mockData";
-import { useStore } from "@/lib/store";
 import {
     BarChart3, PieChart, Users, UserCheck, Utensils, AlertTriangle, ArrowDownCircle, ArrowUpCircle, Calendar, Download
 } from "lucide-react";
@@ -68,10 +67,6 @@ export default function UbtReportsPage() {
         range: null
     });
     const [expandedTxId, setExpandedTxId] = useState<string | null>(null);
-
-    const topProducts = useStore(s => s.topProducts);
-    const staff = useStore(s => s.staff);
-    const expenditures = useStore(s => s.expenditures);
 
     function buildQuery(base: string) {
         if (dateFilter.range) {

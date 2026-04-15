@@ -1418,7 +1418,7 @@ export default function UbtPosPage() {
         const svcPct = (selTable.serviceFee ?? 0) / 100;
         const grandTotal = Math.round(subtotal * (1 + svcPct));
         try {
-            await fetch("/api/ubt/pay", {
+            const payRes = await fetch("/api/ubt/pay", {
                 method: "POST", headers: hdrs,
                 body: JSON.stringify({
                     tableId: selTable.id,
@@ -1431,7 +1431,19 @@ export default function UbtPosPage() {
                     serviceFee: svcPct,
                 }),
             });
-        } catch {}
+            if (!payRes.ok) {
+                const errData = await payRes.json().catch(() => ({}));
+                alert(errData.error || "To'lov amalga oshmadi. Qayta urinib ko'ring.");
+                setTablePayLoading(false);
+                return;
+            }
+        } catch (payErr) {
+            console.error("[handleTablePayDirect]", payErr);
+            alert("Server bilan bog'lanishda xatolik. Internet aloqasini tekshiring.");
+            setTablePayLoading(false);
+            return;
+        }
+        // ✅ To'lov muvaffaqiyatli — buyurtmalarni o'chirish va UI yangilash
         // 🗳️ Delete cart orders from DB
         fetch(`/api/ubt/orders-db?tableId=${selTable.id}`, { method: "DELETE", headers: hdrs }).catch(() => {});
         // Chek print

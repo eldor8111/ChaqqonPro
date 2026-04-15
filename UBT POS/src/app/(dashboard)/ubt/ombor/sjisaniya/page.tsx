@@ -1,27 +1,67 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
     Plus, Search, FileSpreadsheet, X, Check, Trash2,
     RotateCw, AlertCircle, ChevronDown
 } from "lucide-react";
-import { useStore } from "@/lib/store";
 import { useFrontendStore } from "@/lib/frontend/store";
+
+interface Product {
+    id: string;
+    name: string;
+    unit: string;
+    stock: number;
+    price: number;
+    productType: "xomashyo" | "polfabrikat" | "mahsulot";
+}
 
 export default function OmborSjisaniyaPage() {
     const { user } = useFrontendStore();
     const canCreate = user?.role === "ADMIN" || user?.permissions?.includes("sjisaniya");
 
-    const { nomenklaturaXomashyo, updateNomenklaturaXomashyo } = useStore();
+    // ── Mahsulotlar ro'yxati — API dan fresh data ────────────────────────────
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
+    const [productsLoading, setProductsLoading] = useState(true);
 
-    const allProducts = useMemo(() => nomenklaturaXomashyo.map(x => ({
-        id: x.id,
-        name: x.name,
-        unit: (x as any).unit || "kg",
-        stock: Number((x as any).stock || 0),
-        price: Number((x as any).price || 0),
-        productType: (x as any).type === "polfabrikat" ? "polfabrikat" : "xomashyo",
-    })), [nomenklaturaXomashyo]);
+    const loadProducts = useCallback(async () => {
+        try {
+            setProductsLoading(true);
+            const [xomRes, menuRes] = await Promise.all([
+                fetch("/api/ubt/xomashyo"),
+                fetch("/api/ubt/menu?all=1"),
+            ]);
+            const xomData = xomRes.ok ? await xomRes.json() : [];
+            const menuData = menuRes.ok ? await menuRes.json() : { items: [] };
+            const menuItems: any[] = Array.isArray(menuData.items) ? menuData.items : [];
+
+            const xomashyo: Product[] = (Array.isArray(xomData) ? xomData : []).map((x: any) => ({
+                id: x.id,
+                name: x.name,
+                unit: x.unit || "kg",
+                stock: Number(x.stock) || 0,
+                price: Number(x.price) || 0,
+                productType: x.type === "polfabrikat" ? "polfabrikat" : "xomashyo",
+            }));
+
+            const mahsulot: Product[] = menuItems
+                .filter((m: any) => m.type === "mahsulot" || !m.type)
+                .map((m: any) => ({
+                    id: m.id,
+                    name: m.name,
+                    unit: m.unit || "dona",
+                    stock: Number(m.stock) || 0,
+                    price: Number(m.cost || m.price) || 0,
+                    productType: "mahsulot" as const,
+                }));
+
+            setAllProducts([...xomashyo, ...mahsulot]);
+        } catch (e) {
+            console.error("Mahsulotlar yuklanmadi:", e);
+        } finally {
+            setProductsLoading(false);
+        }
+    }, []);
 
     const [items, setItems] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -47,7 +87,7 @@ export default function OmborSjisaniyaPage() {
         finally { setIsLoading(false); }
     };
 
-    useEffect(() => { fetchItems(); }, []);
+    useEffect(() => { fetchItems(); loadProducts(); }, [loadProducts]);
 
     useEffect(() => {
         const handler = (e: MouseEvent) => {
@@ -102,6 +142,7 @@ export default function OmborSjisaniyaPage() {
                 date: new Date(),
                 productId: formData.productId,
                 productName: formData.productName,
+                productType: selectedProd?.productType || "xomashyo",
                 quantity: qty,
                 unit: formData.unit,
                 reason: formData.reason,
@@ -115,16 +156,15 @@ export default function OmborSjisaniyaPage() {
                 body: JSON.stringify(payload),
             });
             if (res.ok) {
-                // ✅ AUTO STOCK DECREASE
-                if (selectedProd) {
-                    const newStock = Math.max(0, selectedProd.stock - qty);
-                    updateNomenklaturaXomashyo(formData.productId, { stock: newStock });
-                }
                 setIsModalOpen(false);
                 setFormData({ productId: "", productName: "", quantity: "", unit: "kg", reason: "Buzilgan / Muddat o'tgan", approvedBy: "", costPrice: 0 });
                 setProdSearch("");
-                fetchItems();
-            } else { alert("Serverda xatolik yuz berdi"); }
+                // DB dan fresh ma'lumot yuklash
+                await Promise.all([fetchItems(), loadProducts()]);
+            } else {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || "Serverda xatolik yuz berdi");
+            }
         } catch (err) { console.error(err); }
         finally { setIsSaving(false); }
     };
@@ -158,7 +198,7 @@ export default function OmborSjisaniyaPage() {
                             <FileSpreadsheet size={18} /> Excel
                         </button>
                         {canCreate && (
-                            <button onClick={() => setIsModalOpen(true)}
+                            <button onClick={() => { setIsModalOpen(true); loadProducts(); }}
                                 className="flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-500/30 hover:-translate-y-0.5">
                                 <Plus size={18} strokeWidth={2.5} /> Yangi Sjisaniya
                             </button>

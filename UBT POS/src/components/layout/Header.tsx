@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-    Bell, Globe, ChevronDown, Search, User, LogOut,
-    Building2, Check, Settings, Eye, EyeOff, X, Lock, KeyRound, CheckCircle2, AlertCircle, Printer
+    Bell, Globe, ChevronDown, Search, LogOut,
+    Building2, Check, Settings, Eye, EyeOff, X, Lock, KeyRound, CheckCircle2, AlertCircle, Printer,
+    Trash2, AlertTriangle, ShieldAlert
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import { useFrontendStore } from "@/lib/frontend/store";
@@ -205,6 +206,158 @@ function ChangePasswordModal({ onClose }: { onClose: () => void }) {
     );
 }
 
+// ─── Hisobotlarni tozalash modali ─────────────────────────────────────────────
+function ClearReportsModal({ onClose }: { onClose: () => void }) {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [done, setDone] = useState<Record<string, number> | null>(null);
+    const [confirmed, setConfirmed] = useState(false);
+
+    const handleClear = async () => {
+        if (!confirmed) { setError("Iltimos, tasdiqlash katakchasini belgilang"); return; }
+        setError("");
+        setLoading(true);
+        try {
+            const res = await fetch("/api/ubt/reports/clear", { method: "DELETE" });
+            const data = await res.json();
+            if (!res.ok) { setError(data.error || "Xatolik yuz berdi"); return; }
+            setDone(data.deleted);
+        } catch {
+            setError("Server bilan bog'lanishda xatolik");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div
+            className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            onClick={onClose}
+        >
+            <div
+                className="relative w-full max-w-md mx-4 rounded-2xl overflow-hidden shadow-2xl animate-fade-in"
+                style={{ background: "rgba(15,23,42,0.97)", border: "1px solid rgba(255,255,255,0.12)" }}
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="px-6 pt-6 pb-4 border-b border-white/10 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+                            style={{ background: "rgba(239,68,68,0.2)", border: "1px solid rgba(239,68,68,0.35)" }}>
+                            <ShieldAlert size={17} className="text-red-400" />
+                        </div>
+                        <div>
+                            <h2 className="text-white font-bold text-base">Barcha hisobotlarni o&apos;chirish</h2>
+                            <p className="text-slate-400 text-xs">Bu amalni bekor qilib bo&apos;lmaydi</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose}
+                        className="text-slate-500 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10">
+                        <X size={18} />
+                    </button>
+                </div>
+
+                {/* Body */}
+                <div className="px-6 py-5 space-y-4">
+                    {done ? (
+                        <div className="flex flex-col items-center gap-4 py-4">
+                            <div className="w-14 h-14 rounded-full flex items-center justify-center"
+                                style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)" }}>
+                                <CheckCircle2 size={30} className="text-emerald-400" />
+                            </div>
+                            <p className="text-white font-semibold text-center">Hisobotlar muvaffaqiyatli tozalandi!</p>
+                            <div className="w-full rounded-xl p-4 space-y-1.5"
+                                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                                {[
+                                    ["Tranzaksiyalar", done.transactions],
+                                    ["Chiqim yozuvlari", done.expenditures],
+                                    ["Kirim yozuvlari", done.receipts],
+                                    ["Ko'chirish yozuvlari", done.transfers],
+                                    ["Inventarizatsiya", done.counts],
+                                    ["Hisobdan chiqarish", done.writeoffs],
+                                    ["Audit yozuvlari", done.auditLogs],
+                                ].map(([label, cnt]) => (
+                                    <div key={label as string} className="flex justify-between text-sm">
+                                        <span className="text-slate-400">{label}</span>
+                                        <span className="text-red-400 font-bold">{cnt} ta o&apos;chirildi</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <button onClick={onClose}
+                                className="w-full py-3 rounded-xl text-white text-sm font-bold transition-all"
+                                style={{ background: "linear-gradient(135deg,#10b981,#059669)" }}>
+                                Yopish
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Warning box */}
+                            <div className="rounded-xl p-4 flex gap-3"
+                                style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
+                                <AlertTriangle size={18} className="text-red-400 flex-shrink-0 mt-0.5" />
+                                <div className="space-y-1 text-sm">
+                                    <p className="text-red-300 font-semibold">Quyidagilar butunlay o&apos;chiriladi:</p>
+                                    <ul className="text-slate-400 space-y-0.5 list-disc list-inside text-xs leading-relaxed">
+                                        <li>Barcha to&apos;lov tranzaksiyalari</li>
+                                        <li>Ombor kirim / chiqim yozuvlari</li>
+                                        <li>Ko&apos;chirish va inventarizatsiya tarixi</li>
+                                        <li>Hisobdan chiqarish yozuvlari</li>
+                                        <li>Audit log yozuvlari</li>
+                                    </ul>
+                                    <p className="text-amber-400 font-semibold text-xs mt-2">
+                                        ⚠️ Mahsulot katalogi, xodimlar va sozlamalar o&apos;CHIRILMAYDI.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Error */}
+                            {error && (
+                                <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl"
+                                    style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)" }}>
+                                    <AlertCircle size={15} className="text-red-400 flex-shrink-0" />
+                                    <p className="text-red-300 text-sm">{error}</p>
+                                </div>
+                            )}
+
+                            {/* Confirm checkbox */}
+                            <label className="flex items-start gap-3 cursor-pointer group">
+                                <input type="checkbox" checked={confirmed} onChange={e => { setConfirmed(e.target.checked); setError(""); }}
+                                    className="mt-0.5 w-4 h-4 rounded accent-red-500 cursor-pointer flex-shrink-0" />
+                                <span className="text-sm text-slate-300 group-hover:text-white transition-colors leading-snug">
+                                    Men barcha hisobot ma&apos;lumotlarini qaytarib bo&apos;lmas tarzda o&apos;chirishni tasdiqlayman
+                                </span>
+                            </label>
+
+                            {/* Buttons */}
+                            <div className="flex gap-3 pt-1">
+                                <button type="button" onClick={onClose}
+                                    className="flex-1 py-3 rounded-xl text-slate-300 text-sm font-medium transition-all hover:bg-white/10"
+                                    style={{ border: "1px solid rgba(255,255,255,0.12)" }}>
+                                    Bekor
+                                </button>
+                                <button type="button" onClick={handleClear} disabled={loading || !confirmed}
+                                    className="flex-1 py-3 rounded-xl text-white text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-40"
+                                    style={{ background: confirmed ? "linear-gradient(135deg,#ef4444,#dc2626)" : "rgba(239,68,68,0.3)", boxShadow: confirmed ? "0 4px 20px rgba(239,68,68,0.35)" : "none" }}>
+                                    {loading ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            O&apos;chirilmoqda...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Trash2 size={15} /> O&apos;chirish
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ─── MAIN HEADER ──────────────────────────────────────────────────────────────
 export default function Header() {
     const { lang, setLang } = useLang();
@@ -216,6 +369,7 @@ export default function Header() {
     const [selectedBranch, setSelectedBranch] = useState(mockBranches[0]);
     const [showBranch, setShowBranch] = useState(false);
     const [showChangePw, setShowChangePw] = useState(false);
+    const [showClearReports, setShowClearReports] = useState(false);
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
     useEffect(() => {
@@ -237,6 +391,7 @@ export default function Header() {
     return (
         <>
             {showChangePw && <ChangePasswordModal onClose={() => setShowChangePw(false)} />}
+            {showClearReports && <ClearReportsModal onClose={() => setShowClearReports(false)} />}
 
             <header className="h-16 flex items-center justify-between px-6 bg-surface-card border-b border-surface-border flex-shrink-0">
                 {/* Left: Branch selector + Search */}
@@ -390,6 +545,15 @@ export default function Header() {
                                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-200 hover:bg-surface-elevated transition-colors"
                                 >
                                     <Printer size={15} /> Printerlar
+                                </button>
+
+                                <div className="border-t border-surface-border my-1" />
+
+                                <button
+                                    onClick={() => { setShowClearReports(true); setShowUser(false); }}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                                >
+                                    <Trash2 size={15} /> Hisobotlarni tozalash
                                 </button>
 
                                 <div className="border-t border-surface-border mt-1 pt-1">

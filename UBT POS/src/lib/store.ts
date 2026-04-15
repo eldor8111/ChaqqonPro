@@ -433,7 +433,7 @@ export const useStore = create<AppState>()(
                         if (existing) {
                             updatedTop = updatedTop.map(t =>
                                 t.id === productId
-                                    ? { ...t, sold: t.sold + (t.sold || 0) + quantity, revenue: t.revenue + revenueValue }
+                                    ? { ...t, sold: t.sold + quantity, revenue: t.revenue + revenueValue }
                                     : t
                             );
                         } else {

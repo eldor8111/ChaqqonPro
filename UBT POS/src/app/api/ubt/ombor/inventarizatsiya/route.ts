@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/backend/db";
 import { getSession } from "@/lib/backend/auth";
@@ -25,26 +26,44 @@ export async function POST(req: Request) {
         if (!session?.tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const body = await req.json();
-        const { date, productId, productName, systemStock, actualStock, unit, employee, warehouse } = body;
+        const { date, productId, productName, systemStock, actualStock, unit, employee, warehouse, productType } = body;
 
         let pId = productId;
         let pName = productName || "NOMA'LUM";
         let pUnit = unit || "dona";
-        let diff = Number(actualStock) - Number(systemStock);
+        const diff = Number(actualStock) - Number(systemStock);
+        const isIngredient = productType === "xomashyo" || productType === "polfabrikat";
+        // xomashyo uchun FK yo'q
+        const countProductId = isIngredient ? null : (pId || null);
 
         if (productId) {
-            const product = await prisma.product.findUnique({
-                where: { id: productId, tenantId: session.tenantId }
-            });
-            if (product) {
-                pName = product.name;
-                pUnit = product.unit;
-
-                // Haqiqiy qoldiqni saqlaymiz (xato qilingan bo'lsa to'g'irlanadi)
-                await prisma.product.update({
-                    where: { id: productId },
-                    data: { stock: Number(actualStock) }
+            if (isIngredient) {
+                // UbtIngredient stock'ni haqiqiy qoldiqqa o'rnatish
+                const ingRows: any[] = await prisma.$queryRawUnsafe(
+                    "SELECT id, name, unit FROM UbtIngredient WHERE id=? AND tenantId=? LIMIT 1",
+                    productId, session.tenantId
+                );
+                if (ingRows.length > 0) {
+                    pName = ingRows[0].name;
+                    pUnit = ingRows[0].unit;
+                    await prisma.$executeRawUnsafe(
+                        "UPDATE UbtIngredient SET stock=? WHERE id=? AND tenantId=?",
+                        Number(actualStock), productId, session.tenantId
+                    );
+                }
+            } else {
+                // Product jadvalini haqiqiy qoldiqqa o'rnatish
+                const product = await prisma.product.findUnique({
+                    where: { id: productId, tenantId: session.tenantId }
                 });
+                if (product) {
+                    pName = product.name;
+                    pUnit = product.unit;
+                    await prisma.product.update({
+                        where: { id: productId },
+                        data: { stock: Number(actualStock) }
+                    });
+                }
             }
         }
 
@@ -53,7 +72,7 @@ export async function POST(req: Request) {
                 tenantId: session.tenantId,
                 date: new Date(date || Date.now()),
                 warehouse: warehouse || "Asosiy Ombor",
-                productId: pId,
+                productId: countProductId,
                 productName: pName,
                 systemStock: Number(systemStock),
                 actualStock: Number(actualStock),

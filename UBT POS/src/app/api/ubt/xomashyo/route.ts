@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/backend/db";
 import { getSession } from "@/lib/backend/auth";
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
         const catId = categoryId || null;
         if (!name) return NextResponse.json({ error: "Xomashyo nomi kiritilishi shart" }, { status: 400 });
         
-        if (id && !id.startsWith("X")) {
+        if (id) {
             // Update
             await prisma.$executeRawUnsafe(
                 "UPDATE UbtIngredient SET name=?, unit=?, stock=?, price=?, type=?, categoryId=? WHERE id=? AND tenantId=?", 

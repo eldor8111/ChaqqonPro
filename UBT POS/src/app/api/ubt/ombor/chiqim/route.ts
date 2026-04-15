@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/backend/db";
 import { getSession } from "@/lib/backend/auth";
@@ -25,25 +26,44 @@ export async function POST(req: Request) {
         if (!session?.tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const body = await req.json();
-        const { date, productId, productName, quantity, unit, reason, fromWarehouse, employee, notes } = body;
+        const { date, productId, productName, quantity, unit, reason, fromWarehouse, employee, notes, productType } = body;
 
-        let pId = productId;
+        const qty = Number(quantity);
         let pName = productName || "NOMA'LUM";
         let pUnit = unit || "dona";
+        const isIngredient = productType === "xomashyo" || productType === "polfabrikat";
+        // xomashyo uchun FK yo'q — productId null
+        const expProductId = isIngredient ? null : (productId || null);
 
         if (productId) {
-            const product = await prisma.product.findUnique({
-                where: { id: productId, tenantId: session.tenantId }
-            });
-            if (product) {
-                pName = product.name;
-                pUnit = product.unit;
-
-                // Chiqim qilinganda snotedan ayiriladi
-                await prisma.product.update({
-                    where: { id: productId },
-                    data: { stock: product.stock - Number(quantity) }
+            if (isIngredient) {
+                // UbtIngredient jadvalidan stock ayirish
+                const ingRows: any[] = await prisma.$queryRawUnsafe(
+                    "SELECT id, name, unit, stock FROM UbtIngredient WHERE id=? AND tenantId=? LIMIT 1",
+                    productId, session.tenantId
+                );
+                if (ingRows.length > 0) {
+                    pName = ingRows[0].name;
+                    pUnit = ingRows[0].unit;
+                    const newStock = Math.max(0, Number(ingRows[0].stock) - qty);
+                    await prisma.$executeRawUnsafe(
+                        "UPDATE UbtIngredient SET stock=? WHERE id=? AND tenantId=?",
+                        newStock, productId, session.tenantId
+                    );
+                }
+            } else {
+                // Product jadvalidan stock ayirish (mahsulot / taom)
+                const product = await prisma.product.findUnique({
+                    where: { id: productId, tenantId: session.tenantId }
                 });
+                if (product) {
+                    pName = product.name;
+                    pUnit = product.unit;
+                    await prisma.product.update({
+                        where: { id: productId },
+                        data: { stock: Math.max(0, product.stock - qty) }
+                    });
+                }
             }
         }
 
@@ -51,11 +71,11 @@ export async function POST(req: Request) {
             data: {
                 tenantId: session.tenantId,
                 date: new Date(date || Date.now()),
-                productId: pId,
+                productId: expProductId,
                 productName: pName,
-                quantity: Number(quantity),
+                quantity: qty,
                 unit: pUnit,
-                reason: reason || "Boshqa", // sale, return, damage, writeoff, prep
+                reason: reason || "Boshqa",
                 fromWarehouse: fromWarehouse || "Asosiy Ombor",
                 employee: employee || session.userId || "Noma'lum",
                 notes
