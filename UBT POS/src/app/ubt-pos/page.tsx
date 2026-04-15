@@ -1361,7 +1361,11 @@ export default function UbtPosPage() {
                         qty: Number(it.qty ?? it.quantity ?? 1),
                     }
                 );
-                setDlOrders(Array.isArray(data.orders) ? data.orders.map((o: any, i: number) => ({
+                // Faqat faol (yetkazilmagan) orderlarni ko'rsatish — delivered/cancelled skip
+                const activeOrders = Array.isArray(data.orders)
+                    ? data.orders.filter((o: any) => o.status !== "delivered" && o.status !== "cancelled")
+                    : [];
+                setDlOrders(activeOrders.map((o: any, i: number) => ({
                     id: o.id || i + 1,
                     num: o.num || i + 1,
                     total: o.totalAmount ?? o.total ?? 0,
@@ -1369,9 +1373,9 @@ export default function UbtPosPage() {
                     phone: o.customerPhone ?? o.phone ?? "",
                     addr: o.address ?? o.addr ?? "",
                     time: o.createdAt ? new Date(o.createdAt).toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" }) : (o.time ?? ""),
-                    status: (o.status === "delivered" || o.status === "cancelled") ? "done" as const : "pending" as const,
+                    status: "pending" as const,
                     items: normalizeItems(typeof o.items === "string" ? JSON.parse(o.items) : (o.items ?? [])),
-                })) : []);
+                })));
             }
         } catch {}
     }, [store.kassirSession, store.deviceSession]);

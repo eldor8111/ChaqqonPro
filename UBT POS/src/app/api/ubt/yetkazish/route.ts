@@ -27,8 +27,9 @@ export async function GET(req: NextRequest) {
         const tenantId = await getAuthTenantId(req);
         if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+        // Faqat faol orderlarni qaytarish (delivered va cancelled ekranda ko'rinmaydi)
         const orders = await prisma.deliveryOrder.findMany({
-            where: { tenantId },
+            where: { tenantId, status: { notIn: ["delivered", "cancelled"] } },
             orderBy: { createdAt: "desc" },
             take: 100,
         });
