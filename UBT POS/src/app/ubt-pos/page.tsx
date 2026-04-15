@@ -1080,7 +1080,11 @@ export default function UbtPosPage() {
 
             const cancelledQty = c.qty - newQty;
 
-            let nextOrders = currentOrders.map((o: any) => o.item.id === c.item.id && !!o.isSaboy === !!c.isSaboy ? { ...o, qty: newQty, printedQty: Math.min(o.printedQty || 0, newQty) } : o);
+            let nextOrders = currentOrders.map((o: any) => 
+                o.item.id === c.item.id && !!o.isSaboy === !!c.isSaboy && (o.shotId || 1) === activeShot
+                    ? { ...o, qty: newQty, printedQty: Math.min(o.printedQty || 0, newQty) } 
+                    : o
+            );
             nextOrders = nextOrders.filter((o: any) => o.qty > 0);
 
             if (activeShotObj) {
