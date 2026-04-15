@@ -482,7 +482,8 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, instantAdd, servicePct =
                 {filtered.length === 0 ? <div className={`py-8 text-center text-sm font-bold ${th.sub(dark)}`}>{t("notFound", lang)}</div> : (
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 p-1">
                         {filtered.map(item => {
-                            const inCart = cart.find(c => c.item.id === item.id);
+                            if (!item) return null;
+                            const inCart = cart.find(c => c?.item?.id === item.id);
                             const dimmed = !item.inStock;
                             const isWt = isWeightUnit(item.unit);
                             return (
@@ -533,6 +534,7 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, instantAdd, servicePct =
                 <div className={`border-t shrink-0 ${th.border(dark)} ${th.panel(dark)}`}>
                     <div className="px-3 py-2 max-h-36 overflow-y-auto">
                         {cart.map(c => {
+                            if (!c?.item) return null;
                             const isWt = isWeightUnit(c.item.unit);
                             return (
                             <div key={c.item.id} className="flex items-center gap-2 py-1.5">
@@ -1904,7 +1906,7 @@ export default function UbtPosPage() {
                                                 <div className="px-3 pt-4 pb-2">
                                                     <p className={`text-[10px] font-black uppercase tracking-widest text-center mb-3 opacity-60 ${dark ? "text-slate-400" : "text-slate-500"}`}>— Buyurtma Tarkibi —</p>
                                                     <div className="flex flex-col gap-2.5">
-                                                        {(tableOrders[selTable.id] || []).map((c: any, i: number) => (
+                                                        {(tableOrders[selTable.id] || []).map((c: any, i: number) => c?.item && (
                                                             <div key={i} className={`flex flex-col gap-1.5 p-2.5 rounded-2xl border transition-all hover:scale-[1.02] ${dark ? "bg-[#111827] border-white/5 shadow-lg shadow-black/30" : "bg-white border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.04)]"}`}>
                                                                 <div className="flex items-start gap-2.5">
                                                                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden shadow-inner border border-black/5 ${dark ? "bg-[#1e293b]" : "bg-orange-50"}`}>
@@ -2203,7 +2205,7 @@ export default function UbtPosPage() {
                                                         <ShoppingBag size={32} className="text-gray-200" />
                                                         <p className="text-xs text-gray-300 font-semibold">Taom tanlang</p>
                                                     </div>
-                                                ) : newOrderCart.map((c, i) => (
+                                                ) : newOrderCart.map((c, i) => c?.item && (
                                                     <div key={i} className="flex items-center gap-2.5 py-2 border-b border-dashed border-gray-100 last:border-0">
                                                         <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${dark ? "bg-gray-800" : "bg-gray-100"}`}>
                                                             {c.item.image
@@ -2390,7 +2392,7 @@ export default function UbtPosPage() {
                                                         <Bike size={32} className="text-gray-200" />
                                                         <p className="text-xs text-gray-300 font-semibold">Taom tanlang</p>
                                                     </div>
-                                                ) : newOrderCart.map((c, i) => (
+                                                ) : newOrderCart.map((c, i) => c?.item && (
                                                     <div key={i} className="flex items-center gap-2.5 py-2 border-b border-dashed border-gray-100 last:border-0">
                                                         <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${dark ? "bg-gray-800" : "bg-gray-100"}`}>
                                                             {c.item.image
@@ -2586,7 +2588,7 @@ export default function UbtPosPage() {
                                 <div className="flex-1 overflow-y-auto">
                                     <div className="px-3 pt-3">
                                         <p className={`text-[9px] font-black uppercase tracking-widest text-center mb-2 ${th.sub(dark)}`}>· · · BUYURTMA TARKIBI · · ·</p>
-                                        {selOrder.items.map((c, i) => (
+                                        {selOrder.items.map((c: any, i: number) => c?.item && (
                                             <div key={i} className="flex items-center gap-2.5 py-2 border-b border-dashed border-gray-100 last:border-0">
                                                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${dark ? "bg-gray-800" : "bg-gray-100"}`}>
                                                     {c.item.image
