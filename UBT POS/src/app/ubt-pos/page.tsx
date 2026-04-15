@@ -106,7 +106,7 @@ const printKitchenReceipt = async (items: {item:any; qty:number}[], tableName: s
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     printerIp, port: 9100, receiptType: "kitchen", tableName, time: timeStr,
-                    items: pItems.map(c => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
+                    items: pItems.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
                     total: pItems.reduce((s, c) => s + c.item.price * c.qty, 0),
                 }),
             }).catch(e => console.warn("[Kitchen Print]", printerIp, e));
@@ -454,7 +454,7 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, instantAdd, servicePct =
                     tableName: "Mijoz cheki",
                     time: timeStr,
                     paymentMethod: method,
-                    items: cart.map(c => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
+                    items: cart.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
                     total: cart.reduce((s, c) => s + c.item.price * c.qty, 0),
                     serviceFee: servicePct
                 }),
@@ -1156,7 +1156,7 @@ export default function UbtPosPage() {
                 method: "POST", headers: hdrs,
                 body: JSON.stringify({
                     customerName: custName, customerPhone: custPhone, address: custAddr,
-                    items: cartItems.map(c => ({ name: c.item.name, qty: c.qty, price: c.item.price })),
+                    items: cartItems.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price })),
                     totalAmount: total,
                     paymentMethod: payMethod,
                     customerId,
@@ -1424,7 +1424,7 @@ export default function UbtPosPage() {
                 method: "POST", headers: hdrs,
                 body: JSON.stringify({
                     tableId: selTable.id,
-                    items: orders.map((c: any) => ({ menuItemId: c.item.id, name: c.item.name, qty: c.qty, price: c.item.price })),
+                    items: orders.filter((c: any) => c?.item).map((c: any) => ({ menuItemId: c.item.id, name: c.item.name, qty: c.qty, price: c.item.price })),
                     paymentMethod: method,
                     customerId,
                     total: subtotal,
@@ -1467,7 +1467,7 @@ export default function UbtPosPage() {
                     paymentMethod: method,
                     cashAmount: method === "Naqd" ? grandTotal : 0,
                     cardAmount: method === "Karta" ? grandTotal : 0,
-                    items: orders.map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
+                    items: orders.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
                     total: grandTotal,
                 }),
             }).catch(() => {});
@@ -1505,7 +1505,7 @@ export default function UbtPosPage() {
                 waiter: store.kassirSession?.name || "",
                 time: timeStr,
                 orderNum: Math.floor(Math.random() * 9000) + 1000,
-                items: orders.map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
+                items: orders.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
                 total,
             }),
         }).catch(() => {});
@@ -1842,7 +1842,7 @@ export default function UbtPosPage() {
                                                     method: "POST", headers: hdrs,
                                                     body: JSON.stringify({
                                                         tableId: selTable.id,
-                                                        items: cart.map(c => ({ menuItemId: c.item.id, name: c.item.name, qty: c.qty, price: c.item.price })),
+                                                        items: cart.filter((c: any) => c?.item).map((c: any) => ({ menuItemId: c.item.id, name: c.item.name, qty: c.qty, price: c.item.price })),
                                                         paymentMethod: method,
                                                         customerId,
                                                         total: Math.round(cart.reduce((s, c) => s + c.item.price * c.qty, 0)),
@@ -1988,7 +1988,7 @@ export default function UbtPosPage() {
                                                                 const now = new Date();
                                                                 const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
                                                                 for (const [printerIp, items] of Object.entries(groups)) {
-                                                                    fetch("/api/ubt/print", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ printerIp, port: 9100, receiptType: "kitchen", tableName: selTable.name, time: timeStr, items: items.map((c: any) => ({ name: c.isSaboy ? `📦 ${c.item.name} (- Saboy -)` : c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })), total: items.reduce((s: number, c: any) => s + c.item.price * c.qty, 0) }) }).catch(() => {});
+                                                                    fetch("/api/ubt/print", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ printerIp, port: 9100, receiptType: "kitchen", tableName: selTable.name, time: timeStr, items: items.filter((c: any) => c?.item).map((c: any) => ({ name: c.isSaboy ? `📦 ${c.item.name} (- Saboy -)` : c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })), total: items.reduce((s: number, c: any) => s + c.item.price * c.qty, 0) }) }).catch(() => {});
                                                                 }
 
                                                                 const updatedOrders = orders.map((o:any) => ({ ...o, printedQty: o.qty }));
@@ -2518,7 +2518,7 @@ export default function UbtPosPage() {
                                                         if (!custPhone || !custAddr) return;
                                                         await printKitchenReceipt(newOrderCart, `Yetkazish${custName ? ' (' + custName + ')' : ''}`);
                                                         const total = Math.round(newOrderCart.reduce((s,c) => s+c.item.price*c.qty, 0));
-                                                        await fetch("/api/ubt/pay", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tableId: null, items: newOrderCart.map(c => ({ menuItemId: c.item.id, name: c.item.name, qty: c.qty, price: c.item.price })), paymentMethod: "pending", total, orderType: "delivery", customerName: custName, customerPhone: custPhone, deliveryAddress: custAddr }) });
+                                                        await fetch("/api/ubt/pay", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tableId: null, items: newOrderCart.filter((c: any) => c?.item).map((c: any) => ({ menuItemId: c.item.id, name: c.item.name, qty: c.qty, price: c.item.price })), paymentMethod: "pending", total, orderType: "delivery", customerName: custName, customerPhone: custPhone, deliveryAddress: custAddr }) });
                                                         await saveDlOrders(newOrderCart, custName, custPhone, custAddr, "pending");
                                                         setNewOrderCart([]); setCustName(""); setCustPhone(""); setCustAddr("");
                                                         setShowDlClientModal(false); setShowDlMenu(false);
@@ -2709,7 +2709,7 @@ export default function UbtPosPage() {
                                         headers: { "Content-Type": "application/json" },
                                         body: JSON.stringify({
                                             tableId: null,
-                                            items: selOrder.items.map(c => ({ menuItemId: c.item.id, name: c.item.name, qty: c.qty, price: c.item.price })),
+                                            items: selOrder.items.filter((c: any) => c?.item).map((c: any) => ({ menuItemId: c.item.id, name: c.item.name, qty: c.qty, price: c.item.price })),
                                             paymentMethod: method,
                                             total: Math.round(selOrder.total * 1.1),
                                             orderType: selOrder.addr ? "delivery" : "takeaway",
