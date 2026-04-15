@@ -1198,6 +1198,13 @@ export default function UbtPosPage() {
     const [availablePrinters, setAvailablePrinters] = useState<{id:string;name:string;ipAddress:string}[]>([]);
     const [isSaboyMode, setIsSaboyMode] = useState(false);
 
+    // ─── Table Transfer (Stol Almashtirish) state ─────────────────────────────
+    const [showTransferModal, setShowTransferModal] = useState(false);
+    const [transferLoading, setTransferLoading] = useState(false);
+    const [transferPwInput, setTransferPwInput] = useState("");
+    const [transferPwError, setTransferPwError] = useState("");
+    const [transferStep, setTransferStep] = useState<"auth" | "pick">("auth");
+
     useEffect(() => {
         if (!selTable) setIsSaboyMode(false);
     }, [selTable]);
@@ -1221,6 +1228,77 @@ export default function UbtPosPage() {
             });
             fetchReservations();
         } catch {}
+    };
+
+    // ─── handleTransferShot: active shotni boshqa stolga ko'chirish ─────────────
+    const handleTransferShot = async (targetTable: UbtTable) => {
+        if (!selTable) return;
+        setTransferLoading(true);
+        const token = store.kassirSession?.token || store.deviceSession?.token;
+        const hdrs: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) hdrs["Authorization"] = `Bearer ${token}`;
+
+        // Faol shot'ning barcha itemlarini olish
+        const allOrders = tableOrders[selTable.id] || [];
+        const shotItems = allOrders.filter((c: any) => (c.shotId || 1) === activeShot);
+        const remainingItems = allOrders.filter((c: any) => (c.shotId || 1) !== activeShot);
+
+        if (shotItems.length === 0) {
+            alert("Bu shot bo'sh — ko'chiradigan zakaz yo'q");
+            setTransferLoading(false);
+            return;
+        }
+
+        try {
+            // 1. Eski stolni yangilash (faqat qolgan shotlar saqlansin)
+            if (remainingItems.length === 0) {
+                await fetch(`/api/ubt/orders-db?tableId=${selTable.id}`, { method: "DELETE", headers: hdrs });
+            } else {
+                await fetch("/api/ubt/orders-db", {
+                    method: "PUT", headers: hdrs,
+                    body: JSON.stringify({ tableId: selTable.id, items: remainingItems, waiterName: store.kassirSession?.name })
+                });
+            }
+
+            // 2. Yangi stolga shot itemlarini qo'shish (yangi shotId=1 yoki mavjud max+1)
+            const targetOrders = tableOrders[targetTable.id] || [];
+            const existingShots = Array.from(new Set(targetOrders.map((o: any) => o.shotId || 1))) as number[];
+            const newShotId = existingShots.length > 0 ? Math.max(...existingShots) + 1 : 1;
+            const transferredItems = shotItems.map((c: any) => ({ ...c, shotId: newShotId }));
+
+            await fetch("/api/ubt/orders-db", {
+                method: "POST", headers: hdrs,
+                body: JSON.stringify({
+                    tableId: targetTable.id,
+                    items: transferredItems,
+                    waiterName: store.kassirSession?.name,
+                    replace: false,
+                })
+            });
+
+            // 3. Local state yangilash
+            setTableOrders(prev => {
+                const updated = { ...prev };
+                if (remainingItems.length === 0) {
+                    delete updated[selTable.id];
+                } else {
+                    updated[selTable.id] = remainingItems;
+                }
+                const prevTarget = updated[targetTable.id] || [];
+                updated[targetTable.id] = [...prevTarget, ...transferredItems];
+                return updated;
+            });
+
+            store.fetchUbtTables();
+            setShowTransferModal(false);
+            setSelTable(null);
+            alert(`✅ ${activeShot}-Chek → "${targetTable.name}" stolga muvaffaqiyatli ko'chirildi!`);
+        } catch (err) {
+            console.error("[handleTransferShot]", err);
+            alert("Ko'chirishda xatolik yuz berdi. Qaytadan urinib ko'ring.");
+        } finally {
+            setTransferLoading(false);
+        }
     };
 
     // ─── Table orders — DB-backed ─────────────────────────────────────────────
@@ -2241,6 +2319,23 @@ export default function UbtPosPage() {
                                                 </label>
                                             </div>
 
+                                            {/* Stol Almashtirish tugmasi */}
+                                            <button
+                                                onClick={() => {
+                                                    setTransferPwInput("");
+                                                    setTransferPwError("");
+                                                    setTransferStep("auth");
+                                                    setShowTransferModal(true);
+                                                }}
+                                                className={`w-full py-2.5 rounded-lg font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all border active:scale-[0.99] ${
+                                                    dark
+                                                        ? "bg-indigo-900/40 text-indigo-300 border-indigo-800/60 hover:bg-indigo-800/60"
+                                                        : "bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100"
+                                                }`}
+                                            >
+                                                ↔ Stol Almashtirish
+                                            </button>
+
                                             {hasPaymentPerm && (
                                                 <button
                                                     onClick={() => setShowTablePay(true)}
@@ -2248,6 +2343,141 @@ export default function UbtPosPage() {
                                                     >
                                                     <CreditCard size={20} /> Kassaga To'lov
                                                 </button>
+                                            )}
+
+                                            {/* ─── Stol Almashtirish Modal ─── */}
+                                            {showTransferModal && (
+                                                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowTransferModal(false)}>
+                                                    <div
+                                                        className={`w-full max-w-sm rounded-3xl shadow-2xl border overflow-hidden ${
+                                                            dark ? "bg-[#0F172A] border-white/10" : "bg-white border-slate-100"
+                                                        }`}
+                                                        onClick={e => e.stopPropagation()}
+                                                    >
+                                                        {/* Modal header */}
+                                                        <div className="bg-indigo-600 px-6 py-5 flex items-center justify-between">
+                                                            <div>
+                                                                <p className="text-white font-black text-lg leading-none">↔ Stol Almashtirish</p>
+                                                                <p className="text-indigo-200 text-xs mt-1 font-semibold">{selTable?.name} — {activeShot}-Chek</p>
+                                                            </div>
+                                                            <button onClick={() => setShowTransferModal(false)} className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
+                                                                <X size={16} />
+                                                            </button>
+                                                        </div>
+
+                                                        {transferStep === "auth" ? (
+                                                            /* Step 1: Kassir parolini tekshirish */
+                                                            <div className="p-6">
+                                                                <p className={`text-sm font-bold mb-4 ${
+                                                                    dark ? "text-slate-300" : "text-slate-600"
+                                                                }`}>
+                                                                    🔐 Davom etish uchun kassir maxfiy kodini kiriting:
+                                                                </p>
+                                                                <input
+                                                                    type="password"
+                                                                    value={transferPwInput}
+                                                                    onChange={e => { setTransferPwInput(e.target.value); setTransferPwError(""); }}
+                                                                    onKeyDown={e => {
+                                                                        if (e.key === "Enter") {
+                                                                            const code = _menuCache?.cancelCode;
+                                                                            if (!code || transferPwInput === code) {
+                                                                                setTransferStep("pick");
+                                                                            } else {
+                                                                                setTransferPwError("Noto'g'ri kod! Qaytadan urinib ko'ring.");
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                    placeholder="Maxfiy kod..."
+                                                                    autoFocus
+                                                                    className={`w-full border rounded-xl px-4 py-3 text-base font-bold tracking-widest outline-none transition-all ${
+                                                                        transferPwError
+                                                                            ? "border-red-400 bg-red-50 text-red-700 dark:bg-red-900/20"
+                                                                            : dark
+                                                                                ? "border-white/10 bg-white/5 text-slate-200 focus:border-indigo-500"
+                                                                                : "border-slate-200 bg-slate-50 text-slate-800 focus:border-indigo-400"
+                                                                    }`}
+                                                                />
+                                                                {transferPwError && (
+                                                                    <p className="mt-2 text-xs text-red-500 font-bold">{transferPwError}</p>
+                                                                )}
+                                                                <div className="flex gap-3 mt-5">
+                                                                    <button
+                                                                        onClick={() => setShowTransferModal(false)}
+                                                                        className={`flex-1 py-3 rounded-xl font-bold text-sm border transition-all ${
+                                                                            dark ? "border-white/10 text-slate-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-50"
+                                                                        }`}
+                                                                    >
+                                                                        Bekor qilish
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            const code = _menuCache?.cancelCode;
+                                                                            if (!code || transferPwInput === code) {
+                                                                                setTransferStep("pick");
+                                                                            } else {
+                                                                                setTransferPwError("Noto'g'ri kod! Qaytadan urinib ko'ring.");
+                                                                            }
+                                                                        }}
+                                                                        className="flex-1 py-3 rounded-xl font-bold text-sm bg-indigo-600 text-white hover:bg-indigo-700 transition-all"
+                                                                    >
+                                                                        Tasdiqlash →
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            /* Step 2: Stol tanlash */
+                                                            <div className="p-4">
+                                                                <p className={`text-xs font-bold uppercase tracking-widest mb-3 opacity-60 ${
+                                                                    dark ? "text-slate-400" : "text-slate-500"
+                                                                }`}>
+                                                                    Qaysi stolga ko'chirmoqchisiz?
+                                                                </p>
+                                                                <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto custom-scrollbar">
+                                                                    {tables
+                                                                        .filter(t => t.id !== selTable?.id)
+                                                                        .map(t => (
+                                                                            <button
+                                                                                key={t.id}
+                                                                                disabled={transferLoading}
+                                                                                onClick={() => handleTransferShot(t)}
+                                                                                className={`flex flex-col items-center justify-center gap-1 p-3 rounded-2xl border-2 text-center transition-all active:scale-[0.97] ${
+                                                                                    t.status === "occupied" || t.status === "receipt"
+                                                                                        ? dark
+                                                                                            ? "border-amber-700/60 bg-amber-900/20 text-amber-300"
+                                                                                            : "border-amber-200 bg-amber-50 text-amber-700"
+                                                                                        : dark
+                                                                                            ? "border-white/10 bg-white/5 text-slate-200 hover:bg-indigo-900/30 hover:border-indigo-600/60"
+                                                                                            : "border-slate-100 bg-slate-50 text-slate-700 hover:bg-indigo-50 hover:border-indigo-200"
+                                                                                }`}
+                                                                            >
+                                                                                <span className="text-lg">{t.status === "occupied" || t.status === "receipt" ? "🟡" : "🟢"}</span>
+                                                                                <span className="font-black text-xs leading-tight">{t.name}</span>
+                                                                                <span className={`text-[9px] font-semibold uppercase ${
+                                                                                    t.status === "occupied" || t.status === "receipt"
+                                                                                        ? "text-amber-500"
+                                                                                        : dark ? "text-emerald-500" : "text-emerald-600"
+                                                                                }`}>
+                                                                                    {t.status === "occupied" || t.status === "receipt" ? "Band" : "Bo'sh"}
+                                                                                </span>
+                                                                            </button>
+                                                                        ))
+                                                                    }
+                                                                </div>
+                                                                {transferLoading && (
+                                                                    <p className="text-center text-xs text-indigo-500 font-bold mt-3 animate-pulse">Ko'chirilmoqda...</p>
+                                                                )}
+                                                                <button
+                                                                    onClick={() => setTransferStep("auth")}
+                                                                    className={`w-full mt-3 py-2.5 rounded-xl font-bold text-xs border transition-all ${
+                                                                        dark ? "border-white/10 text-slate-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-50"
+                                                                    }`}
+                                                                >
+                                                                    ← Orqaga
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             )}
 
                                             {showTablePay && (
