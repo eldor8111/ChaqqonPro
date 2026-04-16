@@ -1237,36 +1237,48 @@ export default function UbtPosPage() {
         const token = store.kassirSession?.token || store.deviceSession?.token;
         const hdrs: Record<string, string> = { "Content-Type": "application/json" };
         if (token) hdrs["Authorization"] = `Bearer ${token}`;
-
-        // Faol shot'ning barcha itemlarini olish
-        const allOrders = tableOrders[selTable.id] || [];
-        const shotItems = allOrders.filter((c: any) => (c.shotId || 1) === activeShot);
-        const remainingItems = allOrders.filter((c: any) => (c.shotId || 1) !== activeShot);
-
-        if (shotItems.length === 0) {
-            alert("Bu shot bo'sh — ko'chiradigan zakaz yo'q");
-            setTransferLoading(false);
-            return;
-        }
+        const getHdrs: Record<string, string> = {};
+        if (token) getHdrs["Authorization"] = `Bearer ${token}`;
 
         try {
-            // 1. Eski stolni yangilash (faqat qolgan shotlar saqlansin)
-            if (remainingItems.length === 0) {
-                await fetch(`/api/ubt/orders-db?tableId=${selTable.id}`, { method: "DELETE", headers: hdrs });
-            } else {
-                await fetch("/api/ubt/orders-db", {
+            // ── 1. DB'dan eski stolning HAQIQIY ma'lumotlarini olish ──────────
+            const freshRes = await fetch(`/api/ubt/orders-db?tableId=${selTable.id}`, { headers: getHdrs });
+            if (!freshRes.ok) throw new Error("Eski stol ma'lumotlarini yuklab bo'lmadi");
+            const freshData = await freshRes.json();
+            const allOrders: any[] = Array.isArray(freshData.items) ? freshData.items : [];
+
+            const shotItems = allOrders.filter((c: any) => (c.shotId || 1) === activeShot);
+            const remainingItems = allOrders.filter((c: any) => (c.shotId || 1) !== activeShot);
+
+            if (shotItems.length === 0) {
+                alert("Bu shot bo'sh — ko'chiradigan zakaz yo'q");
+                setTransferLoading(false);
+                return;
+            }
+
+            // ── 2. Eski stoldan barcha cart yozuvlarini o'chirish ────────────
+            const delRes = await fetch(`/api/ubt/orders-db?tableId=${selTable.id}`, { method: "DELETE", headers: hdrs });
+            if (!delRes.ok) throw new Error("Eski stoldan o'chirishda xatolik");
+
+            // ── 3. Agar eski stolda boshqa shotlar bo'lsa — ularni qayta saqlash
+            if (remainingItems.length > 0) {
+                const putRes = await fetch("/api/ubt/orders-db", {
                     method: "PUT", headers: hdrs,
                     body: JSON.stringify({ tableId: selTable.id, items: remainingItems, waiterName: store.kassirSession?.name })
                 });
+                if (!putRes.ok) throw new Error("Eski stol qolgan buyurtmalarini saqlashda xatolik");
             }
 
-            // 2. Yangi stolga shot itemlarini qo'shish (yangi shotId=1 yoki mavjud max+1)
-            const targetOrders = tableOrders[targetTable.id] || [];
+            // ── 4. Yangi stolning mavjud shotlarini aniqlash ─────────────────
+            const targetRes = await fetch(`/api/ubt/orders-db?tableId=${targetTable.id}`, { headers: getHdrs });
+            const targetData = targetRes.ok ? await targetRes.json() : { items: [] };
+            const targetOrders: any[] = Array.isArray(targetData.items) ? targetData.items : [];
             const existingShots = Array.from(new Set(targetOrders.map((o: any) => o.shotId || 1))) as number[];
             const newShotId = existingShots.length > 0 ? Math.max(...existingShots) + 1 : 1;
             const transferredItems = shotItems.map((c: any) => ({ ...c, shotId: newShotId }));
 
-            await fetch("/api/ubt/orders-db", {
+            // ── 5. Yangi stolga ko'chirilgan shotni qo'shish ─────────────────
+            const postRes = await fetch("/api/ubt/orders-db", {
                 method: "POST", headers: hdrs,
                 body: JSON.stringify({
                     tableId: targetTable.id,
@@ -1275,27 +1287,29 @@ export default function UbtPosPage() {
                     replace: false,
                 })
             });
+            if (!postRes.ok) throw new Error("Yangi stolga saqlashda xatolik");
 
-            // 3. Local state yangilash
-            setTableOrders(prev => {
-                const updated = { ...prev };
-                if (remainingItems.length === 0) {
-                    delete updated[selTable.id];
-                } else {
-                    updated[selTable.id] = remainingItems;
-                }
-                const prevTarget = updated[targetTable.id] || [];
-                updated[targetTable.id] = [...prevTarget, ...transferredItems];
-                return updated;
-            });
+            // ── 6. Ikkala stolning local state'ni DB'dan qayta yuklash ────────
+            const [oldRefresh, newRefresh] = await Promise.all([
+                fetch(`/api/ubt/orders-db?tableId=${selTable.id}`, { headers: getHdrs }),
+                fetch(`/api/ubt/orders-db?tableId=${targetTable.id}`, { headers: getHdrs }),
+            ]);
+            const oldItems = oldRefresh.ok ? ((await oldRefresh.json()).items || []) : [];
+            const newItems = newRefresh.ok ? ((await newRefresh.json()).items || []) : [];
+
+            setTableOrders(prev => ({
+                ...prev,
+                [selTable.id]: oldItems,
+                [targetTable.id]: newItems,
+            }));
 
             store.fetchUbtTables();
             setShowTransferModal(false);
             setSelTable(null);
             alert(`✅ ${activeShot}-Chek → "${targetTable.name}" stolga muvaffaqiyatli ko'chirildi!`);
-        } catch (err) {
+        } catch (err: any) {
             console.error("[handleTransferShot]", err);
-            alert("Ko'chirishda xatolik yuz berdi. Qaytadan urinib ko'ring.");
+            alert(`Ko'chirishda xatolik: ${err?.message || "Qaytadan urinib ko'ring."}`);
         } finally {
             setTransferLoading(false);
         }

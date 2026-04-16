@@ -202,7 +202,7 @@ export async function PUT(request: NextRequest) {
 }
 
 // ─── DELETE /api/ubt/orders-db?tableId=xxx ────────────────────────────────
-// Called after payment: removes cart KDS orders for the table
+// Called after payment or transfer: removes cart KDS orders and frees the table
 export async function DELETE(request: NextRequest) {
     try {
         const auth = await resolveAuth(request);
@@ -212,12 +212,19 @@ export async function DELETE(request: NextRequest) {
         const tableId = searchParams.get("tableId");
         if (!tableId) return NextResponse.json({ error: "tableId kerak" }, { status: 400 });
 
+        // Remove all cart KDS orders for this table
         await prisma.kDSOrder.deleteMany({
             where: {
                 tenantId: auth.tenantId,
                 tableId,
                 priority: "cart",
             },
+        });
+
+        // Also free the table so it doesn't stay "occupied" visually
+        await prisma.ubtTable.updateMany({
+            where: { id: tableId, tenantId: auth.tenantId },
+            data: { status: "free", amount: 0, since: null },
         });
 
         return NextResponse.json({ success: true });
