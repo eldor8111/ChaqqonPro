@@ -182,35 +182,7 @@ export default function Sidebar() {
                 })}
             </nav>
 
-            {/* Footer */}
-            <div className={clsx("px-3 py-4 border-t border-surface-border space-y-2", !collapsed && "animate-fade-in")}>
-                {/* ChaqqonPro shortcut */}
-                <a
-                    href="/ubt-pos"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="ChaqqonPro"
-                    className={clsx(
-                        "flex items-center gap-3 px-3 py-2 rounded-xl font-semibold text-xs transition-all hover:scale-[1.02] active:scale-95",
-                        collapsed ? "justify-center" : ""
-                    )}
-                    style={{
-                        background: "linear-gradient(135deg, rgba(251,146,60,0.15), rgba(234,88,12,0.1))",
-                        border: "1px solid rgba(251,146,60,0.3)",
-                        color: "#f97316",
-                    }}
-                >
-                    <Coffee size={15} className="flex-shrink-0" />
-                    {!collapsed && <span className="truncate">ChaqqonPro ↗</span>}
-                </a>
 
-                {!collapsed && (
-                    <div className="glass-card p-3 text-center">
-                        <p className="text-xs text-slate-400">Version 2.0 Pro</p>
-                        <p className="text-xs text-amber-400 font-medium mt-0.5">O&apos;zbekiston 🇺🇿</p>
-                    </div>
-                )}
-            </div>
         </aside>
     );
 }
