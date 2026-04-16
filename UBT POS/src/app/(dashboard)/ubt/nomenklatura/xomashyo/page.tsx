@@ -90,7 +90,7 @@ export default function XomashyoPage() {
     };
 
     return (
-        <div className="space-y-6 animate-fade-in relative">
+        <div className="space-y-6 animate-fade-in">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
@@ -175,7 +175,7 @@ export default function XomashyoPage() {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 p-4" style={{backdropFilter: "blur(4px)"}}>
                     <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl animate-slide-up flex flex-col max-h-[90vh] overflow-hidden border border-slate-100">
                         
                         {/* Header */}
