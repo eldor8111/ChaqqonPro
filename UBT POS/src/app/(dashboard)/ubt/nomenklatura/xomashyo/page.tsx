@@ -175,51 +175,84 @@ export default function XomashyoPage() {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between mb-5">
-                            <h2 className="font-bold text-slate-800 text-lg">{editingItem ? "Xomashyo Tahrirlash" : "Yangi Xomashyo"}</h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
-                        </div>
-                        <form onSubmit={handleSave} className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 mb-1">Nomi</label>
-                                <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500" />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 mb-1">Kategoriya</label>
-                                <select value={formData.categoryId || ""} onChange={e => setFormData({ ...formData, categoryId: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500">
-                                    <option value="">Kategoriya tanlang</option>
-                                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                </select>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl animate-slide-up flex flex-col max-h-[90vh] overflow-hidden border border-slate-100">
+                        
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50 shrink-0">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+                                    <Cuboid size={22} />
+                                </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Birligi</label>
-                                    <select value={formData.unit} onChange={e => setFormData({ ...formData, unit: e.target.value })} required className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500">
-                                        <option value="kg">kg</option>
-                                        <option value="gramm">gramm</option>
-                                        <option value="litr">litr</option>
-                                        <option value="dona">dona</option>
+                                    <h2 className="font-black text-slate-800 text-lg leading-tight">
+                                        {editingItem ? "Xomashyo Tahrirlash" : "Yangi Xomashyo"}
+                                    </h2>
+                                    <p className="text-xs text-slate-500 mt-0.5">Ombor uchun xomashyo ma'lumotlari</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="p-6 overflow-y-auto flex-1 space-y-5">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nomi</label>
+                                    <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required 
+                                        placeholder="Piyoz (Oq)..."
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 text-sm transition-all" />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Kategoriya</label>
+                                    <select value={formData.categoryId || ""} onChange={e => setFormData({ ...formData, categoryId: e.target.value })} 
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 text-sm bg-white transition-all">
+                                        <option value="">Kategoriya tanlang...</option>
+                                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                     </select>
                                 </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Birligi</label>
+                                        <select value={formData.unit} onChange={e => setFormData({ ...formData, unit: e.target.value })} required 
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 text-sm bg-white transition-all">
+                                            <option value="kg">kg</option>
+                                            <option value="gramm">gramm</option>
+                                            <option value="litr">litr</option>
+                                            <option value="ml">ml</option>
+                                            <option value="dona">dona</option>
+                                            <option value="qop">qop</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Dastlabki Qoldiq</label>
+                                        <input type="number" step="any" value={formData.stock} onChange={e => setFormData({ ...formData, stock: Number(e.target.value) })} required 
+                                            placeholder="0"
+                                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 text-sm transition-all text-emerald-700 font-bold" />
+                                    </div>
+                                </div>
+
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Dastlabki Qoldiq</label>
-                                    <input type="number" step="any" value={formData.stock} onChange={e => setFormData({ ...formData, stock: Number(e.target.value) })} required className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500" />
+                                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Narxi (so'm)</label>
+                                    <input type="number" value={formData.price} onChange={e => setFormData({ ...formData, price: Number(e.target.value) })} required 
+                                        placeholder="0"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 text-sm transition-all" />
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-500 mb-1">Narxi (so'm)</label>
-                                <input type="number" value={formData.price} onChange={e => setFormData({ ...formData, price: Number(e.target.value) })} required className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-blue-500" />
-                            </div>
-
-                            <div className="flex gap-3 pt-4">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50">Bekor qilish</button>
-                                <button type="submit" disabled={isSaving} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 disabled:opacity-50">
-                                    {isSaving ? <RotateCw size={16} className="animate-spin" /> : "Saqlash"}
+                            {/* Footer */}
+                            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center gap-3 shrink-0">
+                                <button type="button" onClick={() => setIsModalOpen(false)} 
+                                    className="flex-1 px-6 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-200 transition-all border border-slate-200 bg-white">
+                                    Bekor qilish
+                                </button>
+                                <button type="submit" disabled={isSaving} 
+                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/30 hover:bg-emerald-700 hover:-translate-y-0.5 transition-all disabled:opacity-70">
+                                    {isSaving ? <RotateCw size={18} className="animate-spin" /> : "Saqlash"}
                                 </button>
                             </div>
                         </form>
