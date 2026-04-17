@@ -446,7 +446,7 @@ function LoginForm() {
             const data = await res.json();
 
             if (res.ok && data.success) {
-                setUser({ id: data.tenant?.id || phoneVal, name: data.tenant?.shopName || phoneVal, role: "ADMIN", tenant: data.tenant });
+                setUser({ id: data.tenant?.id || phoneVal, name: data.tenant?.shopName || phoneVal, role: "ADMIN", tenant: data.tenant, expiresAt: data.expiresAt });
                 router.push("/ubt");
             } else {
                 setError(data.error || "Login yoki parol noto'g'ri");

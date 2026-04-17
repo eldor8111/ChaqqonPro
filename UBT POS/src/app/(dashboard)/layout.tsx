@@ -5,25 +5,25 @@ import Header from "@/components/layout/Header";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useFrontendStore } from "@/lib/frontend/store";
+import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const { isAuthenticated, _hasHydrated } = useFrontendStore();
+    const { isAuthenticated, _hasHydrated, subscriptionExpired } = useFrontendStore();
     const router = useRouter();
     const redirected = useRef(false);
 
     useEffect(() => {
         if (redirected.current) return;
-        // Only redirect after Zustand has finished loading from localStorage.
         if (_hasHydrated && !isAuthenticated) {
             redirected.current = true;
             router.replace("/");
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [_hasHydrated, isAuthenticated]);
+    }, [_hasHydrated, isAuthenticated, router]);
 
     if (!_hasHydrated || !isAuthenticated) {
         return (
@@ -42,6 +42,15 @@ export default function DashboardLayout({
         <div className="flex h-screen overflow-hidden bg-surface">
             <Sidebar />
             <div className="flex flex-col flex-1 min-h-0">
+                {subscriptionExpired && (
+                    <div className="bg-red-500 text-white px-4 py-2 flex items-center justify-center gap-2 text-sm font-medium">
+                        <AlertTriangle size={16} />
+                        <span>Obuna muddati tugagan! Iltimos, to'lov qiling.</span>
+                        <Link href="/billing" className="underline hover:text-red-100">
+                            Obuna va Tariflar
+                        </Link>
+                    </div>
+                )}
                 <Header />
                 <main className="flex-1 min-h-0 overflow-y-auto p-4">
                     {children}

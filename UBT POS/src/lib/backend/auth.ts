@@ -242,6 +242,7 @@ export async function authenticateAdmin(shopCode: string | null, username: strin
             shopName: tenant.shopName,
             plan: tenant.plan,
             settings: tenantSettings,
+            expiresAt: tenant.expiresAt,
         },
     };
 }

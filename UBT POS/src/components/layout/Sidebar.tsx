@@ -15,6 +15,10 @@ import clsx from "clsx";
 import { useFrontendStore } from "@/lib/frontend/store";
 import { ChevronDown } from "lucide-react";
 
+const BLOCKED_NAV_ITEMS = [
+    { href: "/billing", icon: CreditCard, key: "Obuna va Tariflar" },
+];
+
 const NAV_ITEMS = [
     { href: "/ubt", icon: LayoutDashboard, key: "nav.dashboard" },
     { href: "/ubt/reports", icon: BarChart3, key: "nav.reports" },
@@ -72,7 +76,7 @@ const NAV_ITEMS = [
 export default function Sidebar() {
     const pathname = usePathname();
     const { t } = useLang();
-    const { user } = useFrontendStore();
+    const { user, subscriptionExpired } = useFrontendStore();
     const [collapsed, setCollapsed] = useState(false);
     const [openMenus, setOpenMenus] = useState<string[]>([]);
 
@@ -81,6 +85,8 @@ export default function Sidebar() {
             prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
         );
     };
+
+    const navItems = subscriptionExpired ? BLOCKED_NAV_ITEMS : NAV_ITEMS;
 
     return (
         <aside
@@ -114,7 +120,7 @@ export default function Sidebar() {
 
             {/* Navigation */}
             <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-                {NAV_ITEMS.map(({ href, icon: Icon, key, subItems }) => {
+                {navItems.map(({ href, icon: Icon, key, subItems }) => {
                     const isActive = pathname === href || pathname.startsWith(href + "/");
                     const isExpanded = openMenus.includes(key);
 

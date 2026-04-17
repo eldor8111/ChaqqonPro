@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             tenant: result.tenant,
+            expiresAt: result.tenant.expiresAt,
         });
     } catch (error) {
         console.error("Login error:", error);

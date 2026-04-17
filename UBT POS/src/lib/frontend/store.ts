@@ -18,6 +18,7 @@ export interface User {
     };
     branch?: string;
     permissions?: string[];
+    expiresAt?: string | null;
 }
 
 export interface FrontendStore {
@@ -27,6 +28,9 @@ export interface FrontendStore {
     authLoading: boolean;
     /** True after Zustand persist has loaded state from localStorage */
     _hasHydrated: boolean;
+
+    // Subscription state
+    subscriptionExpired: boolean;
 
     // UI state
     sidebarCollapsed: boolean;
@@ -40,6 +44,7 @@ export interface FrontendStore {
     setSelectedBranch: (branch: string) => void;
     logout: () => void;
     _setHasHydrated: (value: boolean) => void;
+    checkSubscriptionStatus: () => void;
 }
 
 export const useFrontendStore = create<FrontendStore>()(
@@ -50,11 +55,16 @@ export const useFrontendStore = create<FrontendStore>()(
             isAuthenticated: false,
             authLoading: false,
             _hasHydrated: false,
+            subscriptionExpired: false,
             sidebarCollapsed: false,
             selectedBranch: "Filial #1",
 
             // Auth actions
-            setUser: (user) => set({ user, isAuthenticated: user !== null }),
+            setUser: (user) => set({ 
+                user, 
+                isAuthenticated: user !== null,
+                subscriptionExpired: user?.expiresAt ? new Date(user.expiresAt) < new Date() : false
+            }),
             setIsAuthenticated: (value) => set({ isAuthenticated: value }),
             setAuthLoading: (value) => set({ authLoading: value }),
 
@@ -71,6 +81,16 @@ export const useFrontendStore = create<FrontendStore>()(
                 }),
 
             _setHasHydrated: (value) => set({ _hasHydrated: value }),
+
+            checkSubscriptionStatus: () => {
+                const state = useFrontendStore.getState();
+                if (state.user?.expiresAt) {
+                    const expired = new Date(state.user.expiresAt) < new Date();
+                    if (expired !== state.subscriptionExpired) {
+                        set({ subscriptionExpired: expired });
+                    }
+                }
+            },
         }),
         {
             name: "ubt-frontend-storage",
