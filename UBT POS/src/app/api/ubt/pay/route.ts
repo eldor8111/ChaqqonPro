@@ -94,6 +94,20 @@ export async function POST(request: NextRequest) {
             },
         });
 
+        // 1.b Create Moliya Income record automatically
+        await prisma.kassiHarakat.create({
+            data: {
+                tenantId,
+                type: "income",
+                category: "Sotuv tushumi",
+                amount: grandTotal,
+                description: `Sotuv ${tableLabel ? '(Stol: ' + tableLabel + ')' : '(POS Terminal)'}. Check: ${transaction.id.slice(-6)}`,
+                paymentMethod: methodName,
+                date: new Date(),
+                createdBy: waiterName || "System",
+            }
+        });
+
         // 2. Create TransactionItems + 🔴 KALKULYATSIYA: Deduct ingredients from stock
         for (const item of items as CartItem[]) {
             const itemTotal = item.price * item.qty;

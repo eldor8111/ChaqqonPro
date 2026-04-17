@@ -123,6 +123,26 @@ export async function POST(req: Request) {
             });
         }
 
+        // Auto-generate Moliya Expense (Kassa) if accepted
+        if (status === "accepted") {
+            const totalKirimCost = createdReceipts.reduce((sum, r) => sum + Number(r.totalCost || 0), 0);
+            if (totalKirimCost > 0) {
+                await prisma.kassiHarakat.create({
+                    data: {
+                        tenantId: session.tenantId,
+                        type: "expense",
+                        category: "Bozor-ochar (xomashyo)",
+                        amount: totalKirimCost,
+                        description: `Ombor kirimi uchun xarajat (Yetkazib beruvchi: ${supplier || "Noma'lum"})`,
+                        paymentMethod: "Naqd pul",
+                        date: new Date(date || Date.now()),
+                        createdBy: session.userId || "System",
+                        kontragent: supplier || null
+                    }
+                });
+            }
+        }
+
         return NextResponse.json({ success: true, receipts: createdReceipts });
     } catch (e: any) {
         console.error("Kirim Error:", e);

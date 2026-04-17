@@ -4,11 +4,6 @@ import { prisma } from "@/lib/backend/db";
 
 export const dynamic = "force-dynamic";
 
-// Ensure kontragent column exists (lazy migration)
-const _ensureKontragentColumn = prisma
-    .$executeRawUnsafe(`ALTER TABLE KassiHarakat ADD COLUMN kontragent TEXT`)
-    .catch(() => { /* column already exists — ignore */ });
-
 // GET: All kassa harakatlari (income/expense entries)
 export async function GET(req: NextRequest) {
     try {
@@ -18,29 +13,29 @@ export async function GET(req: NextRequest) {
         const { searchParams } = new URL(req.url);
         const type = searchParams.get("type"); // "income" | "expense" | null (all)
 
-        await _ensureKontragentColumn;
-
-        const rawEntries: any[] = await prisma.$queryRawUnsafe(
-            `SELECT *, kontragent FROM KassiHarakat WHERE tenantId = ? ORDER BY createdAt DESC LIMIT 200`,
-            session.tenantId
-        );
-        const entries = rawEntries.map(e => ({
+        const entries = await prisma.kassiHarakat.findMany({
+            where: { tenantId: session.tenantId },
+            orderBy: { createdAt: 'desc' },
+            take: 200,
+        });
+        const formattedEntries = entries.map(e => ({
             ...e,
             amount: Number(e.amount),
             date: e.date || e.createdAt,
         }));
 
-        // Summary
-        const allEntries = await prisma.kassiHarakat.findMany({
+        // Summary using GroupBy for optimization
+        const grouped = await prisma.kassiHarakat.groupBy({
+            by: ['type'],
             where: { tenantId: session.tenantId },
-            select: { type: true, amount: true },
+            _sum: { amount: true },
         });
 
-        const totalIncome = allEntries.filter(e => e.type === "income").reduce((s, e) => s + Number(e.amount), 0);
-        const totalExpense = allEntries.filter(e => e.type === "expense").reduce((s, e) => s + Number(e.amount), 0);
+        const totalIncome = grouped.find(g => g.type === "income")?._sum.amount || 0;
+        const totalExpense = grouped.find(g => g.type === "expense")?._sum.amount || 0;
 
         return NextResponse.json({
-            entries,
+            entries: formattedEntries,
             summary: {
                 totalIncome,
                 totalExpense,
@@ -65,8 +60,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "type va amount majburiy" }, { status: 400 });
         }
 
-        await _ensureKontragentColumn;
-
         const entry = await prisma.kassiHarakat.create({
             data: {
                 tenantId: session.tenantId,
@@ -77,17 +70,9 @@ export async function POST(req: NextRequest) {
                 paymentMethod: paymentMethod || "Naqd pul",
                 date: date ? new Date(date) : new Date(),
                 createdBy: session.userId || "Admin",
+                kontragent: kontragent || null,
             },
         });
-
-        // Save kontragent via raw SQL update (Prisma doesn't know this column)
-        if (kontragent) {
-            await prisma.$executeRawUnsafe(
-                `UPDATE KassiHarakat SET kontragent = ? WHERE id = ?`,
-                kontragent,
-                entry.id
-            );
-        }
 
         await prisma.auditLog.create({
             data: {

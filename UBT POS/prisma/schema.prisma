@@ -436,6 +436,7 @@ model KassiHarakat {
   paymentMethod String   @default("Naqd pul")
   date          DateTime @default(now())
   createdBy     String?
+  kontragent    String?
   createdAt     DateTime @default(now())
 
   tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
