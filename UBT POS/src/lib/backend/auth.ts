@@ -208,7 +208,7 @@ export async function authenticateAdmin(shopCode: string | null, username: strin
         tenant = await prisma.tenant.findFirst({ where: { OR: orConditions } });
     }
 
-    if (!tenant || tenant.status !== "active") {
+    if (!tenant || !["active", "trial", "suspended"].includes(tenant.status)) {
         return { success: false, error: "Hisob topilmadi yoki to'xtatilgan" };
     }
 
@@ -240,6 +240,7 @@ export async function authenticateAdmin(shopCode: string | null, username: strin
             shopCode: tenant.shopCode,
             shopName: tenant.shopName,
             plan: tenant.plan,
+            status: tenant.status,
             settings: tenantSettings,
             expiresAt: tenant.expiresAt,
         },

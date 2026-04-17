@@ -11,6 +11,7 @@ export interface User {
         shopCode: string;
         shopName: string;
         plan: string;
+        status?: string;
         settings?: {
             shopType?: "shop" | "ubt" | "pharmacy";
             [key: string]: any;
@@ -63,7 +64,7 @@ export const useFrontendStore = create<FrontendStore>()(
             setUser: (user) => set({ 
                 user, 
                 isAuthenticated: user !== null,
-                subscriptionExpired: user?.expiresAt ? new Date(user.expiresAt) < new Date() : false
+                subscriptionExpired: (user?.expiresAt ? new Date(user.expiresAt) < new Date() : false) || (user?.tenant?.status === "suspended")
             }),
             setIsAuthenticated: (value) => set({ isAuthenticated: value }),
             setAuthLoading: (value) => set({ authLoading: value }),
@@ -84,11 +85,15 @@ export const useFrontendStore = create<FrontendStore>()(
 
             checkSubscriptionStatus: () => {
                 const state = useFrontendStore.getState();
-                if (state.user?.expiresAt) {
-                    const expired = new Date(state.user.expiresAt) < new Date();
-                    if (expired !== state.subscriptionExpired) {
-                        set({ subscriptionExpired: expired });
-                    }
+                const user = state.user;
+                if (!user) return;
+                
+                const isTimeExpired = user.expiresAt ? new Date(user.expiresAt) < new Date() : false;
+                const isSuspended = user.tenant?.status === "suspended";
+                const expired = isTimeExpired || isSuspended;
+                
+                if (expired !== state.subscriptionExpired) {
+                    set({ subscriptionExpired: expired });
                 }
             },
         }),

@@ -13,7 +13,7 @@ export default function DashboardLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const { isAuthenticated, _hasHydrated, subscriptionExpired } = useFrontendStore();
+    const { isAuthenticated, _hasHydrated, subscriptionExpired, user } = useFrontendStore();
     const router = useRouter();
     const pathname = usePathname();
     const redirected = useRef(false);
@@ -40,6 +40,7 @@ export default function DashboardLayout({
     }
 
     const isBillingPage = pathname?.startsWith("/billing");
+    const isSuspended = user?.tenant?.status === "suspended";
 
     return (
         <div className="flex h-screen overflow-hidden bg-surface">
@@ -48,7 +49,11 @@ export default function DashboardLayout({
                 {subscriptionExpired && (
                     <div className="bg-red-500 text-white px-4 py-2 flex items-center justify-center gap-2 text-sm font-medium z-50 rounded-b-xl shadow-md mx-4">
                         <AlertTriangle size={16} />
-                        <span>Obuna muddati tugagan! Iltimos, to'lov qiling.</span>
+                        <span>
+                            {isSuspended 
+                                ? "Hisobingiz vaqtincha to'xtatilgan!" 
+                                : "Obuna muddati tugagan! Iltimos, to'lov qiling."}
+                        </span>
                         {!isBillingPage && (
                             <Link href="/billing" className="underline hover:text-red-100 ml-2 font-bold">
                                 To'lovlar bo'limiga o'tish
@@ -65,7 +70,9 @@ export default function DashboardLayout({
                             </div>
                             <h2 className="text-2xl font-bold text-slate-800 mb-3">Bo'lim bloklangan</h2>
                             <p className="text-slate-500 mb-8 max-w-md">
-                                Obuna muddati tugagani sababli asosiy bo'limlarga kirish vaqtinchalik cheklangan. Barcha imkoniyatlardan foydalanish uchun obunani uzaytiring.
+                                {isSuspended 
+                                    ? "Hisobingiz ma'muryat tomonidan vaqtincha to'xtatilganligi sababli, asosiy bo'limlarga kirish cheklangan. Batasil ma'lumotni obuna va to'lovlar bo'limidan olishingiz mumkin." 
+                                    : "Obuna muddati tugagani sababli asosiy bo'limlarga kirish vaqtinchalik cheklangan. Barcha imkoniyatlardan foydalanish uchun obunani uzaytiring."}
                             </p>
                             <Link 
                                 href="/billing" 
