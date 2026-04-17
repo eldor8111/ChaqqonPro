@@ -133,8 +133,6 @@ model InventoryReceipt {
   warehouse      String // Asosiy ombor, Filial #1, etc.
   notes          String?
   status         String  // accepted, pending, cancelled
-  currency       String  @default("UZS")
-  invoiceNo      String?
   arrivedAt      DateTime?
   registeredAt   DateTime?
   acceptedAt     DateTime?

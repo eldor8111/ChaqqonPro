@@ -3,6 +3,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/backend/db";
 import { getSession } from "@/lib/backend/auth";
 
+const _ensureReceiptFields = async () => {
+    try {
+        await prisma.$executeRawUnsafe(`ALTER TABLE InventoryReceipt ADD COLUMN currency TEXT DEFAULT 'UZS'`);
+    } catch (e) {}
+    try {
+        await prisma.$executeRawUnsafe(`ALTER TABLE InventoryReceipt ADD COLUMN invoiceNo TEXT`);
+    } catch (e) {}
+};
+_ensureReceiptFields();
+
 export async function GET(req: Request) {
     try {
         const session = await getSession();
@@ -10,13 +20,20 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const receipts = await prisma.inventoryReceipt.findMany({
-            where: { tenantId: session.tenantId },
-            orderBy: { createdAt: "desc" },
-            include: { product: true }
-        });
+        const receipts = await prisma.$queryRawUnsafe(`
+            SELECT ir.*, p.name as pName 
+            FROM InventoryReceipt ir 
+            LEFT JOIN Product p ON ir.productId = p.id
+            WHERE ir.tenantId = ? 
+            ORDER BY ir.createdAt DESC
+        `, session.tenantId) as any[];
 
-        return NextResponse.json(receipts);
+        const formatted = receipts.map(r => ({
+            ...r,
+            product: r.pName ? { name: r.pName } : null
+        }));
+
+        return NextResponse.json(formatted);
     } catch (e: any) {
         return NextResponse.json({ error: e.message || "Xatolik yuz berdi" }, { status: 500 });
     }
@@ -106,12 +123,16 @@ export async function POST(req: Request) {
                     warehouse: warehouse || "Asosiy Ombor",
                     notes: notesStr || null,
                     status: status || "accepted",
-                    currency: currency || "UZS",
-                    invoiceNo: invoiceNo || null,
                     registeredAt: new Date(),
                     acceptedAt: status === 'accepted' ? new Date() : null
                 }
             });
+
+            await prisma.$executeRawUnsafe(
+                `UPDATE InventoryReceipt SET currency = ?, invoiceNo = ? WHERE id = ?`,
+                currency || "UZS", invoiceNo || null, receipt.id
+            );
+
             createdReceipts.push(receipt);
 
             await prisma.auditLog.create({
