@@ -212,9 +212,8 @@ export async function authenticateAdmin(shopCode: string | null, username: strin
         return { success: false, error: "Hisob topilmadi yoki to'xtatilgan" };
     }
 
-    if (tenant.expiresAt && new Date(tenant.expiresAt) < new Date()) {
-        return { success: false, error: "Obuna muddati tugagan. Tizim avtomatik bloklandi! To'lov qiling." };
-    }
+    // Obuna muddati tekshirish login vaqtida o'chirildi - expired foydalanuvchilar ham kirishlari mumkin
+    // Ammo ular faqat billing sahifasini ko'radi (Sidebar'da cheklangan)
 
     const passwordValid = await verifyPassword(password, tenant.adminPasswordHash);
 
