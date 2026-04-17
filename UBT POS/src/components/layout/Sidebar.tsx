@@ -87,6 +87,8 @@ export default function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
     const [openMenus, setOpenMenus] = useState<string[]>([]);
 
+    console.log("Sidebar debug:", { subscriptionExpired, userExpiresAt: user?.expiresAt });
+
     const toggleMenu = (key: string) => {
         setOpenMenus(prev =>
             prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
