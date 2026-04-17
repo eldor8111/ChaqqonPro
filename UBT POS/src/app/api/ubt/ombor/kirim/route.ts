@@ -148,7 +148,22 @@ export async function POST(req: Request) {
 
         // Auto-generate Moliya Expense (Kassa) if accepted
         if (status === "accepted") {
-            const totalKirimCost = createdReceipts.reduce((sum, r) => sum + Number(r.totalCost || 0), 0);
+            let totalKirimCost = createdReceipts.reduce((sum, r) => sum + Number(r.totalCost || 0), 0);
+
+            // Valyuta konvertatsiya: USD/EUR bo'lsa UZS ga o'tkazamiz
+            if (currency && currency !== "UZS" && totalKirimCost > 0) {
+                try {
+                    const tenant = await prisma.tenant.findUnique({ where: { id: session.tenantId } });
+                    let usdRate = 12500;
+                    if (tenant?.settings) {
+                        const s = JSON.parse(tenant.settings);
+                        if (s.usdRate) usdRate = Number(s.usdRate);
+                    }
+                    if (currency === "USD") totalKirimCost = totalKirimCost * usdRate;
+                    if (currency === "EUR") totalKirimCost = totalKirimCost * usdRate * 1.08;
+                } catch {}
+            }
+
             if (totalKirimCost > 0) {
                 await prisma.kassiHarakat.create({
                     data: {
@@ -156,7 +171,7 @@ export async function POST(req: Request) {
                         type: "expense",
                         category: "Bozor-ochar (xomashyo)",
                         amount: totalKirimCost,
-                        description: `Ombor kirimi uchun xarajat (Yetkazib beruvchi: ${supplier || "Noma'lum"})`,
+                        description: `Ombor kirimi (${currency || "UZS"}) — ${supplier || "Noma'lum"}`,
                         paymentMethod: "Naqd pul",
                         date: new Date(date || Date.now()),
                         createdBy: session.userId || "System",
@@ -170,5 +185,38 @@ export async function POST(req: Request) {
     } catch (e: any) {
         console.error("Kirim Error:", e);
         return NextResponse.json({ error: "Xatolik yuz berdi" }, { status: 500 });
+    }
+}
+
+// DELETE: Receipt(lar)ni o'chirish (single yoki bulk)
+export async function DELETE(req: Request) {
+    try {
+        const session = await getSession();
+        if (!session?.tenantId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const body = await req.json();
+        // ids — massiv (bulk), id — yagona
+        const ids: string[] = body.ids || (body.id ? [body.id] : []);
+        if (!ids.length) return NextResponse.json({ error: "id(lar) majburiy" }, { status: 400 });
+
+        // Faqat shu tenant'ga tegishliligini tekshiring
+        const owned: any[] = await prisma.$queryRawUnsafe(
+            `SELECT id FROM InventoryReceipt WHERE tenantId = ? AND id IN (${ids.map(() => "?").join(",")})`,
+            session.tenantId, ...ids
+        );
+
+        if (!owned.length) return NextResponse.json({ error: "Hujjat topilmadi" }, { status: 404 });
+
+        const validIds = owned.map((r: any) => r.id);
+        for (const rid of validIds) {
+            await prisma.inventoryReceipt.delete({ where: { id: rid } });
+        }
+
+        return NextResponse.json({ success: true, deleted: validIds.length });
+    } catch (e: any) {
+        console.error("Kirim DELETE error:", e);
+        return NextResponse.json({ error: e.message }, { status: 500 });
     }
 }

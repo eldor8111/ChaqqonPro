@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
     Plus, Search, FileSpreadsheet, X, Check, Package,
-    RotateCw, AlertTriangle, Printer, Trash2, TrendingUp, ChevronDown
+    RotateCw, AlertTriangle, Printer, Trash2, TrendingUp, ChevronDown, CheckSquare
 } from "lucide-react";
 
 
@@ -118,6 +118,49 @@ export default function OmborKirimPage() {
     });
     const [formItems, setFormItems] = useState<FormItem[]>([emptyItem()]);
     const [isSaving, setIsSaving] = useState(false);
+
+    // ── Bulk select / delete state ────────────────────────────────────────────
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const toggleSelect = (id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === filtered.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(filtered.map((k: any) => k.id)));
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (!selectedIds.size) return;
+        if (!confirm(`${selectedIds.size} ta hujjatni o'chirishni tasdiqlaysizmi?`)) return;
+        setIsDeleting(true);
+        try {
+            const res = await fetch("/api/ubt/ombor/kirim", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ids: Array.from(selectedIds) }),
+            });
+            if (res.ok) {
+                setSelectedIds(new Set());
+                fetchKirimlar();
+            } else {
+                alert("O'chirishda xatolik yuz berdi");
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     const comboRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -338,6 +381,15 @@ export default function OmborKirimPage() {
                             onChange={e => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 rounded-lg text-sm font-medium outline-none focus:ring-2 focus:ring-blue-100 text-slate-700" />
                     </div>
+                    {selectedIds.size > 0 && (
+                        <button
+                            onClick={handleBulkDelete}
+                            disabled={isDeleting}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-all shadow-md disabled:opacity-60">
+                            {isDeleting ? <RotateCw size={15} className="animate-spin" /> : <Trash2 size={15} />}
+                            {selectedIds.size} ta o'chirish
+                        </button>
+                    )}
                     <button onClick={fetchKirimlar} className="p-2.5 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-500 transition-colors">
                         <RotateCw size={17} className={isLoading ? "animate-spin" : ""} />
                     </button>
@@ -351,6 +403,12 @@ export default function OmborKirimPage() {
                         <table className="w-full text-sm text-left">
                             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold sticky top-0">
                                 <tr>
+                                    <th className="px-4 py-4">
+                                        <input type="checkbox"
+                                            onChange={toggleSelectAll}
+                                            checked={filtered.length > 0 && selectedIds.size === filtered.length}
+                                            className="w-4 h-4 rounded accent-blue-600 cursor-pointer" />
+                                    </th>
                                     <th className="px-5 py-4">Sana</th>
                                     <th className="px-5 py-4">Hujjat #</th>
                                     <th className="px-5 py-4">Mahsulot</th>
@@ -367,8 +425,14 @@ export default function OmborKirimPage() {
                                     <tr><td colSpan={9} className="py-16 text-center"><RotateCw className="animate-spin mx-auto text-blue-400" size={28} /></td></tr>
                                 ) : filtered.length === 0 ? (
                                     <tr><td colSpan={9} className="py-16 text-center text-slate-400 text-sm">Hech qanday hujjat topilmadi. Yangi kirim qo&apos;shing.</td></tr>
-                                ) : filtered.map(item => (
-                                    <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                                ) : filtered.map((item: any) => (
+                                    <tr key={item.id} className={`hover:bg-slate-50/80 transition-colors ${selectedIds.has(item.id) ? "bg-blue-50" : ""}`}>
+                                        <td className="px-4 py-3.5">
+                                            <input type="checkbox"
+                                                checked={selectedIds.has(item.id)}
+                                                onChange={() => toggleSelect(item.id)}
+                                                className="w-4 h-4 rounded accent-blue-600 cursor-pointer" />
+                                        </td>
                                         <td className="px-5 py-3.5 whitespace-nowrap text-xs text-slate-500">
                                             {new Date(item.createdAt).toLocaleString("uz-UZ", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                                         </td>
@@ -380,7 +444,12 @@ export default function OmborKirimPage() {
                                             +{Number(item.quantity).toLocaleString()} <span className="text-xs font-normal text-slate-400">{item.unit}</span>
                                         </td>
                                         <td className="px-5 py-3.5 whitespace-nowrap font-bold text-slate-800">
-                                            {Number(item.totalCost || 0).toLocaleString()} <span className="text-xs font-normal text-slate-400">{item.currency || "UZS"}</span>
+                                            {Number(item.totalCost || 0).toLocaleString()}{" "}
+                                            <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
+                                                item.currency === "USD" ? "bg-emerald-100 text-emerald-700" :
+                                                item.currency === "EUR" ? "bg-blue-100 text-blue-700" :
+                                                "bg-slate-100 text-slate-500"
+                                            }`}>{item.currency || "UZS"}</span>
                                         </td>
                                         <td className="px-5 py-3.5">
                                             <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold uppercase tracking-wider">Qabul qilindi</span>
