@@ -84,7 +84,20 @@ export default function OmborKirimPage() {
         }
     }, []);
 
-    useEffect(() => { loadProducts(); }, [loadProducts]);
+    }, []);
+
+    const [suppliers, setSuppliers] = useState<any[]>([]);
+    const fetchSuppliers = useCallback(async () => {
+        try {
+            const res = await fetch("/api/ubt/kontragent");
+            if (res.ok) {
+                const data = await res.json();
+                setSuppliers(data.suppliers || []);
+            }
+        } catch (e) { console.error(e); }
+    }, []);
+
+    useEffect(() => { loadProducts(); fetchSuppliers(); }, [loadProducts, fetchSuppliers]);
 
     // Kirim history
     const [kirimlar, setKirimlar] = useState<any[]>([]);
@@ -418,9 +431,12 @@ export default function OmborKirimPage() {
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                     <div className="md:col-span-2 space-y-1.5">
                                         <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Yetkazib beruvchi</label>
-                                        <input type="text" placeholder="Sharq Ta'minot LLC..." value={formHeader.supplier}
+                                        <input list="suppliersList" type="text" placeholder="Sharq Ta'minot LLC..." value={formHeader.supplier}
                                             onChange={e => setFormHeader({ ...formHeader, supplier: e.target.value })}
                                             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm transition-all" />
+                                        <datalist id="suppliersList">
+                                            {suppliers.map(s => <option key={s.id} value={s.name} />)}
+                                        </datalist>
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Hujjat #</label>
