@@ -120,7 +120,8 @@ export default function Sidebar() {
 
             {/* Navigation */}
             <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-                {navItems.map(({ href, icon: Icon, key, subItems }) => {
+                {navItems.map((item) => {
+                    const { href, icon: Icon, key, subItems } = item;
                     const isActive = pathname === href || pathname.startsWith(href + "/");
                     const isExpanded = openMenus.includes(key);
 
