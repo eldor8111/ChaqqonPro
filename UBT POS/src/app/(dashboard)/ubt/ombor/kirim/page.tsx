@@ -81,6 +81,7 @@ export default function OmborKirimPage() {
             console.error("Mahsulotlar yuklanmadi:", e);
         } finally {
             setProductsLoading(false);
+        }
     }, []);
 
     const [suppliers, setSuppliers] = useState<any[]>([]);
