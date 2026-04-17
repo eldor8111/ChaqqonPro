@@ -122,6 +122,7 @@ export default function KontragentPage() {
     const isPending = createMutation.isPending || updateMutation.isPending;
 
     return (
+        <>
         <div className="space-y-5 animate-fade-in">
             {/* Header */}
             <div className="flex items-center justify-between">
@@ -255,11 +256,13 @@ export default function KontragentPage() {
                 </table>
             </div>
 
+        </div>
+
             {/* Form Modal */}
             {showForm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={closeForm} />
-                    <div className="relative z-10 w-full max-w-md bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-[999] flex items-start justify-center pt-[10vh] px-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closeForm} />
+                    <div className="relative z-10 w-full max-w-md bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-slate-200">
                         {/* Header */}
                         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 flex-shrink-0">
                             <h2 className="font-semibold text-gray-800 text-[15px]">
@@ -336,9 +339,9 @@ export default function KontragentPage() {
 
             {/* Delete Confirm Modal */}
             {deleteConfirmId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setDeleteConfirmId(null)} />
-                    <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4 animate-in fade-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-[999] flex items-start justify-center pt-[20vh] px-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setDeleteConfirmId(null)} />
+                    <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4 animate-in fade-in zoom-in-95 duration-200 border border-slate-200">
                         <h3 className="font-bold text-slate-800 text-lg mb-2">O&apos;chirishni tasdiqlang</h3>
                         <p className="text-slate-500 text-sm mb-6">
                             Ushbu kontragent butunlay o&apos;chirib tashlanadi. Bu amalni qaytarib bo&apos;lmaydi.
@@ -361,6 +364,6 @@ export default function KontragentPage() {
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 }
