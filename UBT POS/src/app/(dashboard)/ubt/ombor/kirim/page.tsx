@@ -85,6 +85,8 @@ export default function OmborKirimPage() {
     }, []);
 
     const [suppliers, setSuppliers] = useState<any[]>([]);
+    const [usdRate, setUsdRate] = useState(12500);
+
     const fetchSuppliers = useCallback(async () => {
         try {
             const res = await fetch("/api/ubt/kontragent");
@@ -95,7 +97,17 @@ export default function OmborKirimPage() {
         } catch (e) { console.error(e); }
     }, []);
 
-    useEffect(() => { loadProducts(); fetchSuppliers(); }, [loadProducts, fetchSuppliers]);
+    const fetchUsdRate = useCallback(async () => {
+        try {
+            const res = await fetch("/api/ubt/moliya");
+            if (res.ok) {
+                const data = await res.json();
+                if (data.usdRate) setUsdRate(Number(data.usdRate));
+            }
+        } catch (e) {}
+    }, []);
+
+    useEffect(() => { loadProducts(); fetchSuppliers(); fetchUsdRate(); }, [loadProducts, fetchSuppliers, fetchUsdRate]);
 
     // Kirim history
     const [kirimlar, setKirimlar] = useState<any[]>([]);
@@ -118,6 +130,10 @@ export default function OmborKirimPage() {
     });
     const [formItems, setFormItems] = useState<FormItem[]>([emptyItem()]);
     const [isSaving, setIsSaving] = useState(false);
+
+    // ── Row detail expand ─────────────────────────────────────────────────────
+    const [expandedId, setExpandedId] = useState<string | null>(null);
+    const toggleExpand = (id: string) => setExpandedId(prev => prev === id ? null : id);
 
     // ── Bulk select / delete state ────────────────────────────────────────────
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -318,9 +334,15 @@ export default function OmborKirimPage() {
         k.invoiceNo?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const toUzs = (amount: number, currency: string) => {
+        if (currency === "USD") return amount * usdRate;
+        if (currency === "EUR") return amount * usdRate * 1.08;
+        return amount;
+    };
+
     const totalToday = kirimlar
         .filter(k => new Date(k.createdAt).toDateString() === new Date().toDateString())
-        .reduce((s, k) => s + (k.totalCost || 0), 0);
+        .reduce((s, k) => s + toUzs(k.totalCost || 0, k.currency || "UZS"), 0);
 
     return (
         <div className="animate-fade-in bg-slate-50 min-h-full flex flex-col">
@@ -426,11 +448,14 @@ export default function OmborKirimPage() {
                                 ) : filtered.length === 0 ? (
                                     <tr><td colSpan={9} className="py-16 text-center text-slate-400 text-sm">Hech qanday hujjat topilmadi. Yangi kirim qo&apos;shing.</td></tr>
                                 ) : filtered.map((item: any) => (
-                                    <tr key={item.id} className={`hover:bg-slate-50/80 transition-colors ${selectedIds.has(item.id) ? "bg-blue-50" : ""}`}>
+                                    <tr key={item.id}
+                                        onClick={e => { if ((e.target as HTMLElement).tagName !== "INPUT" && (e.target as HTMLElement).tagName !== "BUTTON" && !(e.target as HTMLElement).closest("button")) toggleExpand(item.id); }}
+                                        className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${selectedIds.has(item.id) ? "bg-blue-50" : expandedId === item.id ? "bg-amber-50/60" : ""}`}>
                                         <td className="px-4 py-3.5">
                                             <input type="checkbox"
                                                 checked={selectedIds.has(item.id)}
                                                 onChange={() => toggleSelect(item.id)}
+                                                onClick={e => e.stopPropagation()}
                                                 className="w-4 h-4 rounded accent-blue-600 cursor-pointer" />
                                         </td>
                                         <td className="px-5 py-3.5 whitespace-nowrap text-xs text-slate-500">
@@ -450,16 +475,55 @@ export default function OmborKirimPage() {
                                                 item.currency === "EUR" ? "bg-blue-100 text-blue-700" :
                                                 "bg-slate-100 text-slate-500"
                                             }`}>{item.currency || "UZS"}</span>
+                                            {(item.currency && item.currency !== "UZS") && (
+                                                <span className="ml-1 text-[10px] text-slate-400 font-normal">
+                                                    ≈ {Math.round(toUzs(item.totalCost || 0, item.currency)).toLocaleString()} UZS
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="px-5 py-3.5">
                                             <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold uppercase tracking-wider">Qabul qilindi</span>
                                         </td>
                                         <td className="px-5 py-3.5">
-                                            <button onClick={() => handlePrintNakladnoy(item)} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-bold text-xs transition-colors border border-blue-200">
+                                            <button onClick={e => { e.stopPropagation(); handlePrintNakladnoy(item); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-bold text-xs transition-colors border border-blue-200">
                                                 <Printer size={13} /> Chop
                                             </button>
                                         </td>
                                     </tr>
+                                    {expandedId === item.id && (
+                                        <tr key={item.id + "_detail"}>
+                                            <td colSpan={10} className="px-6 py-4 bg-amber-50/80 border-b border-amber-100">
+                                                <div className="text-sm font-bold text-amber-800 mb-2">📦 Kirim tarkibi</div>
+                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                                    <div className="bg-white rounded-xl p-3 border border-amber-200">
+                                                        <p className="text-[10px] text-slate-400 mb-0.5 font-medium">MAHSULOT</p>
+                                                        <p className="font-bold text-slate-800">{item.productName}</p>
+                                                    </div>
+                                                    <div className="bg-white rounded-xl p-3 border border-amber-200">
+                                                        <p className="text-[10px] text-slate-400 mb-0.5 font-medium">MIQDORI</p>
+                                                        <p className="font-bold text-emerald-700">{Number(item.quantity).toLocaleString()} {item.unit}</p>
+                                                    </div>
+                                                    <div className="bg-white rounded-xl p-3 border border-amber-200">
+                                                        <p className="text-[10px] text-slate-400 mb-0.5 font-medium">KELISH NARXI (donasi)</p>
+                                                        <p className="font-bold text-slate-800">{Number(item.costPrice || 0).toLocaleString()} {item.currency || "UZS"}</p>
+                                                    </div>
+                                                    <div className="bg-white rounded-xl p-3 border border-amber-200">
+                                                        <p className="text-[10px] text-slate-400 mb-0.5 font-medium">JAMI</p>
+                                                        <p className="font-bold text-blue-700">{Number(item.totalCost || 0).toLocaleString()} {item.currency || "UZS"}</p>
+                                                        {(item.currency && item.currency !== "UZS") && (
+                                                            <p className="text-[10px] text-slate-400 mt-0.5">≈ {Math.round(toUzs(item.totalCost, item.currency)).toLocaleString()} UZS</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {item.supplier && (
+                                                    <p className="mt-2 text-xs text-slate-500">🚚 <b>Yetkazib beruvchi:</b> {item.supplier} &nbsp;|&nbsp; 🏭 <b>Ombor:</b> {item.warehouse}</p>
+                                                )}
+                                                {item.notes && (
+                                                    <p className="mt-1 text-xs text-slate-500">📝 {item.notes}</p>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )}
                                 ))}
                             </tbody>
                         </table>
