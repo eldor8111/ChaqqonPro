@@ -238,7 +238,7 @@ export async function POST(req: Request) {
     }
 }
 
-// ─── DELETE: O'chirish (documentId yoki ids massivi) ──────────────────────────
+// ─── DELETE: Rollback stock + expense + delete receipts ──────────────────────
 export async function DELETE(req: Request) {
     try {
         const session = await getSession();
@@ -247,44 +247,100 @@ export async function DELETE(req: Request) {
         }
 
         const body = await req.json();
-        // documentId orqali butun hujjatni o'chirish
-        if (body.documentId) {
-            const rows: any[] = await prisma.$queryRawUnsafe(
-                `SELECT id FROM InventoryReceipt WHERE documentId=? AND tenantId=?`,
-                body.documentId, session.tenantId
-            );
-            for (const r of rows) {
-                await prisma.inventoryReceipt.delete({ where: { id: r.id } });
-            }
+        const documentId: string = body.documentId;
+        if (!documentId) return NextResponse.json({ error: "documentId majburiy" }, { status: 400 });
 
-            // Bog'liq Moliya xarajatini ham o'chirish
-            const khRows: any[] = await prisma.$queryRawUnsafe(
-                `SELECT id FROM KassiHarakat WHERE refId=? AND tenantId=?`,
-                body.documentId, session.tenantId
-            );
-            for (const kh of khRows) {
-                await prisma.kassiHarakat.delete({ where: { id: kh.id } });
-            }
+        // 1️⃣ Get all items of this document (with productType from notes)
+        const rows: any[] = await prisma.$queryRawUnsafe(`
+            SELECT id, productId, productName, quantity, unit, costPriceUzs, totalCostUzs, notes, status
+            FROM InventoryReceipt
+            WHERE documentId = ? AND tenantId = ?
+        `, documentId, session.tenantId);
 
-            return NextResponse.json({ success: true, deleted: rows.length, expenseDeleted: khRows.length });
+        if (!rows.length) {
+            return NextResponse.json({ error: "Hujjat topilmadi" }, { status: 404 });
         }
 
-        // ids massiv orqali o'chirish
-        const ids: string[] = body.ids || (body.id ? [body.id] : []);
-        if (!ids.length) return NextResponse.json({ error: "id(lar) majburiy" }, { status: 400 });
+        const wasAccepted = rows[0]?.status === "accepted";
 
-        const owned: any[] = await prisma.$queryRawUnsafe(
-            `SELECT id FROM InventoryReceipt WHERE tenantId=? AND id IN (${ids.map(() => "?").join(",")})`,
-            session.tenantId, ...ids
+        // 2️⃣ Rollback STOCK — only if status was accepted
+        if (wasAccepted) {
+            for (const row of rows) {
+                const qty = Number(row.quantity || 0);
+                const notes: string = row.notes || "";
+                // productType ni notes ichidan o'qiymiz (Tur: xomashyo)
+                const typeMatch = notes.match(/Tur:\s*(\S+)/);
+                const pType = typeMatch ? typeMatch[1] : "";
+                const pId = row.productId;
+
+                if (!pId && !pType) continue;
+
+                if (pType === "xomashyo" || pType === "polfabrikat") {
+                    // UbtIngredient stock kamaytirish
+                    try {
+                        const ingRows: any[] = await prisma.$queryRawUnsafe(
+                            "SELECT id, stock FROM UbtIngredient WHERE id=? AND tenantId=? LIMIT 1",
+                            pId || row.productName, session.tenantId
+                        );
+                        if (ingRows.length > 0) {
+                            const newStock = Math.max(0, Number(ingRows[0].stock || 0) - qty);
+                            await prisma.$executeRawUnsafe(
+                                "UPDATE UbtIngredient SET stock=? WHERE id=? AND tenantId=?",
+                                newStock, ingRows[0].id, session.tenantId
+                            );
+                        }
+                    } catch (e) { console.error("Ingredient rollback error:", e); }
+                } else if (pId) {
+                    // Product stock kamaytirish
+                    try {
+                        const product = await prisma.product.findUnique({
+                            where: { id: pId, tenantId: session.tenantId }
+                        });
+                        if (product) {
+                            await prisma.product.update({
+                                where: { id: pId },
+                                data: { stock: Math.max(0, product.stock - qty) }
+                            });
+                        }
+                    } catch (e) { console.error("Product rollback error:", e); }
+                }
+            }
+        }
+
+        // 3️⃣ Rollback EXPENSE (KassiHarakat)
+        const khRows: any[] = await prisma.$queryRawUnsafe(
+            `SELECT id FROM KassiHarakat WHERE refId=? AND tenantId=?`,
+            documentId, session.tenantId
         );
-
-        for (const r of owned) {
-            await prisma.inventoryReceipt.delete({ where: { id: r.id } });
+        for (const kh of khRows) {
+            await prisma.kassiHarakat.delete({ where: { id: kh.id } });
         }
 
-        return NextResponse.json({ success: true, deleted: owned.length });
+        // 4️⃣ Delete InventoryReceipt rows
+        for (const row of rows) {
+            await prisma.inventoryReceipt.delete({ where: { id: row.id } });
+        }
+
+        // 5️⃣ Audit log
+        await prisma.auditLog.create({
+            data: {
+                tenantId: session.tenantId,
+                user: session.userId,
+                action: "INVENTORY_RECEIPT_DELETED",
+                detail: `Hujjat o'chirildi. ${rows.length} ta mahsulot stock orqaga qaytarildi. documentId: ${documentId}`,
+                type: "delete"
+            }
+        });
+
+        return NextResponse.json({
+            success: true,
+            deleted: rows.length,
+            stockRolledBack: wasAccepted,
+            expenseDeleted: khRows.length
+        });
     } catch (e: any) {
         console.error("Kirim DELETE error:", e);
         return NextResponse.json({ error: e.message }, { status: 500 });
     }
 }
+
