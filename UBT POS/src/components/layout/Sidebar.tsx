@@ -15,11 +15,18 @@ import clsx from "clsx";
 import { useFrontendStore } from "@/lib/frontend/store";
 import { ChevronDown } from "lucide-react";
 
-const BLOCKED_NAV_ITEMS = [
+interface NavItem {
+    href: string;
+    icon: React.ComponentType<any>;
+    key: string;
+    subItems?: { href: string; label: string; isI18n?: boolean }[];
+}
+
+const BLOCKED_NAV_ITEMS: NavItem[] = [
     { href: "/billing", icon: CreditCard, key: "Obuna va Tariflar" },
 ];
 
-const NAV_ITEMS = [
+const NAV_ITEMS: NavItem[] = [
     { href: "/ubt", icon: LayoutDashboard, key: "nav.dashboard" },
     { href: "/ubt/reports", icon: BarChart3, key: "nav.reports" },
     { href: "/ubt/davomat", icon: Clock, key: "Davomat" },
