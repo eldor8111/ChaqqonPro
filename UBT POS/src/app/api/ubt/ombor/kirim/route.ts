@@ -10,6 +10,8 @@ const _ensureReceiptFields = async () => {
     try { await prisma.$executeRawUnsafe(`ALTER TABLE InventoryReceipt ADD COLUMN documentId TEXT`); } catch (e) {}
     try { await prisma.$executeRawUnsafe(`ALTER TABLE InventoryReceipt ADD COLUMN costPriceUzs REAL DEFAULT 0`); } catch (e) {}
     try { await prisma.$executeRawUnsafe(`ALTER TABLE InventoryReceipt ADD COLUMN totalCostUzs REAL DEFAULT 0`); } catch (e) {}
+    // KassiHarakat ga refId (documentId bilan bog'lash uchun)
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE KassiHarakat ADD COLUMN refId TEXT`); } catch (e) {}
 };
 _ensureReceiptFields();
 
@@ -198,7 +200,7 @@ export async function POST(req: Request) {
         if (status === "accepted") {
             const totalUzsAll = createdReceipts.reduce((sum, r) => sum + (r.totalCostUzs || 0), 0);
             if (totalUzsAll > 0) {
-                await prisma.kassiHarakat.create({
+                const kh = await prisma.kassiHarakat.create({
                     data: {
                         tenantId: session.tenantId,
                         type: "expense",
@@ -211,6 +213,11 @@ export async function POST(req: Request) {
                         kontragent: supplier || null
                     }
                 });
+                // documentId bilan bog'laymiz (o'chirishda kerak)
+                await prisma.$executeRawUnsafe(
+                    `UPDATE KassiHarakat SET refId = ? WHERE id = ?`,
+                    documentId, kh.id
+                );
             }
         }
 
@@ -249,7 +256,17 @@ export async function DELETE(req: Request) {
             for (const r of rows) {
                 await prisma.inventoryReceipt.delete({ where: { id: r.id } });
             }
-            return NextResponse.json({ success: true, deleted: rows.length });
+
+            // Bog'liq Moliya xarajatini ham o'chirish
+            const khRows: any[] = await prisma.$queryRawUnsafe(
+                `SELECT id FROM KassiHarakat WHERE refId=? AND tenantId=?`,
+                body.documentId, session.tenantId
+            );
+            for (const kh of khRows) {
+                await prisma.kassiHarakat.delete({ where: { id: kh.id } });
+            }
+
+            return NextResponse.json({ success: true, deleted: rows.length, expenseDeleted: khRows.length });
         }
 
         // ids massiv orqali o'chirish
