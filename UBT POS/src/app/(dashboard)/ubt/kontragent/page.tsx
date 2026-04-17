@@ -255,11 +255,11 @@ export default function KontragentPage() {
                 </table>
             </div>
 
-            {/* Slide-in Form Panel */}
+            {/* Form Modal */}
             {showForm && (
-                <div className="fixed inset-0 z-50 flex items-start justify-end">
-                    <div className="absolute inset-0 bg-black/50" onClick={closeForm} />
-                    <div className="relative z-10 h-full w-full max-w-md bg-white shadow-2xl flex flex-col overflow-hidden">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={closeForm} />
+                    <div className="relative z-10 w-full max-w-md bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         {/* Header */}
                         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 flex-shrink-0">
                             <h2 className="font-semibold text-gray-800 text-[15px]">
@@ -271,7 +271,7 @@ export default function KontragentPage() {
                         </div>
 
                         {/* Body */}
-                        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
+                        <div className="overflow-y-auto px-5 py-5 space-y-4">
                             <div>
                                 <label className="block text-xs text-gray-500 mb-1.5 font-medium">
                                     Nomi <span className="text-red-500">*</span>
@@ -336,9 +336,9 @@ export default function KontragentPage() {
 
             {/* Delete Confirm Modal */}
             {deleteConfirmId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-black/50" onClick={() => setDeleteConfirmId(null)} />
-                    <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setDeleteConfirmId(null)} />
+                    <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4 animate-in fade-in zoom-in-95 duration-200">
                         <h3 className="font-bold text-slate-800 text-lg mb-2">O&apos;chirishni tasdiqlang</h3>
                         <p className="text-slate-500 text-sm mb-6">
                             Ushbu kontragent butunlay o&apos;chirib tashlanadi. Bu amalni qaytarib bo&apos;lmaydi.
