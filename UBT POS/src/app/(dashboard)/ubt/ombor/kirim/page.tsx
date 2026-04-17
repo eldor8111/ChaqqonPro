@@ -160,19 +160,19 @@ export default function OmborKirimPage() {
         if (!confirm(`${selectedIds.size} ta hujjatni o'chirishni tasdiqlaysizmi?`)) return;
         setIsDeleting(true);
         try {
-            const res = await fetch("/api/ubt/ombor/kirim", {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ids: Array.from(selectedIds) }),
-            });
-            if (res.ok) {
-                setSelectedIds(new Set());
-                fetchKirimlar();
-            } else {
-                alert("O'chirishda xatolik yuz berdi");
+            // documentId orqali butun hujjatni o'chirish
+            for (const docId of Array.from(selectedIds)) {
+                await fetch("/api/ubt/ombor/kirim", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ documentId: docId }),
+                });
             }
+            setSelectedIds(new Set());
+            fetchKirimlar();
         } catch (e) {
             console.error(e);
+            alert("O'chirishda xatolik yuz berdi");
         } finally {
             setIsDeleting(false);
         }
@@ -328,7 +328,7 @@ export default function OmborKirimPage() {
         win.document.close();
     };
 
-    const filtered = kirimlar.filter(k =>
+    const filtered2 = kirimlar.filter(k =>
         k.productName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         k.supplier?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         k.invoiceNo?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -340,9 +340,16 @@ export default function OmborKirimPage() {
         return amount;
     };
 
+    // grouped document (har bir documentId = 1 qator)
+    const filtered = kirimlar.filter((k: any) =>
+        k.items?.some((it: any) => it.productName?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        k.supplier?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        k.invoiceNo?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     const totalToday = kirimlar
-        .filter(k => new Date(k.createdAt).toDateString() === new Date().toDateString())
-        .reduce((s, k) => s + toUzs(k.totalCost || 0, k.currency || "UZS"), 0);
+        .filter((k: any) => new Date(k.createdAt).toDateString() === new Date().toDateString())
+        .reduce((s: number, k: any) => s + (k.totalCostUzs || toUzs(k.totalCost || 0, k.currency || "UZS")), 0);
 
     return (
         <div className="animate-fade-in bg-slate-50 min-h-full flex flex-col">
@@ -447,83 +454,104 @@ export default function OmborKirimPage() {
                                     <tr><td colSpan={9} className="py-16 text-center"><RotateCw className="animate-spin mx-auto text-blue-400" size={28} /></td></tr>
                                 ) : filtered.length === 0 ? (
                                     <tr><td colSpan={9} className="py-16 text-center text-slate-400 text-sm">Hech qanday hujjat topilmadi. Yangi kirim qo&apos;shing.</td></tr>
-                                ) : filtered.map((item: any) => (
-                                    <tr key={item.id}
-                                        onClick={e => { if ((e.target as HTMLElement).tagName !== "INPUT" && (e.target as HTMLElement).tagName !== "BUTTON" && !(e.target as HTMLElement).closest("button")) toggleExpand(item.id); }}
-                                        className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${selectedIds.has(item.id) ? "bg-blue-50" : expandedId === item.id ? "bg-amber-50/60" : ""}`}>
-                                        <td className="px-4 py-3.5">
-                                            <input type="checkbox"
-                                                checked={selectedIds.has(item.id)}
-                                                onChange={() => toggleSelect(item.id)}
-                                                onClick={e => e.stopPropagation()}
-                                                className="w-4 h-4 rounded accent-blue-600 cursor-pointer" />
-                                        </td>
-                                        <td className="px-5 py-3.5 whitespace-nowrap text-xs text-slate-500">
-                                            {new Date(item.createdAt).toLocaleString("uz-UZ", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-                                        </td>
-                                        <td className="px-5 py-3.5 whitespace-nowrap font-mono text-xs text-slate-400">{item.invoiceNo || "—"}</td>
-                                        <td className="px-5 py-3.5 whitespace-nowrap font-semibold text-blue-700">{item.productName}</td>
-                                        <td className="px-5 py-3.5 whitespace-nowrap text-slate-600">{item.supplier || "—"}</td>
-                                        <td className="px-5 py-3.5 whitespace-nowrap text-slate-500">{item.warehouse}</td>
-                                        <td className="px-5 py-3.5 whitespace-nowrap font-bold text-emerald-600">
-                                            +{Number(item.quantity).toLocaleString()} <span className="text-xs font-normal text-slate-400">{item.unit}</span>
-                                        </td>
-                                        <td className="px-5 py-3.5 whitespace-nowrap font-bold text-slate-800">
-                                            {Number(item.totalCost || 0).toLocaleString()}{" "}
-                                            <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
-                                                item.currency === "USD" ? "bg-emerald-100 text-emerald-700" :
-                                                item.currency === "EUR" ? "bg-blue-100 text-blue-700" :
-                                                "bg-slate-100 text-slate-500"
-                                            }`}>{item.currency || "UZS"}</span>
-                                            {(item.currency && item.currency !== "UZS") && (
-                                                <span className="ml-1 text-[10px] text-slate-400 font-normal">
-                                                    ≈ {Math.round(toUzs(item.totalCost || 0, item.currency)).toLocaleString()} UZS
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="px-5 py-3.5">
-                                            <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold uppercase tracking-wider">Qabul qilindi</span>
-                                        </td>
-                                        <td className="px-5 py-3.5">
-                                            <button onClick={e => { e.stopPropagation(); handlePrintNakladnoy(item); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-bold text-xs transition-colors border border-blue-200">
-                                                <Printer size={13} /> Chop
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {expandedId === item.id && (
-                                        <tr key={item.id + "_detail"}>
-                                            <td colSpan={10} className="px-6 py-4 bg-amber-50/80 border-b border-amber-100">
-                                                <div className="text-sm font-bold text-amber-800 mb-2">📦 Kirim tarkibi</div>
-                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                                    <div className="bg-white rounded-xl p-3 border border-amber-200">
-                                                        <p className="text-[10px] text-slate-400 mb-0.5 font-medium">MAHSULOT</p>
-                                                        <p className="font-bold text-slate-800">{item.productName}</p>
-                                                    </div>
-                                                    <div className="bg-white rounded-xl p-3 border border-amber-200">
-                                                        <p className="text-[10px] text-slate-400 mb-0.5 font-medium">MIQDORI</p>
-                                                        <p className="font-bold text-emerald-700">{Number(item.quantity).toLocaleString()} {item.unit}</p>
-                                                    </div>
-                                                    <div className="bg-white rounded-xl p-3 border border-amber-200">
-                                                        <p className="text-[10px] text-slate-400 mb-0.5 font-medium">KELISH NARXI (donasi)</p>
-                                                        <p className="font-bold text-slate-800">{Number(item.costPrice || 0).toLocaleString()} {item.currency || "UZS"}</p>
-                                                    </div>
-                                                    <div className="bg-white rounded-xl p-3 border border-amber-200">
-                                                        <p className="text-[10px] text-slate-400 mb-0.5 font-medium">JAMI</p>
-                                                        <p className="font-bold text-blue-700">{Number(item.totalCost || 0).toLocaleString()} {item.currency || "UZS"}</p>
-                                                        {(item.currency && item.currency !== "UZS") && (
-                                                            <p className="text-[10px] text-slate-400 mt-0.5">≈ {Math.round(toUzs(item.totalCost, item.currency)).toLocaleString()} UZS</p>
-                                                        )}
-                                                    </div>
+                                ) : filtered.map((doc: any) => (
+                                    <>
+                                        <tr key={doc.documentId}
+                                            onClick={e => { if ((e.target as HTMLElement).tagName !== "INPUT" && !(e.target as HTMLElement).closest("button")) toggleExpand(doc.documentId); }}
+                                            className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${selectedIds.has(doc.documentId) ? "bg-blue-50" : expandedId === doc.documentId ? "bg-amber-50/50" : ""}`}>
+                                            <td className="px-4 py-3.5">
+                                                <input type="checkbox"
+                                                    checked={selectedIds.has(doc.documentId)}
+                                                    onChange={() => toggleSelect(doc.documentId)}
+                                                    onClick={e => e.stopPropagation()}
+                                                    className="w-4 h-4 rounded accent-blue-600 cursor-pointer" />
+                                            </td>
+                                            <td className="px-5 py-3.5 whitespace-nowrap text-xs text-slate-500">
+                                                {new Date(doc.createdAt).toLocaleString("uz-UZ", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                                            </td>
+                                            <td className="px-5 py-3.5 whitespace-nowrap font-mono text-xs text-slate-400">{doc.invoiceNo || "—"}</td>
+                                            <td className="px-5 py-3.5 whitespace-nowrap">
+                                                <div className="flex flex-col gap-0.5">
+                                                    {doc.items?.slice(0, 2).map((it: any, i: number) => (
+                                                        <span key={i} className="text-blue-700 font-semibold text-xs">{it.productName}</span>
+                                                    ))}
+                                                    {doc.items?.length > 2 && (
+                                                        <span className="text-slate-400 text-[10px]">+{doc.items.length - 2} ta boshqa</span>
+                                                    )}
                                                 </div>
-                                                {item.supplier && (
-                                                    <p className="mt-2 text-xs text-slate-500">🚚 <b>Yetkazib beruvchi:</b> {item.supplier} &nbsp;|&nbsp; 🏭 <b>Ombor:</b> {item.warehouse}</p>
-                                                )}
-                                                {item.notes && (
-                                                    <p className="mt-1 text-xs text-slate-500">📝 {item.notes}</p>
+                                            </td>
+                                            <td className="px-5 py-3.5 whitespace-nowrap text-slate-600">{doc.supplier || "—"}</td>
+                                            <td className="px-5 py-3.5 whitespace-nowrap text-slate-500">{doc.warehouse}</td>
+                                            <td className="px-5 py-3.5 whitespace-nowrap font-bold text-emerald-600">
+                                                {doc.items?.length || 0} <span className="text-xs font-normal text-slate-400">tur</span>
+                                            </td>
+                                            <td className="px-5 py-3.5 whitespace-nowrap font-bold text-slate-800">
+                                                {Number(doc.totalCost || 0).toLocaleString()}{" "}
+                                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
+                                                    doc.currency === "USD" ? "bg-emerald-100 text-emerald-700" :
+                                                    doc.currency === "EUR" ? "bg-blue-100 text-blue-700" :
+                                                    "bg-slate-100 text-slate-500"
+                                                }`}>{doc.currency || "UZS"}</span>
+                                                {(doc.currency && doc.currency !== "UZS") && (
+                                                    <div className="text-[10px] text-slate-400 font-normal mt-0.5">
+                                                        ≈ {Math.round(doc.totalCostUzs || toUzs(doc.totalCost||0, doc.currency)).toLocaleString()} UZS
+                                                    </div>
                                                 )}
                                             </td>
+                                            <td className="px-5 py-3.5">
+                                                <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold uppercase tracking-wider">Qabul qilindi</span>
+                                            </td>
+                                            <td className="px-5 py-3.5">
+                                                <button onClick={e => { e.stopPropagation(); handlePrintNakladnoy(doc); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-bold text-xs transition-colors border border-blue-200">
+                                                    <Printer size={13} /> Chop
+                                                </button>
+                                            </td>
                                         </tr>
-                                    )}
+                                        {expandedId === doc.documentId && (
+                                            <tr key={doc.documentId + "_detail"}>
+                                                <td colSpan={10} className="px-6 py-4 bg-amber-50/80 border-b border-amber-200">
+                                                    <p className="text-sm font-bold text-amber-800 mb-3">📦 Hujjat tarkibi ({doc.items?.length} ta mahsulot)</p>
+                                                    <div className="overflow-x-auto">
+                                                        <table className="w-full text-xs">
+                                                            <thead>
+                                                                <tr className="text-slate-500 border-b border-amber-200">
+                                                                    <th className="text-left py-2 pr-4 font-semibold">Mahsulot</th>
+                                                                    <th className="text-right py-2 pr-4 font-semibold">Miqdori</th>
+                                                                    <th className="text-right py-2 pr-4 font-semibold">Narxi ({doc.currency || "UZS"})</th>
+                                                                    <th className="text-right py-2 pr-4 font-semibold">Jami ({doc.currency || "UZS"})</th>
+                                                                    {doc.currency !== "UZS" && <th className="text-right py-2 font-semibold">Jami (UZS)</th>}
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {doc.items?.map((it: any, i: number) => (
+                                                                    <tr key={i} className="border-b border-amber-100 last:border-0">
+                                                                        <td className="py-2 pr-4 font-semibold text-slate-800">{it.productName}</td>
+                                                                        <td className="py-2 pr-4 text-right text-emerald-700 font-bold">{Number(it.quantity).toLocaleString()} {it.unit}</td>
+                                                                        <td className="py-2 pr-4 text-right text-slate-600">{Number(it.costPrice).toLocaleString()}</td>
+                                                                        <td className="py-2 pr-4 text-right font-bold text-blue-700">{Number(it.totalCost).toLocaleString()}</td>
+                                                                        {doc.currency !== "UZS" && (
+                                                                            <td className="py-2 text-right text-slate-500">{Math.round(it.totalCostUzs || toUzs(it.totalCost, doc.currency)).toLocaleString()}</td>
+                                                                        )}
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                            <tfoot>
+                                                                <tr className="font-bold text-slate-800 border-t-2 border-amber-300">
+                                                                    <td className="py-2 pr-4">JAMI</td>
+                                                                    <td className="py-2 pr-4 text-right text-emerald-700">{doc.items?.reduce((s:number,it:any)=>s+it.quantity,0)} ta</td>
+                                                                    <td></td>
+                                                                    <td className="py-2 pr-4 text-right text-blue-700">{Number(doc.totalCost).toLocaleString()} {doc.currency || "UZS"}</td>
+                                                                    {doc.currency !== "UZS" && <td className="py-2 text-right">{Math.round(doc.totalCostUzs).toLocaleString()} UZS</td>}
+                                                                </tr>
+                                                            </tfoot>
+                                                        </table>
+                                                    </div>
+                                                    {doc.supplier && <p className="mt-3 text-xs text-slate-500">🚚 <b>Yetkazib beruvchi:</b> {doc.supplier} &nbsp;|&nbsp; 🏭 <b>Ombor:</b> {doc.warehouse}</p>}
+                                                    {doc.notes && <p className="mt-1 text-xs text-slate-500">📝 {doc.notes}</p>}
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </>
                                 ))}
                             </tbody>
                         </table>
