@@ -11,7 +11,7 @@ export async function PUT(
         const session = await getSession();
         if (!session?.tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        const { name, phone, info } = await req.json();
+        const { name, phone, info, currency } = await req.json();
         if (!name) return NextResponse.json({ error: "Nom majburiy" }, { status: 400 });
 
         const existing: any[] = await prisma.$queryRawUnsafe(
@@ -21,8 +21,8 @@ export async function PUT(
         if (!existing.length) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
 
         await prisma.$executeRawUnsafe(
-            `UPDATE UbtSupplier SET name = ?, phone = ?, info = ? WHERE id = ? AND tenantId = ?`,
-            name, phone || null, info || null, params.id, session.tenantId
+            `UPDATE UbtSupplier SET name = ?, phone = ?, info = ?, currency = ? WHERE id = ? AND tenantId = ?`,
+            name, phone || null, info || null, currency || "UZS", params.id, session.tenantId
         );
 
         return NextResponse.json({ success: true });

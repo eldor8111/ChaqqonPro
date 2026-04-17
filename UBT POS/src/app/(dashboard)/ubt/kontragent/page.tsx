@@ -11,9 +11,10 @@ interface Supplier {
     name: string;
     phone?: string;
     info?: string;
+    currency?: string;
 }
 
-const emptyForm = { name: "", phone: "", info: "" };
+const emptyForm = { name: "", phone: "", info: "", currency: "UZS" };
 
 async function fetchSuppliers(): Promise<Supplier[]> {
     const res = await fetch("/api/ubt/kontragent");
@@ -98,7 +99,7 @@ export default function KontragentPage() {
 
     const openEdit = (s: Supplier) => {
         setEditingId(s.id);
-        setForm({ name: s.name, phone: s.phone || "", info: s.info || "" });
+        setForm({ name: s.name, phone: s.phone || "", info: s.info || "", currency: s.currency || "UZS" });
         setErrorMsg("");
         setShowForm(true);
     };
@@ -198,6 +199,7 @@ export default function KontragentPage() {
                             <th>#</th>
                             <th>Nomi</th>
                             <th>Telefon</th>
+                            <th>Valyuta</th>
                             <th>Izoh / Manzil</th>
                             <th>Harakat</th>
                         </tr>
@@ -233,6 +235,11 @@ export default function KontragentPage() {
                                     </div>
                                 </td>
                                 <td className="text-slate-500 text-sm">{s.phone || <span className="text-slate-300">—</span>}</td>
+                                <td>
+                                    <span className={clsx("px-2 py-0.5 rounded-md text-xs font-medium", s.currency === "USD" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700")}>
+                                        {s.currency || "UZS"}
+                                    </span>
+                                </td>
                                 <td className="text-slate-500 text-sm max-w-xs truncate">{s.info || <span className="text-slate-300">—</span>}</td>
                                 <td>
                                     <div className="flex items-center gap-2">
@@ -295,6 +302,18 @@ export default function KontragentPage() {
                                     onChange={val => setForm(f => ({ ...f, phone: val }))}
                                     className="w-full text-sm border border-gray-200 rounded-xl focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 bg-white"
                                 />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs text-gray-500 mb-1.5 font-medium">Asosiy Valyuta</label>
+                                <select
+                                    value={form.currency}
+                                    onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}
+                                    className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all bg-white"
+                                >
+                                    <option value="UZS">So'm (UZS)</option>
+                                    <option value="USD">AQSh Dollari (USD)</option>
+                                </select>
                             </div>
 
                             <div>

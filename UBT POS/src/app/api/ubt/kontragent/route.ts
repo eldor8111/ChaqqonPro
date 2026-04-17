@@ -16,6 +16,10 @@ const _ensureSupplierTable = prisma.$executeRawUnsafe(`
     )
 `).catch(() => {});
 
+const _ensureSupplierCurrency = prisma.$executeRawUnsafe(`
+    ALTER TABLE UbtSupplier ADD COLUMN currency TEXT DEFAULT 'UZS'
+`).catch(() => {});
+
 // GET: Returns mijozlar (customers) + yetkazib beruvchilar (suppliers) for a tenant
 export async function GET(req: NextRequest) {
     try {
@@ -23,6 +27,7 @@ export async function GET(req: NextRequest) {
         if (!session?.tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         await _ensureSupplierTable;
+        await _ensureSupplierCurrency;
 
         // Customers from Prisma Customer model
         const customers = await prisma.customer.findMany({
@@ -34,7 +39,7 @@ export async function GET(req: NextRequest) {
 
         // Suppliers from raw table
         const suppliers: any[] = await prisma.$queryRawUnsafe(
-            `SELECT id, name, phone FROM UbtSupplier WHERE tenantId = ? ORDER BY name ASC LIMIT 300`,
+            `SELECT id, name, phone, info, currency FROM UbtSupplier WHERE tenantId = ? ORDER BY name ASC LIMIT 300`,
             session.tenantId
         );
 
@@ -58,14 +63,15 @@ export async function POST(req: NextRequest) {
         if (!session?.tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         await _ensureSupplierTable;
+        await _ensureSupplierCurrency;
 
-        const { name, phone, info } = await req.json();
+        const { name, phone, info, currency } = await req.json();
         if (!name) return NextResponse.json({ error: "Nom majburiy" }, { status: 400 });
 
         const id = Math.random().toString(36).slice(2, 12);
         await prisma.$executeRawUnsafe(
-            `INSERT INTO UbtSupplier (id, tenantId, name, phone, info) VALUES (?, ?, ?, ?, ?)`,
-            id, session.tenantId, name, phone || null, info || null
+            `INSERT INTO UbtSupplier (id, tenantId, name, phone, info, currency) VALUES (?, ?, ?, ?, ?, ?)`,
+            id, session.tenantId, name, phone || null, info || null, currency || "UZS"
         );
 
         return NextResponse.json({ success: true, id });
