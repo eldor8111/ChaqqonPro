@@ -33,6 +33,8 @@ function StatCard({ label, value, sub, icon: Icon, gradient }: any) {
 export default function MoliyaPage() {
     const [entries, setEntries] = useState<any[]>([]);
     const [summary, setSummary] = useState({ totalIncome: 0, totalExpense: 0, netProfit: 0 });
+    const [usdRate, setUsdRate] = useState(12500);
+    const [isUpdatingRate, setIsUpdatingRate] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<"all" | "income" | "expense">("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -76,6 +78,7 @@ export default function MoliyaPage() {
                 const data = await res.json();
                 setEntries(data.entries || []);
                 setSummary(data.summary || { totalIncome: 0, totalExpense: 0, netProfit: 0 });
+                setUsdRate(data.usdRate || 12500);
             }
         } catch (e) {
             console.error(e);
@@ -85,6 +88,31 @@ export default function MoliyaPage() {
     };
 
     useEffect(() => { fetchData(); }, []);
+
+    const handleUpdateRate = async () => {
+        const newRate = prompt("Yangi AQSh Dollari kursini kiriting (1 $ = ? UZS):", String(usdRate));
+        if (!newRate || isNaN(Number(newRate))) return;
+        
+        setIsUpdatingRate(true);
+        try {
+            const res = await fetch("/api/ubt/moliya", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ usdRate: Number(newRate) }),
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setUsdRate(data.usdRate);
+            } else {
+                alert("Kursni saqlashda xatolik yuz berdi.");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Internet yoki server xatosi");
+        } finally {
+            setIsUpdatingRate(false);
+        }
+    };
 
     const openModal = (type: "income" | "expense") => {
         setModalType(type);
@@ -157,6 +185,11 @@ export default function MoliyaPage() {
                     <p className="text-slate-400 text-sm mt-0.5">Kirim, xarajatlar va sof foyda nazorati</p>
                 </div>
                 <div className="flex gap-3">
+                    <button onClick={handleUpdateRate} disabled={isUpdatingRate}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition rounded-xl font-bold text-sm shadow-sm">
+                        <DollarSign size={16} className="text-blue-500" />
+                        {isUpdatingRate ? "Saqlanmoqda..." : `1 $ = ${fmt(usdRate)} UZS`}
+                    </button>
                     <button onClick={() => openModal("income")}
                         className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-emerald-500/30 hover:-translate-y-0.5 transition-all">
                         <ArrowUpCircle size={16} /> Kirim Qo'shish

@@ -34,6 +34,16 @@ export async function GET(req: NextRequest) {
         const totalIncome = grouped.find(g => g.type === "income")?._sum.amount || 0;
         const totalExpense = grouped.find(g => g.type === "expense")?._sum.amount || 0;
 
+        // Bosh valyuta kursini olish
+        const tenant = await prisma.tenant.findUnique({ where: { id: session.tenantId } });
+        let usdRate = 12500;
+        if (tenant?.settings) {
+            try {
+                const s = JSON.parse(tenant.settings);
+                if (s.usdRate) usdRate = Number(s.usdRate);
+            } catch (e) {}
+        }
+
         return NextResponse.json({
             entries: formattedEntries,
             summary: {
@@ -41,6 +51,7 @@ export async function GET(req: NextRequest) {
                 totalExpense,
                 netProfit: totalIncome - totalExpense,
             },
+            usdRate
         });
     } catch (e: any) {
         return NextResponse.json({ error: e.message }, { status: 500 });
@@ -102,6 +113,36 @@ export async function DELETE(req: NextRequest) {
             where: { id, tenantId: session.tenantId },
         });
         return NextResponse.json({ success: true });
+    } catch (e: any) {
+        return NextResponse.json({ error: e.message }, { status: 500 });
+    }
+}
+
+// PUT: Update Moliya Settings (USD Rate)
+export async function PUT(req: NextRequest) {
+    try {
+        const session = await getSession();
+        if (!session?.tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+        const body = await req.json();
+        const { usdRate } = body;
+
+        if (!usdRate) return NextResponse.json({ error: "usdRate majburiy" }, { status: 400 });
+
+        const tenant = await prisma.tenant.findUnique({ where: { id: session.tenantId } });
+        let settings = {};
+        if (tenant?.settings) {
+            try { settings = JSON.parse(tenant.settings); } catch (e) {}
+        }
+        
+        (settings as any).usdRate = Number(usdRate);
+
+        await prisma.tenant.update({
+            where: { id: session.tenantId },
+            data: { settings: JSON.stringify(settings) }
+        });
+
+        return NextResponse.json({ success: true, usdRate: (settings as any).usdRate });
     } catch (e: any) {
         return NextResponse.json({ error: e.message }, { status: 500 });
     }
