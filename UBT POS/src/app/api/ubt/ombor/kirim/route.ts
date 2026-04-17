@@ -30,7 +30,7 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { date, supplier, warehouse, notes, status, currency, items } = body;
+        const { date, supplier, warehouse, notes, status, currency, invoiceNo, items } = body;
 
         const createdReceipts = [];
 
@@ -106,6 +106,8 @@ export async function POST(req: Request) {
                     warehouse: warehouse || "Asosiy Ombor",
                     notes: notesStr || null,
                     status: status || "accepted",
+                    currency: currency || "UZS",
+                    invoiceNo: invoiceNo || null,
                     registeredAt: new Date(),
                     acceptedAt: status === 'accepted' ? new Date() : null
                 }
