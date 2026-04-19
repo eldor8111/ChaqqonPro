@@ -84,7 +84,8 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             totalProducts: "Jami mahsulotlar", activeSku: "Faol SKU", lowStock: "Kam zaxira", outOfStock: "Tugagan",
             all: "Barchasi", category: "Kategoriya", barcode: "Shtrix-kod", wholesalePrice: "Optom narxi", sellingPrice: "Sotish narxi",
             currentStock: "Joriy zaxira", supplier: "Yetkazib beruvchi", normal: "Normal", low: "Kam", out: "Tugagan",
-            plu: "Tarozi (PLU) kodi", image: "Rasm", blockQuantity: "Blokdagi soni", blockPrice: "Blok narxi", addCategory: "Kategoriya qo'shish"
+            plu: "Tarozi (PLU) kodi", image: "Rasm", blockQuantity: "Blokdagi soni", blockPrice: "Blok narxi", addCategory: "Kategoriya qo'shish",
+            unit: "O'lchov birligi"
         },
         crm: {
             title: "CRM", customersCount: "ta mijoz", aiSegmentEnabled: "AI segmentatsiya yoqilgan",
@@ -108,6 +109,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             editEmployee: "Xodimni tahrirlash", deleteEmployee: "Xodimni o'chirish",
             confirmDelete: "O'chirishni tasdiqlang", confirmDeleteText: "Bu xodim ma'lumotlari butunlay o'chib ketadi. Davom etasizmi?",
             dismiss: "Bekor qilish", noAlerts: "Firibgarlik signallari yo'q",
+            searchPlaceholder: "Xodim qidirish...",
             shiftHistory: "Smena tarixi", shiftDate: "Sana",
             tabStaff: "Xodimlar", tabFraud: "Signallar", tabShifts: "Smena tarixi",
             roleCashier: "Kassir", roleManager: "Menejer", roleAdmin: "Administrator", roleWarehouse: "Omborchi",
@@ -228,7 +230,8 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             totalProducts: "Всего товаров", activeSku: "Активные SKU", lowStock: "Мало на складе", outOfStock: "Нет в наличии",
             all: "Все", category: "Категория", barcode: "Штрих-код", wholesalePrice: "Оптовая цена", sellingPrice: "Цена продажи",
             currentStock: "Текущий остаток", supplier: "Поставщик", normal: "Норма", low: "Мало", out: "Нет на складе",
-            plu: "PLU Код (Весы)", image: "Изображение", blockQuantity: "Кол-во в блоке", blockPrice: "Цена за блок", addCategory: "Добавить категорию"
+            plu: "PLU Код (Весы)", image: "Изображение", blockQuantity: "Кол-во в блоке", blockPrice: "Цена за блок", addCategory: "Добавить категорию",
+            unit: "Единица изм."
         },
         crm: {
             title: "CRM", customersCount: "клиентов", aiSegmentEnabled: "AI-сегментация включена",
@@ -252,10 +255,11 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             editEmployee: "Редактировать сотрудника", deleteEmployee: "Удалить сотрудника",
             confirmDelete: "Подтвердите удаление", confirmDeleteText: "Данные сотрудника будут удалены полностью. Продолжить?",
             dismiss: "Отклонить", noAlerts: "Сигналов мошенничества нет",
+            searchPlaceholder: "Поиск сотрудника...",
             shiftHistory: "История смен", shiftDate: "Дата",
             tabStaff: "Сотрудники", tabFraud: "Сигналы", tabShifts: "История смен",
             roleCashier: "Кассир", roleManager: "Менеджер", roleAdmin: "Администратор", roleWarehouse: "Кладовщик",
-            filterAll: "Все", searchPlaceholder: "Поиск сотрудника...",
+            filterAll: "Все",
             openShiftAt: "Смена открыта", closeShiftAt: "Смена закрыта",
             permissions: "Разрешения", editPermissions: "Редактировать разрешения",
             permModules: "Модули", permActions: "Действия",
@@ -369,7 +373,8 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             totalProducts: "Total Products", activeSku: "Active SKUs", lowStock: "Low Stock", outOfStock: "Out of Stock",
             all: "All", category: "Category", barcode: "Barcode", wholesalePrice: "Wholesale Price", sellingPrice: "Selling Price",
             currentStock: "Current Stock", supplier: "Supplier", normal: "Normal", low: "Low", out: "Out of Stock",
-            plu: "PLU Code (Scale)", image: "Image", blockQuantity: "Items in Block", blockPrice: "Block Price", addCategory: "Add Category"
+            plu: "PLU Code (Scale)", image: "Image", blockQuantity: "Items in Block", blockPrice: "Block Price", addCategory: "Add Category",
+            unit: "Unit"
         },
         crm: {
             title: "CRM", customersCount: "customers", aiSegmentEnabled: "AI Segmentation enabled",
@@ -393,10 +398,11 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             editEmployee: "Edit Employee", deleteEmployee: "Delete Employee",
             confirmDelete: "Confirm Deletion", confirmDeleteText: "Employee data will be permanently deleted. Continue?",
             dismiss: "Dismiss", noAlerts: "No fraud alerts",
+            searchPlaceholder: "Search employee...",
             shiftHistory: "Shift History", shiftDate: "Date",
             tabStaff: "Staff", tabFraud: "Alerts", tabShifts: "Shift History",
             roleCashier: "Cashier", roleManager: "Manager", roleAdmin: "Administrator", roleWarehouse: "Warehouse",
-            filterAll: "All", searchPlaceholder: "Search employee...",
+            filterAll: "All",
             openShiftAt: "Shift opened", closeShiftAt: "Shift closed",
             permissions: "Permissions", editPermissions: "Edit Permissions",
             permModules: "Modules", permActions: "Actions",

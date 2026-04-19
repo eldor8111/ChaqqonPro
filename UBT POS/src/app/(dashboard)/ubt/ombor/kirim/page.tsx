@@ -5,6 +5,7 @@ import {
     Plus, Search, FileSpreadsheet, X, Check, Package,
     RotateCw, AlertTriangle, Printer, Trash2, TrendingUp, ChevronDown, CheckSquare
 } from "lucide-react";
+import { useLang } from "@/lib/LangContext";
 
 
 interface Product {
@@ -35,6 +36,7 @@ const emptyItem = (): FormItem => ({
 });
 
 export default function OmborKirimPage() {
+    const { t } = useLang();
     // ── API-based product loading (real DB data, not mock store) ─────────────
     const [allProducts, setAllProducts] = useState<Product[]>([]);
     const [productsLoading, setProductsLoading] = useState(true);
@@ -357,8 +359,8 @@ export default function OmborKirimPage() {
             <div className="bg-white border-b border-slate-200 px-6 py-5">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Kirim Hujjatlari</h1>
-                        <p className="text-sm text-slate-500 mt-1">Xomashyo va tayyor mahsulotlar (Pepsi, Kola va h.k.) kirim tarixi</p>
+                        <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t('nav.ombor_kirim')}</h1>
+                        <p className="text-sm text-slate-500 mt-1">{t('nav.nom_raw')} {t('common.and') || 'va'} {t('nav.nom_dishes')} {t('nav.ombor_kirim')} tarixi</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                         <button className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-emerald-500 text-emerald-600 rounded-xl text-sm font-bold hover:bg-emerald-50 transition-all shadow-sm">
@@ -367,7 +369,7 @@ export default function OmborKirimPage() {
                         <button
                             onClick={() => openModal()}
                             className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 hover:-translate-y-0.5">
-                            <Plus size={18} strokeWidth={2.5} /> Yangi Kirim
+                            <Plus size={18} strokeWidth={2.5} /> {t('common.add')} {t('nav.ombor_kirim')}
                         </button>
                     </div>
                 </div>
@@ -377,21 +379,21 @@ export default function OmborKirimPage() {
             <div className="px-6 py-5 grid sm:grid-cols-3 gap-4 border-b border-slate-200 bg-white/60">
                 <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
-                        <p className="text-xs text-slate-500 font-medium mb-0.5">Bugungi kirim</p>
+                        <p className="text-xs text-slate-500 font-medium mb-0.5">{t('reports.daily')} {t('nav.ombor_kirim')}</p>
                         <p className="text-xl font-black text-slate-800">{totalToday.toLocaleString()} <span className="text-sm font-semibold text-slate-400">UZS</span></p>
                     </div>
                     <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center"><TrendingUp size={22} /></div>
                 </div>
                 <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
-                        <p className="text-xs text-slate-500 font-medium mb-0.5">Jami hujjatlar</p>
+                        <p className="text-xs text-slate-500 font-medium mb-0.5">{t('common.total')} hujjatlar</p>
                         <p className="text-xl font-black text-slate-800">{kirimlar.length} <span className="text-sm font-semibold text-slate-400">ta</span></p>
                     </div>
                     <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center"><Package size={22} /></div>
                 </div>
                 <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
-                        <p className="text-xs text-slate-500 font-medium mb-0.5">Aktiv mahsulotlar</p>
+                        <p className="text-xs text-slate-500 font-medium mb-0.5">{t('common.active')} {t('inventory.totalProducts')}</p>
                         <p className="text-xl font-black text-slate-800">{allProducts.length} <span className="text-sm font-semibold text-slate-400">tur</span></p>
                     </div>
                     <div className="w-11 h-11 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center"><Package size={22} /></div>
@@ -438,15 +440,15 @@ export default function OmborKirimPage() {
                                             checked={filtered.length > 0 && selectedIds.size === filtered.length}
                                             className="w-4 h-4 rounded accent-blue-600 cursor-pointer" />
                                     </th>
-                                    <th className="px-5 py-4">Sana</th>
+                                    <th className="px-5 py-4">{t('common.date')}</th>
                                     <th className="px-5 py-4">Hujjat #</th>
-                                    <th className="px-5 py-4">Mahsulot</th>
-                                    <th className="px-5 py-4">Yetkazib beruvchi</th>
-                                    <th className="px-5 py-4">Ombor</th>
-                                    <th className="px-5 py-4">Miqdori</th>
-                                    <th className="px-5 py-4">Summasi</th>
-                                    <th className="px-5 py-4">Holati</th>
-                                    <th className="px-5 py-4">Amallar</th>
+                                    <th className="px-5 py-4">{t('inventory.totalProducts')}</th>
+                                    <th className="px-5 py-4">{t('inventory.supplier')}</th>
+                                    <th className="px-5 py-4">{t('nav.ombor')}</th>
+                                    <th className="px-5 py-4">{t('common.units')}</th>
+                                    <th className="px-5 py-4">{t('common.amount')}</th>
+                                    <th className="px-5 py-4">{t('common.status')}</th>
+                                    <th className="px-5 py-4">{t('common.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
@@ -499,11 +501,11 @@ export default function OmborKirimPage() {
                                                 )}
                                             </td>
                                             <td className="px-5 py-3.5">
-                                                <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold uppercase tracking-wider">Qabul qilindi</span>
+                                                <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold uppercase tracking-wider">{t('common.confirm')}</span>
                                             </td>
                                             <td className="px-5 py-3.5">
                                                 <button onClick={e => { e.stopPropagation(); handlePrintNakladnoy(doc); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-bold text-xs transition-colors border border-blue-200">
-                                                    <Printer size={13} /> Chop
+                                                    <Printer size={13} /> {t('common.print')}
                                                 </button>
                                             </td>
                                         </tr>
@@ -589,7 +591,7 @@ export default function OmborKirimPage() {
                                 {/* Header fields */}
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                     <div className="md:col-span-2 space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Yetkazib beruvchi</label>
+                                        <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('inventory.supplier')}</label>
                                         <input list="suppliersList" type="text" placeholder="Sharq Ta'minot LLC..." value={formHeader.supplier}
                                             onChange={e => setFormHeader({ ...formHeader, supplier: e.target.value })}
                                             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm transition-all" />
@@ -604,7 +606,7 @@ export default function OmborKirimPage() {
                                             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm transition-all" />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Ombor</label>
+                                        <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('nav.ombor')}</label>
                                         <select value={formHeader.warehouse} onChange={e => setFormHeader({ ...formHeader, warehouse: e.target.value })}
                                             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 text-sm bg-white transition-all">
                                             <option>Asosiy Ombor</option>
@@ -613,7 +615,7 @@ export default function OmborKirimPage() {
                                         </select>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Valyuta</label>
+                                        <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('fin.currency') || 'Valyuta'}</label>
                                         <select value={formHeader.currency} onChange={e => setFormHeader({ ...formHeader, currency: e.target.value })}
                                             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 text-sm bg-white font-bold text-blue-700 transition-all">
                                             <option value="UZS">🇺🇿 UZS</option>
@@ -782,12 +784,12 @@ export default function OmborKirimPage() {
                                 <div className="flex items-center gap-3">
                                     <button type="button" onClick={() => setIsModalOpen(false)}
                                         className="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-200 transition-all border border-slate-200 bg-white">
-                                        Bekor qilish
+                                        {t('common.cancel')}
                                     </button>
                                     <button type="submit" disabled={isSaving}
                                         className="flex items-center gap-2 px-8 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:-translate-y-0.5 transition-all disabled:opacity-70">
                                         {isSaving ? <RotateCw size={18} className="animate-spin" /> : <Check size={18} />}
-                                        Qabul qilish
+                                        {t('common.confirm')}
                                     </button>
                                 </div>
                             </div>

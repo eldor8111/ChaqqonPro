@@ -5,6 +5,8 @@ import { createPortal } from "react-dom";
 import { Plus, Search, Pencil, Trash2, X, CheckCircle, AlertCircle, FileSpreadsheet, ChevronRight, ChevronsUpDown, List, RotateCw, Image as ImageIcon, Layers, Check } from "lucide-react";
 import { useStore, NomenklaturaTaom } from "@/lib/store";
 import { formatCurrency } from "@/lib/mockData";
+import { useLang } from "@/lib/LangContext";
+
 
 interface ModifierItem {
     id: string;
@@ -17,6 +19,7 @@ interface ModifierGroup {
 }
 
 export default function TaomlarPage() {
+    const { t } = useLang();
     // ── DB-backed state (same source as POS) ────────────────────────────────
     const { addNomenklaturaTaom, updateNomenklaturaTaom, deleteNomenklaturaTaom } = useStore();
     const [dbItems, setDbItems] = useState<any[]>([]);
@@ -260,7 +263,7 @@ export default function TaomlarPage() {
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <div className="w-2.5 h-7 bg-blue-500 rounded text-transparent">|</div>
-                        <h1 className="text-[22px] font-bold text-slate-900">Taomlar</h1>
+                        <h1 className="text-[22px] font-bold text-slate-900">{t('nav.nom_dishes')}</h1>
                     </div>
                     <button className="flex items-center gap-2 px-3 py-1.5 bg-[#f4f5f7] text-slate-700 rounded-md text-sm hover:bg-slate-200 transition font-bold border border-slate-300">
                         <Trash2 size={14} /> Arxivga o'ting
@@ -285,7 +288,7 @@ export default function TaomlarPage() {
                         <FileSpreadsheet size={16} /> EXCEL dasturini yuklab oling
                     </button>
                     <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition font-bold shadow-sm">
-                        Qo&apos;shish <Plus size={16} />
+                        {t('common.add')} <Plus size={16} />
                     </button>
                 </div>
             </div>
@@ -296,7 +299,7 @@ export default function TaomlarPage() {
                     <div className="flex-1 max-w-[300px]">
                         <input
                             type="text"
-                            placeholder="Qidiruv"
+                            placeholder={t('common.search')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full px-4 py-2 border border-slate-200 rounded text-sm outline-none focus:border-blue-400 placeholder:text-slate-300"
@@ -324,7 +327,7 @@ export default function TaomlarPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <button onClick={() => { setSearchQuery(""); setSelectedCategory(""); }} className="px-6 py-2 border border-[#f6a0a8] text-[#e3342f] rounded text-sm hover:bg-red-50 transition font-medium">
-                        Tozalash
+                        {t('common.filter') + ' ' + t('common.delete') || 'Tozalash'}
                     </button>
                 </div>
             </div>
@@ -338,9 +341,7 @@ export default function TaomlarPage() {
                                 <span className="flex items-center justify-between gap-1 w-full">Turini tanlang <ChevronsUpDown size={12} className="text-slate-600" /></span>
                             </th>
                             <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold">Rasm</th>
-                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold">
-                                <span className="flex items-center justify-between gap-1 w-full">Nomi <ChevronsUpDown size={12} className="text-slate-600" /></span>
-                            </th>
+                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold">{t('common.name')}</th>
                             <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold">Turi</th>
                             <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold text-center">O'lchov birligi</th>
                             <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold">
@@ -358,14 +359,14 @@ export default function TaomlarPage() {
                             <th className="px-2 py-3.5 border-r border-[#d4dceb] text-center font-bold leading-tight align-middle text-[10px]">
                                 Avtomatik <br /> hisob-kitob
                             </th>
-                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold text-center">Holat</th>
+                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold text-center">{t('common.status')}</th>
                             <th className="px-3 py-3.5 rounded-r-lg font-bold"></th>
                         </tr>
                     </thead>
                     <tbody className="text-slate-700">
                         {dbLoading ? (
                             <tr><td colSpan={14} className="text-center py-12 text-slate-400">
-                                <div className="flex items-center justify-center gap-2"><RotateCw size={16} className="animate-spin" /> Yuklanmoqda...</div>
+                                <div className="flex items-center justify-center gap-2"><RotateCw size={16} className="animate-spin" /> {t('common.loading')}</div>
                             </td></tr>
                         ) : filteredTaomlar.map((item: any) => {
                             const category = dbCategories.find(c => c.id === item.categoryId);
@@ -427,7 +428,7 @@ export default function TaomlarPage() {
                     </tbody>
                 </table>
                 {filteredTaomlar.length === 0 && (
-                    <div className="text-center py-10 text-slate-500">Hech qanday ma'lumot topilmadi</div>
+                    <div className="text-center py-10 text-slate-500">{t('common.noData')}</div>
                 )}
             </div>
 
@@ -438,7 +439,7 @@ export default function TaomlarPage() {
                     <div className="bg-white px-6 py-4 border-b border-slate-200 flex items-center justify-between shrink-0 shadow-sm">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
-                            <h2 className="text-xl font-black text-slate-900">{editingItem ? "Taomni o'zgartirish" : "Yangi taom qo'shing"}</h2>
+                            <h2 className="text-xl font-black text-slate-900">{editingItem ? t('common.edit') + ' ' + t('nav.nom_dishes') : t('common.add') + ' ' + t('nav.nom_dishes')}</h2>
                         </div>
                         <button onClick={() => setIsModalOpen(false)} className="text-slate-700 hover:text-slate-900 hover:bg-slate-200 p-2 rounded-xl transition font-bold">
                             <X size={24} />
@@ -778,7 +779,7 @@ export default function TaomlarPage() {
 
                                 <div className="pt-4">
                                     <button type="submit" className="w-[120px] py-3 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-600/20">
-                                        {editingItem ? "O'zgartirish" : "Qo'shish"}
+                                        {editingItem ? t('common.edit') : t('common.add')}
                                     </button>
                                 </div>
                             </div>

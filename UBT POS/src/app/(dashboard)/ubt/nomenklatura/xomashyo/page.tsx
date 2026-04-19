@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { Plus, Search, Filter, Pencil, Trash2, X, Cuboid, RotateCw } from "lucide-react";
 import { formatCurrency } from "@/lib/mockData";
+import { useLang } from "@/lib/LangContext";
+
 
 interface NomenklaturaXomashyo {
     id: string;
@@ -14,6 +16,7 @@ interface NomenklaturaXomashyo {
 }
 
 export default function XomashyoPage() {
+    const { t } = useLang();
     const [nomenklaturaXomashyo, setXomashyo] = useState<NomenklaturaXomashyo[]>([]);
     const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -94,11 +97,11 @@ export default function XomashyoPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Xomashyo</h1>
-                    <p className="text-sm text-slate-500 mt-1">Ombordagi barcha xomashyo va mahsulotlar</p>
+                    <h1 className="text-2xl font-bold text-slate-800">{t('nav.nom_raw')}</h1>
+                    <p className="text-sm text-slate-500 mt-1">{t('nav.ombor')} — {t('nav.nom_raw')}</p>
                 </div>
                 <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition font-medium">
-                    <Plus size={18} /> Yangi xomashyo
+                    <Plus size={18} /> {t('common.add')} {t('nav.nom_raw')}
                 </button>
             </div>
 
@@ -109,7 +112,7 @@ export default function XomashyoPage() {
                         <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
                             type="text"
-                            placeholder="Xomashyo qidirish..."
+                        placeholder={t('common.search') + ' ' + t('nav.nom_raw') + '...'}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:bg-white transition text-sm text-slate-700"
@@ -120,27 +123,27 @@ export default function XomashyoPage() {
                 {isLoading ? (
                     <div className="p-8 text-center bg-slate-50/50">
                         <RotateCw size={24} className="animate-spin text-emerald-500 mx-auto" />
-                        <p className="mt-2 text-slate-500 text-sm">Yuklanmoqda...</p>
+                        <p className="mt-2 text-slate-500 text-sm">{t('common.loading')}</p>
                     </div>
                 ) : filteredXomashyolar.length === 0 ? (
                     <div className="p-8 text-center bg-slate-50/50">
                         <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                             <Cuboid size={24} className="text-slate-400" />
                         </div>
-                        <h3 className="text-slate-800 font-semibold mb-1">Xomashyolar yo'q</h3>
-                        <p className="text-slate-500 text-sm mb-4">Ombor uchun xomashyo kiriting.</p>
+                        <h3 className="text-slate-800 font-semibold mb-1">{t('common.noData')}</h3>
+                        <p className="text-slate-500 text-sm mb-4">{t('nav.nom_raw')} {t('common.add')}.</p>
                     </div>
                 ) : (
                     <table className="w-full text-sm text-left text-slate-600">
                         <thead className="bg-slate-50 text-slate-500 uppercase text-xs font-semibold">
                             <tr>
-                                <th className="px-5 py-3 border-b border-slate-100">Nomi</th>
-                                <th className="px-5 py-3 border-b border-slate-100">Kategoriya</th>
-                                <th className="px-5 py-3 border-b border-slate-100 text-center">O'lchov Birligi</th>
-                                <th className="px-5 py-3 border-b border-slate-100 text-right">Qoldiq</th>
-                                <th className="px-5 py-3 border-b border-slate-100 text-right">Narxi</th>
-                                <th className="px-5 py-3 border-b border-slate-100 text-right">Umumiy Summa</th>
-                                <th className="px-5 py-3 border-b border-slate-100 text-right">Amallar</th>
+                                <th className="px-5 py-3 border-b border-slate-100">{t('common.name')}</th>
+                                <th className="px-5 py-3 border-b border-slate-100">{t('nav.nom_raw_cats')}</th>
+                                <th className="px-5 py-3 border-b border-slate-100 text-center">{t('inventory.unit') || 'Birlik'}</th>
+                                <th className="px-5 py-3 border-b border-slate-100 text-right">{t('inventory.currentStock')}</th>
+                                <th className="px-5 py-3 border-b border-slate-100 text-right">{t('inventory.wholesalePrice')}</th>
+                                <th className="px-5 py-3 border-b border-slate-100 text-right">{t('common.total')} {t('common.amount')}</th>
+                                <th className="px-5 py-3 border-b border-slate-100 text-right">{t('common.actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -186,9 +189,9 @@ export default function XomashyoPage() {
                                 </div>
                                 <div>
                                     <h2 className="font-black text-slate-800 text-lg leading-tight">
-                                        {editingItem ? "Xomashyo Tahrirlash" : "Yangi Xomashyo"}
+                                        {editingItem ? t('common.edit') + ' ' + t('nav.nom_raw') : t('common.add') + ' ' + t('nav.nom_raw')}
                                     </h2>
-                                    <p className="text-xs text-slate-500 mt-0.5">Ombor uchun xomashyo ma'lumotlari</p>
+                                    <p className="text-xs text-slate-500 mt-0.5">{t('nav.nom_raw')} {t('common.name')}</p>
                                 </div>
                             </div>
                             <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
@@ -200,14 +203,14 @@ export default function XomashyoPage() {
                         <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
                             <div className="p-6 overflow-y-auto flex-1 space-y-5">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Nomi</label>
+                                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('common.name')}</label>
                                     <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required 
                                         placeholder="Piyoz (Oq)..."
                                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 text-sm transition-all" />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Kategoriya</label>
+                                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('nav.nom_raw_cats')}</label>
                                     <select value={formData.categoryId || ""} onChange={e => setFormData({ ...formData, categoryId: e.target.value })} 
                                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 text-sm bg-white transition-all">
                                         <option value="">Kategoriya tanlang...</option>
@@ -217,7 +220,7 @@ export default function XomashyoPage() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Birligi</label>
+                                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('inventory.unit') || 'Birlik'}</label>
                                         <select value={formData.unit} onChange={e => setFormData({ ...formData, unit: e.target.value })} required 
                                             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 text-sm bg-white transition-all">
                                             <option value="kg">kg</option>
@@ -229,7 +232,7 @@ export default function XomashyoPage() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Dastlabki Qoldiq</label>
+                                        <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('inventory.currentStock')}</label>
                                         <input type="number" step="any" value={formData.stock} onChange={e => setFormData({ ...formData, stock: Number(e.target.value) })} required 
                                             placeholder="0"
                                             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 text-sm transition-all text-emerald-700 font-bold" />
@@ -237,7 +240,7 @@ export default function XomashyoPage() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Narxi (so'm)</label>
+                                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('inventory.wholesalePrice')}</label>
                                     <input type="number" value={formData.price} onChange={e => setFormData({ ...formData, price: Number(e.target.value) })} required 
                                         placeholder="0"
                                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 text-sm transition-all" />
@@ -248,11 +251,11 @@ export default function XomashyoPage() {
                             <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center gap-3 shrink-0">
                                 <button type="button" onClick={() => setIsModalOpen(false)} 
                                     className="flex-1 px-6 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-200 transition-all border border-slate-200 bg-white">
-                                    Bekor qilish
+                                    {t('common.cancel')}
                                 </button>
                                 <button type="submit" disabled={isSaving} 
                                     className="flex-1 flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/30 hover:bg-emerald-700 hover:-translate-y-0.5 transition-all disabled:opacity-70">
-                                    {isSaving ? <RotateCw size={18} className="animate-spin" /> : "Saqlash"}
+                                    {isSaving ? <RotateCw size={18} className="animate-spin" /> : t('common.save')}
                                 </button>
                             </div>
                         </form>
