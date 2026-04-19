@@ -446,6 +446,10 @@ function LoginForm() {
             const data = await res.json();
 
             if (res.ok && data.success) {
+                if (data.isSuperAdmin) {
+                    router.push("/super-admin");
+                    return;
+                }
                 setUser({ id: data.tenant?.id || phoneVal, name: data.tenant?.shopName || phoneVal, role: "ADMIN", tenant: data.tenant, expiresAt: data.expiresAt });
                 router.push("/ubt");
             } else {
