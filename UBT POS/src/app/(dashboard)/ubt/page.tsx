@@ -19,6 +19,7 @@ import type { UbtTable } from "@/lib/store";
 import { useFrontendStore } from "@/lib/frontend/store";
 import { formatCurrency, formatCurrencyShort } from "@/lib/mockData";
 import DateRangePicker, { type DateRange } from "@/components/ui/DateRangePicker";
+import { useLang } from "@/lib/LangContext";
 
 const fmt = (n: number) => Math.round(n).toLocaleString();
 
@@ -753,7 +754,7 @@ function StatsOverviewChart({ finance, tables, byMethod }: {
                     {/* Table status */}
                     {tables.total > 0 && (
                         <div className="pt-3 border-t border-blue-200/50">
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2.5">Stollar holati</p>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2.5">{t('ubt.tablesStatus') || 'Stollar holati'}</p>
                             <div className="grid grid-cols-3 gap-2">
                                 {tableRows.map(t => (
                                     <div key={t.label} className="text-center py-2.5 rounded-xl" style={{ background: t.bg }}>
@@ -803,6 +804,7 @@ function TimeframeSelector({ value, onChange }: { value: string, onChange: (v: s
 }
 
 export default function UbtPage() {
+    const { t } = useLang();
     const staff       = useStore((s) => s.staff);
     const ubtTables = useStore((s) => s.ubtTables);
     const router      = useRouter();
@@ -903,19 +905,19 @@ export default function UbtPage() {
             {/* HEADER */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-800">UBT Boshqaruv</h1>
-                    <p className="text-sm text-slate-500 font-medium mt-0.5">Restoran va mehmonxona tizimi</p>
+                    <h1 className="text-2xl font-black text-slate-800">{t('ubt.title')}</h1>
+                    <p className="text-sm text-slate-500 font-medium mt-0.5">{t('ubt.subTitle')}</p>
                 </div>
                 <div className="flex items-center gap-3">
                     {lastRefresh && (
                         <span className="text-xs text-slate-500 font-medium">
-                            Yangilandi: {lastRefresh.toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                            {lastRefresh.toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                         </span>
                     )}
                     <button onClick={() => { mutate(); store.fetchUbtTables(); }}
                         className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 transition-colors hover:bg-slate-200"
                         style={{ background: "rgba(15,23,42,0.05)", border: "1px solid rgba(15,23,42,0.1)" }}>
-                        <RefreshCw size={13} /> Yangilash
+                        <RefreshCw size={13} /> {t('common.refresh') || "Yangilash"}
                     </button>
                 </div>
             </div>
@@ -943,19 +945,19 @@ export default function UbtPage() {
                         <div className="rounded-3xl p-6 relative overflow-hidden shadow-sm" 
                              style={{ background: "rgba(59,130,246,0.05)", border: "1px solid rgba(59,130,246,0.2)" }}>
                             <div className="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/10 blur-[40px] rounded-full pointer-events-none" />
-                            <p className="text-xs font-bold text-blue-600 mb-1.5 flex items-center gap-1.5"><DollarSign size={14}/> Sof foyda</p>
+                            <p className="text-xs font-bold text-blue-600 mb-1.5 flex items-center gap-1.5"><DollarSign size={14}/>{t('reports.netProfit')}</p>
                             <p className="text-4xl font-black text-slate-800 tracking-tight">
                                 {fmt(stats.finance.netProfit)} <span className="text-base text-blue-600 font-bold">so'm</span>
                             </p>
                             
                             <div className="flex items-center justify-between gap-4 mt-6 pt-5 border-t border-blue-500/20">
                                 <div>
-                                    <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-600 mb-1 flex items-center gap-1"><TrendingUp size={12}/> Pul kirimi</p>
+                                    <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-600 mb-1 flex items-center gap-1"><TrendingUp size={12}/>{t('dashboard.totalRevenue')}</p>
                                     <p className="text-sm font-bold text-slate-800">{fmt(stats.finance.totalIncome)}</p>
                                 </div>
                                 <div className="w-px h-8 bg-blue-500/30" />
                                 <div>
-                                    <p className="text-[10px] uppercase tracking-widest font-bold text-red-500 mb-1 flex items-center gap-1"><TrendingDown size={12}/> Pul chiqimi</p>
+                                    <p className="text-[10px] uppercase tracking-widest font-bold text-red-500 mb-1 flex items-center gap-1"><TrendingDown size={12}/>{t('reports.totalExpense')}</p>
                                     <p className="text-sm font-bold text-slate-800">- {fmt(stats.finance.totalExpense)}</p>
                                 </div>
                             </div>

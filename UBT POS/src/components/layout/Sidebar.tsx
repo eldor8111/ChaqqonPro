@@ -23,22 +23,22 @@ interface NavItem {
 }
 
 const BLOCKED_NAV_ITEMS: NavItem[] = [
-    { href: "/billing", icon: CreditCard, key: "Obuna va Tariflar" },
+    { href: "/billing", icon: CreditCard, key: "nav.billing" },
 ];
 
 const NAV_ITEMS: NavItem[] = [
     { href: "/ubt", icon: LayoutDashboard, key: "nav.dashboard" },
     { href: "/ubt/reports", icon: BarChart3, key: "nav.reports" },
-    { href: "/ubt/davomat", icon: Clock, key: "Davomat" },
+    { href: "/ubt/davomat", icon: Clock, key: "nav.attendance" },
     {
-        href: "/ubt/nomenklatura", icon: Package, key: "Nomenklatura",
+        href: "/ubt/nomenklatura", icon: Package, key: "nav.nomenclature",
         subItems: [
-            { href: "/ubt/nomenklatura/taomlar", label: "Taomlar" },
-            { href: "/ubt/nomenklatura/kategoriya", label: "Taomlar kategoriyasi" },
-            { href: "/ubt/nomenklatura/polfabrikat", label: "Yarim tayyor (Polfabrikat)" },
-            { href: "/ubt/nomenklatura/kategoriya-polfabrikat", label: "Yar. tayyor kategoriyasi" },
-            { href: "/ubt/nomenklatura/xomashyo", label: "Xomashyo" },
-            { href: "/ubt/nomenklatura/kategoriya-xomashyo", label: "Xomashyo kategoriyasi" },
+            { href: "/ubt/nomenklatura/taomlar", label: "nav.nom_dishes", isI18n: true },
+            { href: "/ubt/nomenklatura/kategoriya", label: "nav.nom_dish_cats", isI18n: true },
+            { href: "/ubt/nomenklatura/polfabrikat", label: "nav.nom_semi", isI18n: true },
+            { href: "/ubt/nomenklatura/kategoriya-polfabrikat", label: "nav.nom_semi_cats", isI18n: true },
+            { href: "/ubt/nomenklatura/xomashyo", label: "nav.nom_raw", isI18n: true },
+            { href: "/ubt/nomenklatura/kategoriya-xomashyo", label: "nav.nom_raw_cats", isI18n: true },
         ]
     },
     {
@@ -64,19 +64,19 @@ const NAV_ITEMS: NavItem[] = [
         ]
     },
     {
-        href: "/ubt/moliya", icon: DollarSign, key: "Moliya",
+        href: "/ubt/moliya", icon: DollarSign, key: "nav.finance",
         subItems: [
-            { href: "/ubt/moliya", label: "Kassa & P&L" },
+            { href: "/ubt/moliya", label: "nav.fin_cash", isI18n: true },
         ]
     },
     {
-        href: "/ubt/kontragent", icon: Building2, key: "Kontragentlar",
+        href: "/ubt/kontragent", icon: Building2, key: "nav.contractors",
     },
     {
-        href: "/ubt/support", icon: Headset, key: "Tex yordam",
+        href: "/ubt/support", icon: Headset, key: "nav.support",
     },
     {
-        href: "/billing", icon: CreditCard, key: "Obuna va Tariflar",
+        href: "/billing", icon: CreditCard, key: "nav.billing",
     },
 ];
 

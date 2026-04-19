@@ -32,6 +32,7 @@ interface AttendanceStats {
 }
 
 export default function DavomatPage() {
+    const { t } = useLang();
     const [attendances, setAttendances] = useState<AttendanceRecord[]>([]);
     const [stats, setStats] = useState<AttendanceStats>({ total: 0, active: 0, completed: 0, totalWorkMinutes: 0, totalWorkHours: 0 });
     const [loading, setLoading] = useState(true);
@@ -126,7 +127,8 @@ export default function DavomatPage() {
         const csvContent = [
             headers.join(','),
             ...rows.map(row => row.join(','))
-        ].join('\n');
+        ].join('\import { useLang } from "@/lib/LangContext";
+n');
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
@@ -146,8 +148,8 @@ export default function DavomatPage() {
                                 <Calendar className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Davomat Hisoboti</h1>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Xodimlar kelish-ketish hisoboti</p>
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('nav.attendance') + ' ' + t('nav.reports')}</h1>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">{t('reports.subTitle')}</p>
                             </div>
                         </div>
                         <button
@@ -248,7 +250,7 @@ export default function DavomatPage() {
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Hozir ishda</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">{t('staff.activeStaff')}</p>
                                 <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-1">{stats.active}</p>
                             </div>
                             <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center">
@@ -318,7 +320,7 @@ export default function DavomatPage() {
                                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             >
                                 <option value="all">Barchasi</option>
-                                <option value="active">Hozir ishda</option>
+                                <option value="active">{t('staff.activeStaff')}</option>
                                 <option value="completed">Tugallangan</option>
                             </select>
                         </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Plus, Search, FileSpreadsheet, PackageX, TrendingUp, ShoppingBag, ArrowUpDown, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { useLang } from "@/lib/LangContext";
 
 type FilterType = "all" | "xomashyo" | "mahsulot";
 
@@ -18,6 +19,7 @@ interface StockItem {
 }
 
 export default function OmborQoldiqlarPage() {
+    const { t } = useLang();
     const [searchQuery, setSearchQuery] = useState("");
     const [activeFilter, setActiveFilter] = useState<FilterType>("all");
     const [items, setItems] = useState<StockItem[]>([]);
@@ -27,39 +29,35 @@ export default function OmborQoldiqlarPage() {
     useEffect(() => {
         const load = async () => {
             try {
-                // Fetch xomashyo (raw materials) + mahsulot goods (Pepsi, Kola etc.) in warehouse
                 const [xomashyoRes, mahsulotRes] = await Promise.all([
                     fetch("/api/ubt/xomashyo?type=xomashyo"),
-                    fetch("/api/ubt/menu"),   // {categories, items}
+                    fetch("/api/ubt/menu"),
                 ]);
                 const xomashyoData = xomashyoRes.ok ? await xomashyoRes.json() : [];
                 const menuData = mahsulotRes.ok ? await mahsulotRes.json() : { items: [] };
                 const menuItems: any[] = Array.isArray(menuData.items) ? menuData.items : [];
 
-                // Map xomashyo (raw materials)
                 const xomashyo: StockItem[] = (Array.isArray(xomashyoData) ? xomashyoData : []).map((x: any) => ({
                     id: x.id,
                     name: x.name,
                     type: "xomashyo" as const,
-                    category: x.categoryId || "Xomashyo",
+                    category: x.categoryId || t('nav.nom_raw'),
                     stock: Number(x.stock) || 0,
                     minStock: Number(x.minStock) || 5,
                     unit: x.unit || "kg",
                     costPrice: Number(x.price) || 0,
                 }));
 
-                // Map mahsulot — only type='mahsulot' AND has warehouse assigned
-                // (warehouse field means it was registered in the storage system)
                 const mahsulot: StockItem[] = menuItems
                     .filter((m: any) => m.type === "mahsulot" && m.warehouse)
                     .map((m: any) => ({
                         id: m.id,
                         name: m.name,
                         type: "mahsulot" as const,
-                        category: m.categoryId || "Mahsulot",
+                        category: m.categoryId || t('nav.nom_dishes'),
                         stock: Number(m.stock) || 0,
                         minStock: Number(m.minStock) || 3,
-                        unit: m.unit || "dona",
+                        unit: m.unit || t('common.units'),
                         costPrice: Number(m.cost || m.price) || 0,
                     }));
 
@@ -95,7 +93,6 @@ export default function OmborQoldiqlarPage() {
         setSortRule(prev => ({ key, dir: prev.key === key && prev.dir === "asc" ? "desc" : "asc" }));
     };
 
-    // Metrics
     const totalValue = items.reduce((s, i) => s + i.stock * i.costPrice, 0);
     const xomashyoCount = items.filter(i => i.type === "xomashyo").length;
     const mahsulotCount = items.filter(i => i.type === "mahsulot").length;
@@ -103,14 +100,14 @@ export default function OmborQoldiqlarPage() {
     const emptyCount = items.filter(i => i.stock <= 0).length;
 
     const TABS: { key: FilterType; label: string; count: number; color: string }[] = [
-        { key: "all",      label: "Barchasi",  count: items.length,    color: "blue"   },
-        { key: "xomashyo", label: "Xomashyo",  count: xomashyoCount,   color: "orange" },
-        { key: "mahsulot", label: "Mahsulotlar (Pepsi, Kola...)", count: mahsulotCount, color: "emerald" },
+        { key: "all",      label: t('inventory.all'),        count: items.length,    color: "blue"    },
+        { key: "xomashyo", label: t('nav.nom_raw'),          count: xomashyoCount,   color: "orange"  },
+        { key: "mahsulot", label: t('nav.nom_dishes'),       count: mahsulotCount,   color: "emerald" },
     ];
 
     const typeConfig = {
-        xomashyo: { label: "XOMASHYO",  cls: "bg-orange-100 text-orange-700 border-orange-200" },
-        mahsulot:  { label: "MAHSULOT",  cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
+        xomashyo: { label: t('nav.nom_raw').toUpperCase(),    cls: "bg-orange-100 text-orange-700 border-orange-200" },
+        mahsulot:  { label: t('nav.nom_dishes').toUpperCase(), cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
     };
 
     const SortTh = ({ label, field }: { label: string; field: string }) => (
@@ -129,8 +126,8 @@ export default function OmborQoldiqlarPage() {
             <div className="bg-white border-b border-slate-200 px-6 py-5">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Ombor Qoldiqlari</h1>
-                        <p className="text-sm text-slate-500 mt-1 font-medium">Xomashyo va tayyor mahsulotlar (Pepsi, Kola va h.k.) balansi</p>
+                        <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t('nav.ombor_qoldiqlar')}</h1>
+                        <p className="text-sm text-slate-500 mt-1 font-medium">{t('nav.nom_raw')} {t('common.and') || 'va'} {t('nav.nom_dishes')} balansi</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                         <button className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-emerald-500 text-emerald-600 rounded-xl text-sm hover:bg-emerald-50 transition-all font-bold shadow-sm">
@@ -138,7 +135,7 @@ export default function OmborQoldiqlarPage() {
                         </button>
                         <Link href="/ubt/nomenklatura/xomashyo">
                             <button className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm hover:bg-blue-700 transition-all font-bold shadow-lg shadow-blue-500/30 hover:-translate-y-0.5">
-                                <Plus size={18} strokeWidth={2.5} /> Yangi xomashyo
+                                <Plus size={18} strokeWidth={2.5} /> {t('common.add')} {t('nav.nom_raw')}
                             </button>
                         </Link>
                     </div>
@@ -149,28 +146,28 @@ export default function OmborQoldiqlarPage() {
             <div className="px-6 py-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-slate-200 bg-white/50">
                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between group hover:shadow-md transition-all">
                     <div>
-                        <p className="text-xs text-slate-500 font-medium mb-1">Jami ombor qiymati</p>
+                        <p className="text-xs text-slate-500 font-medium mb-1">{t('nav.ombor')} {t('common.total') || 'jami'} qiymati</p>
                         <h3 className="text-xl font-black text-slate-800">{loading ? "..." : totalValue.toLocaleString()} <span className="text-sm font-semibold text-slate-400">UZS</span></h3>
                     </div>
                     <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform"><TrendingUp size={22} /></div>
                 </div>
                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between group hover:shadow-md transition-all">
                     <div>
-                        <p className="text-xs text-slate-500 font-medium mb-1">Tayyor mahsulotlar</p>
+                        <p className="text-xs text-slate-500 font-medium mb-1">{t('nav.nom_dishes')}</p>
                         <h3 className="text-xl font-black text-emerald-600">{loading ? "..." : mahsulotCount} <span className="text-sm font-semibold text-slate-400">tur</span></h3>
                     </div>
                     <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform"><ShoppingBag size={22} /></div>
                 </div>
                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-amber-100 flex items-center justify-between group hover:shadow-md transition-all">
                     <div>
-                        <p className="text-xs text-slate-500 font-medium mb-1">Kritik kam qoldiq</p>
+                        <p className="text-xs text-slate-500 font-medium mb-1">{t('inventory.lowStock')}</p>
                         <h3 className="text-xl font-black text-amber-500">{loading ? "..." : criticalCount} <span className="text-sm font-semibold text-amber-300">ta</span></h3>
                     </div>
                     <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform"><AlertTriangle size={22} /></div>
                 </div>
                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-red-100 flex items-center justify-between group hover:shadow-md transition-all">
                     <div>
-                        <p className="text-xs text-slate-500 font-medium mb-1">Tugagan mahsulotlar</p>
+                        <p className="text-xs text-slate-500 font-medium mb-1">{t('inventory.outOfStock')}</p>
                         <h3 className="text-xl font-black text-red-600">{loading ? "..." : emptyCount} <span className="text-sm font-semibold text-red-300">ta</span></h3>
                     </div>
                     <div className="w-11 h-11 rounded-xl bg-red-50 text-red-500 flex items-center justify-center group-hover:scale-110 transition-transform"><PackageX size={22} /></div>
@@ -179,7 +176,6 @@ export default function OmborQoldiqlarPage() {
 
             {/* Table */}
             <div className="flex-1 flex flex-col p-6">
-                {/* Filter Tabs + Search */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
                     <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 shadow-sm gap-1 flex-wrap">
                         {TABS.map(tab => (
@@ -204,7 +200,7 @@ export default function OmborQoldiqlarPage() {
                     <div className="flex-1 flex items-center gap-3 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm min-w-0">
                         <div className="flex-1 relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                            <input type="text" placeholder="Mahsulot yoki kategoriya nomi..."
+                            <input type="text" placeholder={t('common.search') + "..."}
                                 value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                                 className="w-full pl-9 pr-4 py-2 bg-slate-50 rounded-lg text-sm font-medium outline-none focus:ring-2 focus:ring-blue-100 text-slate-700 transition-all" />
                         </div>
@@ -218,12 +214,12 @@ export default function OmborQoldiqlarPage() {
                             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold sticky top-0">
                                 <tr>
                                     <th className="px-5 py-4 w-8 text-center">#</th>
-                                    <SortTh label="Nomi" field="name" />
-                                    <SortTh label="Turi" field="type" />
-                                    <SortTh label="Joriy qoldiq" field="stock" />
-                                    <SortTh label="Kelish narxi" field="costPrice" />
-                                    <SortTh label="Ombordagi Jami" field="totalValue" />
-                                    <th className="px-5 py-4">Holati</th>
+                                    <SortTh label={t('common.name')} field="name" />
+                                    <SortTh label={t('common.status')} field="type" />
+                                    <SortTh label={t('inventory.currentStock')} field="stock" />
+                                    <SortTh label={t('inventory.wholesalePrice')} field="costPrice" />
+                                    <SortTh label={t('common.total') + ' ' + t('nav.ombor')} field="totalValue" />
+                                    <th className="px-5 py-4">{t('common.status')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
@@ -231,15 +227,15 @@ export default function OmborQoldiqlarPage() {
                                     <tr><td colSpan={7} className="py-16 text-center">
                                         <div className="flex flex-col items-center gap-3 text-slate-400">
                                             <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
-                                            <span className="text-sm">Yuklanmoqda...</span>
+                                            <span className="text-sm">{t('common.loading')}</span>
                                         </div>
                                     </td></tr>
                                 ) : filteredAndSorted.length === 0 ? (
                                     <tr><td colSpan={7} className="py-16 text-center">
                                         <div className="flex flex-col items-center gap-3 text-slate-400">
                                             <PackageX size={48} className="text-slate-300" />
-                                            <span className="text-sm font-medium text-slate-500">Hech qanday mahsulot topilmadi</span>
-                                            <Link href="/ubt/nomenklatura/xomashyo" className="text-blue-600 font-semibold hover:underline text-sm">Nomenklaturadan qo&apos;shish</Link>
+                                            <span className="text-sm font-medium text-slate-500">{t('common.noData')}</span>
+                                            <Link href="/ubt/nomenklatura/xomashyo" className="text-blue-600 font-semibold hover:underline text-sm">{t('nav.nomenclature')} {t('common.add')}</Link>
                                         </div>
                                     </td></tr>
                                 ) : filteredAndSorted.map((item, idx) => {
@@ -263,7 +259,7 @@ export default function OmborQoldiqlarPage() {
                                                     <span className={`text-base font-black ${isEmpty ? "text-red-600" : isLow ? "text-amber-600" : "text-emerald-600"}`}>
                                                         {item.stock.toLocaleString()} <span className="text-xs font-semibold opacity-60">{item.unit}</span>
                                                     </span>
-                                                    {isEmpty && <span className="text-[10px] text-red-500 font-bold">🔴 Tugagan</span>}
+                                                    {isEmpty && <span className="text-[10px] text-red-500 font-bold">🔴 {t('inventory.out')}</span>}
                                                     {isLow && !isEmpty && <span className="text-[10px] text-amber-500 font-bold">⚠️ Min: {item.minStock} {item.unit}</span>}
                                                 </div>
                                             </td>
@@ -275,10 +271,10 @@ export default function OmborQoldiqlarPage() {
                                             </td>
                                             <td className="px-5 py-3.5">
                                                 {isEmpty
-                                                    ? <span className="px-2.5 py-1 bg-red-100 text-red-700 rounded-lg text-[10px] font-bold uppercase">Tugagan</span>
+                                                    ? <span className="px-2.5 py-1 bg-red-100 text-red-700 rounded-lg text-[10px] font-bold uppercase">{t('inventory.out')}</span>
                                                     : isLow
-                                                    ? <span className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-bold uppercase">Kam qoldiq</span>
-                                                    : <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold uppercase">Normal</span>
+                                                    ? <span className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-bold uppercase">{t('inventory.low')}</span>
+                                                    : <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold uppercase">{t('inventory.normal')}</span>
                                                 }
                                             </td>
                                         </tr>

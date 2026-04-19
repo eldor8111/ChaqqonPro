@@ -43,7 +43,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             noData: "Ma'lumot topilmadi", total: "Jami", status: "Holat", actions: "Amallar",
             date: "Sana", amount: "Summa", name: "Nomi", phone: "Telefon", address: "Manzil",
             active: "Faol", inactive: "Nofaol", yes: "Ha", no: "Yo'q",
-            view: "Ko'rish", units: "dona"
+            view: "Ko'rish", units: "dona", refresh: "Yangilash", and: "va", total: "Jami"
         },
         nav: {
             dashboard: "Bosh sahifa", pos: "Kassa", inventory: "Ombor", crm: "CRM",
@@ -52,9 +52,13 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             users: "Foydalanuvchilar", users_kassir: "Kassir", users_ofitsiant: "Ofitsiant",
             users_kuryer: "Kuryer", users_manablog: "Monoblok", users_povar: "Oshpaz",
             users_menejer: "Menejer", users_omborchi: "Zavsklad", users_history: "Kirim tarixi",
-            users_attendance: "Davomat", ombor: "Ombor", ombor_qoldiqlar: "Qoldiqlar",
+            users_attendance: "Davomat tarixi", ombor: "Ombor", ombor_qoldiqlar: "Qoldiqlar",
             ombor_kirim: "Kirim", ombor_chiqim: "Chiqim", ombor_kochirish: "Ko'chirish",
-            ombor_inventarizatsiya: "Inventarizatsiya", ombor_sjisaniya: "Hisobdan chiqarish"
+            ombor_inventarizatsiya: "Inventarizatsiya", ombor_sjisaniya: "Hisobdan chiqarish",
+            attendance: "Davomat", nomenclature: "Nomenklatura", nom_dishes: "Taomlar",
+            nom_dish_cats: "Taomlar kategoriyasi", nom_semi: "Yarim tayyor", nom_semi_cats: "Yar. tayyor kategoriyasi",
+            nom_raw: "Xomashyo", nom_raw_cats: "Xomashyo kategoriyasi", finance: "Moliya",
+            fin_cash: "Kassa & P&L", contractors: "Kontragentlar", support: "Tex yordam", billing: "Obuna va Tariflar"
         },
         dashboard: {
             title: "Bosh Sahifa", welcome: "Xush kelibsiz", todaySales: "Bugungi savdo",
@@ -183,7 +187,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             noData: "Данные не найдены", total: "Итого", status: "Статус", actions: "Действия",
             date: "Дата", amount: "Сумма", name: "Название", phone: "Телефон", address: "Адрес",
             active: "Активный", inactive: "Неактивный", yes: "Да", no: "Нет",
-            view: "Посмотреть", units: "шт"
+            view: "Посмотреть", units: "шт", refresh: "Обновить", and: "и", total: "Итого"
         },
         nav: {
             dashboard: "Главная", pos: "Касса", inventory: "Склад", crm: "CRM",
@@ -194,7 +198,11 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             users_menejer: "Менеджер", users_omborchi: "Завсклад", users_history: "История входа",
             users_attendance: "Посещаемость", ombor: "Склад", ombor_qoldiqlar: "Остатки",
             ombor_kirim: "Приход", ombor_chiqim: "Расход", ombor_kochirish: "Перемещение",
-            ombor_inventarizatsiya: "Инвентаризация", ombor_sjisaniya: "Списание"
+            ombor_inventarizatsiya: "Инвентаризация", ombor_sjisaniya: "Списание",
+            attendance: "Посещаемость", nomenclature: "Номенклатура", nom_dishes: "Блюда",
+            nom_dish_cats: "Категории блюд", nom_semi: "Полуфабрикаты", nom_semi_cats: "Категории полуфабр.",
+            nom_raw: "Сырье", nom_raw_cats: "Категории сырья", finance: "Финансы",
+            fin_cash: "Касса и P&L", contractors: "Контрагенты", support: "Техподдержка", billing: "Подписка и Тарифы"
         },
         dashboard: {
             title: "Главная панель", welcome: "Добро пожаловать", todaySales: "Продажи сегодня",
@@ -323,7 +331,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             noData: "No data found", total: "Total", status: "Status", actions: "Actions",
             date: "Date", amount: "Amount", name: "Name", phone: "Phone", address: "Address",
             active: "Active", inactive: "Inactive", yes: "Yes", no: "No",
-            view: "View", units: "pcs"
+            view: "View", units: "pcs", refresh: "Refresh", and: "and", total: "Total"
         },
         nav: {
             dashboard: "Dashboard", pos: "Point of Sale", inventory: "Inventory", products: "Products", crm: "CRM",
@@ -331,7 +339,11 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             pharmacy: "Pharmacy", wholesale: "Wholesale", ecommerce: "E-Commerce", settings: "Settings",
             ombor: "Warehouse", ombor_qoldiqlar: "Stock Balances", ombor_kirim: "Inbound",
             ombor_chiqim: "Outbound", ombor_kochirish: "Transfer", ombor_inventarizatsiya: "Inventory Check",
-            ombor_sjisaniya: "Write-off"
+            ombor_sjisaniya: "Write-off",
+            attendance: "Attendance", nomenclature: "Nomenclature", nom_dishes: "Dishes",
+            nom_dish_cats: "Dish Categories", nom_semi: "Semi-finished", nom_semi_cats: "Semi Cat.",
+            nom_raw: "Raw Materials", nom_raw_cats: "Raw Cat.", finance: "Finance",
+            fin_cash: "Cash & P&L", contractors: "Contractors", support: "Support", billing: "Subscription & Tarif"
         },
         dashboard: {
             title: "Dashboard", welcome: "Welcome back", todaySales: "Today's Sales",
@@ -402,6 +414,56 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             fraudSignal: "Fraud Signals", demandForecast: "Demand Forecast", prediction7d: "7-day AI prediction",
             aiInsights: "AI Insights", restockRecommendations: "Restock Recommendations", autoOrder: "Auto-Order",
             product: "Product", currentStock: "Current Stock", forecast7d: "7-day forecast", reorderPoint: "Reorder Point",
+            aiRecommendationMenu: "AI Recommendation", critical: "Critical", attention: "Warning", normal: "Normal"
+        },
+        ubt: {
+            title: "UBT Module", subTitle: "Restaurant and Hotel Management", addReservation: "Add Reservation",
+            occupiedTables: "Occupied Tables", freeTables: "Free Tables", reservedTables: "Reserved Tables", newOrders: "New Orders",
+            tableMap: "Table Map", kds: "Kitchen (KDS)", occupied: "Occupied", free: "Free", reserved: "Reserved",
+            new: "New", preparing: "Preparing", ready: "Ready",
+            markPreparing: "Start Preparing", markReady: "Mark Ready",
+            closeTable: "Close Table", openTable: "Open Table",
+            guestName: "Guest Name", reservedAt: "Reserved Time",
+            confirmReservation: "Confirm Reservation", selectTable: "Select Table",
+            confirmToOccupied: "Mark as Occupied", confirmToFree: "Free Table",
+            tableActions: "Table Actions", totalAmount: "Total Amount",
+            noOrders: "No Orders"
+        },
+        pharmacy: {
+            title: "Pharmacy Module", drugsCount: "drugs", expiringSoonCount: "expiring soon", refreshCatalog: "Refresh Catalog",
+            addDrug: "Add Drug", totalDrugs: "Total Drugs", expiring90d: "Expiring Soon (90 days)", expired: "Expired",
+            categories: "Categories", expiring Drugs: "Expiring Drugs", searchPlaceholder: "Name, barcode, serial number...",
+            drugName: "Drug Name", serialNumber: "Serial Number", expiryDate: "Expiry Date",
+            editDrug: "Edit", deleteDrug: "Delete",
+            confirmDelete: "Confirm Delete", confirmDeleteText: "This drug will be removed from the catalog. Continue?",
+            tabAll: "All Drugs", tabExpiring: "Expiring Soon", tabExpired: "Expired",
+            minStock: "Min. Stock", prescription: "Prescription", manufacturer: "Manufacturer",
+            requiresPrescription: "Prescription Required", noPrescription: "OTC",
+            expiringDrugsMessage: "drugs expiring within 90 days",
+            filterCategory: "Category", lowStock: "Low Stock", noStock: "Out of Stock",
+            stockLabel: "Stock", priceLabel: "Price",
+            addDrugTitle: "Add New Drug", editDrugTitle: "Edit Drug",
+            noExpiring: "No drugs expiring soon", noExpired: "No expired drugs",
+        },
+        wholesale: {
+            title: "Wholesale Module", clientsCount: "wholesale clients", invoice: "Invoice", addClient: "Add Client",
+            totalClients: "Total Clients", totalDebt: "Total Debt", limitNear: "Near Limit", blocked: "Blocked",
+            bulkPricing: "Bulk Pricing Tiers", searchPlaceholder: "Client name or contact...", company: "Company",
+            contact: "Contact", currentDebt: "Current Debt", debtLimit: "Debt Limit", limitPercent: "Limit Percentage", lastOrder: "Last Order"
+        },
+        ecommerce: {
+            title: "E-Commerce Module", subTitle: "Online orders and delivery", telegramBot: "Telegram Bot", instagramSync: "Instagram Sync",
+            totalOrders: "Total Orders", pending: "Pending", delivering: "Delivering", todayRevenue: "Today's Revenue",
+            all: "All", trackCourier: "Track Courier", preparing: "Preparing", completed: "Completed"
+        },
+        settings: {
+            title: "Settings", subTitle: "System settings and control panel", branches: "Branches", users: "Users",
+            roles: "Roles & RBAC", billing: "Billing", backup: "Backup", audit: "Audit Log", addBranch: "Add Branch",
+            branchManagement: "Branch Management", addUser: "Add User", rolesAndPermissions: "Roles and Permissions",
+            billingPlan: "Subscription Plan", choose: "Choose", currentPlan: "Current Plan", serverBackup: "Server Backup",
+            takeBackupNow: "Take Backup Now", auditLog: "Audit Log", action: "Action", detail: "Detail", type: "Type"
+        }
+    }order Point",
             aiRecommendationMenu: "AI Recommendation", critical: "Critical", attention: "Warning", normal: "Normal"
         },
         ubt: {
