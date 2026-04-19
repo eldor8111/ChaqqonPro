@@ -43,7 +43,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             noData: "Ma'lumot topilmadi", total: "Jami", status: "Holat", actions: "Amallar",
             date: "Sana", amount: "Summa", name: "Nomi", phone: "Telefon", address: "Manzil",
             active: "Faol", inactive: "Nofaol", yes: "Ha", no: "Yo'q",
-            view: "Ko'rish", units: "dona", refresh: "Yangilash", and: "va", total: "Jami"
+            view: "Ko'rish", units: "dona", refresh: "Yangilash", and: "va"
         },
         nav: {
             dashboard: "Bosh sahifa", pos: "Kassa", inventory: "Ombor", crm: "CRM",
@@ -189,7 +189,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             noData: "Данные не найдены", total: "Итого", status: "Статус", actions: "Действия",
             date: "Дата", amount: "Сумма", name: "Название", phone: "Телефон", address: "Адрес",
             active: "Активный", inactive: "Неактивный", yes: "Да", no: "Нет",
-            view: "Посмотреть", units: "шт", refresh: "Обновить", and: "и", total: "Итого"
+            view: "Посмотреть", units: "шт", refresh: "Обновить", and: "и"
         },
         nav: {
             dashboard: "Главная", pos: "Касса", inventory: "Склад", crm: "CRM",
@@ -335,7 +335,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             noData: "No data found", total: "Total", status: "Status", actions: "Actions",
             date: "Date", amount: "Amount", name: "Name", phone: "Phone", address: "Address",
             active: "Active", inactive: "Inactive", yes: "Yes", no: "No",
-            view: "View", units: "pcs", refresh: "Refresh", and: "and", total: "Total"
+            view: "View", units: "pcs", refresh: "Refresh", and: "and"
         },
         nav: {
             dashboard: "Dashboard", pos: "Point of Sale", inventory: "Inventory", products: "Products", crm: "CRM",
