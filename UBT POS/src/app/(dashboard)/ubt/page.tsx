@@ -638,6 +638,7 @@ function StatsOverviewChart({ finance, tables, byMethod }: {
     tables: { total: number; occupied: number; reserved: number; free: number };
     byMethod: Record<string, { total: number; count: number }>;
 }) {
+    const { t } = useLang();
     const financeRows = [
         { label: "Pul kirimi",  value: finance.totalIncome,  color: "#10b981" },
         { label: "Pul chiqimi", value: finance.totalExpense, color: "#f43f5e" },
