@@ -5,6 +5,8 @@ import {
     Plus, Search, FileSpreadsheet, X, Check, ArrowUpRight,
     RotateCw, AlertTriangle, ChevronDown
 } from "lucide-react";
+import { useLang } from "@/lib/LangContext";
+
 
 interface Product {
     id: string;
@@ -16,6 +18,7 @@ interface Product {
 }
 
 export default function OmborChiqimPage() {
+    const { t } = useLang();
     const [searchQuery, setSearchQuery] = useState("");
     const [chiqimlar, setChiqimlar] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -200,7 +203,7 @@ export default function OmborChiqimPage() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                 <div className="flex items-center gap-2">
                     <div className="w-2.5 h-7 bg-amber-500 rounded text-transparent">|</div>
-                    <h1 className="text-[22px] font-bold text-slate-800">Chiqim Hujjatlari</h1>
+                    <h1 className="text-[22px] font-bold text-slate-800">{t('nav.ombor_chiqim')}</h1>
                 </div>
                 <div className="flex items-center gap-3">
                     <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl text-sm hover:from-emerald-600 hover:to-emerald-700 transition-all font-bold shadow-lg shadow-emerald-500/30">
@@ -209,7 +212,7 @@ export default function OmborChiqimPage() {
                     <button
                         onClick={openModal}
                         className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-sm hover:from-amber-600 hover:to-orange-600 transition-all font-bold shadow-lg shadow-orange-500/30 hover:-translate-y-0.5">
-                        <Plus size={16} strokeWidth={2.5} /> Yangi chiqim
+                        <Plus size={16} strokeWidth={2.5} /> {t('common.add')} {t('nav.ombor_chiqim')}
                     </button>
                 </div>
             </div>
@@ -219,7 +222,7 @@ export default function OmborChiqimPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                     <input
                         type="text"
-                        placeholder="Qidiruv (Mahsulot yoki Sabab)..."
+                        placeholder={t('common.search') + '...'}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:border-amber-400 placeholder:text-slate-300 transition-all"
@@ -234,20 +237,20 @@ export default function OmborChiqimPage() {
                 <table className="w-full text-xs text-left whitespace-nowrap border-separate border-spacing-y-2">
                     <thead className="bg-slate-50 text-slate-600 font-bold">
                         <tr>
-                            <th className="px-4 py-3 rounded-l-xl">Sana</th>
-                            <th className="px-4 py-3">Mahsulot nomi</th>
-                            <th className="px-4 py-3">Ombor</th>
-                            <th className="px-4 py-3">Sabab</th>
-                            <th className="px-4 py-3">Miqdori</th>
-                            <th className="px-4 py-3">Xodim</th>
-                            <th className="px-4 py-3 rounded-r-xl">Holati</th>
+                            <th className="px-4 py-3 rounded-l-xl">{t('common.date')}</th>
+                            <th className="px-4 py-3">{t('inventory.totalProducts')}</th>
+                            <th className="px-4 py-3">{t('nav.ombor')}</th>
+                            <th className="px-4 py-3">{t('inventory.category')}</th>
+                            <th className="px-4 py-3">{t('common.units')}</th>
+                            <th className="px-4 py-3">{t('staff.employee')}</th>
+                            <th className="px-4 py-3 rounded-r-xl">{t('common.status')}</th>
                         </tr>
                     </thead>
                     <tbody className="text-slate-700">
                         {isLoading ? (
                             <tr><td colSpan={7} className="text-center py-10"><RotateCw className="animate-spin mx-auto text-amber-500" /></td></tr>
                         ) : filtered.length === 0 ? (
-                            <tr><td colSpan={7} className="text-center py-10 text-slate-500">Hech qanday hujjat topilmadi</td></tr>
+                            <tr><td colSpan={7} className="text-center py-10 text-slate-500">{t('common.noData')}</td></tr>
                         ) : (
                             filtered.map((item) => (
                                 <tr key={item.id} className="bg-white border hover:shadow-sm transition-all group">
@@ -262,7 +265,7 @@ export default function OmborChiqimPage() {
                                     </td>
                                     <td className="px-4 py-3 border-y border-slate-100">{item.employee}</td>
                                     <td className="px-4 py-3 border-y border-r rounded-r-xl border-slate-100">
-                                        <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-md text-[10px] font-bold uppercase tracking-wider">Chiqim qilingan</span>
+                                        <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-md text-[10px] font-bold uppercase tracking-wider">{t('nav.ombor_chiqim')}</span>
                                     </td>
                                 </tr>
                             ))
@@ -281,8 +284,8 @@ export default function OmborChiqimPage() {
                                     <ArrowUpRight size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-bold text-amber-900">Yangi Chiqim Hujjati</h2>
-                                    <p className="text-xs text-amber-700/70">Ombordan mahsulot chiqarish</p>
+                                    <h2 className="text-lg font-bold text-amber-900">{t('common.add')} {t('nav.ombor_chiqim')}</h2>
+                                    <p className="text-xs text-amber-700/70">{t('nav.ombor')}dan {t('inventory.totalProducts')} chiqarish</p>
                                 </div>
                             </div>
                             <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
@@ -314,7 +317,7 @@ export default function OmborChiqimPage() {
                                                     )}
                                                 </div>
                                             ) : (
-                                                <span className="text-slate-400">{productsLoading ? "Yuklanmoqda..." : "Mahsulot tanlang..."}</span>
+                                                <span className="text-slate-400">{productsLoading ? t('common.loading') : t('inventory.totalProducts') + '...'}</span>
                                             )}
                                             <ChevronDown size={16} className={`text-slate-400 transition-transform shrink-0 ml-2 ${isComboOpen ? "rotate-180" : ""}`} />
                                         </div>
@@ -333,7 +336,7 @@ export default function OmborChiqimPage() {
                                                 </div>
                                                 <div className="max-h-52 overflow-y-auto">
                                                     {filteredProds.length === 0 ? (
-                                                        <p className="text-center text-sm text-slate-400 py-4">Mahsulot topilmadi</p>
+                                                        <p className="text-center text-sm text-slate-400 py-4">{t('common.noData')}</p>
                                                     ) : filteredProds.map(p => (
                                                         <div
                                                             key={p.id}
@@ -360,7 +363,7 @@ export default function OmborChiqimPage() {
 
                                 {/* ── Miqdor ────────────────────────────────────────── */}
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Miqdori <span className="text-red-500">*</span></label>
+                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('common.units')} <span className="text-red-500">*</span></label>
                                     <div className="flex">
                                         <input
                                             required
@@ -380,7 +383,7 @@ export default function OmborChiqimPage() {
 
                                 {/* ── Sabab ─────────────────────────────────────────── */}
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Sabab <span className="text-red-500">*</span></label>
+                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('inventory.category')} <span className="text-red-500">*</span></label>
                                     <select
                                         value={formData.reason}
                                         onChange={e => setFormData({ ...formData, reason: e.target.value })}
@@ -396,7 +399,7 @@ export default function OmborChiqimPage() {
 
                                 {/* ── Ombor ─────────────────────────────────────────── */}
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Qaysi Ombordan</label>
+                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('nav.ombor')}</label>
                                     <select
                                         value={formData.fromWarehouse}
                                         onChange={e => setFormData({ ...formData, fromWarehouse: e.target.value })}
@@ -443,7 +446,7 @@ export default function OmborChiqimPage() {
                                         onClick={() => setIsModalOpen(false)}
                                         className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all"
                                     >
-                                        Bekor qilish
+                                        {t('common.cancel')}
                                     </button>
                                     <button
                                         type="submit"
@@ -451,7 +454,7 @@ export default function OmborChiqimPage() {
                                         className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/30 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                                     >
                                         {isSaving ? <RotateCw size={16} className="animate-spin" /> : <Check size={16} />}
-                                        Chiqim qilish
+                                        {t('nav.ombor_chiqim')}
                                     </button>
                                 </div>
                             </div>

@@ -5,6 +5,8 @@ import {
     Plus, Search, FileSpreadsheet, X, Check, ArrowRightLeft,
     RotateCw, AlertTriangle, ChevronDown
 } from "lucide-react";
+import { useLang } from "@/lib/LangContext";
+
 
 interface Product {
     id: string;
@@ -15,6 +17,7 @@ interface Product {
 }
 
 export default function OmborKochirishPage() {
+    const { t } = useLang();
     // ── Mahsulotlar ro'yxati — API dan fresh data ────────────────────────────
     const [allProducts, setAllProducts] = useState<Product[]>([]);
     const [productsLoading, setProductsLoading] = useState(true);
@@ -141,8 +144,8 @@ export default function OmborKochirishPage() {
             <div className="bg-white border-b border-slate-200 px-6 py-5">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Omborlararo Ko&apos;chirish</h1>
-                        <p className="text-sm text-slate-500 mt-1">Mahsulotni bir ombordan boshqasiga o&apos;tkazish</p>
+                        <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t('nav.ombor_kochirish')}</h1>
+                        <p className="text-sm text-slate-500 mt-1">{t('common.subtitle_transfer')}</p>
                     </div>
                     <div className="flex items-center gap-3">
                         <button className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-emerald-500 text-emerald-600 rounded-xl text-sm font-bold hover:bg-emerald-50 transition-all shadow-sm">
@@ -150,7 +153,7 @@ export default function OmborKochirishPage() {
                         </button>
                         <button onClick={() => { setIsModalOpen(true); loadProducts(); }}
                             className="flex items-center gap-2 px-5 py-2.5 bg-sky-600 text-white rounded-xl text-sm font-bold hover:bg-sky-700 transition-all shadow-lg shadow-sky-500/30 hover:-translate-y-0.5">
-                            <Plus size={18} strokeWidth={2.5} /> Yangi Ko&apos;chirish
+                            <Plus size={18} strokeWidth={2.5} /> {t('common.add')} {t('nav.ombor_kochirish')}
                         </button>
                     </div>
                 </div>
@@ -176,20 +179,20 @@ export default function OmborKochirishPage() {
                         <table className="w-full text-sm text-left">
                             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
                                 <tr>
-                                    <th className="px-5 py-4">Sana</th>
-                                    <th className="px-5 py-4">Mahsulot</th>
-                                    <th className="px-5 py-4">Qaysi ombordan</th>
-                                    <th className="px-5 py-4">Qaysi omborga</th>
-                                    <th className="px-5 py-4">Miqdori</th>
-                                    <th className="px-5 py-4">Mas&apos;ul xodim</th>
-                                    <th className="px-5 py-4">Holati</th>
+                                    <th className="px-5 py-4">{t('common.date')}</th>
+                                    <th className="px-5 py-4">{t('inventory.totalProducts')}</th>
+                                    <th className="px-5 py-4">{t('nav.ombor')} (Qayerdan)</th>
+                                    <th className="px-5 py-4">{t('nav.ombor')} (Qayerga)</th>
+                                    <th className="px-5 py-4">{t('inventory.unit') || 'Miqdori'}</th>
+                                    <th className="px-5 py-4">{t('staff.employee')}</th>
+                                    <th className="px-5 py-4">{t('common.status')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
                                 {isLoading ? (
                                     <tr><td colSpan={7} className="py-16 text-center"><RotateCw className="animate-spin mx-auto text-sky-400" size={28} /></td></tr>
                                 ) : filtered.length === 0 ? (
-                                    <tr><td colSpan={7} className="py-16 text-center text-slate-400 text-sm">Hech qanday ko&apos;chirish topilmadi</td></tr>
+                                    <tr><td colSpan={7} className="py-16 text-center text-slate-400 text-sm">{t('common.noData')}</td></tr>
                                 ) : filtered.map(item => (
                                     <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                                         <td className="px-5 py-3.5 text-xs text-slate-400 whitespace-nowrap">
@@ -227,7 +230,7 @@ export default function OmborKochirishPage() {
                                     <ArrowRightLeft size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-bold text-sky-900">Yangi Ko&apos;chirish</h2>
+                                    <h2 className="text-lg font-bold text-sky-900">{t('common.add')} {t('nav.ombor_kochirish')}</h2>
                                     <p className="text-xs text-sky-600">Ombor A → Ombor B</p>
                                 </div>
                             </div>
@@ -239,7 +242,7 @@ export default function OmborKochirishPage() {
                         <form onSubmit={handleSave} className="p-6 space-y-5">
                             {/* Product combobox */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Mahsulot <span className="text-red-500">*</span></label>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('inventory.totalProducts')} <span className="text-red-500">*</span></label>
                                 <div ref={comboRef} className="relative">
                                     <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-100 transition-all"
                                         onClick={() => setIsComboOpen(true)}>
@@ -253,7 +256,7 @@ export default function OmborKochirishPage() {
                                     {isComboOpen && (
                                         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
                                             {filteredProds.length === 0 ? (
-                                                <div className="px-4 py-3 text-sm text-slate-400">Topilmadi</div>
+                                                <div className="px-4 py-3 text-sm text-slate-400">{t('common.noData')}</div>
                                             ) : filteredProds.map(prod => (
                                                 <button key={prod.id} type="button"
                                                     onClick={() => { setFormData(f => ({ ...f, productId: prod.id, productName: prod.name, unit: prod.unit, productType: prod.productType })); setProdSearch(prod.name); setIsComboOpen(false); }}
@@ -277,7 +280,7 @@ export default function OmborKochirishPage() {
 
                             {/* Quantity */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Miqdori <span className="text-red-500">*</span></label>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('inventory.unit') || 'Miqdori'} <span className="text-red-500">*</span></label>
                                 <div className="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-100 transition-all">
                                     <input type="number" step="0.01" min="0" placeholder="0"
                                         value={formData.quantity}
@@ -294,14 +297,14 @@ export default function OmborKochirishPage() {
                             {/* Warehouses */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Qaysi ombordan</label>
+                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('nav.ombor')} (Qayerdan)</label>
                                     <select value={formData.fromWarehouse} onChange={e => setFormData(f => ({ ...f, fromWarehouse: e.target.value }))}
                                         className="w-full px-4 py-3 rounded-xl border border-orange-200 bg-orange-50 text-orange-800 font-semibold outline-none focus:border-orange-400 text-sm transition-all">
                                         {WAREHOUSES.map(w => <option key={w}>{w}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Qaysi omborga</label>
+                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('nav.ombor')} (Qayerga)</label>
                                     <select value={formData.toWarehouse} onChange={e => setFormData(f => ({ ...f, toWarehouse: e.target.value }))}
                                         className="w-full px-4 py-3 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 font-semibold outline-none focus:border-emerald-400 text-sm transition-all">
                                         {WAREHOUSES.map(w => <option key={w}>{w}</option>)}
@@ -312,7 +315,7 @@ export default function OmborKochirishPage() {
                             {/* Employee + notes */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Mas&apos;ul xodim</label>
+                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('staff.employee')}</label>
                                     <input type="text" placeholder="Xodim ismi..."
                                         value={formData.employee} onChange={e => setFormData(f => ({ ...f, employee: e.target.value }))}
                                         className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-sky-500 text-sm transition-all" />
@@ -332,12 +335,12 @@ export default function OmborKochirishPage() {
                                 <div className="flex items-center gap-3">
                                     <button type="button" onClick={() => setIsModalOpen(false)}
                                         className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">
-                                        Bekor
+                                        {t('common.cancel')}
                                     </button>
                                     <button type="submit" disabled={isSaving || isOverQty}
                                         className="flex items-center gap-2 px-6 py-2.5 bg-sky-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-sky-500/30 hover:bg-sky-700 hover:-translate-y-0.5 transition-all disabled:opacity-60">
                                         {isSaving ? <RotateCw size={16} className="animate-spin" /> : <Check size={16} />}
-                                        Ko&apos;chirish
+                                        {t('nav.ombor_kochirish')}
                                     </button>
                                 </div>
                             </div>

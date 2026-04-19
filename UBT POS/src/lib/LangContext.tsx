@@ -438,7 +438,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
         pharmacy: {
             title: "Pharmacy Module", drugsCount: "drugs", expiringSoonCount: "expiring soon", refreshCatalog: "Refresh Catalog",
             addDrug: "Add Drug", totalDrugs: "Total Drugs", expiring90d: "Expiring Soon (90 days)", expired: "Expired",
-            categories: "Categories", expiring Drugs: "Expiring Drugs", searchPlaceholder: "Name, barcode, serial number...",
+            categories: "Categories", expiringDrugs: "Expiring Drugs", searchPlaceholder: "Name, barcode, serial number...",
             drugName: "Drug Name", serialNumber: "Serial Number", expiryDate: "Expiry Date",
             editDrug: "Edit", deleteDrug: "Delete",
             confirmDelete: "Confirm Delete", confirmDeleteText: "This drug will be removed from the catalog. Continue?",
@@ -468,8 +468,12 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             branchManagement: "Branch Management", addUser: "Add User", rolesAndPermissions: "Roles and Permissions",
             billingPlan: "Subscription Plan", choose: "Choose", currentPlan: "Current Plan", serverBackup: "Server Backup",
             takeBackupNow: "Take Backup Now", auditLog: "Audit Log", action: "Action", detail: "Detail", type: "Type"
-        }
-    }order Point",
+        },
+        crm: {
+            title: "CRM", customersCount: "customers", aiSegmentEnabled: "AI-Segmentation Enabled",
+            addCustomer: "Add Customer", totalCustomers: "Total Customers", vipCustomers: "VIP Customers",
+            totalBonuses: "Total Bonuses", monthlyGrowth: "Monthly Growth", aiRecommendation: "AI Recommendation",
+            apply: "Apply", all: "All", segment: "Segment", bonusPoints: "Bonus Points", totalPurchases: "Total Purchases", visits: "Visits", lastVisit: "Last Visit",
             aiRecommendationMenu: "AI Recommendation", critical: "Critical", attention: "Warning", normal: "Normal"
         },
         ubt: {

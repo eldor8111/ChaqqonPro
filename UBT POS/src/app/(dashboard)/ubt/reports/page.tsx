@@ -212,9 +212,9 @@ export default function UbtReportsPage() {
         <div className="space-y-6 animate-fade-in">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">UBT Hisobotlari</h1>
+                    <h1 className="text-2xl font-bold text-slate-800">{t('reports.title') || 'UBT Hisobotlari'}</h1>
                     <p className="text-sm text-slate-400 mt-1">
-                        Restoran faoliyati bo'yicha batafsil statistika va tahlil.
+                        {t('reports.subTitle') || "Restoran faoliyati bo'yicha batafsil statistika va tahlil."}
                     </p>
                 </div>
                 <div className="flex items-center gap-3">

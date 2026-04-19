@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Printer, Plus, Trash2, X, CheckCircle, AlertCircle, Wifi, WifiOff, Loader2, Usb } from "lucide-react";
+import { useLang } from "@/lib/LangContext";
+
 
 interface UbtPrinter {
     id: string;
@@ -15,6 +17,7 @@ interface UbtPrinter {
 type ConnectType = "wifi" | "usb";
 
 export default function PrintersPage() {
+    const { t } = useLang();
     const [printers, setPrinters] = useState<UbtPrinter[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -143,13 +146,13 @@ export default function PrintersPage() {
                         <Printer size={20} className="text-orange-600" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-black text-gray-800">Printerlar</h1>
+                        <h1 className="text-xl font-black text-gray-800">{t('nav.printers') || 'Printerlar'}</h1>
                         <p className="text-sm text-gray-500">ESC/POS termik printerlar (WiFi va USB)</p>
                     </div>
                 </div>
                 <button onClick={handleOpenModal}
                     className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm transition-all shadow-sm active:scale-[0.97]">
-                    <Plus size={16} /> Printer qo&apos;shish
+                    <Plus size={16} /> {t('common.add')} {t('nav.printers') || 'Printer'}
                 </button>
             </div>
 

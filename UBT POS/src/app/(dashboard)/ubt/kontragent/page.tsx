@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Edit2, Trash2, X, Users, Phone, FileText, Building2 } from "lucide-react";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import clsx from "clsx";
+import { useLang } from "@/lib/LangContext";
+
 
 interface Supplier {
     id: string;
@@ -53,6 +55,7 @@ async function deleteSupplier(id: string) {
 }
 
 export default function KontragentPage() {
+    const { t } = useLang();
     const qc = useQueryClient();
     const [search, setSearch] = useState("");
     const [showForm, setShowForm] = useState(false);
@@ -128,14 +131,14 @@ export default function KontragentPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Kontragentlar</h1>
+                    <h1 className="text-2xl font-bold text-slate-800">{t('nav.contractors') || 'Kontragentlar'}</h1>
                     <p className="text-sm text-slate-400 mt-1">{suppliers.length} ta yetkazib beruvchi</p>
                 </div>
                 <button
                     onClick={openNew}
                     className="btn-primary flex items-center gap-2"
                 >
-                    <Plus size={16} /> Kontragent qo&apos;shish
+                    <Plus size={16} /> {t('common.add')} {t('nav.contractors') || 'Kontragent'}
                 </button>
             </div>
 
@@ -341,7 +344,7 @@ export default function KontragentPage() {
                                 onClick={closeForm}
                                 className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
                             >
-                                Bekor qilish
+                                {t('common.cancel')}
                             </button>
                             <button
                                 type="button"
@@ -349,7 +352,7 @@ export default function KontragentPage() {
                                 disabled={isPending || !form.name.trim()}
                                 className="flex-1 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isPending ? "Saqlanmoqda..." : editingId ? "Saqlash" : "Qo'shish"}
+                                {isPending ? "Saqlanmoqda..." : editingId ? t('common.save') : t('common.add')}
                             </button>
                         </div>
                     </div>
@@ -370,14 +373,14 @@ export default function KontragentPage() {
                                 onClick={() => setDeleteConfirmId(null)}
                                 className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
                             >
-                                Bekor
+                                {t('common.cancel')}
                             </button>
                             <button
                                 onClick={() => deleteMutation.mutate(deleteConfirmId)}
                                 disabled={deleteMutation.isPending}
                                 className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-sm font-medium text-white transition-colors disabled:opacity-50"
                             >
-                                {deleteMutation.isPending ? "O'chirilmoqda..." : "O'chirish"}
+                                {deleteMutation.isPending ? "O'chirilmoqda..." : t('common.delete')}
                             </button>
                         </div>
                     </div>

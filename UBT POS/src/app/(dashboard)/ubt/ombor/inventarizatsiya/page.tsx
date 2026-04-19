@@ -6,8 +6,11 @@ import {
     RotateCw, AlertTriangle, TrendingDown, TrendingUp, Minus, ChevronDown
 } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { useLang } from "@/lib/LangContext";
+
 
 export default function OmborInventarizatsiyaPage() {
+    const { t } = useLang();
     const { updateNomenklaturaXomashyo } = useStore();
 
     const [allProducts, setAllProducts] = useState<any[]>([]);
@@ -139,8 +142,8 @@ export default function OmborInventarizatsiyaPage() {
             <div className="bg-white border-b border-slate-200 px-6 py-5">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Inventarizatsiya (Taftish)</h1>
-                        <p className="text-sm text-slate-500 mt-1">Ombordagi haqiqiy qoldiqni tizimdagi qoldiq bilan solishtirish va to&apos;g&apos;irlash</p>
+                        <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t('nav.ombor_inventarizatsiya')}</h1>
+                        <p className="text-sm text-slate-500 mt-1">{t('nav.ombor')} {t('inventory.currentStock')} taftish</p>
                     </div>
                     <div className="flex items-center gap-3">
                         <button className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-emerald-500 text-emerald-600 rounded-xl text-sm font-bold hover:bg-emerald-50 transition-all shadow-sm">
@@ -148,7 +151,7 @@ export default function OmborInventarizatsiyaPage() {
                         </button>
                         <button onClick={() => setIsModalOpen(true)}
                             className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/30 hover:-translate-y-0.5">
-                            <Plus size={18} strokeWidth={2.5} /> Yangi Taftish
+                            <Plus size={18} strokeWidth={2.5} /> {t('common.add')} {t('nav.ombor_inventarizatsiya')}
                         </button>
                     </div>
                 </div>
@@ -158,7 +161,7 @@ export default function OmborInventarizatsiyaPage() {
             <div className="px-6 py-5 grid sm:grid-cols-3 gap-4 border-b border-slate-200 bg-white/60">
                 <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
-                        <p className="text-xs text-slate-500 font-medium mb-0.5">Jami taftish</p>
+                        <p className="text-xs text-slate-500 font-medium mb-0.5">{t('common.total')} {t('nav.ombor_inventarizatsiya')}</p>
                         <p className="text-xl font-black text-slate-800">{items.length} <span className="text-sm font-semibold text-slate-400">ta</span></p>
                     </div>
                     <div className="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center"><ClipboardCheck size={22} /></div>
@@ -199,21 +202,21 @@ export default function OmborInventarizatsiyaPage() {
                         <table className="w-full text-sm text-left">
                             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
                                 <tr>
-                                    <th className="px-5 py-4">Sana</th>
-                                    <th className="px-5 py-4">Mahsulot</th>
-                                    <th className="px-5 py-4">Ombor</th>
-                                    <th className="px-5 py-4">Tizimdagi qoldiq</th>
-                                    <th className="px-5 py-4">Haqiqiy qoldiq</th>
+                                    <th className="px-5 py-4">{t('common.date')}</th>
+                                    <th className="px-5 py-4">{t('inventory.totalProducts')}</th>
+                                    <th className="px-5 py-4">{t('nav.ombor')}</th>
+                                    <th className="px-5 py-4">{t('inventory.currentStock')} (tizim)</th>
+                                    <th className="px-5 py-4">{t('inventory.currentStock')} (haqiqiy)</th>
                                     <th className="px-5 py-4">Farq</th>
-                                    <th className="px-5 py-4">Mas&apos;ul</th>
-                                    <th className="px-5 py-4">Holati</th>
+                                    <th className="px-5 py-4">{t('staff.employee')}</th>
+                                    <th className="px-5 py-4">{t('common.status')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
                                 {isLoading ? (
                                     <tr><td colSpan={8} className="py-16 text-center"><RotateCw className="animate-spin mx-auto text-indigo-400" size={28} /></td></tr>
                                 ) : filtered.length === 0 ? (
-                                    <tr><td colSpan={8} className="py-16 text-center text-slate-400 text-sm">Hech qanday taftish topilmadi</td></tr>
+                                    <tr><td colSpan={8} className="py-16 text-center text-slate-400 text-sm">{t('common.noData')}</td></tr>
                                 ) : filtered.map(item => {
                                     const d = Number(item.difference || 0);
                                     return (
@@ -257,7 +260,7 @@ export default function OmborInventarizatsiyaPage() {
                                     <ClipboardCheck size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-bold text-indigo-900">Yangi Inventarizatsiya</h2>
+                                    <h2 className="text-lg font-bold text-indigo-900">{t('common.add')} {t('nav.ombor_inventarizatsiya')}</h2>
                                     <p className="text-xs text-indigo-600">Tasdiqlanganda tizim qoldig&apos;i haqiqiy raqamga tenglashadi</p>
                                 </div>
                             </div>
@@ -269,7 +272,7 @@ export default function OmborInventarizatsiyaPage() {
                         <form onSubmit={handleSave} className="p-6 space-y-5">
                             {/* Product combobox */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Mahsulot <span className="text-red-500">*</span></label>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('inventory.totalProducts')} <span className="text-red-500">*</span></label>
                                 <div ref={comboRef} className="relative">
                                     <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100 transition-all"
                                         onClick={() => setIsComboOpen(true)}>
@@ -300,7 +303,7 @@ export default function OmborInventarizatsiyaPage() {
                             {/* System stock (read-only) + actual stock */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Tizimdagi qoldiq</label>
+                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('inventory.currentStock')} (tizim)</label>
                                     <div className="flex border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
                                         <input type="number" readOnly placeholder="0"
                                             value={formData.systemStock}
@@ -310,7 +313,7 @@ export default function OmborInventarizatsiyaPage() {
                                     <p className="text-[10px] text-slate-400">Avtomatik to&apos;ldiriladi</p>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Haqiqiy qoldiq <span className="text-red-500">*</span></label>
+                                    <label className="text-xs font-bold text-indigo-700 uppercase tracking-wider">{t('inventory.currentStock')} (haqiqiy) <span className="text-red-500">*</span></label>
                                     <div className="flex border border-indigo-300 rounded-xl overflow-hidden focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100 bg-indigo-50 transition-all">
                                         <input type="number" step="0.01" min="0" placeholder="0"
                                             value={formData.actualStock}
@@ -335,7 +338,7 @@ export default function OmborInventarizatsiyaPage() {
                             {/* Ombor + Employee */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Ombor</label>
+                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('nav.ombor')}</label>
                                     <select value={formData.warehouse} onChange={e => setFormData(f => ({ ...f, warehouse: e.target.value }))}
                                         className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-indigo-500 text-sm bg-white transition-all">
                                         {["Asosiy Ombor", "Oshxona Ombori", "Bar Ombori", "Filial Ombori"].map(w => <option key={w}>{w}</option>)}
@@ -356,12 +359,12 @@ export default function OmborInventarizatsiyaPage() {
                                 <div className="flex items-center gap-3">
                                     <button type="button" onClick={() => setIsModalOpen(false)}
                                         className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">
-                                        Bekor
+                                        {t('common.cancel')}
                                     </button>
                                     <button type="submit" disabled={isSaving}
                                         className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all disabled:opacity-60">
                                         {isSaving ? <RotateCw size={16} className="animate-spin" /> : <Check size={16} />}
-                                        Tasdiqlash
+                                        {t('common.confirm')}
                                     </button>
                                 </div>
                             </div>

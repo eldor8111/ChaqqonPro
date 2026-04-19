@@ -7,6 +7,7 @@ import {
     Users, Truck, UserCircle2, PenLine, Building2
 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useLang } from "@/lib/LangContext";
 
 const INCOME_CATEGORIES = ["Sotuv tushumi", "Boshqa kirim", "Qarz qaytarish", "Invest"];
 const EXPENSE_CATEGORIES = ["Ijara", "Maosh / Oylik", "Bozor-ochar (xomashyo)", "Kommunal (suv, gaz, elektr)", "Reklama", "Transport", "Soliq", "Jihozlar ta'miri", "Boshqa xarajat"];
@@ -31,6 +32,7 @@ function StatCard({ label, value, sub, icon: Icon, gradient }: any) {
 }
 
 export default function MoliyaPage() {
+    const { t } = useLang();
     const [entries, setEntries] = useState<any[]>([]);
     const [summary, setSummary] = useState({ totalIncome: 0, totalExpense: 0, netProfit: 0 });
     const [usdRate, setUsdRate] = useState(12500);
@@ -181,7 +183,7 @@ export default function MoliyaPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-800">💰 Moliya / Kassa</h1>
+                    <h1 className="text-2xl font-black text-slate-800">💰 {t('nav.finance')}</h1>
                     <p className="text-slate-400 text-sm mt-0.5">Kirim, xarajatlar va sof foyda nazorati</p>
                 </div>
                 <div className="flex gap-3">
@@ -192,11 +194,11 @@ export default function MoliyaPage() {
                     </button>
                     <button onClick={() => openModal("income")}
                         className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-emerald-500/30 hover:-translate-y-0.5 transition-all">
-                        <ArrowUpCircle size={16} /> Kirim Qo'shish
+                        <ArrowUpCircle size={16} /> {t('common.add')} (Kirim)
                     </button>
                     <button onClick={() => openModal("expense")}
                         className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-red-500/30 hover:-translate-y-0.5 transition-all">
-                        <ArrowDownCircle size={16} /> Xarajat Qo'shish
+                        <ArrowDownCircle size={16} /> {t('common.add')} (Xarajat)
                     </button>
                 </div>
             </div>
@@ -240,7 +242,7 @@ export default function MoliyaPage() {
                             {(["all", "income", "expense"] as const).map(tab => (
                                 <button key={tab} onClick={() => setActiveTab(tab)}
                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === tab ? "bg-blue-500 text-white" : "text-slate-500 hover:text-slate-800 bg-slate-100"}`}>
-                                    {tab === "all" ? "Barchasi" : tab === "income" ? "✅ Kirimlar" : "❌ Xarajatlar"}
+                                    {tab === "all" ? t('common.all') || "Barchasi" : tab === "income" ? "✅ Kirimlar" : "❌ Xarajatlar"}
                                 </button>
                             ))}
                             <button onClick={fetchData} className="p-1.5 text-slate-500 hover:text-slate-800 bg-slate-100 rounded-lg transition">
@@ -252,7 +254,7 @@ export default function MoliyaPage() {
                         {isLoading ? (
                             <div className="text-center py-8"><RotateCw className="animate-spin mx-auto text-blue-400" /></div>
                         ) : filtered.length === 0 ? (
-                            <div className="text-center py-8 text-slate-500 text-sm">Hech qanday yozuv topilmadi</div>
+                            <div className="text-center py-8 text-slate-500 text-sm">{t('common.noData')}</div>
                         ) : (
                             filtered.map(entry => (
                                 <div key={entry.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all group
@@ -293,7 +295,7 @@ export default function MoliyaPage() {
                                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${modalType === "income" ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>
                                     {modalType === "income" ? <ArrowUpCircle size={20} /> : <ArrowDownCircle size={20} />}
                                 </div>
-                                <h3 className="text-slate-800 font-bold text-lg">{modalType === "income" ? "Kirim Qo'shish" : "Xarajat Qo'shish"}</h3>
+                                <h3 className="text-slate-800 font-bold text-lg">{modalType === "income" ? `${t('common.add')} (Kirim)` : `${t('common.add')} (Xarajat)`}</h3>
                             </div>
                             <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition"><X size={18} /></button>
                         </div>
@@ -396,13 +398,13 @@ export default function MoliyaPage() {
                             </div>
                             <div className="flex gap-3 pt-2">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition border border-slate-200">
-                                    Bekor
+                                    {t('common.cancel')}
                                 </button>
                                 <button type="submit" disabled={isSaving}
                                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white shadow-lg transition-all disabled:opacity-60
                                     ${modalType === "income" ? "bg-gradient-to-r from-emerald-500 to-green-600 shadow-emerald-500/30" : "bg-gradient-to-r from-red-500 to-rose-600 shadow-red-500/30"}`}>
                                     {isSaving ? <RotateCw size={16} className="animate-spin" /> : <Check size={16} />}
-                                    Saqlash
+                                    {t('common.save')}
                                 </button>
                             </div>
                         </form>

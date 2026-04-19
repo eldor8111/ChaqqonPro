@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Headset, Send, CheckCircle2, AlertCircle } from "lucide-react";
 import { PhoneInput } from "@/components/ui/PhoneInput";
+import { useLang } from "@/lib/LangContext";
 
 export default function SupportPage() {
+    const { t } = useLang();
     const [clientPhone, setClientPhone] = useState("");
     const [messageBody, setMessageBody] = useState("");
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -51,7 +53,7 @@ export default function SupportPage() {
                         <Headset size={24} className="text-sky-500" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black text-slate-800 tracking-tight">Texnik Yordam</h1>
+                        <h1 className="text-2xl font-black text-slate-800 tracking-tight">{t('nav.support') || 'Texnik Yordam'}</h1>
                         <p className="text-sm font-medium text-slate-400 mt-1">Dasturda muammo yoki takliflar ustida maxsus jamoaga murojaat qiling</p>
                     </div>
                 </div>

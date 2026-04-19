@@ -7,6 +7,8 @@ import { Plus, Search, Edit2, Trash2, X, Monitor, Camera } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import { PhoneInput } from "@/components/ui/PhoneInput";
+import { useLang } from "@/lib/LangContext";
+
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -103,6 +105,7 @@ function PosApparatForm({
     onClose: () => void;
     isPending: boolean;
 }) {
+    const { t } = useLang();
     const p = form.posPerms;
 
     const setPosDevice = (key: keyof typeof p.posDevice, value: boolean | string) =>
@@ -265,10 +268,10 @@ function PosApparatForm({
                 {/* Footer */}
                 <div className="flex gap-3 px-5 py-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
                     <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
-                        Bekor qilish
+                        {t('common.cancel')}
                     </button>
                     <button type="button" onClick={onSave} disabled={isPending || !canSave} className="flex-1 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        {isPending ? "Saqlanmoqda..." : (editingId ? "Saqlash" : "Qo'shish")}
+                        {isPending ? "Saqlanmoqda..." : (editingId ? t('common.save') : t('common.add'))}
                     </button>
                 </div>
             </div>
@@ -288,6 +291,7 @@ function RegularStaffForm({
     onClose: () => void;
     isPending: boolean;
 }) {
+    const { t } = useLang();
     const togglePerm = (id: string) =>
         onChange({ simplePerms: form.simplePerms.includes(id) ? form.simplePerms.filter(p => p !== id) : [...form.simplePerms, id] });
 
@@ -372,10 +376,10 @@ function RegularStaffForm({
 
                 <div className="flex gap-3 px-5 py-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
                     <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
-                        Bekor qilish
+                        {t('common.cancel')}
                     </button>
                     <button type="button" onClick={onSave} disabled={isPending || !canSave} className="flex-1 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        {isPending ? "Saqlanmoqda..." : (editingId ? "Saqlash" : "Qo'shish")}
+                        {isPending ? "Saqlanmoqda..." : (editingId ? t('common.save') : t('common.add'))}
                     </button>
                 </div>
             </div>
@@ -386,6 +390,7 @@ function RegularStaffForm({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 function UbtStaffContent() {
+    const { t } = useLang();
     const qc = useQueryClient();
     const searchParams = useSearchParams();
     const roleQuery = searchParams.get("role");
@@ -483,15 +488,15 @@ function UbtStaffContent() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Xodimlar (UBT)</h1>
-                    <p className="text-sm text-slate-400 mt-1">{filtered.length} ta xodim</p>
+                    <h1 className="text-2xl font-bold text-slate-800">{t('nav.staff') || 'Xodimlar'}</h1>
+                    <p className="text-sm text-slate-400 mt-1">{filtered.length} ta {t('staff.employee') || 'xodim'}</p>
                 </div>
                 <div className="flex gap-2">
                     <button onClick={() => openNew("POS apparati")} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-sky-500/20 border border-sky-500/30 text-sky-300 hover:bg-sky-500/30 transition-colors text-sm font-medium">
                         <Monitor size={15} /> POS Apparat
                     </button>
                     <button onClick={() => openNew(roleFilter !== "all" && roleFilter !== "POS apparati" ? roleFilter : "Ofitsiant")} className="btn-primary flex items-center gap-2">
-                        <Plus size={16} /> Xodim qo'shish
+                        <Plus size={16} /> {t('common.add')} {t('staff.employee') || 'Xodim'}
                     </button>
                 </div>
             </div>
@@ -500,7 +505,7 @@ function UbtStaffContent() {
             <div className="flex gap-4">
                 <div onClick={() => setRoleFilter("all")} className={clsx("flex-1 cursor-pointer transition-all border p-4 rounded-xl", roleFilter === "all" ? "bg-brand/10 border-brand text-brand" : "glass-card border-surface-border hover:bg-surface-elevated")}>
                     <p className="text-2xl font-bold">{ubtStaff.length}</p>
-                    <p className="text-sm opacity-80 mt-1">Barchasi</p>
+                    <p className="text-sm opacity-80 mt-1">{t('common.all') || 'Barchasi'}</p>
                 </div>
                 {ROLES.map(role => {
                     const count = ubtStaff.filter((s: any) => s.role === role).length;
@@ -516,7 +521,7 @@ function UbtStaffContent() {
             {/* Search */}
             <div className="relative max-w-sm">
                 <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Ism yoki username..." className="input-field pl-9" />
+                <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('staff.searchPlaceholder') || "Ism yoki username..."} className="input-field pl-9" />
             </div>
 
             {/* Table */}

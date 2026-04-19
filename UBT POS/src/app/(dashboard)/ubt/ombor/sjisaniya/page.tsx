@@ -6,6 +6,8 @@ import {
     RotateCw, AlertCircle, ChevronDown
 } from "lucide-react";
 import { useFrontendStore } from "@/lib/frontend/store";
+import { useLang } from "@/lib/LangContext";
+
 
 interface Product {
     id: string;
@@ -17,6 +19,7 @@ interface Product {
 }
 
 export default function OmborSjisaniyaPage() {
+    const { t } = useLang();
     const { user } = useFrontendStore();
     const canCreate = user?.role === "ADMIN" || user?.permissions?.includes("sjisaniya");
 
@@ -190,7 +193,7 @@ export default function OmborSjisaniyaPage() {
             <div className="bg-white border-b border-slate-200 px-6 py-5">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Hisobdan Chiqarish (Sjisaniya)</h1>
+                        <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t('nav.ombor_sjisaniya')}</h1>
                         <p className="text-sm text-slate-500 mt-1">Buzilgan, yo&apos;qolgan yoki yaroqsiz mahsulotlarni tizimdan o&apos;chirish</p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -200,7 +203,7 @@ export default function OmborSjisaniyaPage() {
                         {canCreate && (
                             <button onClick={() => { setIsModalOpen(true); loadProducts(); }}
                                 className="flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-500/30 hover:-translate-y-0.5">
-                                <Plus size={18} strokeWidth={2.5} /> Yangi Sjisaniya
+                                <Plus size={18} strokeWidth={2.5} /> {t('common.add')} {t('nav.ombor_sjisaniya')}
                             </button>
                         )}
                     </div>
@@ -211,7 +214,7 @@ export default function OmborSjisaniyaPage() {
             <div className="px-6 py-5 grid sm:grid-cols-3 gap-4 border-b border-slate-200 bg-white/60">
                 <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                     <div>
-                        <p className="text-xs text-slate-500 font-medium mb-0.5">Jami hujjatlar</p>
+                        <p className="text-xs text-slate-500 font-medium mb-0.5">{t('common.total')} hujjatlar</p>
                         <p className="text-xl font-black text-slate-800">{items.length} <span className="text-sm font-semibold text-slate-400">ta</span></p>
                     </div>
                     <div className="w-11 h-11 bg-red-50 text-red-500 rounded-xl flex items-center justify-center"><Trash2 size={22} /></div>
@@ -237,7 +240,7 @@ export default function OmborSjisaniyaPage() {
                 <div className="flex items-center justify-between mb-4 bg-white p-2 rounded-xl border border-slate-200 shadow-sm gap-4">
                     <div className="flex-1 max-w-md relative">
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
-                        <input type="text" placeholder="Qidiruv (mahsulot, sabab, xodim)..."
+                        <input type="text" placeholder={t('common.search') + "..."}
                             value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 rounded-lg text-sm font-medium outline-none text-slate-700 focus:ring-2 focus:ring-red-100" />
                     </div>
@@ -252,10 +255,10 @@ export default function OmborSjisaniyaPage() {
                         <table className="w-full text-sm text-left">
                             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
                                 <tr>
-                                    <th className="px-5 py-4">Sana</th>
-                                    <th className="px-5 py-4">Mahsulot</th>
+                                    <th className="px-5 py-4">{t('common.date')}</th>
+                                    <th className="px-5 py-4">{t('inventory.totalProducts')}</th>
                                     <th className="px-5 py-4">Sabab</th>
-                                    <th className="px-5 py-4">Miqdori</th>
+                                    <th className="px-5 py-4">{t('inventory.unit') || 'Miqdori'}</th>
                                     <th className="px-5 py-4">Tannarx</th>
                                     <th className="px-5 py-4">Zarar summasi</th>
                                     <th className="px-5 py-4">Tasdiqlagan</th>
@@ -265,7 +268,7 @@ export default function OmborSjisaniyaPage() {
                                 {isLoading ? (
                                     <tr><td colSpan={7} className="py-16 text-center"><RotateCw className="animate-spin mx-auto text-red-400" size={28} /></td></tr>
                                 ) : filtered.length === 0 ? (
-                                    <tr><td colSpan={7} className="py-16 text-center text-slate-400 text-sm">Hech qanday sjisaniya topilmadi</td></tr>
+                                    <tr><td colSpan={7} className="py-16 text-center text-slate-400 text-sm">{t('common.noData')}</td></tr>
                                 ) : filtered.map(item => (
                                     <tr key={item.id} className="hover:bg-red-50/30 transition-colors">
                                         <td className="px-5 py-3.5 text-xs text-slate-400 whitespace-nowrap">
@@ -303,7 +306,7 @@ export default function OmborSjisaniyaPage() {
                                     <Trash2 size={20} />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-bold text-red-900">Mahsulotni Hisobdan Chiqarish</h2>
+                                    <h2 className="text-lg font-bold text-red-900">{t('common.add')} {t('nav.ombor_sjisaniya')}</h2>
                                     <p className="text-xs text-red-600">Tasdiqlanganda stock avtomatik kamayadi</p>
                                 </div>
                             </div>
@@ -315,7 +318,7 @@ export default function OmborSjisaniyaPage() {
                         <form onSubmit={handleSave} className="p-6 space-y-5">
                             {/* Product combobox */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Mahsulot <span className="text-red-500">*</span></label>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('inventory.totalProducts')} <span className="text-red-500">*</span></label>
                                 <div ref={comboRef} className="relative">
                                     <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden focus-within:border-red-500 focus-within:ring-2 focus-within:ring-red-100 transition-all"
                                         onClick={() => setIsComboOpen(true)}>
@@ -353,7 +356,7 @@ export default function OmborSjisaniyaPage() {
 
                             {/* Quantity */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Chiqariladigan miqdor <span className="text-red-500">*</span></label>
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Chiqariladigan {t('inventory.unit') || 'miqdor'} <span className="text-red-500">*</span></label>
                                 <div className="flex border border-slate-200 rounded-xl overflow-hidden focus-within:border-red-500 focus-within:ring-2 focus-within:ring-red-100 transition-all">
                                     <input type="number" step="0.01" min="0" placeholder="0"
                                         value={formData.quantity}
@@ -402,12 +405,12 @@ export default function OmborSjisaniyaPage() {
                                 <div className="flex items-center gap-3">
                                     <button type="button" onClick={() => setIsModalOpen(false)}
                                         className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">
-                                        Bekor
+                                        {t('common.cancel')}
                                     </button>
                                     <button type="submit" disabled={isSaving || isOverQty}
                                         className="flex items-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-red-500/30 hover:bg-red-700 hover:-translate-y-0.5 transition-all disabled:opacity-60">
                                         {isSaving ? <RotateCw size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                                        Hisobdan Chiqar
+                                        {t('nav.ombor_sjisaniya')}
                                     </button>
                                 </div>
                             </div>
