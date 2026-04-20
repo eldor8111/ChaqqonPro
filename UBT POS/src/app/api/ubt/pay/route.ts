@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
             // that contain the items being paid for, to prevent product-edit blocks
             const itemNames = new Set((items as CartItem[]).map(i => i.name));
             const staleCarts = await prisma.kDSOrder.findMany({
-                where: { tenantId, status: "pending", priority: "cart", tableId: null },
+                where: { tenantId, status: "pending", priority: "cart", tableId: { equals: null } },
                 select: { id: true, description: true },
             });
             const staleIds: string[] = [];
