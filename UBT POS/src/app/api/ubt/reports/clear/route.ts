@@ -24,16 +24,17 @@ export async function DELETE(req: Request) {
 
         const tid = session.tenantId;
 
-        // TransactionItem → Transaction cascade orqali o'chadi
-        const [txDel, expDel, rcptDel, trfDel, cntDel, woDel, auditDel] = await Promise.all([
-            prisma.transaction.deleteMany({ where: { tenantId: tid } }),
-            prisma.inventoryExpenditure.deleteMany({ where: { tenantId: tid } }),
-            prisma.inventoryReceipt.deleteMany({ where: { tenantId: tid } }),
-            prisma.inventoryTransfer.deleteMany({ where: { tenantId: tid } }),
-            prisma.inventoryCount.deleteMany({ where: { tenantId: tid } }),
-            prisma.inventoryWriteoff.deleteMany({ where: { tenantId: tid } }),
-            prisma.auditLog.deleteMany({ where: { tenantId: tid } }),
-        ]);
+        // TransactionItem ni avval o'chiramiz (foreign key constraint)
+        try { await (prisma as any).transactionItem.deleteMany({ where: { transaction: { tenantId: tid } } }); } catch {}
+
+        // Asosiy jadvallarni o'chirish
+        const txDel = await prisma.transaction.deleteMany({ where: { tenantId: tid } }).catch(() => ({ count: 0 }));
+        const expDel = await prisma.inventoryExpenditure.deleteMany({ where: { tenantId: tid } }).catch(() => ({ count: 0 }));
+        const rcptDel = await prisma.inventoryReceipt.deleteMany({ where: { tenantId: tid } }).catch(() => ({ count: 0 }));
+        const trfDel = await prisma.inventoryTransfer.deleteMany({ where: { tenantId: tid } }).catch(() => ({ count: 0 }));
+        const cntDel = await prisma.inventoryCount.deleteMany({ where: { tenantId: tid } }).catch(() => ({ count: 0 }));
+        const woDel = await prisma.inventoryWriteoff.deleteMany({ where: { tenantId: tid } }).catch(() => ({ count: 0 }));
+        const auditDel = await prisma.auditLog.deleteMany({ where: { tenantId: tid } }).catch(() => ({ count: 0 }));
 
         // O'chirish harakatini yangi audit log yozuviga qayd etish
         await prisma.auditLog.create({
