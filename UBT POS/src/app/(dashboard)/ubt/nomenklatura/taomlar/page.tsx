@@ -198,7 +198,7 @@ export default function TaomlarPage() {
                     costPrice: taomData.cost,
                     type: taomData.type || "taom",
                     warehouse: (formData as any).warehouse || null,
-                    stock: taomData.stock || 99,
+                    stock: taomData.stock || 0,
                     unit: taomData.unit || "dona",
                     image: taomData.image || null,
                     printerIp: (taomData as any).printerIp || null,
