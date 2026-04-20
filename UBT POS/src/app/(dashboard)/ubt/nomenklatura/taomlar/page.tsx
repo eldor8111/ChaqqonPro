@@ -265,7 +265,7 @@ export default function TaomlarPage() {
                         <div className="w-2.5 h-7 bg-blue-500 rounded text-transparent">|</div>
                         <h1 className="text-[22px] font-bold text-slate-900">{t('nav.nom_dishes')}</h1>
                     </div>
-                    <button className="flex items-center gap-2 px-3 py-1.5 bg-[#f4f5f7] text-slate-700 rounded-md text-sm hover:bg-slate-200 transition font-bold border border-slate-300">
+                    <button className="flex items-center gap-2 px-2 py-1.5 bg-[#f4f5f7] text-slate-700 rounded-md text-sm hover:bg-slate-200 transition font-bold border border-slate-300">
                         <Trash2 size={14} /> Arxivga o'ting
                     </button>
                 </div>
@@ -333,34 +333,34 @@ export default function TaomlarPage() {
             </div>
 
             {/* Content area */}
-            <div className="p-4 overflow-x-auto">
-                <table className="w-full text-xs text-left whitespace-nowrap border-separate border-spacing-y-2">
-                    <thead className="bg-[#e4ebf5] text-slate-800 font-black border-b-none">
+            <div className="p-2 overflow-x-auto">
+                <table className="w-full text-xs text-left border-separate border-spacing-y-2">
+                    <thead className="bg-[#e4ebf5] text-slate-800 font-black border-b-none text-[11px] uppercase tracking-wide">
                         <tr>
-                            <th className="px-3 py-3.5 rounded-l-lg border-r border-[#d4dceb] font-bold">
+                            <th className="px-2 py-3.5 rounded-l-lg border-r border-[#d4dceb] font-bold">
                                 <span className="flex items-center justify-between gap-1 w-full">Turini tanlang <ChevronsUpDown size={12} className="text-slate-600" /></span>
                             </th>
-                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold">Rasm</th>
-                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold">{t('common.name')}</th>
-                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold">Turi</th>
-                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold text-center">O'lchov birligi</th>
-                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold">
+                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">Rasm</th>
+                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">{t('common.name')}</th>
+                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">Turi</th>
+                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold text-center">O'lchov birligi</th>
+                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">
                                 <span className="flex items-center justify-between gap-1 w-full text-right">Tannarx <ChevronsUpDown size={12} className="text-slate-600" /></span>
                             </th>
-                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold text-right">Narx</th>
-                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold">Menyu</th>
-                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold">
+                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold text-right">Narx</th>
+                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">Menyu</th>
+                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">
                                 <span className="flex items-center justify-between gap-1 w-full">Printer <ChevronsUpDown size={12} className="text-slate-600" /></span>
                             </th>
-                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold">
+                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">
                                 <span className="flex items-center justify-between gap-1 w-full">Retseptlar <ChevronsUpDown size={12} className="text-slate-600" /></span>
                             </th>
-                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold">Qoldiq</th>
+                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">Qoldiq</th>
                             <th className="px-2 py-3.5 border-r border-[#d4dceb] text-center font-bold leading-tight align-middle text-[10px]">
                                 Avtomatik <br /> hisob-kitob
                             </th>
-                            <th className="px-3 py-3.5 border-r border-[#d4dceb] font-bold text-center">{t('common.status')}</th>
-                            <th className="px-3 py-3.5 rounded-r-lg font-bold"></th>
+                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold text-center">{t('common.status')}</th>
+                            <th className="px-2 py-3.5 rounded-r-lg font-bold"></th>
                         </tr>
                     </thead>
                     <tbody className="text-slate-700">
@@ -372,10 +372,10 @@ export default function TaomlarPage() {
                             const category = dbCategories.find(c => c.id === item.categoryId);
                             return (
                                 <tr key={item.id} className="bg-[#f0f3f8] hover:bg-[#e4ebf5] transition text-slate-900 font-semibold">
-                                    <td className="px-3 py-3 rounded-l-lg border-r border-[#e4ebf5]">
+                                    <td className="px-2 py-3 rounded-l-lg border-r border-[#e4ebf5]">
                                         <input type="text" value={item.sortOrder || "1"} readOnly className="w-12 h-8 px-2 bg-white border border-slate-300 rounded text-center text-xs outline-none text-slate-800 font-bold" />
                                     </td>
-                                    <td className="px-3 py-3 border-r border-[#e4ebf5]">
+                                    <td className="px-2 py-3 border-r border-[#e4ebf5]">
                                         <div className="w-10 h-10 bg-[#eef1f6] rounded border border-[#e4ebf5] flex items-center justify-center text-slate-400 relative overflow-hidden">
                                             {item.image ? (
                                                 <img src={item.image} alt="dish" className="w-full h-full object-cover" />
@@ -384,17 +384,17 @@ export default function TaomlarPage() {
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-3 py-3 font-black text-[13px] border-r border-[#e4ebf5] max-w-[150px] truncate">{item.name}</td>
-                                    <td className="px-3 py-3 border-r border-[#e4ebf5]">{item.type === "mahsulot" ? "Mahsulot" : "Taomlar"}</td>
-                                    <td className="px-3 py-3 border-r border-[#e4ebf5] text-center font-bold">{item.unit || "np"}</td>
-                                    <td className="px-3 py-3 border-r border-[#e4ebf5] text-right text-slate-700">{formatCurrency(item.cost).replace("so'm", "UZS")}</td>
-                                    <td className="px-3 py-3 border-r border-[#e4ebf5] text-right font-black text-slate-900">{formatCurrency(item.price).replace("so'm", "UZS")}</td>
-                                    <td className="px-3 py-3 border-r border-[#e4ebf5] text-slate-800">{category?.name || ""}</td>
-                                    <td className="px-3 py-3 border-r border-[#e4ebf5] leading-snug font-bold">
+                                    <td className="px-2 py-3 font-black text-[13px] border-r border-[#e4ebf5] max-w-[150px] truncate">{item.name}</td>
+                                    <td className="px-2 py-3 border-r border-[#e4ebf5]">{item.type === "mahsulot" ? "Mahsulot" : "Taomlar"}</td>
+                                    <td className="px-2 py-3 border-r border-[#e4ebf5] text-center font-bold">{item.unit || "np"}</td>
+                                    <td className="px-2 py-3 border-r border-[#e4ebf5] text-right text-slate-700">{formatCurrency(item.cost).replace("so'm", "UZS")}</td>
+                                    <td className="px-2 py-3 border-r border-[#e4ebf5] text-right font-black text-slate-900">{formatCurrency(item.price).replace("so'm", "UZS")}</td>
+                                    <td className="px-2 py-3 border-r border-[#e4ebf5] text-slate-800">{category?.name || ""}</td>
+                                    <td className="px-2 py-3 border-r border-[#e4ebf5] leading-snug font-bold">
                                         {item.printer === "kitchen" ? "Kuhniya" : item.printer || "-"} <br />
                                         {item.printer === "kitchen" && <span className="text-[10px] text-slate-600 font-semibold">192.168.1.210</span>}
                                     </td>
-                                    <td className="px-3 py-3 border-r border-[#e4ebf5]">
+                                    <td className="px-2 py-3 border-r border-[#e4ebf5]">
                                         <div className="flex items-center gap-1.5 font-bold whitespace-nowrap text-slate-800">
                                             <div className="p-0.5 border border-slate-500 rounded-sm">
                                                 <List size={12} className="text-slate-700" />
@@ -402,23 +402,23 @@ export default function TaomlarPage() {
                                             Retsept ({item.recipes?.length || 0} ta)
                                         </div>
                                     </td>
-                                    <td className="px-3 py-3 border-r border-[#e4ebf5]">
+                                    <td className="px-2 py-3 border-r border-[#e4ebf5]">
                                         <div className="flex items-center bg-[#e4ebf5] border border-blue-500 rounded text-[#3490dc] overflow-hidden w-20 h-8">
                                             <input type="text" value={item.stock || "-"} readOnly className="w-10 bg-transparent px-2 text-center text-xs outline-none font-black flex-1 text-slate-900" />
                                             <button className="pr-2 bg-transparent hover:opacity-80"><RotateCw size={13} /></button>
                                         </div>
                                     </td>
-                                    <td className="px-3 py-3 text-center border-r border-[#e4ebf5]">
+                                    <td className="px-2 py-3 text-center border-r border-[#e4ebf5]">
                                         <div className={`w-5 h-5 rounded-full mx-auto ${item.autoCalculate ? "bg-[#00b050]" : "bg-slate-400 border border-slate-500"}`} />
                                     </td>
-                                    <td className="px-3 py-3 border-r border-[#e4ebf5] text-center">
+                                    <td className="px-2 py-3 border-r border-[#e4ebf5] text-center">
                                         {item.inStock ? (
                                             <span className="border border-[#00b050] text-[#00b050] px-2 py-0.5 rounded text-[10px] font-black w-max mx-auto bg-white">#faol</span>
                                         ) : (
                                             <span className="border border-slate-500 text-slate-700 px-2 py-0.5 rounded text-[10px] font-black w-max mx-auto bg-white shadow-sm">#nofaol</span>
                                         )}
                                     </td>
-                                    <td className="px-3 py-3 rounded-r-lg space-x-2 text-right">
+                                    <td className="px-2 py-3 rounded-r-lg space-x-2 text-right">
                                         <button onClick={() => handleOpenModal(item)} className="p-1.5 border border-[#3490dc] text-[#3490dc] hover:bg-blue-50 bg-white rounded transition"><Pencil size={13} /></button>
                                         <button onClick={() => handleDelete(item.id)} className="p-1.5 border border-[#e3342f] text-[#e3342f] hover:bg-red-50 bg-white rounded transition"><Trash2 size={13} /></button>
                                     </td>
@@ -573,7 +573,7 @@ export default function TaomlarPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => openModifierModal()}
-                                                    className="text-sm text-purple-600 hover:text-purple-700 font-bold flex items-center gap-1 px-3 py-1 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition"
+                                                    className="text-sm text-purple-600 hover:text-purple-700 font-bold flex items-center gap-1 px-2 py-1 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition"
                                                 >
                                                     <Plus size={15} /> Modifikator qo&apos;shish
                                                 </button>
@@ -822,7 +822,7 @@ export default function TaomlarPage() {
                             {modifierGroupForm.items.length > 0 && (
                                 <div className="flex flex-wrap gap-2">
                                     {modifierGroupForm.items.map(item => (
-                                        <span key={item.id} className="flex items-center gap-1.5 px-3 py-1 bg-purple-100 border border-purple-300 rounded-full text-xs font-semibold text-purple-800">
+                                        <span key={item.id} className="flex items-center gap-1.5 px-2 py-1 bg-purple-100 border border-purple-300 rounded-full text-xs font-semibold text-purple-800">
                                             {item.name}
                                             <button type="button" onClick={() => toggleModifierItem(item)} className="text-purple-500 hover:text-red-500 transition">
                                                 <X size={11} />
@@ -840,7 +840,7 @@ export default function TaomlarPage() {
                                     placeholder="Qidiruv..."
                                     value={modifierItemSearch}
                                     onChange={e => setModifierItemSearch(e.target.value)}
-                                    className="w-full border border-slate-200 focus:border-purple-400 rounded-lg px-3 py-2 text-sm outline-none mb-2 placeholder:text-slate-300 transition"
+                                    className="w-full border border-slate-200 focus:border-purple-400 rounded-lg px-2 py-2 text-sm outline-none mb-2 placeholder:text-slate-300 transition"
                                 />
                                 <div className="max-h-52 overflow-y-auto space-y-1 border border-slate-200 rounded-xl p-2 bg-slate-50">
                                     {dbItems
@@ -852,7 +852,7 @@ export default function TaomlarPage() {
                                                     key={it.id}
                                                     type="button"
                                                     onClick={() => toggleModifierItem({ id: it.id, name: it.name })}
-                                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition ${
+                                                    className={`w-full flex items-center justify-between px-2 py-2 rounded-lg text-sm font-medium transition ${
                                                         selected
                                                             ? "bg-purple-100 text-purple-900 border border-purple-300"
                                                             : "bg-white text-slate-700 border border-slate-200 hover:border-purple-300 hover:bg-purple-50"
@@ -917,21 +917,21 @@ export default function TaomlarPage() {
                         <div className="p-6 bg-white flex items-end gap-5 overflow-y-auto pb-8">
                             <div className="flex-[1.2]">
                                 <label className="block text-xs font-bold text-slate-700 mb-2">Ombor</label>
-                                <select value={recipeForm.ombor} onChange={e => setRecipeForm({ ...recipeForm, ombor: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#007bff] text-slate-500 bg-white shadow-sm font-medium">
+                                <select value={recipeForm.ombor} onChange={e => setRecipeForm({ ...recipeForm, ombor: e.target.value })} className="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:border-[#007bff] text-slate-500 bg-white shadow-sm font-medium">
                                     <option value="">Omborni tanlang</option>
                                     <option value="main">Asosiy ombor</option>
                                 </select>
                             </div>
                             <div className="flex-1">
                                 <label className="block text-xs font-bold text-slate-700 mb-2">Turi</label>
-                                <select value={recipeForm.turi} onChange={e => setRecipeForm({ ...recipeForm, turi: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#007bff] text-slate-600 bg-white shadow-sm font-medium">
+                                <select value={recipeForm.turi} onChange={e => setRecipeForm({ ...recipeForm, turi: e.target.value })} className="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:border-[#007bff] text-slate-600 bg-white shadow-sm font-medium">
                                     <option value="xomashyo">Xomashyo</option>
                                     <option value="yarim_tayyor">Yarim tayyor</option>
                                 </select>
                             </div>
                             <div className="flex-[1.8]">
                                 <label className="block text-xs font-bold text-slate-700 mb-2">Mahsulot</label>
-                                <select value={recipeForm.xomashyoId} onChange={e => setRecipeForm({ ...recipeForm, xomashyoId: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#007bff] text-[#007bff] bg-white shadow-sm font-medium">
+                                <select value={recipeForm.xomashyoId} onChange={e => setRecipeForm({ ...recipeForm, xomashyoId: e.target.value })} className="w-full border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:border-[#007bff] text-[#007bff] bg-white shadow-sm font-medium">
                                     <option value="" className="text-slate-400">Tanlang</option>
                                     {dbXomashyo.map(x => <option key={x.id} value={x.id} className="text-slate-800">{x.name}</option>)}
                                 </select>
@@ -939,8 +939,8 @@ export default function TaomlarPage() {
                             <div className="flex-1">
                                 <label className="block text-xs font-bold text-slate-700 mb-2">Miqdor <span className="text-[#e3342f]">*</span></label>
                                 <div className="flex border border-slate-200 rounded-lg overflow-hidden focus-within:border-[#007bff] transition shadow-sm bg-white">
-                                    <input type="number" step="any" placeholder="Kiritish" value={recipeForm.amount} onChange={e => setRecipeForm({ ...recipeForm, amount: e.target.value })} className="w-full px-3 py-2 outline-none text-sm min-w-0 font-medium placeholder:text-slate-300" />
-                                    <div className="bg-[#f8fafc] flex items-center justify-center px-3 text-xs font-bold text-slate-400 border-l border-slate-200 min-w-[50px]">
+                                    <input type="number" step="any" placeholder="Kiritish" value={recipeForm.amount} onChange={e => setRecipeForm({ ...recipeForm, amount: e.target.value })} className="w-full px-2 py-2 outline-none text-sm min-w-0 font-medium placeholder:text-slate-300" />
+                                    <div className="bg-[#f8fafc] flex items-center justify-center px-2 text-xs font-bold text-slate-400 border-l border-slate-200 min-w-[50px]">
                                         {recipeForm.xomashyoId ? (dbXomashyo.find(x => x.id === recipeForm.xomashyoId)?.unit || '') : ''}
                                     </div>
                                 </div>

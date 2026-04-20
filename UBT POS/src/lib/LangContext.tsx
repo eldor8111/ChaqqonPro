@@ -113,7 +113,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             shiftHistory: "Smena tarixi", shiftDate: "Sana",
             tabStaff: "Xodimlar", tabFraud: "Signallar", tabShifts: "Smena tarixi",
             roleCashier: "Kassir", roleManager: "Menejer", roleAdmin: "Administrator", roleWarehouse: "Omborchi",
-            filterAll: "Barchasi", searchPlaceholder: "Xodim nomini qidiring...",
+            filterAll: "Barchasi", searchPlaceholderName: "Xodim nomini qidiring...",
             openShiftAt: "Smena ochildi", closeShiftAt: "Smena yopildi",
             permissions: "Ruxsatlar", editPermissions: "Ruxsatlarni tahrirlash",
             permModules: "Modullar", permActions: "Amallar",
