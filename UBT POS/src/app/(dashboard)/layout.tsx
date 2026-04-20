@@ -45,7 +45,7 @@ export default function DashboardLayout({
     return (
         <div className="flex h-screen overflow-hidden bg-surface">
             <Sidebar />
-            <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex flex-col flex-1 min-w-0 min-h-0">
                 {subscriptionExpired && (
                     <div className="bg-red-500 text-white px-4 py-2 flex items-center justify-center gap-2 text-sm font-medium z-50 rounded-b-xl shadow-md mx-4">
                         <AlertTriangle size={16} />
@@ -62,7 +62,7 @@ export default function DashboardLayout({
                     </div>
                 )}
                 <Header />
-                <main className="flex-1 min-h-0 overflow-y-auto p-4 w-full h-full">
+                <main className="flex-1 min-w-0 min-h-0 overflow-y-auto p-4 w-full h-full">
                     {subscriptionExpired && !isBillingPage ? (
                         <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-surface-card rounded-2xl border border-surface-border animate-fade-in mx-auto max-w-2xl mt-12">
                             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6 shadow-sm">
