@@ -34,47 +34,48 @@ const _ensurePrinterIpColumn = prisma
 
 
 async function isProductInActiveOrder(tenantId: string, productName: string, productId?: string) {
-    // ─── 1. Check only CART KDS orders that are still PENDING ────────────────
-    // priority="cart" = actual table cart orders (not kitchen display items)
-    // We also cross-check the table is still "occupied" to avoid stale records
-    const activeCarts = await prisma.kDSOrder.findMany({
-        where: {
-            tenantId,
-            status: "pending",
-            priority: "cart",
-        },
-        select: { id: true, description: true, tableId: true },
+    // ─── Strategy: Check only KDS orders belonging to OCCUPIED tables ──────────
+    // This avoids stale records from closed orders since table status is always
+    // updated to "free" after payment.
+
+    // Step 1: Find all currently occupied tables
+    const occupiedTables = await prisma.ubtTable.findMany({
+        where: { tenantId, status: "occupied" },
+        select: { id: true },
     });
 
-    // Collect occupied table IDs for cross-validation
-    const occupiedTableIds = new Set<string>();
-    const tableIds = activeCarts.map(c => c.tableId).filter(Boolean) as string[];
-    if (tableIds.length > 0) {
-        const occupiedTables = await prisma.ubtTable.findMany({
-            where: { tenantId, id: { in: tableIds }, status: "occupied" },
-            select: { id: true },
+    if (occupiedTables.length === 0) {
+        // No occupied tables → no active in-house orders → only check delivery
+        const activeDeliveries = await prisma.deliveryOrder.findMany({
+            where: { tenantId, status: { in: ["new", "assigned", "on_the_way"] } },
+            select: { items: true },
         });
-        occupiedTables.forEach(t => occupiedTableIds.add(t.id));
+        for (const d of activeDeliveries) {
+            if (d.items) {
+                try {
+                    const parsed = JSON.parse(d.items);
+                    if (parsed.some((i: any) => i.name === productName || (productId && i.id === productId))) {
+                        return true;
+                    }
+                } catch {}
+            }
+        }
+        return false;
     }
 
-    // ─── Auto-cleanup: mark stale cart records as "served" ───────────────────
-    // A cart is stale if its table exists but is no longer "occupied"
-    const staleCartIds = activeCarts
-        .filter(c => c.tableId && !occupiedTableIds.has(c.tableId))
-        .map(c => c.id);
-    if (staleCartIds.length > 0) {
-        prisma.kDSOrder.updateMany({
-            where: { id: { in: staleCartIds } },
-            data: { status: "served", completedAt: new Date() },
-        }).catch(() => {}); // fire-and-forget, don't block the request
-    }
+    const occupiedTableIds = occupiedTables.map(t => t.id);
 
-    // ─── Check remaining truly active carts ──────────────────────────────────
-    const genuineActiveCarts = activeCarts.filter(
-        c => !c.tableId || occupiedTableIds.has(c.tableId)
-    );
+    // Step 2: Check KDS orders ONLY for occupied tables
+    const activeKdsOrders = await prisma.kDSOrder.findMany({
+        where: {
+            tenantId,
+            tableId: { in: occupiedTableIds },
+            status: { not: "served" },
+        },
+        select: { description: true },
+    });
 
-    for (const kds of genuineActiveCarts) {
+    for (const kds of activeKdsOrders) {
         if (kds.description) {
             try {
                 const parsed = JSON.parse(kds.description);
@@ -94,7 +95,7 @@ async function isProductInActiveOrder(tenantId: string, productName: string, pro
         }
     }
 
-    // ─── 2. Check active deliveries ──────────────────────────────────────────
+    // Step 3: Check active deliveries
     const activeDeliveries = await prisma.deliveryOrder.findMany({
         where: { tenantId, status: { in: ["new", "assigned", "on_the_way"] } },
         select: { items: true },
@@ -109,8 +110,10 @@ async function isProductInActiveOrder(tenantId: string, productName: string, pro
             } catch {}
         }
     }
+
     return false;
 }
+
 
 // GET - fetch menu items for POS (or all products for kirim with ?all=1)
 export async function GET(request: NextRequest) {
