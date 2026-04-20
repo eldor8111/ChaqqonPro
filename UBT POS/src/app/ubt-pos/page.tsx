@@ -3159,27 +3159,10 @@ export default function UbtPosPage() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
                                         <button
-                                            onClick={() => {
-                                                const isTw = twOrders.some(o => o.id === selOrder.id);
-                                                if (isTw) {
-                                                    setTwOrders((prev: any[]) => prev.filter((x: any) => x.id !== selOrder.id));
-                                                } else {
-                                                    // Darhol local state'dan o'chirish (UI darhol yopilsin)
-                                                    setDlOrders((prev: any[]) => prev.filter((x: any) => x.id !== selOrder.id));
-                                                    // DB'da "delivered" ga yangilash (id string bo'lsa = DB orderi)
-                                                    const token = (store.kassirSession as any)?.token || (store.deviceSession as any)?.token;
-                                                    const hdrs: Record<string, string> = { "Content-Type": "application/json" };
-                                                    if (token) hdrs["Authorization"] = `Bearer ${token}`;
-                                                    fetch("/api/ubt/yetkazish", {
-                                                        method: "PATCH", headers: hdrs,
-                                                        body: JSON.stringify({ id: String(selOrder.id), status: "delivered" }),
-                                                    }).catch(() => {});
-                                                }
-                                                setSelOrder(null);
-                                            }}
+                                            onClick={() => setSelOrder(null)}
                                             className="py-4 rounded-2xl font-black text-base text-white flex items-center justify-center gap-2 shadow active:scale-[0.98] transition"
                                             style={{ background: "linear-gradient(135deg,#f97316,#dc2626)" }}>
-                                            <Check size={18}/> Tayyor
+                                            <Check size={18}/> Tasdiqlash
                                         </button>
                                         {hasPaymentPerm && (
                                             <button
