@@ -3081,25 +3081,28 @@ export default function UbtPosPage() {
                                                     <p className={`text-[13px] font-bold truncate ${dark ? "text-emerald-400" : "text-emerald-600"}`}>{c.item.name}</p>
                                                     <div className="flex items-center gap-1.5 mt-1">
                                                         <button onClick={() => {
-                                                            const updateSel = (prev: any) => {
-                                                                const n = prev.items.map((x: any) => x.item.id === c.item.id ? { ...x, qty: Math.max(0, parseFloat((x.qty - (isWeightUnit(x.item.unit) ? 0.1 : 1)).toFixed(3))) } : x).filter((x: any) => x.qty > 0);
-                                                                return { ...prev, items: n, total: n.reduce((s:number, x:any) => s + x.item.price * x.qty, 0) };
+                                                            const doAction = () => {
+                                                                const updateSel = (prev: any) => {
+                                                                    const n = prev.items.map((x: any) => x.item.id === c.item.id ? { ...x, qty: Math.max(0, parseFloat((x.qty - (isWeightUnit(x.item.unit) ? 0.1 : 1)).toFixed(3))) } : x).filter((x: any) => x.qty > 0);
+                                                                    return { ...prev, items: n, total: n.reduce((s:number, x:any) => s + x.item.price * x.qty, 0) };
+                                                                };
+                                                                setSelOrder(updateSel);
+                                                                const isTw = twOrders.some(o => o.id === selOrder.id);
+                                                                if (isTw) setTwOrders(p => p.map(x => x.id === selOrder.id ? updateSel(x) : x));
+                                                                else setDlOrders(p => p.map(x => x.id === selOrder.id ? updateSel(x) : x));
+                                                                
+                                                                // Async DB save for persisting deleted/updated items in existing orders
+                                                                const token = (store.kassirSession as any)?.token || (store.deviceSession as any)?.token;
+                                                                const hdrs: Record<string, string> = { "Content-Type": "application/json" };
+                                                                if (token) hdrs["Authorization"] = `Bearer ${token}`;
+                                                                setSelOrder((updatedData: any) => {
+                                                                    if (!isTw) {
+                                                                        fetch("/api/ubt/yetkazish", { method: "PUT", headers: hdrs, body: JSON.stringify({ id: String(selOrder.id), items: updatedData.items }) }).catch(()=>null);
+                                                                    }
+                                                                    return updatedData;
+                                                                });
                                                             };
-                                                            setSelOrder(updateSel);
-                                                            const isTw = twOrders.some(o => o.id === selOrder.id);
-                                                            if (isTw) setTwOrders(p => p.map(x => x.id === selOrder.id ? updateSel(x) : x));
-                                                            else setDlOrders(p => p.map(x => x.id === selOrder.id ? updateSel(x) : x));
-                                                            
-                                                            // Async DB save for persisting deleted/updated items in existing orders
-                                                            const token = (store.kassirSession as any)?.token || (store.deviceSession as any)?.token;
-                                                            const hdrs: Record<string, string> = { "Content-Type": "application/json" };
-                                                            if (token) hdrs["Authorization"] = `Bearer ${token}`;
-                                                            setSelOrder((updatedData: any) => {
-                                                                if (!isTw) {
-                                                                    fetch("/api/ubt/yetkazish", { method: "PUT", headers: hdrs, body: JSON.stringify({ id: String(selOrder.id), items: updatedData.items }) }).catch(()=>null);
-                                                                }
-                                                                return updatedData;
-                                                            });
+                                                            requireCancelCode(doAction);
                                                         }} className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${dark ? "bg-red-500/10 text-red-400 hover:bg-red-500/20" : "bg-red-50 text-red-500 hover:bg-red-100"}`}>
                                                             <Minus size={12} strokeWidth={3} />
                                                         </button>
