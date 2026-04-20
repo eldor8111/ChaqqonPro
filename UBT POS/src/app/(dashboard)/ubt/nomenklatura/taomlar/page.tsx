@@ -337,30 +337,22 @@ export default function TaomlarPage() {
                 <table className="w-full text-xs text-left border-separate border-spacing-y-2">
                     <thead className="bg-[#e4ebf5] text-slate-800 font-black border-b-none text-[11px] uppercase tracking-wide">
                         <tr>
-                            <th className="px-2 py-3.5 rounded-l-lg border-r border-[#d4dceb] font-bold">
-                                <span className="flex items-center justify-between gap-1 w-full">Turini tanlang <ChevronsUpDown size={12} className="text-slate-600" /></span>
+                            <th className="px-1.5 py-2 rounded-l-lg border-r border-[#d4dceb] font-bold text-center">№</th>
+                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold">Rasm</th>
+                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold">{t('common.name')}</th>
+                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold">Turi</th>
+                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold text-center">Birlik</th>
+                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold text-right">Tannarx</th>
+                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold text-right">Narx</th>
+                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold">Menyu</th>
+                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold">Printer</th>
+                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold">Retseptlar</th>
+                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold text-center">Qoldiq</th>
+                            <th className="px-1 py-2 border-r border-[#d4dceb] text-center font-bold text-[10px]">
+                                Avto
                             </th>
-                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">Rasm</th>
-                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">{t('common.name')}</th>
-                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">Turi</th>
-                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold text-center">O'lchov birligi</th>
-                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">
-                                <span className="flex items-center justify-between gap-1 w-full text-right">Tannarx <ChevronsUpDown size={12} className="text-slate-600" /></span>
-                            </th>
-                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold text-right">Narx</th>
-                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">Menyu</th>
-                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">
-                                <span className="flex items-center justify-between gap-1 w-full">Printer <ChevronsUpDown size={12} className="text-slate-600" /></span>
-                            </th>
-                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">
-                                <span className="flex items-center justify-between gap-1 w-full">Retseptlar <ChevronsUpDown size={12} className="text-slate-600" /></span>
-                            </th>
-                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold">Qoldiq</th>
-                            <th className="px-2 py-3.5 border-r border-[#d4dceb] text-center font-bold leading-tight align-middle text-[10px]">
-                                Avtomatik <br /> hisob-kitob
-                            </th>
-                            <th className="px-2 py-3.5 border-r border-[#d4dceb] font-bold text-center">{t('common.status')}</th>
-                            <th className="px-2 py-3.5 rounded-r-lg font-bold"></th>
+                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold text-center">{t('common.status')}</th>
+                            <th className="px-1 py-2 rounded-r-lg font-bold"></th>
                         </tr>
                     </thead>
                     <tbody className="text-slate-700">
@@ -372,10 +364,10 @@ export default function TaomlarPage() {
                             const category = dbCategories.find(c => c.id === item.categoryId);
                             return (
                                 <tr key={item.id} className="bg-[#f0f3f8] hover:bg-[#e4ebf5] transition text-slate-900 font-semibold">
-                                    <td className="px-2 py-3 rounded-l-lg border-r border-[#e4ebf5]">
-                                        <input type="text" value={item.sortOrder || "1"} readOnly className="w-12 h-8 px-2 bg-white border border-slate-300 rounded text-center text-xs outline-none text-slate-800 font-bold" />
+                                    <td className="px-1.5 py-1.5 rounded-l-lg border-r border-[#e4ebf5]">
+                                        <input type="text" value={item.sortOrder || "1"} readOnly className="w-8 h-8 px-1 bg-white border border-slate-300 rounded text-center text-xs outline-none text-slate-800 font-bold" />
                                     </td>
-                                    <td className="px-2 py-3 border-r border-[#e4ebf5]">
+                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5]">
                                         <div className="w-10 h-10 bg-[#eef1f6] rounded border border-[#e4ebf5] flex items-center justify-center text-slate-400 relative overflow-hidden">
                                             {item.image ? (
                                                 <img src={item.image} alt="dish" className="w-full h-full object-cover" />
@@ -384,17 +376,17 @@ export default function TaomlarPage() {
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-2 py-3 font-black text-[13px] border-r border-[#e4ebf5] max-w-[150px] truncate">{item.name}</td>
-                                    <td className="px-2 py-3 border-r border-[#e4ebf5]">{item.type === "mahsulot" ? "Mahsulot" : "Taomlar"}</td>
-                                    <td className="px-2 py-3 border-r border-[#e4ebf5] text-center font-bold">{item.unit || "np"}</td>
-                                    <td className="px-2 py-3 border-r border-[#e4ebf5] text-right text-slate-700">{formatCurrency(item.cost).replace("so'm", "UZS")}</td>
-                                    <td className="px-2 py-3 border-r border-[#e4ebf5] text-right font-black text-slate-900">{formatCurrency(item.price).replace("so'm", "UZS")}</td>
-                                    <td className="px-2 py-3 border-r border-[#e4ebf5] text-slate-800">{category?.name || ""}</td>
-                                    <td className="px-2 py-3 border-r border-[#e4ebf5] leading-snug font-bold">
+                                    <td className="px-1.5 py-1.5 font-black text-[13px] border-r border-[#e4ebf5] max-w-[150px] truncate">{item.name}</td>
+                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5]">{item.type === "mahsulot" ? "Mahsulot" : "Taomlar"}</td>
+                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] text-center font-bold">{item.unit || "np"}</td>
+                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] text-right text-slate-700">{formatCurrency(item.cost).replace("so'm", "UZS")}</td>
+                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] text-right font-black text-slate-900">{formatCurrency(item.price).replace("so'm", "UZS")}</td>
+                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] text-slate-800">{category?.name || ""}</td>
+                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] leading-snug font-bold">
                                         {item.printer === "kitchen" ? "Kuhniya" : item.printer || "-"} <br />
                                         {item.printer === "kitchen" && <span className="text-[10px] text-slate-600 font-semibold">192.168.1.210</span>}
                                     </td>
-                                    <td className="px-2 py-3 border-r border-[#e4ebf5]">
+                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5]">
                                         <div className="flex items-center gap-1.5 font-bold whitespace-nowrap text-slate-800">
                                             <div className="p-0.5 border border-slate-500 rounded-sm">
                                                 <List size={12} className="text-slate-700" />
@@ -402,23 +394,23 @@ export default function TaomlarPage() {
                                             Retsept ({item.recipes?.length || 0} ta)
                                         </div>
                                     </td>
-                                    <td className="px-2 py-3 border-r border-[#e4ebf5]">
-                                        <div className="flex items-center bg-[#e4ebf5] border border-blue-500 rounded text-[#3490dc] overflow-hidden w-20 h-8">
+                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5]">
+                                        <div className="flex items-center bg-[#e4ebf5] border border-blue-500 rounded text-[#3490dc] overflow-hidden w-16 h-8">
                                             <input type="text" value={item.stock || "-"} readOnly className="w-10 bg-transparent px-2 text-center text-xs outline-none font-black flex-1 text-slate-900" />
                                             <button className="pr-2 bg-transparent hover:opacity-80"><RotateCw size={13} /></button>
                                         </div>
                                     </td>
-                                    <td className="px-2 py-3 text-center border-r border-[#e4ebf5]">
+                                    <td className="px-1.5 py-1.5 text-center border-r border-[#e4ebf5]">
                                         <div className={`w-5 h-5 rounded-full mx-auto ${item.autoCalculate ? "bg-[#00b050]" : "bg-slate-400 border border-slate-500"}`} />
                                     </td>
-                                    <td className="px-2 py-3 border-r border-[#e4ebf5] text-center">
+                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] text-center">
                                         {item.inStock ? (
                                             <span className="border border-[#00b050] text-[#00b050] px-2 py-0.5 rounded text-[10px] font-black w-max mx-auto bg-white">#faol</span>
                                         ) : (
                                             <span className="border border-slate-500 text-slate-700 px-2 py-0.5 rounded text-[10px] font-black w-max mx-auto bg-white shadow-sm">#nofaol</span>
                                         )}
                                     </td>
-                                    <td className="px-2 py-3 rounded-r-lg space-x-2 text-right">
+                                    <td className="px-1.5 py-1.5 rounded-r-lg space-x-2 text-right">
                                         <button onClick={() => handleOpenModal(item)} className="p-1.5 border border-[#3490dc] text-[#3490dc] hover:bg-blue-50 bg-white rounded transition"><Pencil size={13} /></button>
                                         <button onClick={() => handleDelete(item.id)} className="p-1.5 border border-[#e3342f] text-[#e3342f] hover:bg-red-50 bg-white rounded transition"><Trash2 size={13} /></button>
                                     </td>
