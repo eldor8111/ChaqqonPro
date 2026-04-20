@@ -468,60 +468,6 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             branchManagement: "Branch Management", addUser: "Add User", rolesAndPermissions: "Roles and Permissions",
             billingPlan: "Subscription Plan", choose: "Choose", currentPlan: "Current Plan", serverBackup: "Server Backup",
             takeBackupNow: "Take Backup Now", auditLog: "Audit Log", action: "Action", detail: "Detail", type: "Type"
-        },
-        crm: {
-            title: "CRM", customersCount: "customers", aiSegmentEnabled: "AI-Segmentation Enabled",
-            addCustomer: "Add Customer", totalCustomers: "Total Customers", vipCustomers: "VIP Customers",
-            totalBonuses: "Total Bonuses", monthlyGrowth: "Monthly Growth", aiRecommendation: "AI Recommendation",
-            apply: "Apply", all: "All", segment: "Segment", bonusPoints: "Bonus Points", totalPurchases: "Total Purchases", visits: "Visits", lastVisit: "Last Visit",
-            aiRecommendationMenu: "AI Recommendation", critical: "Critical", attention: "Warning", normal: "Normal"
-        },
-        ubt: {
-            title: "UBT Module", subTitle: "Restaurant and Hotel Management", addReservation: "Add Reservation",
-            occupiedTables: "Occupied Tables", freeTables: "Free Tables", reservedTables: "Reserved Tables", newOrders: "New Orders",
-            tableMap: "Table Map", kds: "Kitchen (KDS)", occupied: "Occupied", free: "Free", reserved: "Reserved",
-            new: "New", preparing: "Preparing", ready: "Ready",
-            markPreparing: "Start Preparing", markReady: "Mark Ready",
-            closeTable: "Close Table", openTable: "Open Table",
-            guestName: "Guest Name", reservedAt: "Reserved Time",
-            confirmReservation: "Confirm Reservation", selectTable: "Select Table",
-            confirmToOccupied: "Mark as Occupied", confirmToFree: "Free Table",
-            tableActions: "Table Actions", totalAmount: "Total Amount",
-            noOrders: "No Orders"
-        },
-        pharmacy: {
-            title: "Pharmacy Module", drugsCount: "drugs", expiringSoonCount: "expiring soon", refreshCatalog: "Refresh Catalog",
-            addDrug: "Add Drug", totalDrugs: "Total Drugs", expiring90d: "Expiring Soon (90 days)", expired: "Expired",
-            categories: "Categories", expiringDrugs: "Expiring Drugs", searchPlaceholder: "Name, barcode, serial number...",
-            drugName: "Drug Name", serialNumber: "Serial Number", expiryDate: "Expiry Date",
-            editDrug: "Edit", deleteDrug: "Delete",
-            confirmDelete: "Confirm Delete", confirmDeleteText: "This drug will be removed from the catalog. Continue?",
-            tabAll: "All Drugs", tabExpiring: "Expiring Soon", tabExpired: "Expired",
-            minStock: "Min. Stock", prescription: "Prescription", manufacturer: "Manufacturer",
-            requiresPrescription: "Prescription Required", noPrescription: "OTC",
-            expiringDrugsMessage: "drugs expiring within 90 days",
-            filterCategory: "Category", lowStock: "Low Stock", noStock: "Out of Stock",
-            stockLabel: "Stock", priceLabel: "Price",
-            addDrugTitle: "Add New Drug", editDrugTitle: "Edit Drug",
-            noExpiring: "No drugs expiring soon", noExpired: "No expired drugs",
-        },
-        wholesale: {
-            title: "Wholesale Module", clientsCount: "wholesale clients", invoice: "Invoice", addClient: "Add Client",
-            totalClients: "Total Clients", totalDebt: "Total Debt", limitNear: "Near Limit", blocked: "Blocked",
-            bulkPricing: "Bulk Pricing Tiers", searchPlaceholder: "Client name or contact...", company: "Company",
-            contact: "Contact", currentDebt: "Current Debt", debtLimit: "Debt Limit", limitPercent: "Limit Percentage", lastOrder: "Last Order"
-        },
-        ecommerce: {
-            title: "E-Commerce Module", subTitle: "Online orders and delivery", telegramBot: "Telegram Bot", instagramSync: "Instagram Sync",
-            totalOrders: "Total Orders", pending: "Pending", delivering: "Delivering", todayRevenue: "Today's Revenue",
-            all: "All", trackCourier: "Track Courier", preparing: "Preparing", completed: "Completed"
-        },
-        settings: {
-            title: "Settings", subTitle: "System settings and control panel", branches: "Branches", users: "Users",
-            roles: "Roles & RBAC", billing: "Billing", backup: "Backup", audit: "Audit Log", addBranch: "Add Branch",
-            branchManagement: "Branch Management", addUser: "Add User", rolesAndPermissions: "Roles and Permissions",
-            billingPlan: "Subscription Plan", choose: "Choose", currentPlan: "Current Plan", serverBackup: "Server Backup",
-            takeBackupNow: "Take Backup Now", auditLog: "Audit Log", action: "Action", detail: "Detail", type: "Type"
         }
     }
 };
