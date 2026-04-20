@@ -34,32 +34,67 @@ const _ensurePrinterIpColumn = prisma
 
 
 async function isProductInActiveOrder(tenantId: string, productName: string, productId?: string) {
-    // Check active tables (orders are saved as JSON arrays in KDSOrder description)
-    const activeKdsOrders = await prisma.kDSOrder.findMany({
-        where: { tenantId, status: { not: "served" } },
-        select: { description: true },
+    // ─── 1. Check only CART KDS orders that are still PENDING ────────────────
+    // priority="cart" = actual table cart orders (not kitchen display items)
+    // We also cross-check the table is still "occupied" to avoid stale records
+    const activeCarts = await prisma.kDSOrder.findMany({
+        where: {
+            tenantId,
+            status: "pending",
+            priority: "cart",
+        },
+        select: { id: true, description: true, tableId: true },
     });
-    for (const kds of activeKdsOrders) {
+
+    // Collect occupied table IDs for cross-validation
+    const occupiedTableIds = new Set<string>();
+    const tableIds = activeCarts.map(c => c.tableId).filter(Boolean) as string[];
+    if (tableIds.length > 0) {
+        const occupiedTables = await prisma.ubtTable.findMany({
+            where: { tenantId, id: { in: tableIds }, status: "occupied" },
+            select: { id: true },
+        });
+        occupiedTables.forEach(t => occupiedTableIds.add(t.id));
+    }
+
+    // ─── Auto-cleanup: mark stale cart records as "served" ───────────────────
+    // A cart is stale if its table exists but is no longer "occupied"
+    const staleCartIds = activeCarts
+        .filter(c => c.tableId && !occupiedTableIds.has(c.tableId))
+        .map(c => c.id);
+    if (staleCartIds.length > 0) {
+        prisma.kDSOrder.updateMany({
+            where: { id: { in: staleCartIds } },
+            data: { status: "served", completedAt: new Date() },
+        }).catch(() => {}); // fire-and-forget, don't block the request
+    }
+
+    // ─── Check remaining truly active carts ──────────────────────────────────
+    const genuineActiveCarts = activeCarts.filter(
+        c => !c.tableId || occupiedTableIds.has(c.tableId)
+    );
+
+    for (const kds of genuineActiveCarts) {
         if (kds.description) {
             try {
                 const parsed = JSON.parse(kds.description);
                 if (Array.isArray(parsed)) {
-                    if (parsed.some((i: any) => 
-                        (i.item?.name === productName) || 
+                    if (parsed.some((i: any) =>
+                        (i.item?.name === productName) ||
                         (i.name === productName) ||
-                        (productId && i.item?.id === productId) || 
+                        (productId && i.item?.id === productId) ||
                         (productId && i.id === productId)
                     )) {
                         return true;
                     }
                 }
             } catch {
-                // Fallback for plain string descriptions
                 if (kds.description.includes(productName)) return true;
             }
         }
     }
-    // Check active deliveries
+
+    // ─── 2. Check active deliveries ──────────────────────────────────────────
     const activeDeliveries = await prisma.deliveryOrder.findMany({
         where: { tenantId, status: { in: ["new", "assigned", "on_the_way"] } },
         select: { items: true },

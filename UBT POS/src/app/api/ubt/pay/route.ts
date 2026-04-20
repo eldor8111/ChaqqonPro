@@ -160,12 +160,37 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // 3. Mark KDS orders as served for this table
+        // 3. Mark KDS orders as served
         if (tableId) {
+            // Table order: mark ALL KDS orders for this table as served
             await prisma.kDSOrder.updateMany({
                 where: { tenantId, tableId, status: { not: "served" } },
                 data: { status: "served", completedAt: new Date() },
             });
+        } else {
+            // Kassa (cashier) mode: no tableId — clean up any stale cart orders
+            // that contain the items being paid for, to prevent product-edit blocks
+            const itemNames = new Set((items as CartItem[]).map(i => i.name));
+            const staleCarts = await prisma.kDSOrder.findMany({
+                where: { tenantId, status: "pending", priority: "cart", tableId: null },
+                select: { id: true, description: true },
+            });
+            const staleIds: string[] = [];
+            for (const cart of staleCarts) {
+                try {
+                    const parsed: any[] = JSON.parse(cart.description);
+                    const hasItem = parsed.some((ci: any) =>
+                        itemNames.has(ci.item?.name ?? ci.name ?? "")
+                    );
+                    if (hasItem) staleIds.push(cart.id);
+                } catch {}
+            }
+            if (staleIds.length > 0) {
+                await prisma.kDSOrder.updateMany({
+                    where: { id: { in: staleIds } },
+                    data: { status: "served", completedAt: new Date() },
+                });
+            }
         }
 
         // 4. Free the table
