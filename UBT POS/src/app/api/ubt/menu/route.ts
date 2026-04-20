@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
         const catVal = category || "Umumiy";
         const sellPrice = Number(sellingPrice) || 0;
         const costPr = Number(costPrice) || 0;
-        const stk = Number(stock) || 99;
+        const stk = (stock !== undefined && stock !== null && stock !== "") ? Number(stock) : 0;
         const utStr = unit || "dona";
         const imgVal = image ?? null;
         const piVal = printerIp || null;
