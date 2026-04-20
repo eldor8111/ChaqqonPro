@@ -101,3 +101,37 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ error: e.message }, { status: 500 });
     }
 }
+
+export async function PUT(req: NextRequest) {
+    try {
+        const tenantId = await getAuthTenantId(req);
+        if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+        const body = await req.json();
+        const { id, items } = body;
+
+        if (!id || !Array.isArray(items)) {
+            return NextResponse.json({ error: "id va items kerak" }, { status: 400 });
+        }
+
+        // Calculate new running total
+        const runningTotal = items.reduce((sum: number, ci: any) => {
+            const price = ci.item?.price ?? ci.price ?? 0;
+            const qty = ci.qty ?? 1;
+            return sum + price * qty;
+        }, 0);
+
+        const updated = await prisma.deliveryOrder.update({
+            where: { id, tenantId },
+            data: {
+                items: JSON.stringify(items),
+                totalAmount: Math.round(runningTotal),
+            },
+        });
+
+        return NextResponse.json(updated);
+    } catch (e: any) {
+        console.error("Delivery PUT error:", e);
+        return NextResponse.json({ error: e.message }, { status: 500 });
+    }
+}

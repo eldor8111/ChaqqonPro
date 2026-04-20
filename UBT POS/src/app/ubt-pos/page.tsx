@@ -1132,6 +1132,21 @@ export default function UbtPosPage() {
     const [dlOrders, setDlOrders] = useState<LocalOrder[]>([]);
     const twCounterRef = useRef(1);
 
+    // Sync twOrders to localStorage to prevent data loss on page refresh
+    const [isTwLoaded, setIsTwLoaded] = useState(false);
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem("ubt_pos_twOrders");
+            if (saved) { setTwOrders(JSON.parse(saved)); }
+        } catch (e) { console.error("Failed to load twOrders", e); }
+        setIsTwLoaded(true);
+    }, []);
+
+    useEffect(() => {
+        if (!isTwLoaded) return;
+        localStorage.setItem("ubt_pos_twOrders", JSON.stringify(twOrders));
+    }, [twOrders, isTwLoaded]);
+
     // saveTwOrders: POST paid takeaway order to DB (Transaction). Does NOT refresh local list —
     // local pending orders are managed in session state via setTwOrders directly.
     const saveTwOrders = async (cartItems: CartItem[], custName: string, custPhone: string, payMethod: string, customerId?: string) => {
@@ -3080,7 +3095,9 @@ export default function UbtPosPage() {
                                                             const hdrs: Record<string, string> = { "Content-Type": "application/json" };
                                                             if (token) hdrs["Authorization"] = `Bearer ${token}`;
                                                             setSelOrder((updatedData: any) => {
-                                                                fetch("/api/ubt/orders-db", { method: "PUT", headers: hdrs, body: JSON.stringify({ tableId: null, orderId: selOrder.id, items: updatedData.items, waiterName: (store.kassirSession as any)?.name }) }).catch(()=>null);
+                                                                if (!isTw) {
+                                                                    fetch("/api/ubt/yetkazish", { method: "PUT", headers: hdrs, body: JSON.stringify({ id: String(selOrder.id), items: updatedData.items }) }).catch(()=>null);
+                                                                }
                                                                 return updatedData;
                                                             });
                                                         }} className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${dark ? "bg-red-500/10 text-red-400 hover:bg-red-500/20" : "bg-red-50 text-red-500 hover:bg-red-100"}`}>
@@ -3102,7 +3119,9 @@ export default function UbtPosPage() {
                                                             const hdrs: Record<string, string> = { "Content-Type": "application/json" };
                                                             if (token) hdrs["Authorization"] = `Bearer ${token}`;
                                                             setSelOrder((updatedData: any) => {
-                                                                fetch("/api/ubt/orders-db", { method: "PUT", headers: hdrs, body: JSON.stringify({ tableId: null, orderId: selOrder.id, items: updatedData.items, waiterName: (store.kassirSession as any)?.name }) }).catch(()=>null);
+                                                                if (!isTw) {
+                                                                    fetch("/api/ubt/yetkazish", { method: "PUT", headers: hdrs, body: JSON.stringify({ id: String(selOrder.id), items: updatedData.items }) }).catch(()=>null);
+                                                                }
                                                                 return updatedData;
                                                             });
                                                         }} className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${dark ? "bg-sky-500/10 text-sky-400 hover:bg-sky-500/20" : "bg-sky-50 text-sky-600 hover:bg-sky-100"}`}>
