@@ -308,9 +308,7 @@ function FeaturesModal({ onClose }: { onClose: () => void }) {
 function LoginForm() {
     const shopType: ShopType = "ubt";
 
-    const [loginMode, setLoginMode] = useState<"admin" | "kassir">("admin");
     const [phone, setPhone] = useState(PHONE_PREFIX);
-    const [kassirUsername, setKassirUsername] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -384,51 +382,6 @@ function LoginForm() {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
-
-        if (loginMode === "kassir") {
-            if (!kassirUsername.trim() || !password.trim()) {
-                setError("Iltimos, login va parolni kiriting");
-                return;
-            }
-            setIsLoading(true);
-            try {
-                const res = await fetch("/api/kassir/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username: kassirUsername.trim(), password: password.trim(), shopType, shopCode: shopCode.trim() }),
-                });
-                const data = await res.json();
-                if (data.requireShopCode) {
-                    setRequireShopCode(true);
-                    setError(data.error);
-                    return;
-                }
-                if (data.success && data.session?.user) {
-                    localStorage.setItem("ubt-active-shop", data.session.user.tenantId || data.shopCode || "kassir");
-                    useStore.getState().clearTenantData();
-                    useStore.setState({
-                        kassirSession: {
-                            id: data.session.user.id,
-                            name: data.session.user.name,
-                            branch: data.session.user.branch,
-                            permissions: data.session.user.permissions,
-                            shopCode: data.shopCode,
-                            shopType: data.shopType || "ubt",
-                            token: data.session.token,
-                            printerIp: data.session.user.printerIp || "",
-                        },
-                    });
-                    router.push("/ubt-pos");
-                } else {
-                    setError(data.error || "Login yoki parol noto'g'ri");
-                }
-            } catch {
-                setError("Tizimga ulanishda xatolik yuz berdi");
-            } finally {
-                setIsLoading(false);
-            }
-            return;
-        }
 
         // Admin login
         const phoneVal = phone.trim();
@@ -631,23 +584,7 @@ function LoginForm() {
                                     </div>
                                 </div>
 
-                                {/* ── Login Mode Tabs ── */}
-                                <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1 mb-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => { setLoginMode("admin"); setError(""); }}
-                                        className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 ${loginMode === "admin" ? "bg-white text-blue-700 shadow-sm border border-slate-200" : "text-slate-500 hover:text-slate-700"}`}
-                                    >
-                                        Admin kirish
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => { setLoginMode("kassir"); setError(""); }}
-                                        className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all duration-200 ${loginMode === "kassir" ? "bg-white text-orange-600 shadow-sm border border-slate-200" : "text-slate-500 hover:text-slate-700"}`}
-                                    >
-                                        Kassir / POS kirish
-                                    </button>
-                                </div>
+                                {/* Admin Only Login */}
 
                                 {/* Error */}
                                 {error && (
@@ -661,8 +598,7 @@ function LoginForm() {
 
                                 {/* Form */}
                                 <form onSubmit={handleLogin} className="space-y-3">
-                                        {loginMode === "admin" ? (
-                                        /* ── ADMIN: phone field ── */
+                                        {/* ── ADMIN: phone field ── */}
                                         <div>
                                             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
                                                 Telefon raqam (Login)
@@ -685,26 +621,6 @@ function LoginForm() {
                                                 />
                                             </div>
                                         </div>
-                                        ) : (
-                                        /* ── KASSIR: username field ── */
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                                Kassir login (Username)
-                                            </label>
-                                            <div className="relative">
-                                                <User size={14} className="absolute left-3 top-3 text-slate-400" />
-                                                <input
-                                                    id="kassir-username"
-                                                    type="text"
-                                                    value={kassirUsername}
-                                                    onChange={(e) => { setKassirUsername(e.target.value); setError(""); }}
-                                                    autoComplete="username"
-                                                    className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50 border border-slate-200 placeholder-slate-400 transition-all duration-200 outline-none hover:border-slate-300 focus:ring-2 focus:border-orange-400 focus:ring-orange-400/10`}
-                                                    placeholder="Masalan: kassir1"
-                                                />
-                                            </div>
-                                        </div>
-                                        )}
 
                                     {/* Password */}
                                     <div>
@@ -753,20 +669,14 @@ function LoginForm() {
                                     <button
                                         id="login-submit-btn"
                                         type="submit"
-                                        disabled={isLoading || (loginMode === "admin" && !agreed)}
-                                        className={`w-full relative overflow-hidden rounded-xl py-3 text-sm font-bold text-white active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg group ${loginMode === "kassir" ? "bg-orange-500 hover:bg-orange-600 shadow-orange-200" : btnClass}`}
+                                        disabled={isLoading || !agreed}
+                                        className={`w-full relative overflow-hidden rounded-xl py-3 text-sm font-bold text-white active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg group ${btnClass}`}
                                     >
                                         <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/15 to-transparent skew-x-12" />
                                         {isLoading ? (
                                             <div className="flex items-center justify-center gap-2">
                                                 <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                                                 <span>Kirilmoqda...</span>
-                                            </div>
-                                        ) : loginMode === "kassir" ? (
-                                            <div className="flex items-center justify-center gap-2">
-                                                <UtensilsCrossed size={15} />
-                                                <span>POS ga kirish</span>
-                                                <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform duration-200" />
                                             </div>
                                         ) : (
                                             <div className="flex items-center justify-center gap-2">
@@ -780,8 +690,8 @@ function LoginForm() {
                             </div>
                         </div>
 
-                        {/* Oferta shartlari — faqat admin mode uchun */}
-                        {loginMode === "admin" && <div className="mt-3">
+                        {/* Oferta shartlari */}
+                        <div className="mt-3">
 
                             <div
                                 onClick={() => {
@@ -825,7 +735,7 @@ function LoginForm() {
                                     )}
                                 </p>
                             </div>
-                        </div>}
+                        </div>
 
                         {/* Footer */}
                         <p className="text-center text-slate-400 text-[11px] mt-4">
