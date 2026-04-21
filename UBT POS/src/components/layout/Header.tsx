@@ -527,47 +527,46 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
                         </button>
                         {showUser && (
                             <div className="absolute top-full mt-2 right-0 w-52 glass-card shadow-card py-1 z-50 animate-fade-in">
-                                {/* Profil info */}
-                                <div className="px-4 py-3 border-b border-surface-border">
-                                    <p className="text-sm font-semibold text-slate-800 capitalize">{user?.name || "Admin"}</p>
-                                    <p className="text-xs text-slate-400">{user?.role || "Administrator"}</p>
+                                <div className="px-4 py-3 border-b border-slate-200 dark:border-surface-border">
+                                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize">{user?.name || "Admin"}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide mt-0.5">{user?.role || "Administrator"}</p>
                                 </div>
 
                                 {/* Parolni o'zgartirish */}
                                 <button
                                     onClick={() => { setShowChangePw(true); setShowUser(false); }}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-200 hover:bg-surface-elevated transition-colors"
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-surface-elevated transition-colors"
                                 >
-                                    <KeyRound size={15} className="text-indigo-400" /> Parolni o&apos;zgartirish
+                                    <KeyRound size={15} className="text-indigo-500 dark:text-indigo-400" /> Parolni o&apos;zgartirish
                                 </button>
 
                                 <button
                                     onClick={() => { router.push("/settings"); setShowUser(false); }}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-200 hover:bg-surface-elevated transition-colors"
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-surface-elevated transition-colors"
                                 >
-                                    <Settings size={15} /> Sozlamalar
+                                    <Settings size={15} className="text-slate-500 dark:text-slate-400" /> Sozlamalar
                                 </button>
 
                                 <button
                                     onClick={() => { router.push("/ubt/settings/printers"); setShowUser(false); }}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-200 hover:bg-surface-elevated transition-colors"
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-surface-elevated transition-colors"
                                 >
-                                    <Printer size={15} /> Printerlar
+                                    <Printer size={15} className="text-slate-500 dark:text-slate-400" /> Printerlar
                                 </button>
 
-                                <div className="border-t border-surface-border my-1" />
+                                <div className="border-t border-slate-200 dark:border-surface-border my-1" />
 
                                 <button
                                     onClick={() => { setShowClearReports(true); setShowUser(false); }}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                                 >
                                     <Trash2 size={15} /> Hisobotlarni tozalash
                                 </button>
 
-                                <div className="border-t border-surface-border mt-1 pt-1">
+                                <div className="border-t border-slate-200 dark:border-surface-border mt-1 pt-1">
                                     <button
                                         onClick={() => { logout(); router.replace("/?mode=admin"); }}
-                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-danger hover:bg-surface-elevated transition-colors"
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 dark:text-danger hover:bg-red-50 dark:hover:bg-surface-elevated transition-colors"
                                     >
                                         <LogOut size={15} /> Chiqish
                                     </button>
