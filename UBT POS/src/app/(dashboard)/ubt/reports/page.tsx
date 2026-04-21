@@ -210,14 +210,14 @@ export default function UbtReportsPage() {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-800">{t('reports.title') || 'UBT Hisobotlari'}</h1>
                     <p className="text-sm text-slate-400 mt-1">
                         {t('reports.subTitle') || "Restoran faoliyati bo'yicha batafsil statistika va tahlil."}
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                     <DateRangePicker value={dateFilter} onChange={setDateFilter} />
                     <button className="btn-primary flex items-center gap-2">
                         <Download size={16} /> Eksport
@@ -312,7 +312,7 @@ export default function UbtReportsPage() {
                                         </LineChart>
                                     </ResponsiveContainer>
                                 </div>
-                                <div className="grid grid-cols-3 gap-4 mt-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
                                     <div className="p-4 rounded-xl border border-surface-border bg-surface-elevated">
                                         <p className="text-sm text-slate-400">Jami zakazlar</p>
                                         <p className="text-2xl font-bold text-slate-800 mt-1">{totalOrders} ta</p>
@@ -412,30 +412,32 @@ export default function UbtReportsPage() {
                     <div className="space-y-6 animate-slide-up">
                         <h2 className="section-title">Ofitsiantlar faoliyati (KPI)</h2>
                         {WAITER_DATA.length === 0 ? renderEmptyData() : (
-                            <table className="data-table w-full">
-                                <thead>
-                                    <tr>
-                                        <th>Ofitsiant</th>
-                                        <th>Xizmat qilingan zakazlar</th>
-                                        <th>Keltirilgan tushum</th>
-                                        <th>Reyting / Choy-chaqa</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {WAITER_DATA.map((w, i) => (
-                                        <tr key={i}>
-                                            <td className="font-semibold text-brand-400">👤 {w.name}</td>
-                                            <td>{w.orders} ta</td>
-                                            <td className="font-medium text-emerald-400">{formatCurrency(w.revenue)}</td>
-                                            <td>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-amber-400">★ {w.rating.toFixed(1)}</span>
-                                                </div>
-                                            </td>
+                            <div className="overflow-x-auto">
+                                <table className="data-table w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>Ofitsiant</th>
+                                            <th className="whitespace-nowrap">Xizmat qilingan zakazlar</th>
+                                            <th className="whitespace-nowrap">Keltirilgan tushum</th>
+                                            <th className="whitespace-nowrap">Reyting / Choy-chaqa</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {WAITER_DATA.map((w, i) => (
+                                            <tr key={i}>
+                                                <td className="font-semibold text-brand-400 whitespace-nowrap">👤 {w.name}</td>
+                                                <td className="whitespace-nowrap">{w.orders} ta</td>
+                                                <td className="font-medium text-emerald-400 whitespace-nowrap">{formatCurrency(w.revenue)}</td>
+                                                <td className="whitespace-nowrap">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-amber-400">★ {w.rating.toFixed(1)}</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         )}
                     </div>
                 )}
@@ -445,28 +447,30 @@ export default function UbtReportsPage() {
                     <div className="space-y-6 animate-slide-up">
                         <h2 className="section-title">Kassirlar hisoboti</h2>
                         {CASHIER_DATA.length === 0 ? renderEmptyData() : (
-                            <table className="data-table w-full">
-                                <thead>
-                                    <tr>
-                                        <th>Kassir ismi</th>
-                                        <th>Tranzaksiyalar soni</th>
-                                        <th>Naqd (tushum)</th>
-                                        <th>Plastik Karta (tushum)</th>
-                                        <th>Jami O'tkazilgan</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {CASHIER_DATA.map((c, i) => (
-                                        <tr key={i}>
-                                            <td className="font-semibold">👩‍💼 {c.name}</td>
-                                            <td>{c.transactions} ta</td>
-                                            <td className="text-green-400">{formatCurrency(c.cash)}</td>
-                                            <td className="text-blue-400">{formatCurrency(c.card)}</td>
-                                            <td className="font-bold text-emerald-400">{formatCurrency(c.amount)}</td>
+                            <div className="overflow-x-auto">
+                                <table className="data-table w-full">
+                                    <thead>
+                                        <tr>
+                                            <th className="whitespace-nowrap">Kassir ismi</th>
+                                            <th className="whitespace-nowrap">Tranzaksiyalar soni</th>
+                                            <th className="whitespace-nowrap">Naqd (tushum)</th>
+                                            <th className="whitespace-nowrap">Plastik Karta (tushum)</th>
+                                            <th className="whitespace-nowrap">Jami O'tkazilgan</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {CASHIER_DATA.map((c, i) => (
+                                            <tr key={i}>
+                                                <td className="font-semibold whitespace-nowrap">👩‍💼 {c.name}</td>
+                                                <td className="whitespace-nowrap">{c.transactions} ta</td>
+                                                <td className="text-green-400 whitespace-nowrap">{formatCurrency(c.cash)}</td>
+                                                <td className="text-blue-400 whitespace-nowrap">{formatCurrency(c.card)}</td>
+                                                <td className="font-bold text-emerald-400 whitespace-nowrap">{formatCurrency(c.amount)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         )}
                     </div>
                 )}
@@ -481,28 +485,30 @@ export default function UbtReportsPage() {
                             </p>
                         </div>
                         {RETURN_DATA.length === 0 ? renderEmptyData() : (
-                            <table className="data-table w-full">
-                                <thead>
-                                    <tr>
-                                        <th>Sana / Vaqt</th>
-                                        <th>Taom nomi</th>
-                                        <th>Ofitsiant</th>
-                                        <th>Sabab</th>
-                                        <th>Summa</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {RETURN_DATA.map((r, i) => (
-                                        <tr key={i}>
-                                            <td className="text-slate-400">{r.date}</td>
-                                            <td className="font-medium">{r.dish}</td>
-                                            <td>{r.waiter}</td>
-                                            <td className="text-red-400">{r.reason}</td>
-                                            <td className="font-semibold text-slate-800">{formatCurrency(r.amount)}</td>
+                            <div className="overflow-x-auto">
+                                <table className="data-table w-full">
+                                    <thead>
+                                        <tr>
+                                            <th className="whitespace-nowrap">Sana / Vaqt</th>
+                                            <th className="whitespace-nowrap">Taom nomi</th>
+                                            <th className="whitespace-nowrap">Ofitsiant</th>
+                                            <th className="whitespace-nowrap">Sabab</th>
+                                            <th className="whitespace-nowrap">Summa</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {RETURN_DATA.map((r, i) => (
+                                            <tr key={i}>
+                                                <td className="text-slate-400 whitespace-nowrap">{r.date}</td>
+                                                <td className="font-medium whitespace-nowrap">{r.dish}</td>
+                                                <td className="whitespace-nowrap">{r.waiter}</td>
+                                                <td className="text-red-400 whitespace-nowrap">{r.reason}</td>
+                                                <td className="font-semibold text-slate-800 whitespace-nowrap">{formatCurrency(r.amount)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         )}
                     </div>
                 )}
@@ -511,7 +517,7 @@ export default function UbtReportsPage() {
                 {activeTab === "expense" && (
                     <div className="space-y-6 animate-slide-up">
                         {EXPENSE_DATA.length === 0 ? renderEmptyData() : (
-                            <div className="grid grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
                                     <h2 className="section-title mb-6 text-red-400">Xarajatlar tarkibi</h2>
                                     <div className="h-64">
@@ -554,7 +560,7 @@ export default function UbtReportsPage() {
                 {activeTab === "income" && (
                     <div className="space-y-6 animate-slide-up">
                         {INCOME_DATA.length === 0 ? renderEmptyData() : (
-                            <div className="grid grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
                                     <h2 className="section-title mb-6 text-emerald-400">Kirimlar manbalari</h2>
                                     <div className="h-64">
