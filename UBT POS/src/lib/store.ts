@@ -372,6 +372,8 @@ export interface AppState {
     setDeviceSession: (session: AppState["deviceSession"]) => void;
     setKassirSession: (session: AppState["kassirSession"]) => void;
     kassirLogout: () => void;
+
+    clearTenantData: () => void;
 }
 
 export const useStore = create<AppState>()(
@@ -820,15 +822,30 @@ export const useStore = create<AppState>()(
                     user: { name: username, role: "Super Administrator" }
                 }),
 
-            logout: () =>
+            clearTenantData: () =>
                 set({
-                    isAuthenticated: false,
-                    user: null
+                    receipts: [], expenditures: [], transfers: [], inventoryCounts: [], writeoffs: [],
+                    ubtTables: [], kdsOrders: [],
+                    nomenklaturaKategoriyalar: [], nomenklaturaTaomlar: [], nomenklaturaXomashyo: [],
+                    staff: [], fraudAlerts: [], customers: [],
+                    products: [], topProducts: [], recentTransactions: [], pharmacyDrugs: [],
+                }),
+
+            logout: () =>
+                set((state) => {
+                    state.clearTenantData();
+                    return {
+                        isAuthenticated: false,
+                        user: null
+                    };
                 }),
 
             setDeviceSession: (session) => set({ deviceSession: session }),
             setKassirSession: (session) => set({ kassirSession: session }),
-            kassirLogout: () => set({ kassirSession: null }),
+            kassirLogout: () => set((state) => {
+                state.clearTenantData();
+                return { kassirSession: null };
+            }),
         }),
         {
             name: getStorageKey(),

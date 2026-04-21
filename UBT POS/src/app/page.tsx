@@ -316,6 +316,8 @@ function LoginForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const [agreed, setAgreed] = useState(false);
+    const [requireShopCode, setRequireShopCode] = useState(false);
+    const [shopCode, setShopCode] = useState("");
     const [mounted, setMounted] = useState(false);
     const [showOferta, setShowOferta] = useState(false);
     const [showFeatures, setShowFeatures] = useState(false);
@@ -393,10 +395,17 @@ function LoginForm() {
                 const res = await fetch("/api/kassir/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username: kassirUsername.trim(), password: password.trim(), shopType }),
+                    body: JSON.stringify({ username: kassirUsername.trim(), password: password.trim(), shopType, shopCode: shopCode.trim() }),
                 });
                 const data = await res.json();
+                if (data.requireShopCode) {
+                    setRequireShopCode(true);
+                    setError(data.error);
+                    return;
+                }
                 if (data.success && data.session?.user) {
+                    localStorage.setItem("ubt-active-shop", data.session.user.tenantId || data.shopCode || "kassir");
+                    useStore.getState().clearTenantData();
                     useStore.setState({
                         kassirSession: {
                             id: data.session.user.id,
@@ -440,16 +449,24 @@ function LoginForm() {
             const res = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username: phoneVal, password }),
+                body: JSON.stringify({ username: phoneVal, password, shopCode: shopCode.trim() }),
             });
 
             const data = await res.json();
+
+            if (data.requireShopCode) {
+                setRequireShopCode(true);
+                setError(data.error);
+                return;
+            }
 
             if (res.ok && data.success) {
                 if (data.isSuperAdmin) {
                     router.push("/super-admin");
                     return;
                 }
+                localStorage.setItem("ubt-active-shop", data.tenant?.id || phoneVal);
+                useStore.getState().clearTenantData();
                 setUser({ id: data.tenant?.id || phoneVal, name: data.tenant?.shopName || phoneVal, role: "ADMIN", tenant: data.tenant, expiresAt: data.expiresAt });
                 router.push("/ubt");
             } else {
@@ -713,6 +730,24 @@ function LoginForm() {
                                             </button>
                                         </div>
                                     </div>
+
+                                    {requireShopCode && (
+                                        <div className="mb-3">
+                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                                                Filial Kodi (Shop Code)
+                                            </label>
+                                            <div className="relative">
+                                                <input
+                                                    id="shop-code"
+                                                    type="text"
+                                                    value={shopCode}
+                                                    onChange={(e) => setShopCode(e.target.value)}
+                                                    className={`w-full px-3 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50 border border-slate-200 placeholder-slate-400 transition-all duration-200 outline-none hover:border-slate-300 focus:ring-2 ${focusClass}`}
+                                                    placeholder="Masalan: SHOP123"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Submit */}
                                     <button

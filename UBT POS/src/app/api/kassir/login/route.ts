@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { username, password } = await request.json();
+        const { username, password, shopCode } = await request.json();
 
         if (!username || !password) {
             return NextResponse.json(
@@ -85,10 +85,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, error: "Foydalanuvchi topilmadi. Login: @username yoki qurilma nomi bilan kiring" }, { status: 401 });
         }
 
-        // Try to authenticate against matched staff
         let authenticatedStaff = null;
         let authenticatedTenant = null;
 
+        const validMatches = [];
         for (const staff of staffList) {
             const result = await authenticateKassir(staff.username, password, staff.tenantId);
             if (result.success && result.staff) {
@@ -96,11 +96,26 @@ export async function POST(request: NextRequest) {
                     where: { id: staff.tenantId },
                 });
                 if (tenant && tenant.status === "active") {
-                    authenticatedStaff = staff;
-                    authenticatedTenant = tenant;
-                    break;
+                    validMatches.push({ staff, tenant });
                 }
             }
+        }
+
+        if (validMatches.length > 1) {
+            if (shopCode) {
+                const matched = validMatches.find(m => m.tenant.shopCode?.toUpperCase() === shopCode.toUpperCase());
+                if (matched) {
+                    authenticatedStaff = matched.staff;
+                    authenticatedTenant = matched.tenant;
+                } else {
+                    return NextResponse.json({ success: false, error: "Kiritilgan Shop Code xato. Iltimos filiallaringiz kodini tekshiring." }, { status: 401 });
+                }
+            } else {
+                return NextResponse.json({ success: false, requireShopCode: true, error: "Sizning loginingiz bir nechta filialda bir xil ro'yxatdan o'tgan. Iltimos, 'Shop Code' kiritish oynasini to'ldiring." }, { status: 401 });
+            }
+        } else if (validMatches.length === 1) {
+            authenticatedStaff = validMatches[0].staff;
+            authenticatedTenant = validMatches[0].tenant;
         }
 
         if (!authenticatedStaff || !authenticatedTenant) {

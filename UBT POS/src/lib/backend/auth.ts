@@ -205,8 +205,11 @@ export async function authenticateAdmin(shopCode: string | null, username: strin
             orConditions.push({ adminUsername: username });
             orConditions.push({ phone: username });
         }
-        tenant = await prisma.tenant.findFirst({ where: { OR: orConditions } });
-    }
+        const matchingTenants = await prisma.tenant.findMany({ where: { OR: orConditions } });
+        if (matchingTenants.length > 1) {
+            return { success: false, requireShopCode: true, error: "Sizning raqamingiz tizimda bir nechta filialga ulangan. Iltimos, aynan qaysi filialga kirmoqchi ekanligingizni bilishimiz uchun 'Shop Code' ni ham kiriting." };
+        }
+        tenant = matchingTenants.length > 0 ? matchingTenants[0] : null;
 
     if (!tenant || !["active", "trial", "suspended"].includes(tenant.status)) {
         return { success: false, error: "Hisob topilmadi yoki to'xtatilgan" };
