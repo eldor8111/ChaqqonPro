@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/backend/db";
 import { hashPassword } from "@/lib/backend/auth";
+import { sendSms } from "@/lib/backend/sms";
 import crypto from "crypto";
 
 // In-process memory caches for OTP and temporary tokens.
@@ -48,16 +49,24 @@ export async function POST(request: NextRequest) {
             // Generate OTP
             const otpCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
 
-            // TODO: Here you would integrate with Eskiz.uz or PlayMobile API to actually send the SMS
-            // fetch("https://sms.eskiz.uz/api/message/sms/send", { ... })
+            // Eskiz provider orqali SMS jo'natish
+            // (Test vaqti provayder ishlamasa console.log ga qarab yoxud "777777" orqali kirish mumkin)
+            const message = `Sizning ChaqqonPro tizimi uchun tasdiqlash kodingiz: ${otpCode}`;
             
-            // For now, save memory cache and output to server console
-            console.log(`[🔑 OTP SENT] Phone: ${normalizedPhone}, Code: ${otpCode}`);
-
+            // Xatoliklarga qaramay kodni keshga saqlaymiz, sababi: test muhliti uchun SMS kelsin/kelmasin baribir Console'da chiquvchi log imkoni bor
             otpCache.set(normalizedPhone, {
                 code: otpCode,
                 expiresAt: Date.now() + 3 * 60 * 1000 // Valid for 3 minutes
             });
+
+            console.log(`[🔑 OTP SENT TO ESKIZ QUEUE] Phone: ${normalizedPhone}, Code: ${otpCode}`);
+
+            try {
+                // SMS Xizmatini chaqiramiz (Asinxron ishlashi uchun kuttirmasak ham mayli lekin testlarda muhim)
+                await sendSms(normalizedPhone, message);
+            } catch (err) {
+                console.error("SMS jo'natish ishlamadi (Provayderga tegilmadi)");
+            }
 
             return NextResponse.json({ success: true, message: "Kod yuborildi" });
         }
