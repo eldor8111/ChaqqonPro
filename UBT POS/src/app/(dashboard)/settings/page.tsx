@@ -1013,6 +1013,131 @@ export default function SettingsPage() {
                         </div>
                     )}
 
+                    {/* Kitchen Receipt Settings */}
+                    {activeTab === "receipt" && receiptDraft && (
+                        <div className="space-y-4 mt-8 border-t border-slate-200 dark:border-slate-700/50 pt-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="section-title">🍳 Oshxona Cheki Sozlamalari</h2>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Oshpaz printerida chiqadigan buyurtma chekining ko'rinishini sozlang</p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        const currentSettings = (settingsData as any)?.tenant?.settings || {};
+                                        updateSettingsMutation.mutate({
+                                            ...currentSettings,
+                                            kitchenReceiptSettings: {
+                                                ...(receiptDraft.kitchenReceiptSettings || {}),
+                                            }
+                                        });
+                                        alert("Oshxona cheki sozlamalari saqlandi!");
+                                    }}
+                                    disabled={updateSettingsMutation.isPending}
+                                    className="btn-primary flex items-center gap-2">
+                                    <Printer size={16} /> Saqlash
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-8">
+                                {/* Kitchen settings form */}
+                                <div className="space-y-4">
+                                    {/* Header text */}
+                                    <div className="glass-card p-5 space-y-3">
+                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">📝 Oshxona cheki sarlavhasi</label>
+                                        <input
+                                            className="input-field w-full"
+                                            value={receiptDraft.kitchenHeaderText || ""}
+                                            onChange={e => setReceiptDraft({ ...receiptDraft, kitchenHeaderText: e.target.value })}
+                                            placeholder="Masalan: OSHXONA BUYURTMASI"
+                                        />
+                                    </div>
+
+                                    {/* Kitchen toggles */}
+                                    <div className="glass-card p-5 space-y-2">
+                                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Nima ko'rsatilsin?</p>
+                                        {[
+                                            { key: "kitchenShowTable", label: "Stol raqami", desc: "Buyurtma qaysi stoldan ekanligini ko'rsatadi" },
+                                            { key: "kitchenShowWaiter", label: "Ofitsiant ismi", desc: "Kim buyurtma olgani yoziladi" },
+                                            { key: "kitchenShowOrderNo", label: "Buyurtma raqami", desc: "Tartib raqami (order #)" },
+                                            { key: "kitchenShowTime", label: "Vaqt va sana", desc: "Buyurtma qabul qilingan aniq vaqt" },
+                                            { key: "kitchenShowNote", label: "Izoh (Oshpaz uchun eslatma)", desc: "Mijozning maxsus xohishi" },
+                                            { key: "kitchenShowOrderType", label: "Zakaz turi (Zal/Saboy/Yetkazish)", desc: "Buyurtma qaysi usulda ekanini ko'rsatadi" },
+                                        ].map(item => (
+                                            <label key={item.key} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-elevated cursor-pointer transition-colors">
+                                                <input
+                                                    type="checkbox"
+                                                    className="w-4 h-4 rounded text-brand border-slate-600 bg-surface focus:ring-brand focus:ring-offset-surface"
+                                                    checked={receiptDraft[item.key] !== false}
+                                                    onChange={e => setReceiptDraft({ ...receiptDraft, [item.key]: e.target.checked })}
+                                                />
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{item.label}</p>
+                                                    <p className="text-xs text-slate-400">{item.desc}</p>
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+
+                                    {/* Font size */}
+                                    <div className="glass-card p-5 space-y-3">
+                                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Shrift o'lchami</p>
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex-1">
+                                                <p className="text-xs text-slate-400 mb-1">Taom nomi: <span className="text-brand font-bold">{receiptDraft.kitchenItemFontSize || 16}px</span></p>
+                                                <input
+                                                    type="range" min={10} max={28} step={1}
+                                                    value={receiptDraft.kitchenItemFontSize || 16}
+                                                    onChange={e => setReceiptDraft({ ...receiptDraft, kitchenItemFontSize: Number(e.target.value) })}
+                                                    className="w-full accent-brand"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Kitchen Preview */}
+                                <div className="sticky top-4">
+                                    <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">🔍 Oshxona cheki ko'rinishi</p>
+                                    <div className="bg-white text-black rounded-sm shadow-2xl w-72 mx-auto font-mono text-sm leading-tight flex flex-col overflow-hidden border border-slate-200">
+                                        {/* Header */}
+                                        <div className="bg-slate-100 border-b border-dashed border-slate-400 p-3 text-center">
+                                            <p className="font-black text-lg uppercase tracking-wider">
+                                                {receiptDraft.kitchenHeaderText || "OSHXONA BUYURTMASI"}
+                                            </p>
+                                        </div>
+                                        {/* Order info */}
+                                        <div className="p-4 space-y-1">
+                                            {receiptDraft.kitchenShowOrderNo !== false && <p className="text-xs font-bold">BUYURTMA #: 0042</p>}
+                                            {receiptDraft.kitchenShowTime !== false && <p className="text-[10px] text-slate-600">Vaqt: 12:45 · 22.04.2026</p>}
+                                            {receiptDraft.kitchenShowTable !== false && <p className="text-xs font-bold">STOL: 7</p>}
+                                            {receiptDraft.kitchenShowWaiter !== false && <p className="text-[10px] text-slate-600">Ofitsiant: Sardor</p>}
+                                            {receiptDraft.kitchenShowOrderType !== false && <p className="text-[10px] font-semibold text-slate-700">📍 Zal</p>}
+
+                                            <div className="border-t-2 border-black my-2"></div>
+
+                                            {[
+                                                { name: "1x  Qovurma lag'mon", qty: "1" },
+                                                { name: "2x  Shashlyk", qty: "2" },
+                                                { name: "1x  Choy (katta)", qty: "1" },
+                                            ].map((item, i) => (
+                                                <p key={i} className="font-bold" style={{ fontSize: `${receiptDraft.kitchenItemFontSize || 16}px` }}>
+                                                    {item.name}
+                                                </p>
+                                            ))}
+
+                                            {receiptDraft.kitchenShowNote !== false && (
+                                                <div className="border-t border-dashed border-slate-400 mt-2 pt-2">
+                                                    <p className="text-[10px] text-slate-600 italic">💬 Izoh: Sho'rsiz tayyorlang</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <p className="text-center text-slate-500 text-xs mt-3">Namuna oshxona cheki (jonli yangilanadi)</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Audit Log */}
                     {activeTab === "audit" && (
                         <div className="space-y-4">
