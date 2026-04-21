@@ -126,32 +126,32 @@ export default function DavomatPage() {
             <div className="max-w-7xl mx-auto space-y-6">
                 {/* Header */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row md:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex flex-shrink-0 items-center justify-center">
                                 <Calendar className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('nav.attendance')} {t('nav.reports')}</h1>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">{t('reports.subTitle')}</p>
+                                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white leading-tight">{t('nav.attendance')} {t('nav.reports')}</h1>
+                                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">{t('reports.subTitle')}</p>
                             </div>
                         </div>
                         <button onClick={exportToCSV}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors">
+                            className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium transition-colors">
                             <Download className="w-4 h-4" />
                             {t('common.export')}
                         </button>
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex items-center gap-6 mt-6 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-6 mt-6 border-b border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
                         <button onClick={() => setActiveTab("daily")}
-                            className={`pb-4 px-2 text-sm font-semibold transition-colors relative ${activeTab === "daily" ? "text-blue-600 dark:text-blue-400" : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"}`}>
+                            className={`pb-4 px-2 text-sm font-semibold transition-colors relative whitespace-nowrap ${activeTab === "daily" ? "text-blue-600 dark:text-blue-400" : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"}`}>
                             {t('reports.daily')} {t('nav.attendance')}
                             {activeTab === "daily" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-t-full" />}
                         </button>
                         <button onClick={() => setActiveTab("summary")}
-                            className={`pb-4 px-2 text-sm font-semibold transition-colors relative ${activeTab === "summary" ? "text-blue-600 dark:text-blue-400" : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"}`}>
+                            className={`pb-4 px-2 text-sm font-semibold transition-colors relative whitespace-nowrap ${activeTab === "summary" ? "text-blue-600 dark:text-blue-400" : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"}`}>
                             {t('reports.title')} ({t('reports.monthly')}/{t('reports.yearly')})
                             {activeTab === "summary" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-t-full" />}
                         </button>
