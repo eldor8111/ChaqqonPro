@@ -138,186 +138,171 @@ export default function PrintersPage() {
     const isUsb = (p: UbtPrinter) => p.ipAddress.startsWith("usb://");
 
     return (
-        <div className="p-6 max-w-3xl mx-auto">
+        <div className="flex flex-col h-full bg-slate-50 dark:bg-background overflow-hidden relative">
+            <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-brand/5 dark:from-brand/10 to-transparent pointer-events-none" />
+            
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
-                        <Printer size={20} className="text-orange-600" />
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-black text-gray-800">{t('nav.printers') || 'Printerlar'}</h1>
-                        <p className="text-sm text-gray-500">ESC/POS termik printerlar (WiFi va USB)</p>
-                    </div>
+            <div className="glass-header flex items-center justify-between p-4 sm:p-6 shrink-0 relative z-10 border-b border-slate-200 dark:border-slate-800">
+                <div>
+                    <h1 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                        {t('nav.printers') || 'Printerlar'}
+                    </h1>
+                    <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-widest mt-1">ESC/POS Termik Printerlar</p>
                 </div>
-                <button onClick={handleOpenModal}
-                    className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm transition-all shadow-sm active:scale-[0.97]">
-                    <Plus size={16} /> {t('common.add')} {t('nav.printers') || 'Printer'}
+                <button onClick={handleOpenModal} className="btn-primary shadow-brand/20 shadow-lg flex items-center gap-2">
+                    <Plus size={18} /> <span className="hidden sm:inline">{t('common.add')} {t('nav.printers') || 'Printer'}</span>
                 </button>
             </div>
 
-            {/* Success */}
+            {/* Success alert */}
             {success && (
-                <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2 text-emerald-700 text-sm font-semibold">
-                    <CheckCircle size={16} /> {success}
+                <div className="m-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-3 text-emerald-600 dark:text-emerald-400 font-semibold animate-in fade-in slide-in-from-top-2 relative z-10 mx-6">
+                    <CheckCircle size={18} /> {success}
                 </div>
             )}
 
-            {/* Printers list */}
-            {loading ? (
-                <div className="flex items-center justify-center py-16 text-gray-400">
-                    <Loader2 size={28} className="animate-spin mr-2" /> Yuklanmoqda...
-                </div>
-            ) : printers.length === 0 ? (
-                <div className="py-16 flex flex-col items-center gap-3 text-gray-400">
-                    <Printer size={48} className="text-gray-200" />
-                    <p className="font-bold text-gray-500">Hech qanday printer qo&apos;shilmagan</p>
-                    <p className="text-sm text-center">Printer qo&apos;shish tugmasini bosib, printer nomi va IP manzilini kiriting</p>
-                </div>
-            ) : (
-                <div className="space-y-3">
-                    {printers.map(p => (
-                        <div key={p.id}
-                            className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all">
-                            {/* Icon */}
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${isUsb(p) ? "bg-sky-50" : "bg-orange-50"}`}>
-                                {isUsb(p)
-                                    ? <Usb size={22} className="text-sky-500" />
-                                    : <Printer size={22} className="text-orange-500" />}
-                            </div>
-                            {/* Info */}
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                    <p className="font-black text-gray-800 text-base leading-tight">{p.name}</p>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isUsb(p) ? "bg-sky-100 text-sky-600" : "bg-orange-100 text-orange-600"}`}>
-                                        {isUsb(p) ? "USB" : "WiFi"}
-                                    </span>
-                                </div>
-                                <p className="text-sm text-gray-500 font-mono">
-                                    {isUsb(p) ? p.ipAddress.replace("usb://", "") : `${p.ipAddress}:${p.port}`}
-                                </p>
-                            </div>
-                            {/* Ping status */}
-                            {pingStatus[p.id] === "checking" && (
-                                <Loader2 size={16} className="animate-spin text-sky-500 flex-shrink-0" />
-                            )}
-                            {pingStatus[p.id] === "ok" && (
-                                <span className="flex items-center gap-1 text-emerald-600 text-xs font-bold">
-                                    <Wifi size={14} /> Ulandi
-                                </span>
-                            )}
-                            {pingStatus[p.id] === "fail" && (
-                                <span className="flex items-center gap-1 text-red-500 text-xs font-bold">
-                                    <WifiOff size={14} /> Xato
-                                </span>
-                            )}
-                            {/* Actions */}
-                            <div className="flex items-center gap-2">
-                                <button onClick={() => handlePing(p)}
-                                    className="px-3 py-1.5 rounded-xl bg-sky-50 text-sky-600 hover:bg-sky-100 text-xs font-bold border border-sky-100 transition-all">
-                                    Test chek
-                                </button>
-                                <button onClick={() => handleDelete(p.id)}
-                                    className="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition-all">
-                                    <Trash2 size={14} />
-                                </button>
-                            </div>
+            {/* List */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 relative z-10">
+                <div className="max-w-5xl mx-auto space-y-4">
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                            <Loader2 size={32} className="animate-spin mb-4 text-brand" />
+                            <p className="font-medium animate-pulse">Yuklanmoqda...</p>
                         </div>
-                    ))}
-                </div>
-            )}
+                    ) : printers.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-24 text-slate-400 glass-card rounded-3xl border-dashed">
+                            <div className="w-20 h-20 mb-4 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center">
+                                <Printer size={32} className="text-slate-300 dark:text-slate-600" />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-1">Mavjud Printerlar Yo'q</h3>
+                            <p className="text-sm">Yangi printer qo'shish uchun yuqoridagi tugmadan foydalaning.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {printers.map(p => (
+                                <div key={p.id} className="glass-card hover:border-brand/30 hover:shadow-brand/5 group transition-all p-5">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex gap-4 items-center">
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${isUsb(p) ? "bg-sky-500/10 text-sky-500" : "bg-brand/10 text-brand"}`}>
+                                                {isUsb(p) ? <Usb size={26} /> : <Printer size={26} />}
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg leading-none">{p.name}</h3>
+                                                    <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${isUsb(p) ? "bg-sky-500/10 text-sky-600 dark:text-sky-400" : "bg-brand/10 text-brand"}`}>
+                                                        {isUsb(p) ? "USB" : "WiFi"}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                                                    {isUsb(p) ? p.ipAddress.replace("usb://", "") : `${p.ipAddress}:${p.port}`}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => handleDelete(p.id)} className="w-9 h-9 rounded-xl flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors" title="O'chirish">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            {pingStatus[p.id] === "checking" && <span className="flex items-center gap-1.5 text-xs font-semibold text-sky-500 bg-sky-500/10 px-2 py-1 rounded-lg"><Loader2 size={14} className="animate-spin" /> Tekshirilmoqda</span>}
+                                            {pingStatus[p.id] === "ok" && <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg"><Wifi size={14} /> Aloqa mavjud</span>}
+                                            {pingStatus[p.id] === "fail" && <span className="flex items-center gap-1.5 text-xs font-semibold text-red-500 bg-red-500/10 px-2 py-1 rounded-lg"><WifiOff size={14} /> Xato</span>}
+                                        </div>
+                                        <button onClick={() => handlePing(p)} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                            Test chek
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
-            {/* Info box */}
-            <div className="mt-6 p-4 bg-amber-50 border border-amber-100 rounded-xl">
-                <p className="text-sm font-bold text-amber-700 mb-1">📡 Ulanish turlari</p>
-                <ul className="text-xs text-amber-600 space-y-1">
-                    <li>• <strong>WiFi/LAN:</strong> Printer va server bir xil tarmoqda bo&apos;lishi kerak, port 9100</li>
-                    <li>• <strong>USB:</strong> Printer kompyuterga USB orqali ulangan va Windows da o&apos;rnatilgan bo&apos;lishi kerak</li>
-                    <li>• ESC/POS protokolini qo&apos;llab-quvvatlashi kerak (Epson, Star, XP-Printer)</li>
-                </ul>
+                    {/* Info */}
+                    <div className="glass-card bg-amber-500/5 border-amber-500/20 p-5 mt-8">
+                        <div className="flex items-center gap-2 mb-2">
+                            <Wifi className="text-amber-500" size={18} />
+                            <h3 className="font-bold text-amber-600 dark:text-amber-500">Ulanish Turlari Haqqida</h3>
+                        </div>
+                        <ul className="text-sm text-amber-700/80 dark:text-amber-200/80 space-y-1.5 pl-7 list-disc">
+                            <li><strong>WiFi/LAN:</strong> Printer pos tizimi (kassa qurilmasi) yoki server tarmog'i bilan bir xil tarmoqda bo'lishi lozim (TCP: 9100).</li>
+                            <li><strong>USB:</strong> Faqatgina printer ulangan kompyuter yoki kassadan turib ishlatish mumkin. Windows "Printerlar va skanerlar" sozlamasidagi rasmiy ismi aniq yozilishi shart.</li>
+                            <li>Barcha printerlar <strong>ESC/POS</strong> standartida bo'lishi (Xprinter, Epson, Star va h.k.) va kognitiv drayver bilan sozlangan bo'lishi ishlashni tezlashtiradi.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
-            {/* Add Modal */}
+            {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-                        <div className="p-5 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-                            <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-2 font-bold text-lg">
-                                    <Printer size={20} /> Printer qo&apos;shish
-                                </div>
-                                <button onClick={() => setShowModal(false)} className="p-1.5 rounded-full hover:bg-white/20">
-                                    <X size={20} />
-                                </button>
-                            </div>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 dark:bg-black/60 backdrop-blur-md p-4 animate-in fade-in">
+                    <div className="w-full max-w-md bg-white dark:bg-[#0f172a] rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-800">
+                        <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <h2 className="text-xl font-black bg-gradient-to-r from-brand to-brand/70 bg-clip-text text-transparent flex items-center gap-2">
+                                <Printer size={22} className="text-brand" /> Yangi Printer
+                            </h2>
+                            <button onClick={() => setShowModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">
+                                <X size={18} />
+                            </button>
                         </div>
-                        <div className="p-5 space-y-4">
-                            {/* Connect type tabs */}
-                            <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
-                                <button
-                                    onClick={() => setConnectType("wifi")}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${connectType === "wifi" ? "bg-white shadow text-orange-600" : "text-gray-500 hover:text-gray-700"}`}>
-                                    <Wifi size={16} /> WiFi / LAN
+
+                        <div className="p-6 space-y-5">
+                            {/* Tabs */}
+                            <div className="flex gap-2 p-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-2xl">
+                                <button onClick={() => setConnectType("wifi")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${connectType === "wifi" ? "bg-white dark:bg-surface shadow-sm text-brand" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}>
+                                    <Wifi size={16} /> Tarmoq (LAN/WiFi)
                                 </button>
-                                <button
-                                    onClick={handleSwitchToUsb}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${connectType === "usb" ? "bg-white shadow text-sky-600" : "text-gray-500 hover:text-gray-700"}`}>
-                                    <Usb size={16} /> USB
+                                <button onClick={handleSwitchToUsb} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${connectType === "usb" ? "bg-white dark:bg-surface shadow-sm text-sky-500" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}>
+                                    <Usb size={16} /> USB Ulangan
                                 </button>
                             </div>
 
                             {error && (
-                                <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-600 text-sm">
-                                    <AlertCircle size={15} /> {error}
+                                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-2 text-red-500 text-sm font-medium">
+                                    <AlertCircle size={16} className="shrink-0" /> <span className="leading-tight">{error}</span>
                                 </div>
                             )}
 
-                            {/* Printer name */}
                             <div>
-                                <label className="text-xs font-bold text-gray-500 mb-1.5 block">Printer nomi *</label>
-                                <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                                    placeholder="Masalan: Kassa printer" autoFocus
-                                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-800 focus:outline-none focus:border-orange-400" />
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Printer Nomi</label>
+                                <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} autoFocus
+                                    placeholder="Kassa Printer / Oshxona" className="input-field w-full h-12" />
                             </div>
 
                             {connectType === "wifi" ? (
                                 <div>
-                                    <label className="text-xs font-bold text-gray-500 mb-1.5 block">IP manzil *</label>
-                                    <input value={form.ipAddress} onChange={e => setForm(f => ({ ...f, ipAddress: e.target.value }))}
-                                        placeholder="192.168.1.100"
-                                        className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm font-mono font-semibold text-gray-800 focus:outline-none focus:border-orange-400" />
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">IP manzil</label>
+                                    <input value={form.ipAddress} onChange={e => setForm({ ...form, ipAddress: e.target.value })}
+                                        placeholder="192.168.1.100" className="input-field w-full h-12 font-mono tracking-widest text-brand" />
                                 </div>
                             ) : (
                                 <div>
-                                    <div className="flex items-center justify-between mb-1.5">
-                                        <label className="text-xs font-bold text-gray-500">Windows printer nomi *</label>
-                                        <button onClick={loadWindowsPrinters} className="text-xs text-sky-500 font-bold hover:underline flex items-center gap-1">
-                                            {loadingWinPrinters ? <Loader2 size={12} className="animate-spin" /> : null}
-                                            Yangilash
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Windows qurilmasi nomi</label>
+                                        <button onClick={loadWindowsPrinters} disabled={loadingWinPrinters} className="text-[10px] text-sky-500 font-bold uppercase tracking-wider flex items-center gap-1 hover:text-sky-600 transition-colors">
+                                            {loadingWinPrinters ? <Loader2 size={12} className="animate-spin" /> : "Topish"}
                                         </button>
                                     </div>
                                     {winPrinters.length > 0 ? (
-                                        <select value={form.usbName} onChange={e => setForm(f => ({ ...f, usbName: e.target.value }))}
-                                            className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-800 focus:outline-none focus:border-sky-400">
-                                            <option value="">Printer tanlang...</option>
-                                            {winPrinters.map(p => <option key={p} value={p}>{p}</option>)}
-                                        </select>
-                                    ) : (
-                                        <div className="space-y-2">
-                                            <input value={form.usbName} onChange={e => setForm(f => ({ ...f, usbName: e.target.value }))}
-                                                placeholder="Masalan: XP-80"
-                                                className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-800 focus:outline-none focus:border-sky-400" />
-                                            {loadingWinPrinters
-                                                ? <p className="text-xs text-gray-400">Printerlar yuklanmoqda...</p>
-                                                : <p className="text-xs text-gray-400">Windows &quot;Printerlar va skanerlar&quot; bo&apos;limidagi printer nomini kiriting</p>}
+                                        <div className="relative">
+                                            <select value={form.usbName} onChange={e => setForm({ ...form, usbName: e.target.value })}
+                                                className="input-field w-full h-12 appearance-none pr-10 font-medium">
+                                                <option value="" disabled>Qurilmani tanlang...</option>
+                                                {winPrinters.map(p => <option key={p} value={p}>{p}</option>)}
+                                            </select>
                                         </div>
+                                    ) : (
+                                        <input value={form.usbName} onChange={e => setForm({ ...form, usbName: e.target.value })} placeholder="XP-80 Printer" className="input-field w-full h-12" />
                                     )}
+                                    <p className="text-[11px] text-slate-400 mt-2">Kompyuteringizga ulangan USB printerning aniq nomini kiriting.</p>
                                 </div>
                             )}
+                        </div>
 
-                            <button onClick={handleAdd} disabled={saving}
-                                className={`w-full py-3 rounded-xl text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-all active:scale-[0.98] ${connectType === "usb" ? "bg-sky-500 hover:bg-sky-600" : "bg-orange-500 hover:bg-orange-600"}`}>
-                                {saving ? <Loader2 size={18} className="animate-spin" /> : <><Plus size={18} /> Qo&apos;shish</>}
+                        <div className="p-6 pt-2 bg-slate-50 dark:bg-slate-900/50">
+                            <button onClick={handleAdd} disabled={saving} className={`btn-primary w-full h-12 text-[15px] ${connectType === "usb" ? "bg-sky-500 hover:bg-sky-600 shadow-sky-500/20" : ""}`}>
+                                {saving ? <Loader2 size={20} className="animate-spin text-white/70" /> : "Saqlash"}
                             </button>
                         </div>
                     </div>
