@@ -1496,8 +1496,8 @@ export default function UbtPosPage() {
                     } else if (notes.includes("Olib ketish: ")) {
                         receiptNumber = notes.split("Olib ketish: ")[1] || "N/A";
                         tableLabel = "Olib ketish";
-                    } else if (notes.startsWith("UBT - ")) {
-                        tableLabel = notes.replace("UBT - ", "");
+                    } else if (notes.startsWith("ChaqqonPro - ")) {
+                        tableLabel = notes.replace("ChaqqonPro - ", "");
                     }
 
                     return {

@@ -189,7 +189,7 @@ export default function SettingsPage() {
         }
         // Update draft with dbIds
         setUbtDraft({ ...ubtDraft, zones });
-        alert("UBT sozlamalari saqlandi! Stollar POS terminalda ko'rinadi.");
+        alert("ChaqqonPro sozlamalari saqlandi! Stollar POS terminalda ko'rinadi.");
     }
 
     const PERM_LABELS: Record<string, string> = {
@@ -216,7 +216,7 @@ export default function SettingsPage() {
                             { key: "general", label: "Umumiy sozlamalar", icon: Settings },
                             { key: "branches", label: t("settings.branches"), icon: Building2 },
                             { key: "receipt", label: "Chek sozlamalari", icon: Printer },
-                            ...(shopType === "ubt" ? [{ key: "ubt", label: "UBT sozlamalari", icon: UtensilsCrossed }] : []),
+                            ...(shopType === "ubt" ? [{ key: "ubt", label: "ChaqqonPro sozlamalari", icon: UtensilsCrossed }] : []),
                             { key: "audit", label: t("settings.auditLog") || "Audit Jurnali", icon: ClipboardList },
                         ].map(tab => (
                             <button
@@ -1254,7 +1254,7 @@ export default function SettingsPage() {
                     {/* UBT Settings */}
                     {activeTab === "ubt" && (
                         <div className="space-y-4">
-                            <h2 className="section-title">UBT Modul Sozlamalari</h2>
+                            <h2 className="section-title">ChaqqonPro Sozlamalari</h2>
 
                             <div className="glass-card p-5 space-y-4">
                                 <div className="space-y-4">

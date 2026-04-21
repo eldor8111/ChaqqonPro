@@ -35,7 +35,7 @@ export default function DashboardLayout({
             <div className="min-h-screen flex items-center justify-center bg-surface">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-glow animate-pulse bg-white">
-                        <img src="/logo.jpg" alt="UBT" className="w-full h-full object-contain" />
+                        <img src="/logo.jpg" alt="ChaqqonPro" className="w-full h-full object-contain" />
                     </div>
                     <p className="text-slate-400 text-sm animate-pulse">Yuklanmoqda...</p>
                 </div>

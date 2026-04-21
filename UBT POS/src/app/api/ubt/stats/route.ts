@@ -41,7 +41,7 @@ export async function GET(_request: NextRequest) {
                     tenantId,
                     status: "completed",
                     createdAt: { gte: todayStart, lte: todayEnd },
-                    notes: { contains: "UBT" },
+                    notes: { contains: "ChaqqonPro" },
                 },
                 select: { amount: true, method: true, createdAt: true },
             }),

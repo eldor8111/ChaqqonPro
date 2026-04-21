@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
                 method: methodName,
                 status: "completed",
                 kassirName: waiterName || null,
-                notes: tableLabel ? `UBT - ${tableLabel}` : "UBT",
+                notes: tableLabel ? `ChaqqonPro - ${tableLabel}` : "ChaqqonPro",
                 customerId: customerId || null,
             },
         });

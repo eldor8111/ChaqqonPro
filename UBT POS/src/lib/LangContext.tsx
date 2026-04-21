@@ -47,7 +47,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
         },
         nav: {
             dashboard: "Bosh sahifa", pos: "Kassa", inventory: "Ombor", crm: "CRM",
-            reports: "Hisobotlar", staff: "Xodimlar", ai: "AI Moduli", ubt: "UBT",
+            reports: "Hisobotlar", staff: "Xodimlar", ai: "AI Moduli", ubt: "ChaqqonPro",
             pharmacy: "Dorixona", wholesale: "Ulgurji", ecommerce: "E-Tijorat", settings: "Sozlamalar",
             users: "Foydalanuvchilar", users_kassir: "Kassir", users_ofitsiant: "Ofitsiant",
             users_kuryer: "Kuryer", users_manablog: "Monoblok", users_povar: "Oshpaz",
@@ -119,7 +119,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             permModules: "Modullar", permActions: "Amallar",
             permPos: "Kassa (POS)", permInventory: "Ombor", permCrm: "CRM",
             permReports: "Hisobotlar", permStaff: "Xodimlar", permAi: "AI Moduli",
-            permUbt: "UBT", permPharmacy: "Dorixona", permWholesale: "Ulgurji", permEcommerce: "E-Tijorat",
+            permUbt: "ChaqqonPro", permPharmacy: "Dorixona", permWholesale: "Ulgurji", permEcommerce: "E-Tijorat",
             permDiscounts: "Chegirma berish", permRefunds: "Qaytarish", permPriceEdit: "Narx o'zgartirish",
             permStockEdit: "Zaxira tahrirlash", permReportExport: "Hisobot eksport", permCustomerEdit: "Mijoz tahrirlash", permShiftManage: "Smena boshqarish",
             noPermissions: "Ruxsatlar yo'q", permissionsUpdated: "Ruxsatlar saqlandi",
@@ -134,7 +134,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             aiRecommendationMenu: "AI Tavsiya", critical: "Kritik", attention: "Diqqat", normal: "Normal"
         },
         ubt: {
-            title: "UBT Moduli", subTitle: "Restoran va mehmonxona boshqaruvi", addReservation: "Bron qo'shish",
+            title: "ChaqqonPro Moduli", subTitle: "Restoran va mehmonxona boshqaruvi", addReservation: "Bron qo'shish",
             occupiedTables: "Band stollar", freeTables: "Bo'sh stollar", reservedTables: "Bron qilingan", newOrders: "Yangi buyurtmalar",
             tableMap: "Stol xaritasi", kds: "Oshxona (KDS)", occupied: "Band", free: "Bo'sh", reserved: "Bron",
             new: "Yangi", preparing: "Tayyorlanmoqda", ready: "Tayyor",
@@ -193,7 +193,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
         },
         nav: {
             dashboard: "Главная", pos: "Касса", inventory: "Склад", crm: "CRM",
-            reports: "Отчёты", staff: "Сотрудники", ai: "ИИ Модуль", ubt: "UBT",
+            reports: "Отчёты", staff: "Сотрудники", ai: "ИИ Модуль", ubt: "ChaqqonPro",
             pharmacy: "Аптека", wholesale: "Оптовая торговля", ecommerce: "Э-коммерция", settings: "Настройки",
             users: "Пользователи", users_kassir: "Кассир", users_ofitsiant: "Официант",
             users_kuryer: "Курьер", users_manablog: "Моноблок", users_povar: "Повар",
@@ -265,7 +265,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             permModules: "Модули", permActions: "Действия",
             permPos: "Касса (POS)", permInventory: "Склад", permCrm: "CRM",
             permReports: "Отчёты", permStaff: "Сотрудники", permAi: "ИИ Модуль",
-            permUbt: "UBT", permPharmacy: "Аптека", permWholesale: "Оптовая", permEcommerce: "Э-коммерция",
+            permUbt: "ChaqqonPro", permPharmacy: "Аптека", permWholesale: "Оптовая", permEcommerce: "Э-коммерция",
             permDiscounts: "Скидки", permRefunds: "Возвраты", permPriceEdit: "Изменение цен",
             permStockEdit: "Редакт. склада", permReportExport: "Экспорт отчётов", permCustomerEdit: "Ред. клиентов", permShiftManage: "Управление сменой",
             noPermissions: "Нет разрешений", permissionsUpdated: "Разрешения сохранены",
@@ -280,7 +280,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             aiRecommendationMenu: "ИИ Рекомендация", critical: "Критично", attention: "Внимание", normal: "Нормально"
         },
         ubt: {
-            title: "UBT Модуль", subTitle: "Управление ресторанами и гостиницами", addReservation: "Добавить бронь",
+            title: "ChaqqonPro Модуль", subTitle: "Управление ресторанами и гостиницами", addReservation: "Добавить бронь",
             occupiedTables: "Занятые столы", freeTables: "Свободные столы", reservedTables: "Забронированные столы", newOrders: "Новые заказы",
             tableMap: "Схема залов", kds: "Кухня (KDS)", occupied: "Занят", free: "Свободен", reserved: "Резерв",
             new: "Новый", preparing: "Готовится", ready: "Готов",
@@ -339,7 +339,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
         },
         nav: {
             dashboard: "Dashboard", pos: "Point of Sale", inventory: "Inventory", products: "Products", crm: "CRM",
-            reports: "Reports", staff: "Staff", ai: "AI Module", ubt: "UBT",
+            reports: "Reports", staff: "Staff", ai: "AI Module", ubt: "ChaqqonPro",
             pharmacy: "Pharmacy", wholesale: "Wholesale", ecommerce: "E-Commerce", settings: "Settings",
             ombor: "Warehouse", ombor_qoldiqlar: "Stock Balances", ombor_kirim: "Inbound",
             ombor_chiqim: "Outbound", ombor_kochirish: "Transfer", ombor_inventarizatsiya: "Inventory Check",
@@ -408,7 +408,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             permModules: "Modules", permActions: "Actions",
             permPos: "POS (Cashier)", permInventory: "Inventory", permCrm: "CRM",
             permReports: "Reports", permStaff: "Staff", permAi: "AI Module",
-            permUbt: "UBT", permPharmacy: "Pharmacy", permWholesale: "Wholesale", permEcommerce: "E-Commerce",
+            permUbt: "ChaqqonPro", permPharmacy: "Pharmacy", permWholesale: "Wholesale", permEcommerce: "E-Commerce",
             permDiscounts: "Apply Discounts", permRefunds: "Process Refunds", permPriceEdit: "Edit Prices",
             permStockEdit: "Edit Stock", permReportExport: "Export Reports", permCustomerEdit: "Edit Customers", permShiftManage: "Manage Shifts",
             noPermissions: "No permissions", permissionsUpdated: "Permissions saved",
@@ -423,7 +423,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             aiRecommendationMenu: "AI Recommendation", critical: "Critical", attention: "Warning", normal: "Normal"
         },
         ubt: {
-            title: "UBT Module", subTitle: "Restaurant and Hotel Management", addReservation: "Add Reservation",
+            title: "ChaqqonPro Module", subTitle: "Restaurant and Hotel Management", addReservation: "Add Reservation",
             occupiedTables: "Occupied Tables", freeTables: "Free Tables", reservedTables: "Reserved Tables", newOrders: "New Orders",
             tableMap: "Table Map", kds: "Kitchen (KDS)", occupied: "Occupied", free: "Free", reserved: "Reserved",
             new: "New", preparing: "Preparing", ready: "Ready",

@@ -273,7 +273,7 @@ export default function KassirLoginPage() {
                         </button>
                         <div className="flex items-center gap-2">
                             <UtensilsCrossed size={18} className="text-amber-400" />
-                            <span className="text-white font-bold text-sm">UBT</span>
+                            <span className="text-white font-bold text-sm">ChaqqonPro</span>
                             <span className="text-white/30 text-xs">•</span>
                             <span className="text-white/50 text-xs">{deviceSession.branch}</span>
                         </div>
