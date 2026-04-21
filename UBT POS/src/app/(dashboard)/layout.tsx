@@ -2,7 +2,7 @@
 
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useFrontendStore } from "@/lib/frontend/store";
 import { AlertTriangle, Lock } from "lucide-react";
@@ -17,6 +17,10 @@ export default function DashboardLayout({
     const router = useRouter();
     const pathname = usePathname();
     const redirected = useRef(false);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+    const openMobileSidebar = useCallback(() => setMobileSidebarOpen(true), []);
+    const closeMobileSidebar = useCallback(() => setMobileSidebarOpen(false), []);
 
     useEffect(() => {
         if (redirected.current) return;
@@ -44,7 +48,7 @@ export default function DashboardLayout({
 
     return (
         <div className="flex h-screen overflow-hidden bg-surface">
-            <Sidebar />
+            <Sidebar mobileOpen={mobileSidebarOpen} onMobileClose={closeMobileSidebar} onMobileOpen={openMobileSidebar} />
             <div className="flex flex-col flex-1 min-w-0 min-h-0">
                 {subscriptionExpired && (
                     <div className="bg-red-500 text-white px-4 py-2 flex items-center justify-center gap-2 text-sm font-medium z-50 rounded-b-xl shadow-md mx-4">
@@ -61,8 +65,8 @@ export default function DashboardLayout({
                         )}
                     </div>
                 )}
-                <Header />
-                <main className="flex-1 min-w-0 min-h-0 overflow-y-auto p-4 w-full h-full">
+                <Header onMobileMenuOpen={openMobileSidebar} />
+                <main className="flex-1 min-w-0 min-h-0 overflow-y-auto p-4 pb-20 md:pb-4 w-full h-full">
                     {subscriptionExpired && !isBillingPage ? (
                         <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-surface-card rounded-2xl border border-surface-border animate-fade-in mx-auto max-w-2xl mt-12">
                             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6 shadow-sm">

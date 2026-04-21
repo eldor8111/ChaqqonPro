@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     LayoutDashboard, Package, BarChart3,
-    UserCheck, Coffee, Warehouse,
-    Settings, ChevronLeft, ChevronRight, Printer,
-    DollarSign, Bike, CalendarCheck, Clock, Zap, Headset, CreditCard, Building2,
+    UserCheck, Warehouse,
+    ChevronLeft, ChevronRight, Printer,
+    DollarSign, CalendarCheck, Clock, Headset, CreditCard, Building2, X, Menu,
+    Home, PieChart, Users, ShoppingBag
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import clsx from "clsx";
-
 import { useFrontendStore } from "@/lib/frontend/store";
 import { ChevronDown } from "lucide-react";
 
@@ -80,12 +80,31 @@ const NAV_ITEMS: NavItem[] = [
     },
 ];
 
-export default function Sidebar() {
+// Bottom navigation items for mobile (most used 4)
+const MOBILE_BOTTOM_NAV = [
+    { href: "/ubt", icon: Home, label: "Bosh sahifa" },
+    { href: "/ubt/reports", icon: PieChart, label: "Hisobotlar" },
+    { href: "/ubt/users", icon: Users, label: "Xodimlar" },
+    { href: "/ubt/ombor/qoldiqlar", icon: ShoppingBag, label: "Ombor" },
+];
+
+interface SidebarProps {
+    mobileOpen?: boolean;
+    onMobileClose?: () => void;
+    onMobileOpen?: () => void;
+}
+
+export default function Sidebar({ mobileOpen = false, onMobileClose, onMobileOpen }: SidebarProps) {
     const pathname = usePathname();
     const { t } = useLang();
     const { user, subscriptionExpired } = useFrontendStore();
     const [collapsed, setCollapsed] = useState(false);
     const [openMenus, setOpenMenus] = useState<string[]>([]);
+
+    // Close mobile drawer on route change
+    useEffect(() => {
+        onMobileClose?.();
+    }, [pathname]);
 
     const toggleMenu = (key: string) => {
         setOpenMenus(prev =>
@@ -95,13 +114,8 @@ export default function Sidebar() {
 
     const navItems = subscriptionExpired ? BLOCKED_NAV_ITEMS : NAV_ITEMS;
 
-    return (
-        <aside
-            className={clsx(
-                "flex flex-col h-screen bg-surface-card border-r border-surface-border transition-all duration-300 ease-in-out z-40 flex-shrink-0",
-                collapsed ? "w-16" : "w-64"
-            )}
-        >
+    const sidebarContent = (
+        <>
             {/* Logo */}
             <div className="flex items-center gap-3 px-4 py-5 border-b border-surface-border">
                 {!collapsed ? (
@@ -117,9 +131,19 @@ export default function Sidebar() {
                         </span>
                     </div>
                 )}
+                {/* Mobile close button */}
+                {mobileOpen && (
+                    <button
+                        onClick={onMobileClose}
+                        className="ml-auto p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-surface-elevated transition-all md:hidden"
+                    >
+                        <X size={18} />
+                    </button>
+                )}
+                {/* Desktop collapse button */}
                 <button
                     onClick={() => setCollapsed(!collapsed)}
-                    className="ml-auto p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-surface-elevated transition-all"
+                    className="ml-auto p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-surface-elevated transition-all hidden md:flex"
                 >
                     {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
                 </button>
@@ -175,18 +199,18 @@ export default function Sidebar() {
                                     {subItems.map((subItem) => {
                                         const isSubActive = pathname === subItem.href;
                                         return (
-                                                <Link
-                                                    key={subItem.href}
-                                                    href={subItem.href}
-                                                    className={clsx(
-                                                        "block p-2 rounded-lg text-sm transition-colors",
-                                                        isSubActive
-                                                            ? "text-brand-400 font-medium bg-brand-500/10"
-                                                            : "text-slate-400 hover:text-slate-200 hover:bg-surface-elevated"
-                                                    )}
-                                                >
-                                                    {(subItem as any).isI18n ? t(subItem.label) : subItem.label}
-                                                </Link>
+                                            <Link
+                                                key={subItem.href}
+                                                href={subItem.href}
+                                                className={clsx(
+                                                    "block p-2 rounded-lg text-sm transition-colors",
+                                                    isSubActive
+                                                        ? "text-brand-400 font-medium bg-brand-500/10"
+                                                        : "text-slate-400 hover:text-slate-200 hover:bg-surface-elevated"
+                                                )}
+                                            >
+                                                {(subItem as any).isI18n ? t(subItem.label) : subItem.label}
+                                            </Link>
                                         );
                                     })}
                                 </div>
@@ -195,8 +219,68 @@ export default function Sidebar() {
                     );
                 })}
             </nav>
+        </>
+    );
 
+    return (
+        <>
+            {/* Desktop Sidebar */}
+            <aside
+                className={clsx(
+                    "hidden md:flex flex-col h-screen bg-surface-card border-r border-surface-border transition-all duration-300 ease-in-out z-40 flex-shrink-0",
+                    collapsed ? "w-16" : "w-64"
+                )}
+            >
+                {sidebarContent}
+            </aside>
 
-        </aside>
+            {/* Mobile Drawer Overlay */}
+            {mobileOpen && (
+                <div
+                    className="fixed inset-0 z-50 md:hidden"
+                    aria-modal="true"
+                >
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                        onClick={onMobileClose}
+                    />
+                    {/* Drawer panel */}
+                    <aside className="relative flex flex-col h-full w-72 max-w-[85vw] bg-surface-card border-r border-surface-border shadow-2xl animate-slide-in-left">
+                        {sidebarContent}
+                    </aside>
+                </div>
+            )}
+
+            {/* Mobile Bottom Navigation */}
+            <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-surface-card border-t border-surface-border flex items-center safe-area-pb">
+                {MOBILE_BOTTOM_NAV.map((item) => {
+                    const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={clsx(
+                                "flex-1 flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors",
+                                isActive ? "text-blue-600" : "text-slate-400"
+                            )}
+                        >
+                            <item.icon size={20} />
+                            <span className="text-[10px] leading-none">{item.label}</span>
+                        </Link>
+                    );
+                })}
+                {/* Hamburger to open full menu */}
+                <button
+                    onClick={onMobileOpen}
+                    className="flex-1 flex flex-col items-center gap-1 py-2.5 text-xs font-medium text-slate-400"
+                    id="mobile-menu-trigger"
+                >
+                    <Menu size={20} />
+                    <span className="text-[10px] leading-none">Menyu</span>
+                </button>
+
+            </nav>
+        </>
     );
 }

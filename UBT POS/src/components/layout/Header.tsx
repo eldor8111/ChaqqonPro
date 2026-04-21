@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
     Bell, Globe, ChevronDown, Search, LogOut,
     Building2, Check, Settings, Eye, EyeOff, X, Lock, KeyRound, CheckCircle2, AlertCircle, Printer,
-    Trash2, AlertTriangle, ShieldAlert
+    Trash2, AlertTriangle, ShieldAlert, Menu
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import { useFrontendStore } from "@/lib/frontend/store";
@@ -359,7 +359,7 @@ function ClearReportsModal({ onClose }: { onClose: () => void }) {
 }
 
 // ─── MAIN HEADER ──────────────────────────────────────────────────────────────
-export default function Header() {
+export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => void }) {
     const { lang, setLang } = useLang();
     const { user, logout } = useFrontendStore();
     const router = useRouter();
@@ -393,9 +393,17 @@ export default function Header() {
             {showChangePw && <ChangePasswordModal onClose={() => setShowChangePw(false)} />}
             {showClearReports && <ClearReportsModal onClose={() => setShowClearReports(false)} />}
 
-            <header className="h-16 flex items-center justify-between px-6 bg-surface-card border-b border-surface-border flex-shrink-0">
-                {/* Left: Branch selector + Search */}
-                <div className="flex items-center gap-4">
+            <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-surface-card border-b border-surface-border flex-shrink-0">
+                {/* Left: Hamburger (mobile) + Branch selector + Search */}
+                <div className="flex items-center gap-2 md:gap-4">
+                    {/* Mobile hamburger */}
+                    <button
+                        onClick={onMobileMenuOpen}
+                        className="md:hidden p-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-surface-elevated transition-all"
+                        aria-label="Menyu"
+                    >
+                        <Menu size={20} />
+                    </button>
                     {/* Branch selector */}
                     <div className="relative">
                         <button

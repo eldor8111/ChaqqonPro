@@ -62,6 +62,14 @@ export default function RootLayout({
     return (
         <html lang="uz">
             <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+                <meta name="theme-color" content="#2563eb" />
+                <meta name="mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+                <meta name="apple-mobile-web-app-title" content="ChaqqonPro" />
+                <link rel="manifest" href="/manifest.json" />
+                <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
                 <link
@@ -91,6 +99,11 @@ export default function RootLayout({
                                 "url": "https://chaqqonpro.e-code.uz"
                             }
                         })
+                    }}
+                />
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `if ('serviceWorker' in navigator) { window.addEventListener('load', function() { navigator.serviceWorker.register('/sw.js'); }); }`
                     }}
                 />
             </head>

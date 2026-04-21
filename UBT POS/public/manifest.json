@@ -1,14 +1,17 @@
 {
-  "name": "UBT POS - UBT",
-  "short_name": "UBT POS",
-  "description": "Professional Point of Sale & ERP system for restaurants, cafes and hotels",
-  "start_url": "/",
+  "name": "ChaqqonPro – Admin Panel",
+  "short_name": "ChaqqonPro",
+  "description": "Restoran, kafe va mehmonxonalar uchun professional POS va ERP tizimi – ChaqqonPro",
+  "start_url": "/ubt",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#f59e0b",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "uz",
+  "id": "chaqqonpro-admin",
+  "categories": ["business", "productivity", "finance"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -59,7 +62,21 @@
       "purpose": "maskable any"
     }
   ],
-  "categories": ["business", "productivity"],
-  "screenshots": [],
-  "prefer_related_applications": false
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Bosh sahifa",
+      "description": "Kunlik savdo va statistika",
+      "url": "/ubt",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Hisobotlar",
+      "short_name": "Hisobotlar",
+      "description": "Moliyaviy hisobotlar",
+      "url": "/ubt/reports",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": []
 }
