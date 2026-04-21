@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, ArrowRight, ShieldCheck, Zap, BarChart3, Users, Package, Phone, UtensilsCrossed, X, CheckCircle2, User, Sparkles, Layers, Laptop, Database } from "lucide-react";
 import { useFrontendStore } from "@/lib/frontend/store";
 import { useStore } from "@/lib/store";
+import { ForgotPasswordModal } from "@/components/auth/ForgotPassword";
 
 type ShopType = "ubt";
 
@@ -319,6 +320,7 @@ function LoginForm() {
     const [mounted, setMounted] = useState(false);
     const [showOferta, setShowOferta] = useState(false);
     const [showFeatures, setShowFeatures] = useState(false);
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
     const router = useRouter();
     const { isAuthenticated, setUser, user, _hasHydrated } = useFrontendStore();
 
@@ -450,6 +452,7 @@ function LoginForm() {
                 />
             )}
             {showFeatures && <FeaturesModal onClose={() => setShowFeatures(false)} />}
+            {showForgotPassword && <ForgotPasswordModal onClose={() => setShowForgotPassword(false)} />}
 
             <div className="h-screen flex bg-slate-50 overflow-hidden relative">
 
@@ -643,6 +646,15 @@ function LoginForm() {
                                                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
                                             >
                                                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                                            </button>
+                                        </div>
+                                        <div className="mt-1.5 flex justify-end">
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setShowForgotPassword(true)}
+                                                className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                                            >
+                                                Parolni unutdingizmi?
                                             </button>
                                         </div>
                                     </div>
