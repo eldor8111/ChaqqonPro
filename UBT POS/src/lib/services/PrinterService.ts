@@ -130,47 +130,79 @@ function buildClientBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
     const timeStr = job.time || `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
     const dateStr = `${String(now.getDate()).padStart(2,"0")}.${String(now.getMonth()+1).padStart(2,"0")}.${now.getFullYear()}`;
     const shopName   = opts.shopName.toUpperCase();
-    const headerText = opts.headerText.toUpperCase();
     const serviceP   = job.servicePercent ?? opts.servicePercent ?? 0;
-    const serviceAmt = serviceP ? Math.round(job.total * serviceP / (100 + serviceP)) : 0;
+    const subtotal   = (job.items || []).reduce((s, it) => s + it.price * it.qty, 0);
+    const serviceAmt = serviceP ? Math.round(subtotal * serviceP / 100) : 0;
+    const grandTotal = Math.round(subtotal + serviceAmt);
 
-    parts.push(cmd.init(), cmd.align(1), cmd.bold(true), cmd.doubleHW(), line(shopName), cmd.normal(), cmd.bold(false));
-    if (job.orderNum) parts.push(line(`Nomeri zakaza: ${job.orderNum}`));
-    parts.push(line(`Data: ${timeStr}  ${dateStr}`));
+    // ── Header ──────────────────────────────────────────────────
+    parts.push(cmd.init());
+    parts.push(cmd.align(1), cmd.bold(true), cmd.doubleHW());
+    parts.push(line(shopName));
+    parts.push(cmd.normal(), cmd.bold(false));
+    parts.push(line(""));
 
-    parts.push(cmd.align(0), line(""), dashed());
-    parts.push(line(pad("Tip zakaza", job.tableType || "Na stol")), dashed());
+    // ── Order meta ──────────────────────────────────────────────
+    parts.push(cmd.align(0));
+    parts.push(solid());
+    if (job.orderNum) parts.push(line(pad("Buyurtma #:", String(job.orderNum))));
+    parts.push(line(pad("Sana:", dateStr)));
+    parts.push(line(pad("Vaqt:", timeStr)));
     if (job.tableName) {
         const label = job.tableZone ? `${job.tableName} (${job.tableZone})` : job.tableName;
-        parts.push(line(pad("Nomeri stola", label)), dashed());
+        parts.push(line(pad("Stol:", label)));
     }
-    if (job.waiter) { parts.push(line(pad("Ofitsiant", job.waiter)), dashed()); }
+    if (job.tableType) parts.push(line(pad("Tur:", job.tableType)));
+    if (job.waiter)    parts.push(line(pad("Ofitsiant:", job.waiter)));
+    parts.push(solid());
 
-    parts.push(line(""), cmd.bold(true));
-    parts.push(line("Naim.".padEnd(15) + "Kol".padStart(3) + "Narx".padStart(7) + "Jami".padStart(7)));
-    parts.push(cmd.bold(false), dashed());
+    // ── Items ────────────────────────────────────────────────────
+    parts.push(cmd.bold(true));
+    parts.push(line("Taom nomi        Son   Narx   Jami"));
+    parts.push(cmd.bold(false));
+    parts.push(dashed());
 
     for (const item of (job.items || [])) {
-        const name  = item.name.substring(0, 15).padEnd(15);
+        const name  = toAscii(item.name).substring(0, 16).padEnd(16);
         const qty   = String(item.qty).padStart(3);
-        const p     = String(Math.round(item.price)).padStart(7);
+        const price = String(Math.round(item.price)).padStart(7);
         const total = String(Math.round(item.price * item.qty)).padStart(7);
-        parts.push(line(`${name}${qty}${p}${total}`));
+        parts.push(line(`${name}${qty}${price}${total}`));
     }
     parts.push(dashed());
 
+    // ── Totals ───────────────────────────────────────────────────
     if (serviceP && serviceAmt > 0) {
-        parts.push(line(""), line(pad(`Xizmat ${serviceP}%`, String(serviceAmt))));
+        parts.push(line(pad(`Jami (chegirmasiz):`, String(Math.round(subtotal)))));
+        parts.push(line(pad(`Xizmat haqi (${serviceP}%):`, `+${serviceAmt}`)));
+        parts.push(dashed());
     }
 
-    parts.push(solid(), line(pad("ITOGO:", String(Math.round(job.total)))), solid());
+    parts.push(cmd.bold(true));
+    parts.push(solid());
+    parts.push(cmd.doubleHW());
+    parts.push(line(pad("JAMI TO'LOV:", String(grandTotal) + " so'm")));
+    parts.push(cmd.normal(), cmd.bold(false));
+    parts.push(solid());
 
-    if (job.cashAmount && job.cashAmount > 0) parts.push(line(pad("Nalichnye:", String(Math.round(job.cashAmount)))));
-    if (job.cardAmount && job.cardAmount > 0)  parts.push(line(pad("Karta:",     String(Math.round(job.cardAmount)))));
-    if (!job.cashAmount && !job.cardAmount && job.paymentMethod) parts.push(line(pad("To'lov:", job.paymentMethod)));
+    // ── Payment breakdown ────────────────────────────────────────
+    if (job.cashAmount && job.cashAmount > 0)
+        parts.push(line(pad("  Naqd pul:", String(Math.round(job.cashAmount)) + " so'm")));
+    if (job.cardAmount && job.cardAmount > 0)
+        parts.push(line(pad("  Plastik karta:", String(Math.round(job.cardAmount)) + " so'm")));
+    if (!job.cashAmount && !job.cardAmount && job.paymentMethod)
+        parts.push(line(pad("  To'lov turi:", job.paymentMethod)));
 
-    parts.push(line(""), cmd.align(1), cmd.bold(true), line(headerText), cmd.bold(false));
-    if (opts.footerText) { parts.push(line(""), line(opts.footerText)); }
+    // ── Footer ───────────────────────────────────────────────────
+    parts.push(line(""));
+    parts.push(cmd.align(1), cmd.bold(true));
+    const footer = opts.headerText || "XARIDINGIZ UCHUN RAXMAT!";
+    parts.push(line(toAscii(footer)));
+    parts.push(cmd.bold(false));
+    if (opts.footerText) {
+        parts.push(line(""));
+        parts.push(line(toAscii(opts.footerText)));
+    }
     parts.push(line(""), line(""), cmd.cut());
     return Buffer.concat(parts);
 }
