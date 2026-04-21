@@ -95,12 +95,12 @@ export default function XomashyoPage() {
     return (
         <div className="space-y-6 animate-fade-in">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">{t('nav.nom_raw')}</h1>
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-800">{t('nav.nom_raw')}</h1>
                     <p className="text-sm text-slate-500 mt-1">{t('nav.ombor')} — {t('nav.nom_raw')}</p>
                 </div>
-                <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition font-medium">
+                <button onClick={() => handleOpenModal()} className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition font-medium">
                     <Plus size={18} /> {t('common.add')} {t('nav.nom_raw')}
                 </button>
             </div>
@@ -134,45 +134,47 @@ export default function XomashyoPage() {
                         <p className="text-slate-500 text-sm mb-4">{t('nav.nom_raw')} {t('common.add')}.</p>
                     </div>
                 ) : (
-                    <table className="w-full text-sm text-left text-slate-600">
-                        <thead className="bg-slate-50 text-slate-500 uppercase text-xs font-semibold">
-                            <tr>
-                                <th className="px-5 py-3 border-b border-slate-100">{t('common.name')}</th>
-                                <th className="px-5 py-3 border-b border-slate-100">{t('nav.nom_raw_cats')}</th>
-                                <th className="px-5 py-3 border-b border-slate-100 text-center">{t('inventory.unit') || 'Birlik'}</th>
-                                <th className="px-5 py-3 border-b border-slate-100 text-right">{t('inventory.currentStock')}</th>
-                                <th className="px-5 py-3 border-b border-slate-100 text-right">{t('inventory.wholesalePrice')}</th>
-                                <th className="px-5 py-3 border-b border-slate-100 text-right">{t('common.total')} {t('common.amount')}</th>
-                                <th className="px-5 py-3 border-b border-slate-100 text-right">{t('common.actions')}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredXomashyolar.map((item) => (
-                                <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
-                                    <td className="px-5 py-3 font-medium text-slate-800">{item.name}</td>
-                                    <td className="px-5 py-3 text-slate-600">{categories.find(c => c.id === item.categoryId)?.name || "-"}</td>
-                                    <td className="px-5 py-3 text-center">
-                                        <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-xs font-semibold">
-                                            {item.unit}
-                                        </span>
-                                    </td>
-                                    <td className="px-5 py-3 font-semibold text-right">
-                                        <span className={item.stock > 10 ? "text-emerald-600" : "text-amber-500"}>
-                                            {item.stock} {item.unit}
-                                        </span>
-                                    </td>
-                                    <td className="px-5 py-3 text-right text-slate-500">{formatCurrency(item.price)}</td>
-                                    <td className="px-5 py-3 text-right font-semibold text-blue-600">{formatCurrency(item.stock * item.price)}</td>
-                                    <td className="px-5 py-3 text-right">
-                                        <div className="flex gap-2 justify-end">
-                                            <button onClick={() => handleOpenModal(item)} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg"><Pencil size={15} /></button>
-                                            <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={15} /></button>
-                                        </div>
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left text-slate-600">
+                            <thead className="bg-slate-50 text-slate-500 uppercase text-xs font-semibold">
+                                <tr>
+                                    <th className="px-5 py-3 border-b border-slate-100">{t('common.name')}</th>
+                                    <th className="px-5 py-3 border-b border-slate-100 whitespace-nowrap">{t('nav.nom_raw_cats')}</th>
+                                    <th className="px-5 py-3 border-b border-slate-100 text-center whitespace-nowrap">{t('inventory.unit') || 'Birlik'}</th>
+                                    <th className="px-5 py-3 border-b border-slate-100 text-right whitespace-nowrap">{t('inventory.currentStock')}</th>
+                                    <th className="px-5 py-3 border-b border-slate-100 text-right whitespace-nowrap">{t('inventory.wholesalePrice')}</th>
+                                    <th className="px-5 py-3 border-b border-slate-100 text-right whitespace-nowrap">{t('common.total')} {t('common.amount')}</th>
+                                    <th className="px-5 py-3 border-b border-slate-100 text-right whitespace-nowrap">{t('common.actions')}</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredXomashyolar.map((item) => (
+                                    <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50 transition">
+                                        <td className="px-5 py-3 font-medium text-slate-800 whitespace-nowrap">{item.name}</td>
+                                        <td className="px-5 py-3 text-slate-600 whitespace-nowrap">{categories.find(c => c.id === item.categoryId)?.name || "-"}</td>
+                                        <td className="px-5 py-3 text-center whitespace-nowrap">
+                                            <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-xs font-semibold">
+                                                {item.unit}
+                                            </span>
+                                        </td>
+                                        <td className="px-5 py-3 font-semibold text-right whitespace-nowrap">
+                                            <span className={item.stock > 10 ? "text-emerald-600" : "text-amber-500"}>
+                                                {item.stock} {item.unit}
+                                            </span>
+                                        </td>
+                                        <td className="px-5 py-3 text-right text-slate-500 whitespace-nowrap">{formatCurrency(item.price)}</td>
+                                        <td className="px-5 py-3 text-right font-semibold text-blue-600 whitespace-nowrap">{formatCurrency(item.stock * item.price)}</td>
+                                        <td className="px-5 py-3 text-right whitespace-nowrap">
+                                            <div className="flex gap-2 justify-end">
+                                                <button onClick={() => handleOpenModal(item)} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg"><Pencil size={15} /></button>
+                                                <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={15} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
 

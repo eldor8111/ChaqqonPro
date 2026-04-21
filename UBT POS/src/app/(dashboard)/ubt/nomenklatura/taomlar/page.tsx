@@ -259,17 +259,17 @@ export default function TaomlarPage() {
     return (
         <div className="animate-fade-in relative bg-white border border-slate-200">
             {/* Header Top */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b border-slate-100 gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-2">
                         <div className="w-2.5 h-7 bg-blue-500 rounded text-transparent">|</div>
-                        <h1 className="text-[22px] font-bold text-slate-900">{t('nav.nom_dishes')}</h1>
+                        <h1 className="text-xl sm:text-[22px] font-bold text-slate-900">{t('nav.nom_dishes')}</h1>
                     </div>
                     <button className="flex items-center gap-2 px-2 py-1.5 bg-[#f4f5f7] text-slate-700 rounded-md text-sm hover:bg-slate-200 transition font-bold border border-slate-300">
                         <Trash2 size={14} /> Arxivga o'ting
                     </button>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                     <button 
                         onClick={() => {
                             const csvContent = "data:text/csv;charset=utf-8," 
@@ -283,20 +283,20 @@ export default function TaomlarPage() {
                             link.click();
                             document.body.removeChild(link);
                         }}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#00b050] text-white rounded text-sm hover:bg-[#009b47] transition font-bold shadow-sm"
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-[#00b050] text-white rounded text-sm hover:bg-[#009b47] transition font-bold shadow-sm w-full sm:w-auto"
                     >
                         <FileSpreadsheet size={16} /> EXCEL dasturini yuklab oling
                     </button>
-                    <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition font-bold shadow-sm">
+                    <button onClick={() => handleOpenModal()} className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition font-bold shadow-sm w-full sm:w-auto">
                         {t('common.add')} <Plus size={16} />
                     </button>
                 </div>
             </div>
 
             {/* Filter */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4 flex-1">
-                    <div className="flex-1 max-w-[300px]">
+            <div className="px-6 py-4 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+                    <div className="w-full sm:flex-1 sm:max-w-[300px]">
                         <input
                             type="text"
                             placeholder={t('common.search')}
@@ -325,8 +325,8 @@ export default function TaomlarPage() {
                         <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90" size={16} />
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button onClick={() => { setSearchQuery(""); setSelectedCategory(""); }} className="px-6 py-2 border border-[#f6a0a8] text-[#e3342f] rounded text-sm hover:bg-red-50 transition font-medium">
+                <div className="flex items-center gap-3 w-full lg:w-auto">
+                    <button onClick={() => { setSearchQuery(""); setSelectedCategory(""); }} className="w-full lg:w-auto px-6 py-2 border border-[#f6a0a8] text-[#e3342f] rounded text-sm hover:bg-red-50 transition font-medium">
                         {t('common.filter') + ' ' + t('common.delete') || 'Tozalash'}
                     </button>
                 </div>
@@ -438,10 +438,10 @@ export default function TaomlarPage() {
                         </button>
                     </div>
 
-                    <form onSubmit={handleSave} className="flex-1 flex gap-6 overflow-hidden min-h-0 px-6 py-4">
+                    <form onSubmit={handleSave} className="flex-1 flex flex-col lg:flex-row gap-6 overflow-y-auto lg:overflow-hidden min-h-0 px-6 py-4">
 
                             {/* Left column - 2/3 width */}
-                            <div className="flex-[2] overflow-y-auto space-y-6 pb-4">
+                            <div className="flex-[2] lg:overflow-y-auto space-y-6 pb-4">
                                 <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm space-y-8">
                                     {/* Image upload box - drag & drop */}
                                     <div>
@@ -625,7 +625,7 @@ export default function TaomlarPage() {
                             </div>
 
                             {/* Right column - 1/3 width */}
-                            <div className="flex-[1] bg-white rounded-2xl p-8 border border-slate-200 shadow-sm space-y-6 overflow-y-auto">
+                            <div className="flex-[1] bg-white rounded-2xl p-6 lg:p-8 border border-slate-200 shadow-sm space-y-6 lg:overflow-y-auto">
 
                                 {/* Type toggle */}
                                 <div className="flex p-1 bg-slate-200 rounded-xl max-w-sm">
