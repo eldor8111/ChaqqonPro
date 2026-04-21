@@ -17,6 +17,30 @@ const cmd = {
     cut:       () => Buffer.from([GS, 0x56, 0x41, 0x03]),
 };
 
+/**
+ * QR Code ESC/POS (GS ( k) — ko'pchilik termal printerlarda ishlaydi
+ * @param data URL yoki matn
+ * @param size 1-8 (default 4)
+ */
+function qrCode(data: string, size = 4): Buffer {
+    const d = Buffer.from(data, "utf8");
+    const pL = (d.length + 3) & 0xFF;
+    const pH = ((d.length + 3) >> 8) & 0xFF;
+    return Buffer.concat([
+        // Model 2
+        Buffer.from([GS, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00]),
+        // Size
+        Buffer.from([GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, size]),
+        // Error correction level M
+        Buffer.from([GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31]),
+        // Store data
+        Buffer.from([GS, 0x28, 0x6B, pL, pH, 0x31, 0x50, 0x30]),
+        d,
+        // Print
+        Buffer.from([GS, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30]),
+    ]);
+}
+
 // ─── Text helpers ────────────────────────────────────────────────────────────
 function strLen(s: string): number { return Array.from(s).length; }
 
@@ -70,9 +94,12 @@ export interface PrintJob {
 
 interface ReceiptOpts {
     shopName: string;
+    customShopName: string;
     headerText: string;
     footerText: string;
     servicePercent: number;
+    showQr: boolean;
+    qrUrl: string;
 }
 
 // ─── Receipt settings cache ──────────────────────────────────────────────────
@@ -93,15 +120,18 @@ async function getReceiptOpts(tenantId?: string): Promise<ReceiptOpts> {
 
         const opts: ReceiptOpts = {
             shopName:       tenant.shopName || "RESTORAN",
+            customShopName: (r.customShopName as string) || "",
             headerText:     r.headerText    || "XARIDINGIZ UCHUN RAXMAT!",
             footerText:     r.footerText    || "",
             servicePercent: Number(h.serviceFee) || 0,
+            showQr:         r.showBarcode === true || r.showBarcode === "true" || (r.showBarcode as unknown) !== false,
+            qrUrl:          (r.qrUrl as string)   || "",
         };
 
         cacheSet(cacheKey, opts, TTL.RECEIPT_SETTINGS);
         return opts;
     } catch {
-        return { shopName: "RESTORAN", headerText: "XARIDINGIZ UCHUN RAXMAT!", footerText: "", servicePercent: 0 };
+        return { shopName: "RESTORAN", customShopName: "", headerText: "XARIDINGIZ UCHUN RAXMAT!", footerText: "", servicePercent: 0, showQr: false, qrUrl: "" };
     }
 }
 
@@ -129,7 +159,8 @@ function buildClientBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
     const now = new Date();
     const timeStr = job.time || `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
     const dateStr = `${String(now.getDate()).padStart(2,"0")}.${String(now.getMonth()+1).padStart(2,"0")}.${now.getFullYear()}`;
-    const shopName   = opts.shopName.toUpperCase();
+    const displayName = opts.customShopName || opts.shopName;
+    const shopName    = displayName.toUpperCase();
     const serviceP   = job.servicePercent ?? opts.servicePercent ?? 0;
     const subtotal   = (job.items || []).reduce((s, it) => s + it.price * it.qty, 0);
     const serviceAmt = serviceP ? Math.round(subtotal * serviceP / 100) : 0;
@@ -202,6 +233,14 @@ function buildClientBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
     if (opts.footerText) {
         parts.push(line(""));
         parts.push(line(toAscii(opts.footerText)));
+    }
+    // ── QR Code ──────────────────────────────────────────────────
+    if (opts.showQr) {
+        parts.push(line(""));
+        parts.push(cmd.align(1));
+        const qrData = opts.qrUrl || `ORDER:${job.orderNum || ""} ${shopName}`;
+        parts.push(qrCode(qrData, 4));
+        parts.push(line(""));
     }
     parts.push(line(""), line(""), cmd.cut());
     return Buffer.concat(parts);

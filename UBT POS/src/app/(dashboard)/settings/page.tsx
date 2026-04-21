@@ -852,8 +852,13 @@ export default function SettingsPage() {
                                     {/* Shop name settings (top of receipt) */}
                                     <div className="glass-card p-5 space-y-3">
                                         <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">🏪 Restoran nomi (chek tepasida)</label>
-                                        <p className="text-xs text-slate-400">Restoran nomi sozlamalar → Umumiy sozlamalar → "Do'kon nomi" dan olinadi. Bu yerda uning chekdagi ko'rinishini sozlang.</p>
-                                        <div className="flex items-center justify-between gap-4 pt-1">
+                                        <input
+                                            className="input-field w-full"
+                                            value={receiptDraft.customShopName || ""}
+                                            onChange={e => setReceiptDraft({ ...receiptDraft, customShopName: e.target.value })}
+                                            placeholder="Masalan: Gold Uz Restaurant"
+                                        />
+                                        <div className="flex items-center justify-between gap-4">
                                             <div className="flex-1">
                                                 <p className="text-xs text-slate-400 mb-1">Shrift o'lchami: <span className="text-brand font-bold">{receiptDraft.shopNameFontSize || 20}px</span></p>
                                                 <input type="range" min={12} max={36} step={1}
@@ -987,7 +992,7 @@ export default function SettingsPage() {
                                                     textAlign: receiptDraft.shopNameAlign || "center",
                                                     fontWeight: receiptDraft.shopNameBold !== false ? "bold" : "normal",
                                                 }}>
-                                                {shopSettings?.shopName || "RESTORAN NOMI"}
+                                                {receiptDraft.customShopName || shopSettings?.shopName || "RESTORAN NOMI"}
                                             </p>
                                         </div>
 
@@ -1037,9 +1042,39 @@ export default function SettingsPage() {
                                                 </p>
                                             )}
                                             {receiptDraft.showBarcode && (
-                                                <div className="flex flex-col items-center mt-2">
-                                                    <div className="w-3/4 h-8 bg-gradient-to-r from-slate-800 via-slate-600 to-slate-800 rounded-sm opacity-90"></div>
-                                                    <p className="text-[9px] text-slate-500 mt-0.5 tracking-widest">0000009812</p>
+                                                <div className="flex flex-col items-center mt-3">
+                                                    {/* QR code simulation with SVG squares */}
+                                                    <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                                                        {/* Corner squares */}
+                                                        <rect x="2" y="2" width="18" height="18" fill="none" stroke="#1e293b" strokeWidth="2"/>
+                                                        <rect x="6" y="6" width="10" height="10" fill="#1e293b"/>
+                                                        <rect x="44" y="2" width="18" height="18" fill="none" stroke="#1e293b" strokeWidth="2"/>
+                                                        <rect x="48" y="6" width="10" height="10" fill="#1e293b"/>
+                                                        <rect x="2" y="44" width="18" height="18" fill="none" stroke="#1e293b" strokeWidth="2"/>
+                                                        <rect x="6" y="48" width="10" height="10" fill="#1e293b"/>
+                                                        {/* Data dots */}
+                                                        {[24,28,32,36,40].map(x => [24,28,32,36,40].map(y =>
+                                                            Math.random() > 0.5 ? <rect key={`${x}-${y}`} x={x} y={y} width="3" height="3" fill="#1e293b"/> : null
+                                                        ))}
+                                                        <rect x="24" y="24" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="31" y="24" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="38" y="24" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="27" y="28" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="35" y="28" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="24" y="32" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="31" y="32" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="38" y="32" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="27" y="36" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="35" y="36" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="24" y="40" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="31" y="40" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="38" y="40" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="44" y="24" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="44" y="32" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="24" y="44" width="3" height="3" fill="#1e293b"/>
+                                                        <rect x="32" y="44" width="3" height="3" fill="#1e293b"/>
+                                                    </svg>
+                                                    <p className="text-[9px] text-slate-400 mt-0.5">QR kod</p>
                                                 </div>
                                             )}
                                         </div>
