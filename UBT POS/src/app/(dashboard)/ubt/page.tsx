@@ -1008,12 +1008,8 @@ export default function UbtPage() {
                     <div className="col-span-12 lg:col-span-8 flex flex-col gap-5">
                         <HourlyChart data={stats.hourly} />
 
-                        {/* Stats Overview Chart */}
-                        <StatsOverviewChart
-                            finance={stats.finance}
-                            tables={stats.tables}
-                            byMethod={stats.today.byMethod}
-                        />
+
+
 
                         {/* Debt Trackers (Moved to right column) */}
                         <div className="grid grid-cols-2 gap-5 h-28 shrink-0">
