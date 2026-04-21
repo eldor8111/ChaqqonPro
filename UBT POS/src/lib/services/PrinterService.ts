@@ -90,6 +90,7 @@ export interface PrintJob {
     cardAmount?: number;
     servicePercent?: number;
     tenantId?: string;
+    isCancellation?: boolean;
 }
 
 interface ReceiptOpts {
@@ -139,7 +140,9 @@ async function getReceiptOpts(tenantId?: string): Promise<ReceiptOpts> {
 function buildKitchenBuffer(job: PrintJob): Buffer {
     const parts: Buffer[] = [];
     const now = job.time || new Date().toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" });
-    parts.push(cmd.init(), cmd.align(1), cmd.bold(true), cmd.doubleHW(), line("OSHXONA"), cmd.normal(), cmd.bold(false));
+    const headerTitle = job.isCancellation ? "BEKOR QILINDI" : "BUYURTMA";
+    
+    parts.push(cmd.init(), cmd.align(1), cmd.bold(true), cmd.doubleHW(), line(headerTitle), cmd.normal(), cmd.bold(false));
     if (job.orderNum) parts.push(line(`Zakaz #${job.orderNum}`));
     parts.push(line(now));
     if (job.tableName) parts.push(line(`Stol: ${job.tableName}${job.tableZone ? ` (${job.tableZone})` : ""}`));

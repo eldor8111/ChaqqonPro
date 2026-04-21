@@ -1131,6 +1131,7 @@ export default function UbtPosPage() {
             }).catch(() => {});
             
             if (cancelledQty > 0) {
+                // Send return transaction
                 fetch("/api/ubt/returns", {
                     method: "POST", headers: hdrs,
                     body: JSON.stringify({
@@ -1141,6 +1142,31 @@ export default function UbtPosPage() {
                         employee: store.kassirSession?.name || "Kassir"
                     })
                 }).catch(() => {});
+
+                // Print cancellation to kitchen if it was already printed
+                const printedCancelledQty = Math.max(0, (c.printedQty || 0) - newQty);
+                if (printedCancelledQty > 0 && c.item?.printerIp) {
+                    const now = new Date();
+                    const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                    fetch("/api/ubt/print", {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            printerIp: c.item.printerIp,
+                            port: 9100,
+                            receiptType: "kitchen",
+                            tableName: selTable.name,
+                            time: timeStr,
+                            items: [{
+                                name: c.isSaboy ? `📦 ${c.item.name} (- Saboy -)` : c.item.name,
+                                qty: printedCancelledQty,
+                                price: c.item.price,
+                                unit: c.item.unit
+                            }],
+                            total: c.item.price * printedCancelledQty,
+                            isCancellation: true
+                        })
+                    }).catch(() => {});
+                }
             }
             
             store.fetchUbtTables();

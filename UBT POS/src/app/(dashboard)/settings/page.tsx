@@ -1118,16 +1118,6 @@ export default function SettingsPage() {
                             <div className="grid grid-cols-2 gap-8">
                                 {/* Kitchen settings form */}
                                 <div className="space-y-4">
-                                    {/* Header text */}
-                                    <div className="glass-card p-5 space-y-3">
-                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">📝 Oshxona cheki sarlavhasi</label>
-                                        <input
-                                            className="input-field w-full"
-                                            value={receiptDraft.kitchenHeaderText || ""}
-                                            onChange={e => setReceiptDraft({ ...receiptDraft, kitchenHeaderText: e.target.value })}
-                                            placeholder="Masalan: OSHXONA BUYURTMASI"
-                                        />
-                                    </div>
 
                                     {/* Kitchen toggles */}
                                     <div className="glass-card p-5 space-y-2">

@@ -27,6 +27,7 @@ export const PrintJobSchema = z.object({
     cardAmount:     z.number().nonnegative().optional(),
     servicePercent: z.number().min(0).max(100).optional(),
     tenantId:       z.string().optional(),
+    isCancellation: z.boolean().optional(),
 });
 
 export type PrintJobDTO = z.infer<typeof PrintJobSchema>;
