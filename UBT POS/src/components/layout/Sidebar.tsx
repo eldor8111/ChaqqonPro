@@ -71,6 +71,10 @@ const NAV_ITEMS: NavItem[] = [
     },
     {
         href: "/ubt/kontragent", icon: Building2, key: "nav.contractors",
+        subItems: [
+            { href: "/ubt/kontragent/yetkazib-beruvchilar", label: "nav.kont_suppliers", isI18n: true },
+            { href: "/ubt/kontragent/klientlar", label: "nav.kont_clients", isI18n: true }
+        ]
     },
     {
         href: "/ubt/support", icon: Headset, key: "nav.support",

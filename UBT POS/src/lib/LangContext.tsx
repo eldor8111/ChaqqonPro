@@ -58,7 +58,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             attendance: "Davomat", nomenclature: "Nomenklatura", nom_dishes: "Taomlar",
             nom_dish_cats: "Taomlar kategoriyasi", nom_semi: "Yarim tayyor", nom_semi_cats: "Yar. tayyor kategoriyasi",
             nom_raw: "Xomashyo", nom_raw_cats: "Xomashyo kategoriyasi", finance: "Moliya",
-            fin_cash: "Kassa & P&L", contractors: "Kontragentlar", support: "Tex yordam", billing: "Obuna va Tariflar"
+            fin_cash: "Kassa & P&L", contractors: "Kontragentlar", kont_suppliers: "Yetkazib beruvchilar", kont_clients: "Mijozlar", support: "Tex yordam", billing: "Obuna va Tariflar"
         },
         dashboard: {
             title: "Bosh Sahifa", welcome: "Xush kelibsiz", todaySales: "Bugungi savdo",
@@ -204,7 +204,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             attendance: "Посещаемость", nomenclature: "Номенклатура", nom_dishes: "Блюда",
             nom_dish_cats: "Категории блюд", nom_semi: "Полуфабрикаты", nom_semi_cats: "Категории полуфабр.",
             nom_raw: "Сырье", nom_raw_cats: "Категории сырья", finance: "Финансы",
-            fin_cash: "Касса и P&L", contractors: "Контрагенты", support: "Техподдержка", billing: "Подписка и Тарифы"
+            fin_cash: "Касса и P&L", contractors: "Контрагенты", kont_suppliers: "Поставщики", kont_clients: "Клиенты", support: "Техподдержка", billing: "Подписка и Тарифы"
         },
         dashboard: {
             title: "Главная панель", welcome: "Добро пожаловать", todaySales: "Продажи сегодня",
@@ -347,7 +347,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             attendance: "Attendance", nomenclature: "Nomenclature", nom_dishes: "Dishes",
             nom_dish_cats: "Dish Categories", nom_semi: "Semi-finished", nom_semi_cats: "Semi Cat.",
             nom_raw: "Raw Materials", nom_raw_cats: "Raw Cat.", finance: "Finance",
-            fin_cash: "Cash & P&L", contractors: "Contractors", support: "Support", billing: "Subscription & Tarif"
+            fin_cash: "Cash & P&L", contractors: "Contractors", kont_suppliers: "Suppliers", kont_clients: "Clients", support: "Support", billing: "Subscription & Tarif"
         },
         dashboard: {
             title: "Dashboard", welcome: "Welcome back", todaySales: "Today's Sales",

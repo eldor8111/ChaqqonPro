@@ -54,7 +54,7 @@ async function deleteSupplier(id: string) {
     return data;
 }
 
-export default function KontragentPage() {
+export default function YetkazibBeruvchilarPage() {
     const { t } = useLang();
     const qc = useQueryClient();
     const [search, setSearch] = useState("");
@@ -131,14 +131,14 @@ export default function KontragentPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">{t('nav.contractors') || 'Kontragentlar'}</h1>
+                    <h1 className="text-2xl font-bold text-slate-800">{t('nav.kont_suppliers') || 'Yetkazib beruvchilar'}</h1>
                     <p className="text-sm text-slate-400 mt-1">{suppliers.length} ta yetkazib beruvchi</p>
                 </div>
                 <button
                     onClick={openNew}
                     className="btn-primary flex items-center gap-2"
                 >
-                    <Plus size={16} /> {t('common.add')} {t('nav.contractors') || 'Kontragent'}
+                    <Plus size={16} /> {t('common.add')} Yetkazib beruvchi
                 </button>
             </div>
 
@@ -151,7 +151,7 @@ export default function KontragentPage() {
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-slate-800">{suppliers.length}</p>
-                            <p className="text-xs text-slate-400">Jami kontragent</p>
+                            <p className="text-xs text-slate-400">Jami yetkazib beruvchi</p>
                         </div>
                     </div>
                 </div>
@@ -216,11 +216,11 @@ export default function KontragentPage() {
                                     <div className="flex flex-col items-center gap-3 text-slate-400">
                                         <Users size={40} className="opacity-30" />
                                         <p className="text-sm font-medium">
-                                            {search ? "Qidiruv bo'yicha natija topilmadi" : "Hali kontragent qo'shilmagan"}
+                                            {search ? "Qidiruv bo'yicha natija topilmadi" : "Hali yetkazib beruvchi qo'shilmagan"}
                                         </p>
                                         {!search && (
                                             <button onClick={openNew} className="text-xs text-blue-500 hover:underline">
-                                                Birinchi kontragentni qo&apos;shish
+                                                Birinchi yetkazib beruvchini qo&apos;shish
                                             </button>
                                         )}
                                     </div>
@@ -276,7 +276,7 @@ export default function KontragentPage() {
                         {/* Header */}
                         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 flex-shrink-0">
                             <h2 className="font-semibold text-gray-800 text-[15px]">
-                                {editingId ? "Kontragentni tahrirlash" : "Yangi kontragent qo'shish"}
+                                {editingId ? "Yetkazib beruvchini tahrirlash" : "Yangi yetkazib beruvchi qo'shish"}
                             </h2>
                             <button onClick={closeForm} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
                                 <X size={18} />
@@ -366,7 +366,7 @@ export default function KontragentPage() {
                     <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4 animate-in fade-in zoom-in-95 duration-200 border border-slate-200">
                         <h3 className="font-bold text-slate-800 text-lg mb-2">O&apos;chirishni tasdiqlang</h3>
                         <p className="text-slate-500 text-sm mb-6">
-                            Ushbu kontragent butunlay o&apos;chirib tashlanadi. Bu amalni qaytarib bo&apos;lmaydi.
+                            Ushbu yetkazib beruvchi butunlay o&apos;chirib tashlanadi. Bu amalni qaytarib bo&apos;lmaydi.
                         </p>
                         <div className="flex gap-3">
                             <button
