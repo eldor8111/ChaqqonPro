@@ -116,8 +116,8 @@ async function getReceiptOpts(tenantId?: string): Promise<ReceiptOpts> {
 
         let settings: Record<string, unknown> = {};
         try { settings = JSON.parse((tenant as { settings?: string }).settings || "{}"); } catch {}
-        const r = (settings.receiptSettings ?? {}) as Record<string, string>;
-        const h = (settings.ubtSettings  ?? {}) as Record<string, string>;
+        const r = (settings.receiptSettings ?? {}) as Record<string, any>;
+        const h = (settings.ubtSettings  ?? {}) as Record<string, any>;
 
         const opts: ReceiptOpts = {
             shopName:       tenant.shopName || "RESTORAN",
