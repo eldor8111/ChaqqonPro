@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <!-- Main WebView -->
+    <WebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Loading Overlay -->
+    <FrameLayout
+        android:id="@+id/loading_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFFFFF"
+        android:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp">
+
+            <!-- Logo area -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chaqqon"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:textColor="#1e293b"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pro"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:textColor="#2563eb"
+                android:layout_marginTop="-8dp"
+                android:fontFamily="sans-serif-medium" />
+
+            <!-- Progress indicator -->
+            <ProgressBar
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="32dp"
+                android:indeterminate="true"
+                android:indeterminateTint="#2563eb" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Yuklanmoqda..."
+                android:textSize="14sp"
+                android:textColor="#94a3b8"
+                android:layout_marginTop="12dp" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Offline Screen -->
+    <LinearLayout
+        android:id="@+id/offline_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#f8fafc"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <!-- Icon placeholder -->
+        <TextView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:text="📡"
+            android:textSize="48sp"
+            android:gravity="center"
+            android:background="#e0f2fe"
+            android:padding="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Internet yo'q"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#1e293b"
+            android:layout_marginTop="24dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Internet aloqasini tekshiring va qaytadan urinib ko'ring."
+            android:textSize="15sp"
+            android:textColor="#64748b"
+            android:gravity="center"
+            android:layout_marginTop="8dp" />
+
+        <Button
+            android:id="@+id/retry_button"
+            android:layout_width="200dp"
+            android:layout_height="52dp"
+            android:text="Qayta urinish"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#2563eb"
+            android:layout_marginTop="32dp"
+            android:stateListAnimator="@null" />
+    </LinearLayout>
+
+</FrameLayout>

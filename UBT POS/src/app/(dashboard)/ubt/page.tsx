@@ -520,7 +520,7 @@ function DebtDetailsModal({ type, onClose, data, loading, onRefresh, onSverkaGen
                             <div className="w-10 h-10 rounded-full border-4 border-slate-300 dark:border-slate-700 border-t-blue-500 animate-spin" />
                         </div>
                     ) : (data &&
-                        <div className="grid grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             {/* Left Column */}
                             <div className="space-y-4">
                                 <h3 className="text-sm font-bold text-slate-800 dark:text-white border-b border-slate-200 dark:border-white/10 pb-2 mb-4">
@@ -1012,7 +1012,7 @@ export default function UbtPage() {
 
 
                         {/* Debt Trackers (Moved to right column) */}
-                        <div className="grid grid-cols-2 gap-5 h-28 shrink-0">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 hide-scroll">
                             <div onClick={() => openDebtModal("qarzdorlar")}
                                 className="rounded-3xl p-5 relative overflow-hidden flex flex-col justify-center transition-all hover:scale-[1.03] shadow-sm cursor-pointer group"
                                 style={{ background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.2)" }}>
@@ -1084,19 +1084,19 @@ export default function UbtPage() {
                                         </div>
 
                                         {/* Name & Stats */}
-                                        <div className="relative z-10 flex-1 ml-6 flex items-center justify-between">
+                                        <div className="relative z-10 flex-1 ml-4 sm:ml-6 flex md:items-center justify-between flex-col md:flex-row gap-2 md:gap-0">
                                             <div>
-                                                <h3 className="text-slate-800 text-base lg:text-lg font-extrabold truncate max-w-[280px] tracking-wide">{dish.name}</h3>
+                                                <h3 className="text-slate-800 text-sm sm:text-base lg:text-lg font-extrabold truncate max-w-[150px] sm:max-w-[280px] tracking-wide">{dish.name}</h3>
                                                 <div className="flex items-center gap-2 mt-1">
                                                     <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[11px] font-bold border border-blue-100">{dish.qty} ta</span>
                                                     <span className="text-slate-500 text-xs font-bold">sotildi</span>
                                                 </div>
                                             </div>
-                                            <div className="text-right">
-                                                <p className="text-emerald-600 text-lg lg:text-xl font-black tracking-tighter">
+                                            <div className="text-left md:text-right">
+                                                <p className="text-emerald-600 text-base sm:text-lg lg:text-xl font-black tracking-tighter">
                                                     {formatCurrency(dish.revenue)}
                                                 </p>
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-wider">Jami tushum</p>
+                                                <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-wider">Jami tushum</p>
                                             </div>
                                         </div>
                                     </div>
