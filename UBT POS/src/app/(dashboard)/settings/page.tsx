@@ -807,7 +807,7 @@ export default function SettingsPage() {
                                     {/* Logo Upload Section */}
                                     <div className="glass-card p-5 space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <p className="text-sm font-semibold text-slate-200">🖼️ Logotip (Logo)</p>
+                                            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">🖼️ Logotip (Logo)</p>
                                             <label className="relative inline-flex items-center cursor-pointer">
                                                 <input
                                                     type="checkbox"
@@ -815,126 +815,153 @@ export default function SettingsPage() {
                                                     checked={receiptDraft.showLogo}
                                                     onChange={e => setReceiptDraft({ ...receiptDraft, showLogo: e.target.checked })}
                                                 />
-                                                <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                                                <div className="w-11 h-6 bg-slate-300 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
                                             </label>
                                         </div>
-
-                                        {/* Logo upload area */}
                                         <div
-                                            className="border-2 border-dashed border-slate-600 rounded-xl p-4 flex flex-col items-center gap-3 hover:border-brand/50 transition-colors cursor-pointer"
+                                            className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-4 flex flex-col items-center gap-3 hover:border-brand/50 transition-colors cursor-pointer"
                                             onClick={() => (document.getElementById("logo-upload") as HTMLInputElement)?.click()}>
                                             {receiptDraft.logoBase64 ? (
                                                 <img src={receiptDraft.logoBase64} alt="Logo" className="h-16 object-contain rounded" />
                                             ) : (
                                                 <>
-                                                    <div className="w-12 h-12 bg-surface-elevated rounded-full flex items-center justify-center text-slate-400">
+                                                    <div className="w-12 h-12 bg-slate-100 dark:bg-surface-elevated rounded-full flex items-center justify-center text-slate-400">
                                                         <Printer size={20} />
                                                     </div>
                                                     <p className="text-xs text-slate-400 text-center">Logo yuklash uchun bosing<br /><span className="text-brand">PNG, JPG, SVG</span> formatlar qo'llab-quvvatlanadi</p>
                                                 </>
                                             )}
                                         </div>
-                                        <input
-                                            id="logo-upload"
-                                            type="file"
-                                            accept="image/*"
-                                            className="hidden"
+                                        <input id="logo-upload" type="file" accept="image/*" className="hidden"
                                             onChange={e => {
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
                                                 const reader = new FileReader();
-                                                reader.onload = ev => {
-                                                    setReceiptDraft({ ...receiptDraft, logoBase64: ev.target?.result as string, showLogo: true });
-                                                };
+                                                reader.onload = ev => setReceiptDraft({ ...receiptDraft, logoBase64: ev.target?.result as string, showLogo: true });
                                                 reader.readAsDataURL(file);
                                             }}
                                         />
                                         {receiptDraft.logoBase64 && (
-                                            <button
-                                                onClick={() => setReceiptDraft({ ...receiptDraft, logoBase64: null })}
+                                            <button onClick={() => setReceiptDraft({ ...receiptDraft, logoBase64: null })}
                                                 className="w-full py-1.5 rounded-lg text-xs text-red-400 border border-red-500/20 hover:bg-red-500/10 transition-colors">
                                                 Logoni o'chirish
                                             </button>
                                         )}
                                     </div>
 
-                                    {/* Header text + size + align */}
+                                    {/* Shop name settings (top of receipt) */}
                                     <div className="glass-card p-5 space-y-3">
-                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">📝 Chek Sarlavhasi (Header)</label>
+                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">🏪 Restoran nomi (chek tepasida)</label>
+                                        <p className="text-xs text-slate-400">Restoran nomi sozlamalar → Umumiy sozlamalar → "Do'kon nomi" dan olinadi. Bu yerda uning chekdagi ko'rinishini sozlang.</p>
+                                        <div className="flex items-center justify-between gap-4 pt-1">
+                                            <div className="flex-1">
+                                                <p className="text-xs text-slate-400 mb-1">Shrift o'lchami: <span className="text-brand font-bold">{receiptDraft.shopNameFontSize || 20}px</span></p>
+                                                <input type="range" min={12} max={36} step={1}
+                                                    value={receiptDraft.shopNameFontSize || 20}
+                                                    onChange={e => setReceiptDraft({ ...receiptDraft, shopNameFontSize: Number(e.target.value) })}
+                                                    className="w-full accent-brand" />
+                                            </div>
+                                            <div className="flex gap-1">
+                                                {(["left", "center", "right"] as const).map(align => (
+                                                    <button key={align}
+                                                        onClick={() => setReceiptDraft({ ...receiptDraft, shopNameAlign: align })}
+                                                        className={clsx("px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all", receiptDraft.shopNameAlign === align ? "bg-brand text-white border-brand" : "text-slate-400 border-slate-300 dark:border-slate-600 hover:text-slate-700 dark:hover:text-slate-200")}>
+                                                        {align === "left" ? "◀" : align === "center" ? "●" : "▶"}
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    onClick={() => setReceiptDraft({ ...receiptDraft, shopNameBold: !receiptDraft.shopNameBold })}
+                                                    className={clsx("px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all", receiptDraft.shopNameBold !== false ? "bg-brand text-white border-brand" : "text-slate-400 border-slate-300 dark:border-slate-600")}>
+                                                    B
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Footer greeting text */}
+                                    <div className="glass-card p-5 space-y-3">
+                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">💬 Salomlashuv matni (chek pastida)</label>
                                         <input
-                                            className="input-field"
+                                            className="input-field w-full"
                                             value={receiptDraft.headerText}
                                             onChange={e => setReceiptDraft({ ...receiptDraft, headerText: e.target.value })}
-                                            placeholder="Masalan: MCHJ Baraka"
+                                            placeholder="Masalan: Xaridingiz uchun rahmat!"
                                         />
                                         <div className="flex items-center justify-between gap-4">
                                             <div className="flex-1">
-                                                <p className="text-xs text-slate-400 mb-1">Shrift o'lchami: <span className="text-brand font-bold">{receiptDraft.headerFontSize || 18}px</span></p>
-                                                <input
-                                                    type="range" min={10} max={32} step={1}
-                                                    value={receiptDraft.headerFontSize || 18}
+                                                <p className="text-xs text-slate-400 mb-1">Shrift o'lchami: <span className="text-brand font-bold">{receiptDraft.headerFontSize || 13}px</span></p>
+                                                <input type="range" min={9} max={22} step={1}
+                                                    value={receiptDraft.headerFontSize || 13}
                                                     onChange={e => setReceiptDraft({ ...receiptDraft, headerFontSize: Number(e.target.value) })}
-                                                    className="w-full accent-brand"
-                                                />
+                                                    className="w-full accent-brand" />
                                             </div>
                                             <div className="flex gap-1">
                                                 {(["left", "center", "right"] as const).map(align => (
                                                     <button key={align}
                                                         onClick={() => setReceiptDraft({ ...receiptDraft, headerAlign: align })}
-                                                        className={clsx("px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all", receiptDraft.headerAlign === align ? "bg-brand text-white border-brand" : "text-slate-400 border-slate-600 hover:text-slate-200")}>
+                                                        className={clsx("px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all", receiptDraft.headerAlign === align ? "bg-brand text-white border-brand" : "text-slate-400 border-slate-300 dark:border-slate-600 hover:text-slate-700 dark:hover:text-slate-200")}>
                                                         {align === "left" ? "◀" : align === "center" ? "●" : "▶"}
                                                     </button>
                                                 ))}
+                                                <button
+                                                    onClick={() => setReceiptDraft({ ...receiptDraft, headerBold: !receiptDraft.headerBold })}
+                                                    className={clsx("px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all", receiptDraft.headerBold ? "bg-brand text-white border-brand" : "text-slate-400 border-slate-300 dark:border-slate-600")}>
+                                                    B
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Footer text + size + align */}
+                                    {/* Extra footer note */}
                                     <div className="glass-card p-5 space-y-3">
-                                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">✍️ Chek Izohi (Footer)</label>
+                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">✍️ Qo'shimcha izoh (eng pastda — ixtiyoriy)</label>
                                         <input
-                                            className="input-field"
-                                            value={receiptDraft.footerText}
+                                            className="input-field w-full"
+                                            value={receiptDraft.footerText || ""}
                                             onChange={e => setReceiptDraft({ ...receiptDraft, footerText: e.target.value })}
-                                            placeholder="Masalan: Xaridingiz uchun rahmat!"
+                                            placeholder="Masalan: Bizni yana ziyorat qiling!"
                                         />
                                         <div className="flex items-center justify-between gap-4">
                                             <div className="flex-1">
-                                                <p className="text-xs text-slate-400 mb-1">Shrift o'lchami: <span className="text-brand font-bold">{receiptDraft.footerFontSize || 11}px</span></p>
-                                                <input
-                                                    type="range" min={8} max={22} step={1}
-                                                    value={receiptDraft.footerFontSize || 11}
+                                                <p className="text-xs text-slate-400 mb-1">Shrift o'lchami: <span className="text-brand font-bold">{receiptDraft.footerFontSize || 10}px</span></p>
+                                                <input type="range" min={8} max={18} step={1}
+                                                    value={receiptDraft.footerFontSize || 10}
                                                     onChange={e => setReceiptDraft({ ...receiptDraft, footerFontSize: Number(e.target.value) })}
-                                                    className="w-full accent-brand"
-                                                />
+                                                    className="w-full accent-brand" />
                                             </div>
                                             <div className="flex gap-1">
                                                 {(["left", "center", "right"] as const).map(align => (
                                                     <button key={align}
                                                         onClick={() => setReceiptDraft({ ...receiptDraft, footerAlign: align })}
-                                                        className={clsx("px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all", receiptDraft.footerAlign === align ? "bg-brand text-white border-brand" : "text-slate-400 border-slate-600 hover:text-slate-200")}>
+                                                        className={clsx("px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all", receiptDraft.footerAlign === align ? "bg-brand text-white border-brand" : "text-slate-400 border-slate-300 dark:border-slate-600 hover:text-slate-700 dark:hover:text-slate-200")}>
                                                         {align === "left" ? "◀" : align === "center" ? "●" : "▶"}
                                                     </button>
                                                 ))}
+                                                <button
+                                                    onClick={() => setReceiptDraft({ ...receiptDraft, footerBold: !receiptDraft.footerBold })}
+                                                    className={clsx("px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all", receiptDraft.footerBold ? "bg-brand text-white border-brand" : "text-slate-400 border-slate-300 dark:border-slate-600")}>
+                                                    B
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Toggles */}
                                     <div className="glass-card p-5 space-y-1">
+                                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Ko'rsatiladigan ma'lumotlar</p>
                                         {[
-                                            { key: "showBarcode", label: "Shtrix-kod ko'rsatilsinmi?", desc: "Chek pastida 1D/QR kod chiqadi" },
-                                            { key: "showCashierName", label: "Kassir ismi?", desc: "Xizmat ko'rsatgan xodim ismi yoziladi" },
+                                            { key: "showBarcode", label: "Shtrix-kod (Barcode)", desc: "Chek pastida 1D/QR kod chiqadi" },
+                                            { key: "showCashierName", label: "Kassir / Ofitsiant ismi", desc: "Xizmat ko'rsatgan xodim ismi yoziladi" },
                                         ].map(item => (
-                                            <label key={item.key} className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-elevated cursor-pointer transition-colors">
+                                            <label key={item.key} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-surface-elevated cursor-pointer transition-colors">
                                                 <input
                                                     type="checkbox"
-                                                    className="w-4 h-4 rounded text-brand border-slate-600 bg-surface focus:ring-brand focus:ring-offset-surface"
+                                                    className="w-4 h-4 rounded text-brand border-slate-300 dark:border-slate-600 bg-surface focus:ring-brand"
                                                     checked={receiptDraft[item.key]}
                                                     onChange={e => setReceiptDraft({ ...receiptDraft, [item.key]: e.target.checked })}
                                                 />
                                                 <div className="flex-1">
-                                                    <p className="text-sm font-medium text-slate-200">{item.label}</p>
+                                                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{item.label}</p>
                                                     <p className="text-xs text-slate-400">{item.desc}</p>
                                                 </div>
                                             </label>
@@ -946,7 +973,7 @@ export default function SettingsPage() {
                                 <div className="sticky top-4">
                                     <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">🔍 Jonli Ko'rinish (Preview)</p>
                                     <div className="bg-white text-black rounded-sm shadow-2xl w-72 mx-auto font-mono text-sm leading-tight flex flex-col overflow-hidden border border-slate-200">
-                                        {/* Header strip */}
+                                        {/* Top - Logo + Shop Name */}
                                         <div className="bg-slate-50 border-b border-dashed border-slate-300 p-4 flex flex-col items-center">
                                             {receiptDraft.showLogo && (
                                                 receiptDraft.logoBase64
@@ -954,53 +981,63 @@ export default function SettingsPage() {
                                                     : <div className="w-12 h-12 bg-slate-200 rounded-full mb-2 flex items-center justify-center text-xs text-slate-500">LOGO</div>
                                             )}
                                             <p
-                                                className="font-bold whitespace-pre-line leading-snug"
+                                                className="whitespace-pre-line leading-snug w-full"
                                                 style={{
-                                                    fontSize: `${receiptDraft.headerFontSize || 18}px`,
-                                                    textAlign: receiptDraft.headerAlign || "center"
+                                                    fontSize: `${receiptDraft.shopNameFontSize || 20}px`,
+                                                    textAlign: receiptDraft.shopNameAlign || "center",
+                                                    fontWeight: receiptDraft.shopNameBold !== false ? "bold" : "normal",
                                                 }}>
-                                                {receiptDraft.headerText || "Sarlavha"}
+                                                {shopSettings?.shopName || "RESTORAN NOMI"}
                                             </p>
-
                                         </div>
 
+                                        {/* Body */}
                                         <div className="p-4 space-y-1">
                                             <p className="text-[10px] text-slate-500">Sana: 08.03.2026 12:45</p>
-                                            <p className="text-[10px] text-slate-500">Chek №: 9812</p>
+                                            <p className="text-[10px] text-slate-500">Buyurtma #: 9812</p>
                                             {receiptDraft.showCashierName && <p className="text-[10px] text-slate-500">Kassir: Aziz Yusupov</p>}
 
                                             <div className="border-t border-dashed border-slate-300 my-2"></div>
 
                                             <div className="flex justify-between text-xs">
-                                                <span>Olma (kg) x 2</span>
-                                                <span>30 000</span>
+                                                <span>Olma (kg) x 2</span><span>30 000</span>
                                             </div>
                                             <div className="flex justify-between text-xs">
-                                                <span>Coca-Cola (L) x 1</span>
-                                                <span>12 000</span>
+                                                <span>Coca-Cola (L) x 1</span><span>12 000</span>
                                             </div>
 
                                             <div className="border-t border-dashed border-slate-300 my-2"></div>
-
                                             <div className="flex justify-between font-bold text-sm">
-                                                <span>JAMI:</span>
-                                                <span>42 000</span>
+                                                <span>JAMI TO'LOV:</span><span>42 000 so'm</span>
                                             </div>
                                         </div>
 
-                                        {/* Footer */}
-                                        <div className="bg-slate-50 border-t border-dashed border-slate-300 p-3">
-                                            <p
-                                                className="italic text-slate-500 whitespace-pre-line"
-                                                style={{
-                                                    fontSize: `${receiptDraft.footerFontSize || 11}px`,
-                                                    textAlign: receiptDraft.footerAlign || "center"
-                                                }}>
-                                                {receiptDraft.footerText || "Izoh"}
-                                            </p>
-
+                                        {/* Footer - Greeting + Optional note + Barcode */}
+                                        <div className="bg-slate-50 border-t border-dashed border-slate-300 p-3 space-y-1">
+                                            {receiptDraft.headerText && (
+                                                <p
+                                                    className="whitespace-pre-line w-full"
+                                                    style={{
+                                                        fontSize: `${receiptDraft.headerFontSize || 13}px`,
+                                                        textAlign: receiptDraft.headerAlign || "center",
+                                                        fontWeight: receiptDraft.headerBold ? "bold" : "normal",
+                                                    }}>
+                                                    {receiptDraft.headerText}
+                                                </p>
+                                            )}
+                                            {receiptDraft.footerText && (
+                                                <p
+                                                    className="italic text-slate-500 whitespace-pre-line w-full"
+                                                    style={{
+                                                        fontSize: `${receiptDraft.footerFontSize || 10}px`,
+                                                        textAlign: receiptDraft.footerAlign || "center",
+                                                        fontWeight: receiptDraft.footerBold ? "bold" : "normal",
+                                                    }}>
+                                                    {receiptDraft.footerText}
+                                                </p>
+                                            )}
                                             {receiptDraft.showBarcode && (
-                                                <div className="flex flex-col items-center mt-3">
+                                                <div className="flex flex-col items-center mt-2">
                                                     <div className="w-3/4 h-8 bg-gradient-to-r from-slate-800 via-slate-600 to-slate-800 rounded-sm opacity-90"></div>
                                                     <p className="text-[9px] text-slate-500 mt-0.5 tracking-widest">0000009812</p>
                                                 </div>
