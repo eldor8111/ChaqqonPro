@@ -370,7 +370,7 @@ export default function TaomlarPage() {
                                     <td className="px-1.5 py-1.5 border-r border-[#e4ebf5]">
                                         <div className="w-10 h-10 bg-[#eef1f6] rounded border border-[#e4ebf5] flex items-center justify-center text-slate-400 relative overflow-hidden">
                                             {item.image ? (
-                                                <img src={item.image} alt="dish" className="w-full h-full object-cover" />
+                                                <img src={item.image} alt="dish" className="w-full h-full object-contain p-0.5" />
                                             ) : (
                                                 <ImageIcon size={18} />
                                             )}
@@ -465,7 +465,7 @@ export default function TaomlarPage() {
                                         >
                                             {formData.image ? (
                                                 <>
-                                                    <img src={formData.image} alt="taom rasmi" className="absolute inset-0 w-full h-full object-cover" />
+                                                    <img src={formData.image} alt="taom rasmi" className="absolute inset-0 w-full h-full object-contain p-2" />
                                                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2">
                                                         <ImageIcon size={28} className="text-white" />
                                                         <span className="text-white text-sm font-bold">Rasmni o&apos;zgartirish</span>

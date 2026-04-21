@@ -501,7 +501,7 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, instantAdd, servicePct =
                                         {item.image ? (
                                             <>
                                                 <img src={item.image} alt={item.name}
-                                                    className="w-full h-full object-cover object-center" />
+                                                    className="w-full h-full object-contain p-1" />
                                                 <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/65 to-transparent pointer-events-none" />
                                                 <span className="absolute bottom-1.5 left-1.5 bg-emerald-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none">
                                                     {fmt(item.price)}
