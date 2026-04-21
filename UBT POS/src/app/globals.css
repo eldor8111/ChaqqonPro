@@ -10,9 +10,9 @@
   --bg-card: #ffffff;
   --bg-elevated: #e8eef5;
   --border: #c8d8e8;
-  --text-primary: #0f1c2e;
-  --text-secondary: #4a6a8a;
-  --text-muted: #8aaac0;
+  --text-primary: #0a0f1a;
+  --text-secondary: #1e293b;
+  --text-muted: #475569;
   --brand: #1a65e0;
   --brand-dark: #0d4cbf;
   --accent: #a040f0;
@@ -348,7 +348,7 @@ body {
 }
 
 .text-slate-500 {
-  color: var(--text-muted) !important;
+  color: #475569 !important;
 }
 
 /* ── HOVER ustidagi matn kontrasti ─────────────────────────────────
@@ -442,7 +442,7 @@ select option {
 
 /* matn ranglari – faqat dashboard ichida (login sahifasini buzmaydi) */
 .text-slate-600 {
-  color: var(--text-muted) !important;
+  color: #334155 !important;
 }
 
 /* hover versiyalar */
