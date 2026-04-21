@@ -47,8 +47,9 @@ export default function SettingsPage() {
     const branches = (settingsData as any)?.tenant?.settings?.branches || [];
     const shopSettings = (settingsData as any)?.tenant || null;
     const receiptSettings = (settingsData as any)?.tenant?.settings?.receiptSettings || {
+        customShopName: (settingsData as any)?.tenant?.shopName || "",
         headerText: "Xaridingiz uchun rahmat!",
-        footerText: "Bizni yana ziyorat qiling :)",
+        footerText: "",
         showLogo: true,
         showBarcode: true,
         showCashierName: true
@@ -96,7 +97,12 @@ export default function SettingsPage() {
     // Sync receiptDraft once settings loads (use useEffect to avoid render-phase state mutations)
     useEffect(() => {
         if (settingsData && !receiptDraft) {
-            setReceiptDraft(receiptSettings);
+            const draft = { ...receiptSettings };
+            // Agar customShopName saqlanmagan bo'lsa, tenant shopName ni avtomatik to'ldirish
+            if (!draft.customShopName && shopSettings?.shopName) {
+                draft.customShopName = shopSettings.shopName;
+            }
+            setReceiptDraft(draft);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [settingsData]);
