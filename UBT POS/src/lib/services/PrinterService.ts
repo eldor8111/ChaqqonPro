@@ -159,8 +159,7 @@ function buildClientBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
     const now = new Date();
     const timeStr = job.time || `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
     const dateStr = `${String(now.getDate()).padStart(2,"0")}.${String(now.getMonth()+1).padStart(2,"0")}.${now.getFullYear()}`;
-    const displayName = opts.customShopName || opts.shopName;
-    const shopName    = displayName.toUpperCase();
+    const shopName   = opts.shopName.toUpperCase();
     const serviceP   = job.servicePercent ?? opts.servicePercent ?? 0;
     const subtotal   = (job.items || []).reduce((s, it) => s + it.price * it.qty, 0);
     const serviceAmt = serviceP ? Math.round(subtotal * serviceP / 100) : 0;
