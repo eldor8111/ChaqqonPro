@@ -35,6 +35,8 @@ export async function DELETE(req: Request) {
         const cntDel = await prisma.inventoryCount.deleteMany({ where: { tenantId: tid } }).catch(() => ({ count: 0 }));
         const woDel = await prisma.inventoryWriteoff.deleteMany({ where: { tenantId: tid } }).catch(() => ({ count: 0 }));
         const auditDel = await prisma.auditLog.deleteMany({ where: { tenantId: tid } }).catch(() => ({ count: 0 }));
+        // KassiHarakat (Moliya kirim/chiqim) — dashboard sof foyda uchun
+        const kassaDel = await prisma.kassiHarakat.deleteMany({ where: { tenantId: tid } }).catch(() => ({ count: 0 }));
 
         // O'chirish harakatini yangi audit log yozuviga qayd etish
         await prisma.auditLog.create({
@@ -42,7 +44,7 @@ export async function DELETE(req: Request) {
                 tenantId: tid,
                 user: session.userId,
                 action: "REPORTS_CLEARED",
-                detail: `Barcha hisobotlar o'chirildi. Tranzaksiyalar: ${txDel.count}, Chiqimlar: ${expDel.count}, Kirimlar: ${rcptDel.count}, Ko'chirishlar: ${trfDel.count}, Inventarizatsiya: ${cntDel.count}, Hisobdan chiqarish: ${woDel.count}, Audit: ${auditDel.count}`,
+                detail: `Barcha hisobotlar o'chirildi. Tranzaksiyalar: ${txDel.count}, Chiqimlar: ${expDel.count}, Kirimlar: ${rcptDel.count}, Ko'chirishlar: ${trfDel.count}, Inventarizatsiya: ${cntDel.count}, Hisobdan chiqarish: ${woDel.count}, Audit: ${auditDel.count}, Kassa: ${kassaDel.count}`,
                 type: "delete",
             },
         });
@@ -57,6 +59,7 @@ export async function DELETE(req: Request) {
                 counts: cntDel.count,
                 writeoffs: woDel.count,
                 auditLogs: auditDel.count,
+                kassaEntries: kassaDel.count,
             },
         });
     } catch (e: any) {
