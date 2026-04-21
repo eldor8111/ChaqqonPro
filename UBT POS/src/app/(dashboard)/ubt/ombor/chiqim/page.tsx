@@ -200,12 +200,12 @@ export default function OmborChiqimPage() {
 
     return (
         <div className="animate-fade-in relative bg-white border border-slate-200 h-full flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b border-slate-100 gap-4">
                 <div className="flex items-center gap-2">
                     <div className="w-2.5 h-7 bg-amber-500 rounded text-transparent">|</div>
-                    <h1 className="text-[22px] font-bold text-slate-800">{t('nav.ombor_chiqim')}</h1>
+                    <h1 className="text-xl sm:text-[22px] font-bold text-slate-800">{t('nav.ombor_chiqim')}</h1>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                     <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl text-sm hover:from-emerald-600 hover:to-emerald-700 transition-all font-bold shadow-lg shadow-emerald-500/30">
                         <FileSpreadsheet size={16} /> EXCEL
                     </button>
@@ -217,8 +217,8 @@ export default function OmborChiqimPage() {
                 </div>
             </div>
 
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
-                <div className="flex-1 max-w-[300px] relative">
+            <div className="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="w-full sm:flex-1 sm:max-w-[300px] relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                     <input
                         type="text"

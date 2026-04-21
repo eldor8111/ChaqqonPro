@@ -988,6 +988,32 @@ export default function UbtPosPage() {
 
     const [printerStatus, setPrinterStatus] = useState<{ id: string; name: string; online: boolean }[]>([]);
     const [tab, setTab] = useState<"tables" | "takeaway" | "delivery" | "reservation">("tables");
+
+    useEffect(() => {
+        const sess = store.kassirSession || store.deviceSession;
+        if (sess?.id === "admin") return;
+
+        const perms = sess?.permissions || [];
+        const hasAnyOrderType = perms.some(p => ["zal", "delivery", "takeaway"].includes(p));
+        const canZal = perms.includes("zal") || !hasAnyOrderType;
+        const canDelivery = perms.includes("delivery") || !hasAnyOrderType;
+        const canTakeaway = perms.includes("takeaway") || !hasAnyOrderType;
+
+        const isOfitsiant = ((sess as any)?.role === "Ofitsiant" || perms.includes("Ofitsiant"));
+        if (isOfitsiant && !hasAnyOrderType) return;
+
+        if (tab === "tables" && !canZal) {
+            if (canTakeaway) setTab("takeaway");
+            else if (canDelivery) setTab("delivery");
+        } else if (tab === "takeaway" && !canTakeaway) {
+            if (canZal) setTab("tables");
+            else if (canDelivery) setTab("delivery");
+        } else if (tab === "delivery" && !canDelivery) {
+            if (canZal) setTab("tables");
+            else if (canTakeaway) setTab("takeaway");
+        }
+    }, [store.kassirSession, store.deviceSession, tab]);
+
     const [zone, setZone] = useState("all");
     const [selTable, setSelTable] = useState<UbtTable | null>(null);
     const [activeShot, setActiveShot] = useState<number>(1);
@@ -1968,8 +1994,25 @@ export default function UbtPosPage() {
                         { id: "takeaway" as const, icon: Package,          label: t("takeawayLabel", lang), bg: "text-[#0078d7]", count: twOrders.filter(o => o.status === "pending").length, badge: "bg-pink-500" },
                         { id: "delivery" as const, icon: Bike,             label: t("deliveryLabel", lang), bg: "text-[#0078d7]", count: dlOrders.filter(o => o.status === "pending").length, badge: "bg-red-500" },
                     ] as const).filter(item => {
-                        const isOfitsiant = ((store.kassirSession as any)?.role === "Ofitsiant" || store.kassirSession?.permissions?.includes("Ofitsiant")) && store.kassirSession?.id !== "admin";
-                        if (isOfitsiant) return item.id === "tables";
+                        const sess = store.kassirSession || store.deviceSession;
+                        if (sess?.id === "admin") return true; 
+
+                        const perms = sess?.permissions || [];
+                        const hasAnyOrderType = perms.some(p => ["zal", "delivery", "takeaway"].includes(p));
+                        const canZal = perms.includes("zal") || !hasAnyOrderType;
+                        const canDelivery = perms.includes("delivery") || !hasAnyOrderType;
+                        const canTakeaway = perms.includes("takeaway") || !hasAnyOrderType;
+
+                        // Legacy check
+                        const isOfitsiant = ((sess as any)?.role === "Ofitsiant" || perms.includes("Ofitsiant"));
+                        if (isOfitsiant && !hasAnyOrderType) {
+                            return item.id === "tables";
+                        }
+
+                        if (item.id === "tables") return canZal;
+                        if (item.id === "delivery") return canDelivery;
+                        if (item.id === "takeaway") return canTakeaway;
+
                         return true;
                     }).map(item => {
                         const active = tab === item.id;

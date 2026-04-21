@@ -402,8 +402,8 @@ export default function OmborKirimPage() {
 
             {/* Search + Table */}
             <div className="flex-1 p-6">
-                <div className="flex items-center justify-between mb-4 bg-white p-2 rounded-xl border border-slate-200 shadow-sm gap-4">
-                    <div className="flex-1 max-w-md relative">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 bg-white p-2 rounded-xl border border-slate-200 shadow-sm gap-4">
+                    <div className="w-full sm:flex-1 sm:max-w-md relative">
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
                         <input
                             type="text"
@@ -626,8 +626,9 @@ export default function OmborKirimPage() {
                                 </div>
 
                                 {/* Items table */}
-                                <div className="border border-slate-200 rounded-xl overflow-visible">
-                                    <div className="bg-slate-50 border-b border-slate-200 rounded-t-xl px-4 py-2.5 grid grid-cols-12 gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                <div className="border border-slate-200 rounded-xl overflow-x-auto pb-4 custom-scrollbar">
+                                    <div className="min-w-[900px]">
+                                        <div className="bg-slate-50 border-b border-slate-200 rounded-t-xl px-4 py-2.5 grid grid-cols-12 gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                         <div className="col-span-4">Mahsulot</div>
                                         <div className="col-span-1">Tur</div>
                                         <div className="col-span-2">Miqdor + Birlik</div>
@@ -758,6 +759,7 @@ export default function OmborKirimPage() {
                                             </div>
                                         );
                                     })}
+                                    </div>
                                 </div>
 
                                 <button type="button" onClick={addRow}

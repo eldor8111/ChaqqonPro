@@ -210,6 +210,7 @@ export async function authenticateAdmin(shopCode: string | null, username: strin
             return { success: false, requireShopCode: true, error: "Sizning raqamingiz tizimda bir nechta filialga ulangan. Iltimos, aynan qaysi filialga kirmoqchi ekanligingizni bilishimiz uchun 'Shop Code' ni ham kiriting." };
         }
         tenant = matchingTenants.length > 0 ? matchingTenants[0] : null;
+    }
 
     if (!tenant || !["active", "trial", "suspended"].includes(tenant.status)) {
         return { success: false, error: "Hisob topilmadi yoki to'xtatilgan" };

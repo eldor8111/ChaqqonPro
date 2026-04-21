@@ -129,7 +129,7 @@ export default function OmborQoldiqlarPage() {
                         <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t('nav.ombor_qoldiqlar')}</h1>
                         <p className="text-sm text-slate-500 mt-1 font-medium">{t('nav.nom_raw')} {t('common.and') || 'va'} {t('nav.nom_dishes')} balansi</p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
                         <button className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-emerald-500 text-emerald-600 rounded-xl text-sm hover:bg-emerald-50 transition-all font-bold shadow-sm">
                             <FileSpreadsheet size={18} /> Excel
                         </button>
@@ -197,7 +197,7 @@ export default function OmborQoldiqlarPage() {
                         ))}
                     </div>
 
-                    <div className="flex-1 flex items-center gap-3 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm min-w-0">
+                    <div className="flex-1 w-full sm:w-auto flex items-center gap-3 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm min-w-0">
                         <div className="flex-1 relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                             <input type="text" placeholder={t('common.search') + "..."}

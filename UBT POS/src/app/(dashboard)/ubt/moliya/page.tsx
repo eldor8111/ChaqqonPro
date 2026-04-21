@@ -181,12 +181,12 @@ export default function MoliyaPage() {
     return (
         <div className="min-h-screen bg-transparent p-6 space-y-6 animate-fade-in">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-black text-slate-800">💰 {t('nav.finance')}</h1>
                     <p className="text-slate-400 text-sm mt-0.5">Kirim, xarajatlar va sof foyda nazorati</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                     <button onClick={handleUpdateRate} disabled={isUpdatingRate}
                         className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition rounded-xl font-bold text-sm shadow-sm">
                         <DollarSign size={16} className="text-blue-500" />
@@ -204,7 +204,7 @@ export default function MoliyaPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <StatCard label="Jami Kirimlar" value={`${fmt(summary.totalIncome)} UZS`} icon={TrendingUp}
                     gradient="bg-gradient-to-br from-emerald-500 to-teal-600" sub="Barcha daromadlar" />
                 <StatCard label="Jami Xarajatlar" value={`${fmt(summary.totalExpense)} UZS`} icon={TrendingDown}
@@ -215,7 +215,7 @@ export default function MoliyaPage() {
             </div>
 
             {/* Charts + Table */}
-            <div className="grid grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 {/* Expense breakdown pie */}
                 <div className="col-span-1 bg-white border border-surface-border rounded-2xl p-5 shadow-sm">
                     <h3 className="text-slate-800 font-bold mb-4 flex items-center gap-2"><PieIcon size={18} className="text-blue-400" /> Xarajatlar tarkibi</h3>
@@ -235,10 +235,10 @@ export default function MoliyaPage() {
                 </div>
 
                 {/* Entries table */}
-                <div className="col-span-2 bg-white border border-surface-border rounded-2xl p-5 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
+                <div className="col-span-1 lg:col-span-2 bg-white border border-surface-border rounded-2xl p-5 shadow-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
                         <h3 className="text-slate-800 font-bold">Kassa Harakatlari</h3>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             {(["all", "income", "expense"] as const).map(tab => (
                                 <button key={tab} onClick={() => setActiveTab(tab)}
                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === tab ? "bg-blue-500 text-white" : "text-slate-500 hover:text-slate-800 bg-slate-100"}`}>

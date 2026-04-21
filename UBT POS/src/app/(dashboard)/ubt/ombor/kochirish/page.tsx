@@ -147,7 +147,7 @@ export default function OmborKochirishPage() {
                         <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t('nav.ombor_kochirish')}</h1>
                         <p className="text-sm text-slate-500 mt-1">{t('common.subtitle_transfer')}</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
                         <button className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-emerald-500 text-emerald-600 rounded-xl text-sm font-bold hover:bg-emerald-50 transition-all shadow-sm">
                             <FileSpreadsheet size={18} /> Excel
                         </button>
@@ -161,8 +161,8 @@ export default function OmborKochirishPage() {
 
             {/* Table */}
             <div className="flex-1 p-6">
-                <div className="flex items-center justify-between mb-4 bg-white p-2 rounded-xl border border-slate-200 shadow-sm gap-4">
-                    <div className="flex-1 max-w-md relative">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mb-4 bg-white p-2 rounded-xl border border-slate-200 shadow-sm gap-4">
+                    <div className="w-full sm:flex-1 sm:max-w-md relative">
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
                         <input type="text" placeholder="Qidiruv (mahsulot yoki ombor)..."
                             value={searchQuery} onChange={e => setSearchQuery(e.target.value)}

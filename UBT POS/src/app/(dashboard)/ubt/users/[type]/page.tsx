@@ -53,7 +53,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
     const [searchQuery, setSearchQuery] = useState("");
     const [showAddUser, setShowAddUser] = useState(false);
     const [editingStaff, setEditingStaff] = useState<any | null>(null);
-    const [editForm, setEditForm] = useState({ name: "", branch: "Asosiy Filial", password: "", printerIp: "", isMainMonoblock: false, showCashiersList: false, hasChefPrinter: false, printOrderCancellations: false, serviceFeePct: 10, acceptCash: false, canVoidOrder: false, canAuditInventory: false, receiveLowStockAlerts: false, canWriteOff: false });
+    const [editForm, setEditForm] = useState({ name: "", branch: "Asosiy Filial", password: "", printerIp: "", isMainMonoblock: false, showCashiersList: false, hasChefPrinter: false, printOrderCancellations: false, serviceFeePct: 10, acceptCash: false, canVoidOrder: false, canAuditInventory: false, receiveLowStockAlerts: false, canWriteOff: false, canZal: true, canDelivery: true, canTakeaway: true });
 
     // Printers list from API
     const [printersList, setPrintersList] = useState<{ id: string; name: string; ipAddress: string }[]>([]);
@@ -69,6 +69,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
         role: targetRole || "Kassir", branch: "Asosiy Filial", 
         // Manablog
         printerIp: "", status: true, isMainMonoblock: false, showCashiersList: false, hasChefPrinter: false, printOrderCancellations: false, photoBase64: null as string | null,
+        canZal: true, canDelivery: true, canTakeaway: true,
         // Kassir/Menejer
         acceptCash: true, canDiscount: false, canVoidOrder: false,
         // Ofitsiant
@@ -93,6 +94,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                 printerIp: "", status: true, isMainMonoblock: false, 
                 showCashiersList: false, hasChefPrinter: false, 
                 printOrderCancellations: false, photoBase64: null,
+                canZal: true, canDelivery: true, canTakeaway: true,
                 acceptCash: true, canDiscount: false, canVoidOrder: false,
                 pinCode: "", assignedZone: "", serviceFeePct: 10,
                 vehiclePlate: "", canSelfPickup: false,
@@ -143,7 +145,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
 
     return (
         <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-800">
                         {targetRole} {t('settings.users')}
@@ -244,21 +246,24 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                                     </div>
                                 ))}
 
-                                <div className="flex items-center gap-4 col-span-2 pt-2">
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" className="sr-only peer" checked disabled />
-                                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
-                                    </label>
-                                    <select value={newUser.branch} onChange={e => setNewUser({ ...newUser, branch: e.target.value })} className="input-field min-w-[200px] py-1.5 h-auto text-sm">
-                                        {branches.map((b: any) => <option key={b.name} value={b.name}>{b.name}</option>)}
-                                    </select>
+                                <div className="flex items-center justify-between col-span-2 pt-2">
+                                    <span className="text-sm font-medium text-slate-800 dark:text-slate-300">Biriktirilgan filial</span>
+                                    <div className="flex items-center gap-3">
+                                        <select value={newUser.branch} onChange={e => setNewUser({ ...newUser, branch: e.target.value })} className="input-field min-w-[200px] py-1.5 h-auto text-sm">
+                                            {branches && branches.length > 0 ? (
+                                                branches.map((b: any) => <option key={b.name} value={b.name}>{b.name}</option>)
+                                            ) : (
+                                                <option value="Asosiy Filial">Asosiy Filial</option>
+                                            )}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     ) : (
                         <div className="space-y-6">
                             {/* Standard Required Fields */}
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                 <div className="space-y-1">
                                     <label className="text-xs text-slate-400">Ism-sharifi <span className="text-red-500">*</span></label>
                                     <input value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} className="input-field w-full" placeholder="Masalan: Sardor" />
@@ -296,7 +301,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                                 <h4 className="text-sm font-semibold text-slate-300 mb-4">{targetRole} uchun maxsus sozlamalar</h4>
                                 
                                 {(targetRole === "Kassir" || targetRole === "Menejer") && (
-                                    <div className="grid grid-cols-2 gap-x-12 gap-y-4 max-w-2xl">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-4 max-w-2xl">
                                         {[
                                             { key: 'acceptCash', label: 'Naqd pul qabul qilish' },
                                             { key: 'canDiscount', label: 'Chegirma berish huquqi' },
@@ -409,8 +414,29 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                             </div>
                         </div>
                     )}
+                    
+                    {(isManablog || targetRole === "Kassir" || targetRole === "Menejer" || targetRole === "Ofitsiant") && (
+                        <div className="border-t border-slate-200 dark:border-slate-700/50 pt-4 mt-6">
+                            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Buyurtma turlari bo'yicha ruxsatlar</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                {[
+                                    { key: 'canZal', label: 'Zal (Ichkarida)' },
+                                    { key: 'canDelivery', label: 'Dostavka' },
+                                    { key: 'canTakeaway', label: 'Olib ketish' }
+                                ].map(toggle => (
+                                    <div key={toggle.key} className="flex items-center justify-between col-span-1 bg-slate-50 dark:bg-surface-elevated p-3 rounded-xl border border-slate-200 dark:border-slate-700/50">
+                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{toggle.label} {isManablog ? "bo'limi" : "ruxsati"}</span>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" className="sr-only peer" checked={(newUser as any)[toggle.key]} onChange={e => setNewUser({ ...newUser, [toggle.key]: e.target.checked })} />
+                                            <div className="w-11 h-6 bg-slate-300 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
-                        <div className="flex justify-end gap-3 pt-4">
+                        <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-700/50 mt-4">
                             <button onClick={() => setShowAddUser(false)} className="btn-secondary">Bekor qilish</button>
                             <button onClick={() => {
                                 if (!newUser.name || !newUser.password) return alert("Ism va parolni kiriting");
@@ -424,6 +450,12 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
 
                                 let customPhone = newUser.phone;
                                 let perms: string[] = [];
+
+                                if (isManablog || targetRole === "Kassir" || targetRole === "Menejer" || targetRole === "Ofitsiant") {
+                                    if (newUser.canZal) perms.push("zal");
+                                    if (newUser.canDelivery) perms.push("delivery");
+                                    if (newUser.canTakeaway) perms.push("takeaway");
+                                }
 
                                 if (isManablog) {
                                     customPhone = JSON.stringify({
@@ -485,7 +517,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                         <h3 className="font-semibold text-slate-800">✏️ {editingStaff.name} — ma'lumotlarini tahrirlash</h3>
                         <button onClick={() => setEditingStaff(null)} className="text-slate-400 hover:text-white transition-colors text-xl leading-none">✕</button>
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         <div className="space-y-1">
                             <label className="text-xs text-slate-400">Ism-sharifi</label>
                             <input value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} className="input-field w-full" />
@@ -572,7 +604,27 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                             ))}
                         </div>
                     )}
-                    <div className="flex justify-end gap-3 pt-2">
+                    {(isManablog || targetRole === "Kassir" || targetRole === "Menejer" || targetRole === "Ofitsiant") && (
+                        <div className="border-t border-slate-200 dark:border-slate-700/50 pt-4 mt-6">
+                            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Buyurtma turlari bo'yicha ruxsatlar</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                {[
+                                    { key: 'canZal', label: 'Zal (Ichkarida)' },
+                                    { key: 'canDelivery', label: 'Dostavka' },
+                                    { key: 'canTakeaway', label: 'Olib ketish' }
+                                ].map(toggle => (
+                                    <div key={toggle.key} className="flex items-center justify-between col-span-1 bg-slate-50 dark:bg-surface-elevated p-3 rounded-xl border border-slate-200 dark:border-slate-700/50">
+                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{toggle.label} {isManablog ? "bo'limi" : "ruxsati"}</span>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" className="sr-only peer" checked={!!(editForm as any)[toggle.key]} onChange={e => setEditForm({ ...editForm, [toggle.key]: e.target.checked })} />
+                                            <div className="w-11 h-6 bg-slate-300 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700/50 mt-4">
                         <button onClick={() => setEditingStaff(null)} className="btn-secondary">Bekor qilish</button>
                         <button
                             disabled={updateStaffMutation.isPending}
@@ -594,22 +646,34 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                                     let existing: any = {};
                                     try { existing = JSON.parse(editingStaff.phone || '{}'); } catch { existing = {}; }
                                     updateData.phone = JSON.stringify({ ...existing, printerIp: editForm.printerIp });
+                                }
+                                
+                                if (isManablog || targetRole === "Kassir" || targetRole === "Menejer" || targetRole === "Ofitsiant") {
+                                    let perms: string[] = [];
+                                    if (editingStaff.permissions) {
+                                        try { 
+                                            const existingPerms = typeof editingStaff.permissions === 'string' ? JSON.parse(editingStaff.permissions) : editingStaff.permissions;
+                                            perms = Array.isArray(existingPerms) ? existingPerms : [];
+                                        } catch {}
+                                    }
                                     
                                     if (targetRole === "Ofitsiant") {
                                         updateData.staffMeta = { serviceFeePct: editForm.serviceFeePct };
-                                        let perms: string[] = [];
-                                        if (editingStaff.permissions) {
-                                            try { 
-                                                const existingPerms = typeof editingStaff.permissions === 'string' ? JSON.parse(editingStaff.permissions) : editingStaff.permissions;
-                                                perms = Array.isArray(existingPerms) ? existingPerms : [];
-                                            } catch {}
-                                        }
                                         if (editForm.acceptCash && !perms.includes('acceptCash')) perms.push('acceptCash');
                                         if (!editForm.acceptCash) perms = perms.filter(p => p !== 'acceptCash');
                                         if (editForm.canVoidOrder && !perms.includes('refunds')) perms.push('refunds');
                                         if (!editForm.canVoidOrder) perms = perms.filter(p => p !== 'refunds');
-                                        updateData.permissions = perms;
                                     }
+                                    
+                                    // Base permissions for all POS users
+                                    if (editForm.canZal && !perms.includes('zal')) perms.push('zal');
+                                    if (!editForm.canZal) perms = perms.filter(p => p !== 'zal');
+                                    if (editForm.canDelivery && !perms.includes('delivery')) perms.push('delivery');
+                                    if (!editForm.canDelivery) perms = perms.filter(p => p !== 'delivery');
+                                    if (editForm.canTakeaway && !perms.includes('takeaway')) perms.push('takeaway');
+                                    if (!editForm.canTakeaway) perms = perms.filter(p => p !== 'takeaway');
+                                    
+                                    updateData.permissions = perms;
                                 } else if (targetRole === "Omborchi") {
                                     let perms: string[] = [];
                                     if (editingStaff.permissions) {
@@ -656,8 +720,9 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                     </div>
                 </div>
                 
-                <table className="data-table">
-                    <thead>
+                <div className="overflow-x-auto">
+                    <table className="data-table min-w-[600px]">
+                        <thead>
                         <tr>
                             <th>{t("staff.employee")}</th>
                             <th>{t("staff.branch")}</th>
@@ -712,6 +777,9 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                                                     canAuditInventory: perms.includes('inventory'),
                                                     receiveLowStockAlerts: perms.includes('stockEdit'),
                                                     canWriteOff: perms.includes('sjisaniya'),
+                                                    canZal: perms.includes('zal') || !['zal','delivery','takeaway'].some(p => perms.includes(p)),
+                                                    canDelivery: perms.includes('delivery') || !['zal','delivery','takeaway'].some(p => perms.includes(p)),
+                                                    canTakeaway: perms.includes('takeaway') || !['zal','delivery','takeaway'].some(p => perms.includes(p)),
                                                 });
                                                 setEditingStaff(s);
                                             }}
@@ -738,6 +806,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                         )}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     );

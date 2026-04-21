@@ -14,6 +14,9 @@ export async function isPhoneGloballyUnique(phone: string, currentId?: string): 
     // Normalize phone (trim whitespace)
     const normalizedPhone = phone.trim();
     if (normalizedPhone === "") return true;
+    
+    // Ignore JSON payloads which are stored in the phone field for some roles
+    if (normalizedPhone.startsWith("{") && normalizedPhone.endsWith("}")) return true;
 
     // Check Tenant
     const tenants = await prisma.$queryRaw`SELECT id FROM Tenant WHERE phone = ${normalizedPhone}` as {id: string}[];
