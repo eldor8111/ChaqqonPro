@@ -201,7 +201,7 @@ export default function TaomlarPage() {
                     stock: taomData.stock || 0,
                     unit: taomData.unit || "dona",
                     image: taomData.image || null,
-                    printerIp: (taomData as any).printerIp || null,
+                    printerIp: (formData as any).printerIp || formData.printer || null,
                     isSetMenu: taomData.isSetMenu || false,
                     modifiers: formData.modifiers || []
                 }),
