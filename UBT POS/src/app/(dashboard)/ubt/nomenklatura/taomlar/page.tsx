@@ -99,12 +99,13 @@ export default function TaomlarPage() {
             setFormData({
                 name: item.name, categoryId: item.categoryId, price: item.price, cost: item.cost,
                 type: item.type || "taom", sortOrder: item.sortOrder || "", stock: item.stock || 0,
-                unit: item.unit || "", printer: item.printer || "", printers: item.printers || "",
+                unit: item.unit || "", printer: (item as any).printerIp || item.printer || "", printers: item.printers || "",
                 inStock: item.inStock ?? true, hasBarcode: item.hasBarcode ?? false,
                 autoCalculate: item.autoCalculate ?? true, isSetMenu: item.isSetMenu ?? false, image: item.image || null,
                 recipes: item.recipes || [],
                 modifiers: (item as any).modifiers || [],
-                warehouse: (item as any).warehouse || ""
+                warehouse: (item as any).warehouse || "",
+                ...({ printerIp: (item as any).printerIp || item.printer || "" } as any)
             });
         } else {
             setEditingItem(null);
@@ -383,8 +384,12 @@ export default function TaomlarPage() {
                                     <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] text-right font-black text-slate-900">{formatCurrency(item.price).replace("so'm", "UZS")}</td>
                                     <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] text-slate-800">{category?.name || ""}</td>
                                     <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] leading-snug font-bold">
-                                        {item.printer === "kitchen" ? "Kuhniya" : item.printer || "-"} <br />
-                                        {item.printer === "kitchen" && <span className="text-[10px] text-slate-600 font-semibold">192.168.1.210</span>}
+                                        {(() => {
+                                            const ip = (item as any).printerIp || item.printer;
+                                            if (!ip) return <span className="text-slate-400">-</span>;
+                                            const found = printersList.find(p => p.ipAddress === ip);
+                                            return <span className="text-blue-700 text-[11px]">{found ? found.name : ip}</span>;
+                                        })()}
                                     </td>
                                     <td className="px-1.5 py-1.5 border-r border-[#e4ebf5]">
                                         <div className="flex items-center gap-1.5 font-bold whitespace-nowrap text-slate-800">
