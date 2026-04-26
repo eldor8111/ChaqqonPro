@@ -737,41 +737,39 @@ export default function TaomlarPage() {
 
                                 <div className="space-y-5 pt-2">
                                     {/* Toggle list */}
-                                    <label className="flex items-center gap-3 cursor-pointer">
-                                        <div className={`relative w-11 h-6 transition-colors rounded-full ${formData.inStock ? 'bg-blue-600' : 'bg-slate-200'}`}>
+                                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setFormData(prev => ({ ...prev, inStock: !prev.inStock }))}>
+                                        <div className={`relative w-11 h-6 transition-colors rounded-full shrink-0 ${formData.inStock ? 'bg-blue-600' : 'bg-slate-200'}`}>
                                             <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${formData.inStock ? 'translate-x-5' : ''}`}></div>
                                         </div>
-                                        <input type="checkbox" className="sr-only" checked={formData.inStock} onChange={e => setFormData({ ...formData, inStock: e.target.checked })} />
-                                        <span className="text-sm font-bold text-slate-700">Holat</span>
-                                    </label>
+                                        <span className="text-sm font-bold text-slate-700 select-none">Holat</span>
+                                    </div>
 
-                                    <label className="flex items-center gap-3 cursor-pointer">
-                                        <div className={`relative w-11 h-6 transition-colors rounded-full ${formData.hasBarcode ? 'bg-blue-600' : 'bg-slate-200'}`}>
+                                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setFormData(prev => ({ ...prev, hasBarcode: !prev.hasBarcode }))}>
+                                        <div className={`relative w-11 h-6 transition-colors rounded-full shrink-0 ${formData.hasBarcode ? 'bg-blue-600' : 'bg-slate-200'}`}>
                                             <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${formData.hasBarcode ? 'translate-x-5' : ''}`}></div>
                                         </div>
-                                        <input type="checkbox" className="sr-only" checked={formData.hasBarcode} onChange={e => setFormData({ ...formData, hasBarcode: e.target.checked })} />
-                                        <span className="text-sm font-bold text-slate-700">Belgilash kodi mavjud</span>
-                                    </label>
+                                        <span className="text-sm font-bold text-slate-700 select-none">Belgilash kodi mavjud</span>
+                                    </div>
 
-                                    <label className="flex items-center gap-3 cursor-pointer">
-                                        <div className={`relative w-11 h-6 transition-colors rounded-full ${formData.autoCalculate ? 'bg-blue-600' : 'bg-slate-200'}`}>
+                                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => {
+                                        setFormData(prev => {
+                                            const newVal = !prev.autoCalculate;
+                                            updateCalculatedCost(prev.recipes || [], newVal);
+                                            return { ...prev, autoCalculate: newVal };
+                                        });
+                                    }}>
+                                        <div className={`relative w-11 h-6 transition-colors rounded-full shrink-0 ${formData.autoCalculate ? 'bg-blue-600' : 'bg-slate-200'}`}>
                                             <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${formData.autoCalculate ? 'translate-x-5' : ''}`}></div>
                                         </div>
-                                        <input type="checkbox" className="sr-only" checked={formData.autoCalculate} onChange={e => {
-                                            const newVal = e.target.checked;
-                                            setFormData({ ...formData, autoCalculate: newVal });
-                                            updateCalculatedCost(formData.recipes || [], newVal);
-                                        }} />
-                                        <span className="text-sm font-bold text-slate-700">Avtomatik hisob-kitob (Tannarx)</span>
-                                    </label>
+                                        <span className="text-sm font-bold text-slate-700 select-none">Avtomatik hisob-kitob (Tannarx)</span>
+                                    </div>
 
-                                    <label className="flex items-center gap-3 cursor-pointer">
-                                        <div className={`relative w-11 h-6 transition-colors rounded-full ${formData.isSetMenu ? 'bg-blue-600' : 'bg-slate-200'}`}>
+                                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setFormData(prev => ({ ...prev, isSetMenu: !prev.isSetMenu }))}>
+                                        <div className={`relative w-11 h-6 transition-colors rounded-full shrink-0 ${formData.isSetMenu ? 'bg-blue-600' : 'bg-slate-200'}`}>
                                             <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${formData.isSetMenu ? 'translate-x-5' : ''}`}></div>
                                         </div>
-                                        <input type="checkbox" className="sr-only" checked={formData.isSetMenu} onChange={e => setFormData({ ...formData, isSetMenu: e.target.checked })} />
-                                        <span className="text-sm font-bold text-slate-700">Set-menyu</span>
-                                    </label>
+                                        <span className="text-sm font-bold text-slate-700 select-none">Set-menyu</span>
+                                    </div>
                                 </div>
 
                                 <div className="pt-4">
