@@ -76,13 +76,13 @@ const usePos = () => useContext(PosCtx);
 
 // ─── Theme helpers ────────────────────────────────────────────────────────────────
 const th = {
-    bg:        (d: boolean) => d ? "bg-[#0a101d] text-slate-200" : "bg-slate-50 text-slate-800",
-    card:      (d: boolean) => d ? "bg-[#111827]/90 backdrop-blur-md border border-white/5 shadow-xl shadow-black/20 text-white" : "bg-white border border-slate-200 shadow-sm text-slate-800",
-    header:    (d: boolean) => d ? "bg-[#0a101d]/90 backdrop-blur-md border-white/5" : "bg-white/90 backdrop-blur-md border-slate-200 z-30",
-    input:     (d: boolean) => d ? "bg-[#111827] text-white placeholder-slate-500 border border-white/5 focus:border-sky-500 focus:ring-1 focus:ring-sky-500" : "bg-white text-[#0078d7] placeholder-slate-400 border border-transparent focus:border-white focus:ring-2 focus:ring-white/50",
+    bg:        (d: boolean) => d ? "bg-gradient-to-br from-slate-900 to-blue-950 text-slate-200" : "bg-slate-50 text-slate-800",
+    card:      (d: boolean) => d ? "bg-slate-900/90 backdrop-blur-md border border-white/5 shadow-xl shadow-black/20 text-white" : "bg-white border border-slate-200 shadow-sm text-slate-800",
+    header:    (d: boolean) => d ? "bg-slate-950/90 backdrop-blur-md border-white/5" : "bg-white/90 backdrop-blur-md border-slate-200 z-30",
+    input:     (d: boolean) => d ? "bg-slate-800 text-white placeholder-slate-500 border border-white/5 focus:border-sky-500 focus:ring-1 focus:ring-sky-500" : "bg-white text-[#0078d7] placeholder-slate-400 border border-transparent focus:border-white focus:ring-2 focus:ring-white/50",
     sub:       (d: boolean) => d ? "text-slate-400" : "text-slate-500",
     tabInact:  (d: boolean) => d ? "bg-white/5 text-white hover:bg-white/10 font-bold border border-transparent" : "bg-slate-100 text-slate-900 hover:bg-slate-200 font-bold shadow-sm",
-    panel:     (d: boolean) => d ? "bg-[#0F172A]" : "bg-sky-50",
+    panel:     (d: boolean) => d ? "bg-slate-900" : "bg-sky-50",
     row:       (d: boolean) => d ? "bg-white/5" : "bg-slate-50",
     border:    (d: boolean) => d ? "border-white/5 transition-colors" : "border-slate-200 transition-colors",
     label:     (d: boolean) => d ? "text-slate-200" : "text-slate-800 font-bold",
@@ -1945,8 +1945,8 @@ export default function UbtPosPage() {
             <header className={`h-[56px] border-b flex items-center gap-3 px-4 shrink-0 shadow-sm z-30 ${th.header(dark)}`}>
                 {/* Brand */}
                 <div className="flex items-center shrink-0 mr-4 border-r border-slate-300/20 pr-5">
-                    <span className={`font-black text-[24px] tracking-tight ${dark ? "text-white" : "text-slate-800"}`}>
-                        Chaqqon<span className="text-blue-500">Pro</span>
+                    <span className="font-black text-[24px] tracking-tight">
+                        <span className={dark ? "text-black" : "text-slate-800"}>Chaqqon</span><span className={dark ? "text-white" : "text-blue-500"}>Pro</span>
                     </span>
                 </div>
 
@@ -2014,7 +2014,7 @@ export default function UbtPosPage() {
             <div className="flex flex-1 overflow-hidden relative">
 
                 {/* ── LEFT SIDEBAR — Flat Corporate ── */}
-                <aside className={`w-[84px] shrink-0 flex flex-col items-center gap-4 py-6 z-20 transition-colors duration-500 ${dark ? "bg-[#0a101d] border-r border-white/5" : "bg-white border-r border-slate-200"}`}>
+                <aside className={`w-[84px] shrink-0 flex flex-col items-center gap-4 py-6 z-20 transition-colors duration-500 ${dark ? "bg-slate-950 border-r border-white/5" : "bg-white border-r border-slate-200"}`}>
                     {([
                         { id: "tables" as const,   icon: UtensilsCrossed, label: t("tablesLabel", lang),   bg: "text-[#0078d7]", count: activeCnt, badge: "bg-orange-500" },
                         { id: "takeaway" as const, icon: Package,          label: t("takeawayLabel", lang), bg: "text-[#0078d7]", count: twOrders.filter(o => o.status === "pending").length, badge: "bg-pink-500" },
