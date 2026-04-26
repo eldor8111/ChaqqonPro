@@ -1050,10 +1050,9 @@ export default function UbtPosPage() {
     }, [store.deviceSession, store.kassirSession, fetchReservations]);
 
     const [lang, setLang] = useState<Lang>(() => (typeof window !== "undefined" ? (localStorage.getItem("pos_lang") as Lang) ?? "uz" : "uz"));
-    const [dark, setDark] = useState(() => typeof window !== "undefined" ? localStorage.getItem("pos_dark") === "1" : false);
+    const dark = false;
     const [isFullscreen, setIsFullscreen] = useState(false);
     const toggleLang = () => { const nl = lang === "uz" ? "ru" : "uz"; setLang(nl); localStorage.setItem("pos_lang", nl); };
-    const toggleDark = () => { const nd = !dark; setDark(nd); localStorage.setItem("pos_dark", nd ? "1" : "0"); };
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen();
@@ -1960,9 +1959,7 @@ export default function UbtPosPage() {
                     <button onClick={toggleLang} className={`px-2.5 py-1 rounded-full text-xs font-black border-2 transition-all ${lang === "uz" ? "bg-sky-500 text-white border-sky-500" : "bg-purple-600 text-white border-purple-600"}`}>
                         {lang === "uz" ? "OʻZ" : "RU"}
                     </button>
-                    <button onClick={toggleDark} className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${dark ? "bg-yellow-400 text-gray-900" : "bg-gray-700 text-white"}`}>
-                        {dark ? <Sun size={15} /> : <Moon size={15} />}
-                    </button>
+
                     <button onClick={() => window.location.reload()} className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${dark ? "bg-slate-700 text-white hover:bg-slate-600" : "bg-slate-200 text-slate-800 hover:bg-slate-300"}`} title="Tizimni yangilash"><RefreshCw size={15} /></button>
                     <button onClick={logout} className="w-8 h-8 rounded-full flex items-center justify-center text-white" style={{ background: "#0ea5e9" }}><Lock size={15} /></button>
                     <div className="relative group z-50">
