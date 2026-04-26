@@ -81,8 +81,8 @@ const th = {
     header:    (d: boolean) => d ? "bg-slate-950/90 backdrop-blur-md border-white/5" : "bg-white/90 backdrop-blur-md border-slate-200 z-30",
     input:     (d: boolean) => d ? "bg-slate-800 text-white placeholder-slate-500 border border-white/5 focus:border-sky-500 focus:ring-1 focus:ring-sky-500" : "bg-white text-[#0078d7] placeholder-slate-400 border border-transparent focus:border-white focus:ring-2 focus:ring-white/50",
     sub:       (d: boolean) => d ? "text-slate-400" : "text-slate-500",
-    tabInact:  (d: boolean) => d ? "bg-white/5 text-white hover:bg-white/10 font-bold border border-transparent" : "bg-slate-100 text-slate-900 hover:bg-slate-200 font-bold shadow-sm",
-    panel:     (d: boolean) => d ? "bg-slate-900" : "bg-sky-50",
+    tabInact:  (d: boolean) => d ? "bg-slate-800 text-slate-100 hover:bg-slate-700 font-bold border border-slate-700" : "bg-slate-100 text-slate-900 hover:bg-slate-200 font-bold shadow-sm",
+    panel:     (d: boolean) => d ? "bg-slate-900 text-slate-100" : "bg-sky-50 text-slate-800",
     row:       (d: boolean) => d ? "bg-white/5" : "bg-slate-50",
     border:    (d: boolean) => d ? "border-white/5 transition-colors" : "border-slate-200 transition-colors",
     label:     (d: boolean) => d ? "text-slate-200" : "text-slate-800 font-bold",
@@ -514,7 +514,7 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, instantAdd, servicePct =
                                         )}
                                     </div>
                                     {/* Text area */}
-                                    <div className={`px-2 py-1.5 flex-1 min-w-0 ${dark ? "bg-slate-800" : "bg-white"}`}>
+                                    <div className={`px-2 py-1.5 flex-1 min-w-0 ${dark ? "bg-slate-800 text-slate-100" : "bg-white text-slate-800"}`}>
                                         <p className={`font-bold text-[11px] leading-tight line-clamp-2 ${dark ? "text-slate-200" : "text-slate-800"}`}>{item.name}</p>
                                         {!item.image && (
                                             <p className={`text-[11px] font-black mt-0.5 ${dark ? "text-emerald-400" : "text-emerald-600"}`}>{fmt(item.price)}<span className="text-[9px] text-slate-400 font-semibold ml-0.5">UZS</span></p>
@@ -2639,7 +2639,7 @@ export default function UbtPosPage() {
 
                 {/* TAKEAWAY TAB */}
                 {tab === "takeaway" && (
-                    <div className={`flex-1 overflow-hidden flex flex-col ${th.bg(dark)}`} >
+                    <div className={`flex-1 overflow-hidden flex flex-col relative ${th.bg(dark)}`} >
                         {/* Header bar */}
                         <div className={`shrink-0 px-5 py-3 border-b flex items-center gap-3 ${th.header(dark)}`}>
                             <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0" style={{ background: "linear-gradient(135deg,#3b82f6,#1d4ed8)" }}>
@@ -2716,7 +2716,7 @@ export default function UbtPosPage() {
                                 {/* Body: split */}
                                 <div className="flex-1 overflow-hidden flex">
                                     {/* LEFT: food menu */}
-                                    <div className="flex-1 overflow-hidden border-r border-gray-100">
+                                    <div className={`flex-1 overflow-hidden border-r ${th.border(dark)} ${th.panel(dark)}`}>
                                         <MenuPanel
                                             onConfirm={async (added) => {
                                                 setNewOrderCart(prev => {
@@ -2848,7 +2848,7 @@ export default function UbtPosPage() {
 
                 {/* DELIVERY TAB */}
                 {tab === "delivery" && (
-                    <div className={`flex-1 overflow-hidden flex flex-col ${th.bg(dark)}`} >
+                    <div className={`flex-1 overflow-hidden flex flex-col relative ${th.bg(dark)}`} >
                         {/* Header bar */}
                         <div className={`shrink-0 px-5 py-3 border-b flex items-center gap-3 ${th.header(dark)}`}>
                             <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0" style={{ background: "linear-gradient(135deg,#a855f7,#7c3aed)" }}>
@@ -2915,7 +2915,7 @@ export default function UbtPosPage() {
                                 {/* Body: split */}
                                 <div className="flex-1 overflow-hidden flex">
                                     {/* LEFT: food menu */}
-                                    <div className="flex-1 overflow-hidden border-r border-gray-100">
+                                    <div className={`flex-1 overflow-hidden border-r ${th.border(dark)} ${th.panel(dark)}`}>
                                         <MenuPanel
                                             onConfirm={async (added) => {
                                                 setNewOrderCart(prev => {
