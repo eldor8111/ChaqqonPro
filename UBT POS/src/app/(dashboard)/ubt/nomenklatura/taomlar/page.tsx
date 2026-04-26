@@ -740,39 +740,37 @@ export default function TaomlarPage() {
 
                                 <div className="space-y-5 pt-2">
                                     {/* Toggle list */}
-                                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setFormData(prev => ({ ...prev, inStock: !prev.inStock }))}>
+                                    <button type="button" className="flex items-center gap-3 w-full text-left"
+                                        onClick={(e) => { e.preventDefault(); setFormData(prev => ({ ...prev, inStock: !prev.inStock })); }}>
                                         <div className={`relative w-11 h-6 transition-colors rounded-full shrink-0 ${formData.inStock ? 'bg-blue-600' : 'bg-slate-200'}`}>
                                             <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${formData.inStock ? 'translate-x-5' : ''}`}></div>
                                         </div>
                                         <span className="text-sm font-bold text-slate-700 select-none">Holat</span>
-                                    </div>
+                                    </button>
 
-                                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setFormData(prev => ({ ...prev, hasBarcode: !prev.hasBarcode }))}>
+                                    <button type="button" className="flex items-center gap-3 w-full text-left"
+                                        onClick={(e) => { e.preventDefault(); setFormData(prev => ({ ...prev, hasBarcode: !prev.hasBarcode })); }}>
                                         <div className={`relative w-11 h-6 transition-colors rounded-full shrink-0 ${formData.hasBarcode ? 'bg-blue-600' : 'bg-slate-200'}`}>
                                             <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${formData.hasBarcode ? 'translate-x-5' : ''}`}></div>
                                         </div>
                                         <span className="text-sm font-bold text-slate-700 select-none">Belgilash kodi mavjud</span>
-                                    </div>
+                                    </button>
 
-                                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => {
-                                        setFormData(prev => {
-                                            const newVal = !prev.autoCalculate;
-                                            updateCalculatedCost(prev.recipes || [], newVal);
-                                            return { ...prev, autoCalculate: newVal };
-                                        });
-                                    }}>
+                                    <button type="button" className="flex items-center gap-3 w-full text-left"
+                                        onClick={(e) => { e.preventDefault(); setFormData(prev => { const newVal = !prev.autoCalculate; updateCalculatedCost(prev.recipes || [], newVal); return { ...prev, autoCalculate: newVal }; }); }}>
                                         <div className={`relative w-11 h-6 transition-colors rounded-full shrink-0 ${formData.autoCalculate ? 'bg-blue-600' : 'bg-slate-200'}`}>
                                             <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${formData.autoCalculate ? 'translate-x-5' : ''}`}></div>
                                         </div>
                                         <span className="text-sm font-bold text-slate-700 select-none">Avtomatik hisob-kitob (Tannarx)</span>
-                                    </div>
+                                    </button>
 
-                                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setFormData(prev => ({ ...prev, isSetMenu: !prev.isSetMenu }))}>
+                                    <button type="button" className="flex items-center gap-3 w-full text-left"
+                                        onClick={(e) => { e.preventDefault(); setFormData(prev => ({ ...prev, isSetMenu: !prev.isSetMenu })); }}>
                                         <div className={`relative w-11 h-6 transition-colors rounded-full shrink-0 ${formData.isSetMenu ? 'bg-blue-600' : 'bg-slate-200'}`}>
                                             <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm ${formData.isSetMenu ? 'translate-x-5' : ''}`}></div>
                                         </div>
                                         <span className="text-sm font-bold text-slate-700 select-none">Set-menyu</span>
-                                    </div>
+                                    </button>
                                 </div>
 
                                 <div className="pt-4">
