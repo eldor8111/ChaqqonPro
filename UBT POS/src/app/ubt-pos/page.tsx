@@ -1900,16 +1900,16 @@ export default function UbtPosPage() {
         <div className={`h-screen flex flex-col overflow-hidden select-none ${dark ? "dark" : ""} ${th.bg(dark)}`}>
             {cancelPrompt && (
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl p-6 w-[320px] max-w-full text-center animate-fade-in translate-y-0 relative">
+                    <div className={`rounded-2xl shadow-2xl p-6 w-[320px] max-w-full text-center animate-fade-in translate-y-0 relative ${dark ? "bg-slate-900 border border-slate-700" : "bg-white"}`}>
                         <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
                             <Lock size={24} />
                         </div>
-                        <h3 className="text-lg font-black text-slate-800 mb-1">Bekor qilish paroli</h3>
-                        <p className="text-xs text-slate-500 mb-4">Ushbu amalni bajarish uchun administrator parolini kiriting.</p>
+                        <h3 className={`text-lg font-black mb-1 ${dark ? "text-slate-200" : "text-slate-800"}`}>Bekor qilish paroli</h3>
+                        <p className={`text-xs mb-4 ${dark ? "text-slate-400" : "text-slate-500"}`}>Ushbu amalni bajarish uchun administrator parolini kiriting.</p>
                         
                         <input 
                             type="password" autoFocus placeholder="****"
-                            className="w-full text-center text-xl font-bold tracking-widest py-3 rounded-xl border-2 border-slate-200 outline-none focus:border-red-500 transition mb-2 bg-slate-50"
+                            className={`w-full text-center text-xl font-bold tracking-widest py-3 rounded-xl border-2 outline-none transition mb-2 ${dark ? "bg-slate-800 border-slate-700 text-slate-100 placeholder-slate-500 focus:border-red-500" : "border-slate-200 focus:border-red-500 bg-slate-50 text-slate-800"}`}
                             value={cancelInput}
                             onChange={e => setCancelInput(e.target.value)}
                             onKeyDown={e => {
@@ -1945,7 +1945,7 @@ export default function UbtPosPage() {
             <header className={`h-[56px] border-b flex items-center gap-3 px-4 shrink-0 shadow-sm z-30 ${th.header(dark)}`}>
                 {/* Brand */}
                 <div className="flex items-center shrink-0 mr-4 border-r border-slate-300/20 pr-5">
-                    <span className="font-black text-[24px] tracking-tight text-slate-800">
+                    <span className={`font-black text-[24px] tracking-tight ${dark ? "text-white" : "text-slate-800"}`}>
                         Chaqqon<span className="text-blue-500">Pro</span>
                     </span>
                 </div>
@@ -2646,7 +2646,7 @@ export default function UbtPosPage() {
                                 <Package size={17} />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="font-black text-gray-900 text-base leading-none">Olib ketish</p>
+                                <p className={`font-black text-base leading-none ${dark ? "text-slate-100" : "text-gray-900"}`}>Olib ketish</p>
                                 <p className="text-[11px] text-gray-400 mt-0.5">{twOrders.filter(o => o.status === "pending").length} ta kutilmoqda</p>
                             </div>
                             <button
@@ -2855,7 +2855,7 @@ export default function UbtPosPage() {
                                 <Bike size={17} />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="font-black text-gray-900 text-base leading-none">Yetkazib berish</p>
+                                <p className={`font-black text-base leading-none ${dark ? "text-slate-100" : "text-gray-900"}`}>Yetkazib berish</p>
                                 <p className="text-[11px] text-gray-400 mt-0.5">{dlOrders.filter(o => o.status === "pending").length} ta kutilmoqda</p>
                             </div>
                             <button
