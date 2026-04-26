@@ -441,7 +441,7 @@ export default function TaomlarPage() {
                             <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
                             <h2 className="text-xl font-black text-slate-900">{editingItem ? t('common.edit') + ' ' + t('nav.nom_dishes') : t('common.add') + ' ' + t('nav.nom_dishes')}</h2>
                         </div>
-                        <button onClick={() => setIsModalOpen(false)} className="text-slate-700 hover:text-slate-900 hover:bg-slate-200 p-2 rounded-xl transition font-bold">
+                        <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-700 hover:text-slate-900 hover:bg-slate-200 p-2 rounded-xl transition font-bold">
                             <X size={24} />
                         </button>
                     </div>
