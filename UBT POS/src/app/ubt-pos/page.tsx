@@ -1946,7 +1946,7 @@ export default function UbtPosPage() {
                 {/* Brand */}
                 <div className="flex items-center shrink-0 mr-4 border-r border-slate-300/20 pr-5">
                     <span className="font-black text-[24px] tracking-tight">
-                        <span className={dark ? "text-black" : "text-slate-800"}>Chaqqon</span><span className={dark ? "text-white" : "text-blue-500"}>Pro</span>
+                        <span className={dark ? "text-white" : "text-slate-800"}>Chaqqon</span><span className={dark ? "text-sky-400" : "text-blue-500"}>Pro</span>
                     </span>
                 </div>
 
