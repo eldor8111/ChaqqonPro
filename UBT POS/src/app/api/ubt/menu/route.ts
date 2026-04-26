@@ -30,7 +30,10 @@ const _ensurePrinterIpColumn = prisma
     .then(() => prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN isSetMenu INTEGER DEFAULT 0`)).catch(() => {})
     .then(() => prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN modifiers TEXT`)).catch(() => {})
     .then(() => prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN type TEXT DEFAULT 'taom'`)).catch(() => {})
-    .then(() => prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN warehouse TEXT`)).catch(() => {});
+    .then(() => prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN warehouse TEXT`)).catch(() => {})
+    .then(() => prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN inStock INTEGER DEFAULT 1`)).catch(() => {})
+    .then(() => prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN hasBarcode INTEGER DEFAULT 0`)).catch(() => {})
+    .then(() => prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN autoCalculate INTEGER DEFAULT 1`)).catch(() => {});
 
 
 async function isProductInActiveOrder(tenantId: string, productName: string, productId?: string) {
@@ -149,7 +152,10 @@ export async function GET(request: NextRequest) {
                     COALESCE(warehouse, '') as warehouse,
                     CASE WHEN image IS NOT NULL THEN image ELSE NULL END as image,
                     CASE WHEN printerIp IS NOT NULL THEN printerIp ELSE NULL END as printerIp,
-                    isSetMenu, modifiers
+                    isSetMenu, modifiers,
+                    COALESCE(inStock, 1) as inStock,
+                    COALESCE(hasBarcode, 0) as hasBarcode,
+                    COALESCE(autoCalculate, 1) as autoCalculate
              FROM Product WHERE tenantId = ? ORDER BY category ASC, name ASC`,
             tenantId
         );
@@ -191,7 +197,9 @@ export async function GET(request: NextRequest) {
             cost: Number(p.costPrice),
             type: p.type || "taom",
             warehouse: p.warehouse || "",
-            inStock: true,
+            inStock: p.inStock === 1 || p.inStock === true,
+            hasBarcode: p.hasBarcode === 1 || p.hasBarcode === true,
+            autoCalculate: p.autoCalculate === 1 || p.autoCalculate === true,
             stock: Number(p.stock),
             unit: p.unit,
             image: p.image ?? null,
@@ -221,7 +229,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { id, name, category, sellingPrice, costPrice, type, warehouse, stock, unit, image, printerIp, isSetMenu, modifiers } = body;
+        const { id, name, category, sellingPrice, costPrice, type, warehouse, stock, unit, image, printerIp, isSetMenu, modifiers, inStock, hasBarcode, autoCalculate } = body;
 
         if (!name) return NextResponse.json({ error: "Nomi kiritilishi shart" }, { status: 400 });
 
@@ -233,6 +241,9 @@ export async function POST(request: NextRequest) {
         const imgVal = image ?? null;
         const piVal = printerIp || null;
         const isSetMenuVal = isSetMenu ? 1 : 0;
+        const inStockVal = (inStock === false || inStock === 0) ? 0 : 1;
+        const hasBarcodeVal = hasBarcode ? 1 : 0;
+        const autoCalculateVal = (autoCalculate === false || autoCalculate === 0) ? 0 : 1;
         const typeVal = (type === "mahsulot" ? "mahsulot" : "taom");
         const warehouseVal = warehouse || null;
         const modifiersVal = modifiers && Array.isArray(modifiers) && modifiers.length > 0 ? JSON.stringify(modifiers) : null;
@@ -256,16 +267,16 @@ export async function POST(request: NextRequest) {
             }
 
             await prisma.$executeRawUnsafe(
-                `UPDATE Product SET name=?, category=?, sellingPrice=?, costPrice=?, type=?, warehouse=?, stock=?, unit=?, image=?, printerIp=?, isSetMenu=?, modifiers=? WHERE id=? AND tenantId=?`,
-                name, catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, targetId, tenantId
+                `UPDATE Product SET name=?, category=?, sellingPrice=?, costPrice=?, type=?, warehouse=?, stock=?, unit=?, image=?, printerIp=?, isSetMenu=?, modifiers=?, inStock=?, hasBarcode=?, autoCalculate=? WHERE id=? AND tenantId=?`,
+                name, catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, inStockVal, hasBarcodeVal, autoCalculateVal, targetId, tenantId
             );
             return NextResponse.json({ success: true, action: "updated", id: targetId });
         } else {
             const newId = `prod_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
             await prisma.$executeRawUnsafe(
-                `INSERT INTO Product (id, tenantId, name, category, sellingPrice, costPrice, type, warehouse, stock, minStock, unit, image, printerIp, isSetMenu, modifiers, createdAt)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 10, ?, ?, ?, ?, ?, datetime('now'))`,
-                newId, tenantId, name, catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal
+                `INSERT INTO Product (id, tenantId, name, category, sellingPrice, costPrice, type, warehouse, stock, minStock, unit, image, printerIp, isSetMenu, modifiers, inStock, hasBarcode, autoCalculate, createdAt)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 10, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+                newId, tenantId, name, catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, inStockVal, hasBarcodeVal, autoCalculateVal
             );
             return NextResponse.json({ success: true, action: "created", id: newId }, { status: 201 });
         }

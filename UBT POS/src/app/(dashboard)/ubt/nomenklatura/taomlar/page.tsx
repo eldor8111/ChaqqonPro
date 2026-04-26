@@ -204,6 +204,9 @@ export default function TaomlarPage() {
                     image: taomData.image || null,
                     printerIp: (formData as any).printerIp || formData.printer || null,
                     isSetMenu: taomData.isSetMenu || false,
+                    inStock: formData.inStock ?? true,
+                    hasBarcode: formData.hasBarcode ?? false,
+                    autoCalculate: formData.autoCalculate ?? true,
                     modifiers: formData.modifiers || []
                 }),
             });
