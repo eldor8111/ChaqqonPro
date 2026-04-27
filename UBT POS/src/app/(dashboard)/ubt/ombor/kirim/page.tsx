@@ -66,8 +66,9 @@ export default function OmborKirimPage() {
                     categoryId: x.categoryId,
                 }));
 
-            // Tayyor mahsulotlar — Product jadvalidan (taom + mahsulot type'lar)
+            // Tayyor mahsulotlar — Product jadvalidan faqat mahsulotlar
             const mahsulot: Product[] = menuItems
+                .filter((t: any) => t.type === "mahsulot" || !t.type)
                 .map((t: any) => ({
                     id: t.id,
                     name: t.name,
@@ -563,10 +564,10 @@ export default function OmborKirimPage() {
 
             {/* ===== MODAL ===== */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col max-h-[92vh] overflow-hidden">
+                <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="flex flex-col h-full bg-white shadow-2xl">
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50 shrink-0">
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 bg-white shrink-0 shadow-sm z-10">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
                                     <Package size={22} />
