@@ -45,7 +45,7 @@ export default function OmborInventarizatsiyaPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         productId: "", productName: "", systemStock: "", actualStock: "",
-        warehouse: "Asosiy Ombor", employee: "", unit: "kg",
+        warehouse: "Asosiy Ombor", employee: "", unit: "kg", productType: "",
     });
     const [prodSearch, setProdSearch] = useState("");
     const [isComboOpen, setIsComboOpen] = useState(false);
@@ -82,6 +82,7 @@ export default function OmborInventarizatsiyaPage() {
             productName: prod.name,
             systemStock: prod.stock.toString(),
             unit: prod.unit,
+            productType: prod.productType,
         }));
         setProdSearch(prod.name);
         setIsComboOpen(false);
@@ -119,7 +120,7 @@ export default function OmborInventarizatsiyaPage() {
                     loadProducts();
                 }
                 setIsModalOpen(false);
-                setFormData({ productId: "", productName: "", systemStock: "", actualStock: "", warehouse: "Asosiy Ombor", employee: "", unit: "kg" });
+                setFormData({ productId: "", productName: "", systemStock: "", actualStock: "", warehouse: "Asosiy Ombor", employee: "", unit: "kg", productType: "" });
                 setProdSearch("");
                 fetchItems();
             } else { alert("Serverda xatolik yuz berdi"); }
@@ -279,7 +280,7 @@ export default function OmborInventarizatsiyaPage() {
                                         <Search size={15} className="ml-3 text-slate-400 shrink-0" />
                                         <input type="text" placeholder="Xomashyo yoki polfabrikat qidiring..."
                                             value={prodSearch}
-                                            onChange={e => { setProdSearch(e.target.value); setIsComboOpen(true); setFormData(f => ({ ...f, productId: "", productName: "", systemStock: "" })); }}
+                                            onChange={e => { setProdSearch(e.target.value); setIsComboOpen(true); setFormData(f => ({ ...f, productId: "", productName: "", systemStock: "", productType: "" })); }}
                                             className="w-full px-3 py-3 text-sm outline-none bg-transparent" />
                                         <ChevronDown size={15} className={`mr-3 text-slate-400 transition-transform ${isComboOpen ? "rotate-180" : ""}`} />
                                     </div>
