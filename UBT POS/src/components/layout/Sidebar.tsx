@@ -14,6 +14,7 @@ import { useLang } from "@/lib/LangContext";
 import clsx from "clsx";
 import { useFrontendStore } from "@/lib/frontend/store";
 import { ChevronDown } from "lucide-react";
+import UserProfile from "./UserProfile";
 
 interface NavItem {
     href: string;
@@ -223,6 +224,8 @@ export default function Sidebar({ mobileOpen = false, onMobileClose, onMobileOpe
                     );
                 })}
             </nav>
+
+            <UserProfile collapsed={collapsed} />
         </>
     );
 
