@@ -54,7 +54,15 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
 
     return (
         <>
-            <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-surface-card border-b border-surface-border flex-shrink-0">
+            <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-surface-card border-b border-surface-border flex-shrink-0 relative">
+                {/* Center: Logo (Absolute) */}
+                <div className="absolute left-1/2 -translate-x-1/2 pointer-events-none">
+                    <div className="animate-fade-in flex items-center gap-2">
+                        <span className="font-black text-[20px] md:text-[22px] tracking-tight text-slate-800">
+                            Chaqqon<span className="text-blue-600">Pro</span>
+                        </span>
+                    </div>
+                </div>
                 {/* Left: Hamburger (mobile) + Branch selector + Search */}
                 <div className="flex items-center gap-2 md:gap-4">
                     {/* Mobile hamburger */}

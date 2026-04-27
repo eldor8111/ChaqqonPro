@@ -121,26 +121,13 @@ export default function Sidebar({ mobileOpen = false, onMobileClose, onMobileOpe
 
     const sidebarContent = (
         <>
-            {/* Logo */}
-            <div className="flex items-center gap-3 px-4 py-5 border-b border-surface-border">
-                {!collapsed ? (
-                    <div className="animate-fade-in">
-                        <span className="font-black text-[22px] tracking-tight text-slate-800">
-                            Chaqqon<span className="text-blue-600">Pro</span>
-                        </span>
-                    </div>
-                ) : (
-                    <div className="animate-fade-in flex w-full justify-center -ml-2">
-                        <span className="font-black text-[22px] tracking-tight text-slate-800">
-                            C<span className="text-blue-600">P</span>
-                        </span>
-                    </div>
-                )}
+            {/* Sidebar Header (Collapse button) */}
+            <div className="flex items-center px-4 py-4 border-b border-surface-border">
                 {/* Mobile close button */}
                 {mobileOpen && (
                     <button
                         onClick={onMobileClose}
-                        className="ml-auto p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-surface-elevated transition-all md:hidden"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-surface-elevated transition-all md:hidden ml-auto"
                     >
                         <X size={18} />
                     </button>
@@ -148,7 +135,10 @@ export default function Sidebar({ mobileOpen = false, onMobileClose, onMobileOpe
                 {/* Desktop collapse button */}
                 <button
                     onClick={() => setCollapsed(!collapsed)}
-                    className="ml-auto p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-surface-elevated transition-all hidden md:flex"
+                    className={clsx(
+                        "p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-surface-elevated transition-all hidden md:flex",
+                        collapsed ? "mx-auto" : "ml-auto"
+                    )}
                 >
                     {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
                 </button>
