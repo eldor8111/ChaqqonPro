@@ -565,7 +565,11 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
 
                                 <div className="border-t border-slate-200 dark:border-surface-border mt-1 pt-1">
                                     <button
-                                        onClick={() => { logout(); router.replace("/?mode=admin"); }}
+                                        onClick={async () => { 
+                                            logout(); 
+                                            try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {}
+                                            router.replace("/?mode=admin"); 
+                                        }}
                                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 dark:text-danger hover:bg-red-50 dark:hover:bg-surface-elevated transition-colors"
                                     >
                                         <LogOut size={15} /> Chiqish
