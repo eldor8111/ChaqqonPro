@@ -197,14 +197,14 @@ export async function GET(request: NextRequest) {
             cost: Number(p.costPrice),
             type: p.type || "taom",
             warehouse: p.warehouse || "",
-            inStock: p.inStock === 1 || p.inStock === true,
-            hasBarcode: p.hasBarcode === 1 || p.hasBarcode === true,
-            autoCalculate: p.autoCalculate === 1 || p.autoCalculate === true,
+            inStock: Number(p.inStock) !== 0,
+            hasBarcode: Number(p.hasBarcode) !== 0,
+            autoCalculate: Number(p.autoCalculate) !== 0,
             stock: Number(p.stock),
             unit: p.unit,
             image: p.image ?? null,
             printerIp: p.printerIp ?? null,
-            isSetMenu: p.isSetMenu === 1 || p.isSetMenu === true,
+            isSetMenu: Number(p.isSetMenu) !== 0,
             modifiers: (() => { try { return p.modifiers ? JSON.parse(p.modifiers) : []; } catch { return []; } })(),
         }));
 
