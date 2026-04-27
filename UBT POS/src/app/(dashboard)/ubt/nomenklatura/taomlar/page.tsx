@@ -234,6 +234,42 @@ export default function TaomlarPage() {
         setIsModalOpen(false);
     };
 
+    const handleToggleStatus = async (item: any) => {
+        const newStatus = !item.inStock;
+        try {
+            const res = await fetch("/api/ubt/menu", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: item.id,
+                    name: item.name,
+                    category: item.category || "",
+                    sellingPrice: item.sellingPrice ?? item.price ?? 0,
+                    costPrice: item.costPrice ?? item.cost ?? 0,
+                    type: item.type || "taom",
+                    warehouse: item.warehouse || null,
+                    stock: item.stock || 0,
+                    unit: item.unit || "dona",
+                    image: item.image || null,
+                    printerIp: item.printerIp || item.printer || null,
+                    isSetMenu: item.isSetMenu || false,
+                    inStock: newStatus,
+                    hasBarcode: item.hasBarcode ?? false,
+                    autoCalculate: item.autoCalculate ?? true,
+                    modifiers: item.modifiers || []
+                }),
+            });
+            if (!res.ok) {
+                const data = await res.json();
+                alert(data.error || "Xatolik yuz berdi");
+                return;
+            }
+            await loadFromDB();
+        } catch (err) {
+            alert("Tizim bilan ulanishda xatolik");
+        }
+    };
+
     const handleDelete = async (id: string) => {
         if (!confirm("Haqiqatan ham bu taomni o'chirmoqchimisiz?")) return;
         // Find in DB items first, fallback to id as name
@@ -413,9 +449,9 @@ export default function TaomlarPage() {
                                     </td>
                                     <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] text-center">
                                         {item.inStock ? (
-                                            <span className="border border-[#00b050] text-[#00b050] px-2 py-0.5 rounded text-[10px] font-black w-max mx-auto bg-white">#faol</span>
+                                            <span onClick={() => handleToggleStatus(item)} className="cursor-pointer select-none border border-[#00b050] text-[#00b050] px-2 py-0.5 rounded text-[10px] font-black w-max mx-auto bg-white hover:bg-green-50 transition-colors">#faol</span>
                                         ) : (
-                                            <span className="border border-slate-500 text-slate-700 px-2 py-0.5 rounded text-[10px] font-black w-max mx-auto bg-white shadow-sm">#nofaol</span>
+                                            <span onClick={() => handleToggleStatus(item)} className="cursor-pointer select-none border border-slate-500 text-slate-700 px-2 py-0.5 rounded text-[10px] font-black w-max mx-auto bg-white shadow-sm hover:bg-slate-50 transition-colors">#nofaol</span>
                                         )}
                                     </td>
                                     <td className="px-1.5 py-1.5 rounded-r-lg space-x-2 text-right">
