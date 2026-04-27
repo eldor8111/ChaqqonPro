@@ -588,7 +588,7 @@ export default function OmborKirimPage() {
                         </div>
 
                         <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
-                            <div className="p-6 overflow-y-auto flex-1 space-y-6">
+                            <div className="p-6 overflow-auto flex-1 space-y-6">
                                 {/* Header fields */}
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                     <div className="md:col-span-2 space-y-1.5">
@@ -627,7 +627,7 @@ export default function OmborKirimPage() {
                                 </div>
 
                                 {/* Items table */}
-                                <div className="border border-slate-200 rounded-xl overflow-x-auto pb-4 custom-scrollbar">
+                                <div className="border border-slate-200 rounded-xl overflow-visible pb-4">
                                     <div className="min-w-[900px]">
                                         <div className="bg-slate-50 border-b border-slate-200 rounded-t-xl px-4 py-2.5 grid grid-cols-12 gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                         <div className="col-span-4">Mahsulot</div>
