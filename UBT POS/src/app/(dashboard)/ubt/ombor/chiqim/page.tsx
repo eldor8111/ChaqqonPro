@@ -120,6 +120,8 @@ export default function OmborChiqimPage() {
         loadProducts();
     };
 
+    const [staffList, setStaffList] = useState<any[]>([]);
+
     const fetchChiqimlar = async () => {
         setIsLoading(true);
         try {
@@ -135,7 +137,17 @@ export default function OmborChiqimPage() {
         }
     };
 
-    useEffect(() => { fetchChiqimlar(); }, []);
+    const fetchStaff = async () => {
+        try {
+            const res = await fetch("/api/ubt/staff");
+            if (res.ok) {
+                const data = await res.json();
+                setStaffList(data.staff || (Array.isArray(data) ? data : []));
+            }
+        } catch (e) { console.error(e); }
+    };
+
+    useEffect(() => { fetchChiqimlar(); fetchStaff(); }, []);
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -414,13 +426,17 @@ export default function OmborChiqimPage() {
                                 {/* ── Xodim ─────────────────────────────────────────── */}
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Mas&apos;ul xodim</label>
-                                    <input
-                                        type="text"
-                                        placeholder="Xodim ismini kiriting..."
+                                    <select
                                         value={formData.employee}
                                         onChange={e => setFormData({ ...formData, employee: e.target.value })}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all text-sm"
-                                    />
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all text-sm bg-white"
+                                    >
+                                        <option value="" disabled>Mas'ul xodimni tanlang...</option>
+                                        <option value="Omborchi">Omborchi (Standart)</option>
+                                        {staffList.filter(s => s.role !== "POS apparati").map(s => (
+                                            <option key={s.id} value={s.name}>{s.name} ({s.role})</option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 {/* ── Izoh ──────────────────────────────────────────── */}

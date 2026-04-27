@@ -90,7 +90,19 @@ export default function OmborSjisaniyaPage() {
         finally { setIsLoading(false); }
     };
 
-    useEffect(() => { fetchItems(); loadProducts(); }, [loadProducts]);
+    const [staffList, setStaffList] = useState<any[]>([]);
+
+    const fetchStaff = async () => {
+        try {
+            const res = await fetch("/api/ubt/staff");
+            if (res.ok) {
+                const data = await res.json();
+                setStaffList(data.staff || (Array.isArray(data) ? data : []));
+            }
+        } catch (e) { console.error(e); }
+    };
+
+    useEffect(() => { fetchItems(); loadProducts(); fetchStaff(); }, [loadProducts]);
 
     useEffect(() => {
         const handler = (e: MouseEvent) => {
@@ -393,9 +405,18 @@ export default function OmborSjisaniyaPage() {
                             {/* Approved by */}
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Tasdiqlovchi xodim <span className="text-red-500">*</span></label>
-                                <input type="text" placeholder="Admin, menejer yoki omborchi ismi..."
-                                    value={formData.approvedBy} onChange={e => setFormData(f => ({ ...f, approvedBy: e.target.value }))}
-                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-red-500 text-sm transition-all" />
+                                <select
+                                    value={formData.approvedBy}
+                                    onChange={e => setFormData(f => ({ ...f, approvedBy: e.target.value }))}
+                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-red-500 text-sm transition-all bg-white"
+                                >
+                                    <option value="" disabled>Mas'ul xodimni tanlang...</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Menejer">Menejer</option>
+                                    {staffList.filter(s => s.role !== "POS apparati").map(s => (
+                                        <option key={s.id} value={s.name}>{s.name} ({s.role})</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div className="flex items-center justify-between pt-2">

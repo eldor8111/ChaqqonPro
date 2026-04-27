@@ -83,7 +83,19 @@ export default function OmborKochirishPage() {
         finally { setIsLoading(false); }
     };
 
-    useEffect(() => { fetchTransfers(); loadProducts(); }, [loadProducts]);
+    const [staffList, setStaffList] = useState<any[]>([]);
+
+    const fetchStaff = async () => {
+        try {
+            const res = await fetch("/api/ubt/staff");
+            if (res.ok) {
+                const data = await res.json();
+                setStaffList(data.staff || (Array.isArray(data) ? data : []));
+            }
+        } catch (e) { console.error(e); }
+    };
+
+    useEffect(() => { fetchTransfers(); loadProducts(); fetchStaff(); }, [loadProducts]);
 
     useEffect(() => {
         const handler = (e: MouseEvent) => {
@@ -316,9 +328,17 @@ export default function OmborKochirishPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('staff.employee')}</label>
-                                    <input type="text" placeholder="Xodim ismi..."
-                                        value={formData.employee} onChange={e => setFormData(f => ({ ...f, employee: e.target.value }))}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-sky-500 text-sm transition-all" />
+                                    <select
+                                        value={formData.employee}
+                                        onChange={e => setFormData(f => ({ ...f, employee: e.target.value }))}
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-sky-500 text-sm transition-all bg-white"
+                                    >
+                                        <option value="" disabled>Mas'ul xodimni tanlang...</option>
+                                        <option value="Omborchi">Omborchi (Standart)</option>
+                                        {staffList.filter(s => s.role !== "POS apparati").map(s => (
+                                            <option key={s.id} value={s.name}>{s.name} ({s.role})</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Izoh</label>
