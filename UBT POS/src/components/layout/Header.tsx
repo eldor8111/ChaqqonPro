@@ -58,8 +58,8 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
                 {/* Center: Logo (Absolute) */}
                 <div className="absolute left-1/2 -translate-x-1/2 pointer-events-none">
                     <div className="animate-fade-in flex items-center gap-2">
-                        <span className="font-black text-[20px] md:text-[22px] tracking-tight text-slate-800">
-                            Chaqqon<span className="text-blue-600">Pro</span>
+                        <span className="font-black text-[22px] md:text-[26px] tracking-wider text-slate-800 uppercase">
+                            CHAQQON<span className="text-blue-600">PRO</span>
                         </span>
                     </div>
                 </div>
