@@ -1679,7 +1679,7 @@ export default function UbtPosPage() {
         }
         
         // Chek print
-        const printerIp = store.kassirSession?.printerIp || "";
+        const printerIp = store.kassirSession?.printerIp || store.deviceSession?.printerIp || "";
         if (printerIp && activeOrders.length > 0) {
             const now = new Date();
             const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -1761,7 +1761,7 @@ export default function UbtPosPage() {
         }
 
         // Chek chop etish (faqat shu shot uchun)
-        const printerIp = store.kassirSession?.printerIp || "";
+        const printerIp = store.kassirSession?.printerIp || store.deviceSession?.printerIp || "";
         if (printerIp && activeShotObj.cart.length > 0) {
             const now = new Date();
             const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -1822,7 +1822,7 @@ export default function UbtPosPage() {
         const allOrders = tableOrders[selTable.id] || [];
         const activeOrders = allOrders.filter((c: any) => (c.shotId || 1) === activeShot);
         if (activeOrders.length === 0) { alert("Chek bo'sh — avval taom qo'shing"); return; }
-        const printerIp = overrideIp || store.kassirSession?.printerIp || "";
+        const printerIp = overrideIp || store.kassirSession?.printerIp || store.deviceSession?.printerIp || "";
         if (!printerIp) {
             // printerIp yo'q — printer tanlash modal ochish
             setShowPrinterPick(true);
@@ -2210,7 +2210,7 @@ export default function UbtPosPage() {
                                                 store.fetchUbtTables();
                                             }}
 
-                                            kassirPrinterIp={store.kassirSession?.printerIp || ""}
+                                            kassirPrinterIp={store.kassirSession?.printerIp || store.deviceSession?.printerIp || ""}
                                             instantAdd
                                             servicePct={selTable.serviceFee ?? 0}
                                             tableName={selTable.name}
@@ -2727,7 +2727,7 @@ export default function UbtPosPage() {
                                                 });
                                             }}
                                             onPay={async () => {}}
-                                            kassirPrinterIp={store.kassirSession?.printerIp || ""}
+                                            kassirPrinterIp={store.kassirSession?.printerIp || store.deviceSession?.printerIp || ""}
                                             instantAdd
                                         />
                                     </div>
@@ -2926,7 +2926,7 @@ export default function UbtPosPage() {
                                                 });
                                             }}
                                             onPay={async () => {}}
-                                            kassirPrinterIp={store.kassirSession?.printerIp || ""}
+                                            kassirPrinterIp={store.kassirSession?.printerIp || store.deviceSession?.printerIp || ""}
                                             instantAdd
                                         />
                                     </div>

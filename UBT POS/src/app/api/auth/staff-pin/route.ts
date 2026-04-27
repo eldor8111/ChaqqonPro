@@ -64,6 +64,19 @@ export async function POST(request: NextRequest) {
         let printerIp = "";
         try { const p = staff.phone ? JSON.parse(staff.phone) : {}; printerIp = p.printerIp || ""; } catch {}
 
+        // Fallback: agar xodimda printerIp yo'q bo'lsa, UbtPrinter jadvalidan birinchi printerni olish
+        if (!printerIp) {
+            try {
+                const printers: any[] = await (prisma.$queryRawUnsafe(
+                    `SELECT ipAddress, port FROM UbtPrinter WHERE tenantId=? ORDER BY createdAt ASC LIMIT 1`,
+                    staff.tenantId
+                ) as Promise<any[]>);
+                if (printers.length > 0) {
+                    printerIp = printers[0].ipAddress || "";
+                }
+            } catch { /* printer yo'q — muammo emas */ }
+        }
+
         let serviceFeePct = 10;
         try { const meta = staff.staffMeta ? JSON.parse(staff.staffMeta) : {}; if (meta.serviceFeePct !== undefined) serviceFeePct = meta.serviceFeePct; } catch {}
 
