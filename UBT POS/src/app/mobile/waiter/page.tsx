@@ -23,6 +23,7 @@ export default function MobileWaiterPage() {
     const [cats, setCats] = useState<Category[]>([]);
     const [activeCat, setActiveCat] = useState<string>("all");
     const [cart, setCart] = useState<CartItem[]>([]);
+    const [existingCart, setExistingCart] = useState<CartItem[]>([]);
     const [search, setSearch] = useState("");
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
@@ -111,6 +112,7 @@ export default function MobileWaiterPage() {
     const openTable = async (t: UbtTable) => {
         setSelectedTable(t);
         setCart([]);
+        setExistingCart([]);
         setView("menu");
 
         // Agar stol band bo'lsa — bazadagi mavjud zakazlarni yuklash
@@ -135,7 +137,7 @@ export default function MobileWaiterPage() {
                             if (ex) { ex.qty += cur.qty; return acc; }
                             return [...acc, cur];
                         }, []);
-                    if (existing.length > 0) setCart(existing);
+                    if (existing.length > 0) setExistingCart(existing);
                 }
             } catch {}
         }
@@ -266,7 +268,7 @@ export default function MobileWaiterPage() {
             <div className="flex flex-col h-screen bg-slate-50">
                 <header className="bg-white border-b border-slate-100 sticky top-0 z-20">
                     <div className="flex items-center justify-between px-4 py-3">
-                        <button onClick={() => { setView("tables"); setSelectedTable(null); setCart([]); }} className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center active:scale-95">
+                        <button onClick={() => { setView("tables"); setSelectedTable(null); setCart([]); setExistingCart([]); }} className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center active:scale-95">
                             <ChevronLeft size={18} className="text-slate-600" />
                         </button>
                         <div className="text-center">
@@ -299,29 +301,36 @@ export default function MobileWaiterPage() {
                     <div className="grid grid-cols-2 gap-3">
                         {filteredMenu.map(item => {
                             const inCart = cart.find(c => c.id === item.id);
+                            const inExisting = existingCart.find(c => c.id === item.id);
                             return (
-                                <div key={item.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                                <div key={item.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
                                     {item.image ? (
-                                        <img src={item.image} alt={item.name} className="w-full h-28 object-cover" />
+                                        <img src={item.image} alt={item.name} className="w-full h-28 object-cover shrink-0" />
                                     ) : (
-                                        <div className="w-full h-20 bg-slate-50 flex items-center justify-center">
+                                        <div className="w-full h-20 bg-slate-50 flex items-center justify-center shrink-0">
                                             <UtensilsCrossed size={24} className="text-slate-200" />
                                         </div>
                                     )}
-                                    <div className="p-3">
-                                        <p className="text-sm font-bold text-slate-800 leading-tight mb-1 line-clamp-2">{item.name}</p>
-                                        <p className="text-xs font-black text-blue-600 mb-2">{fmt(item.price)}</p>
+                                    <div className="p-3 flex flex-col flex-1">
+                                        <div className="flex-1">
+                                            <p className="text-[13px] font-bold text-slate-800 leading-tight mb-1 line-clamp-2">
+                                                {item.name} {inExisting && <span className="text-[10px] text-orange-500 font-bold ml-1 whitespace-nowrap">(Stolda: {inExisting.qty})</span>}
+                                            </p>
+                                            <p className="text-xs font-black text-blue-600 mb-2">{fmt(item.price)}</p>
+                                        </div>
+                                        <div className="mt-auto">
                                         {inCart ? (
-                                            <div className="flex items-center justify-between bg-blue-50 rounded-xl px-2 py-1.5">
-                                                <button onClick={() => changeQty(item.id, item.name, item.price, -1)} className="w-7 h-7 rounded-full bg-white border border-blue-200 flex items-center justify-center active:scale-95 shadow-sm"><Minus size={12} className="text-blue-600" /></button>
-                                                <span className="text-sm font-black text-blue-700">{inCart.qty}</span>
-                                                <button onClick={() => changeQty(item.id, item.name, item.price, 1)} className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center active:scale-95 shadow-sm"><Plus size={12} className="text-white" /></button>
+                                            <div className="flex items-center justify-between bg-blue-50 rounded-xl px-2 py-1.5 mt-2">
+                                                <button onClick={() => changeQty(item.id, item.name, item.price, -1)} className="w-7 h-7 rounded-full bg-white border border-blue-200 flex items-center justify-center active:scale-95 shadow-sm shrink-0"><Minus size={12} className="text-blue-600" /></button>
+                                                <span className="text-sm font-black text-blue-700 mx-1">{inCart.qty}</span>
+                                                <button onClick={() => changeQty(item.id, item.name, item.price, 1)} className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center active:scale-95 shadow-sm shrink-0"><Plus size={12} className="text-white" /></button>
                                             </div>
                                         ) : (
-                                            <button onClick={() => changeQty(item.id, item.name, item.price, 1)} className="w-full py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-600 flex items-center justify-center gap-1 active:scale-95 transition-all hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600">
+                                            <button onClick={() => changeQty(item.id, item.name, item.price, 1)} className="w-full py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-600 flex items-center justify-center gap-1 active:scale-95 transition-all hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 mt-2">
                                                 <Plus size={11} /> Qo'shish
                                             </button>
                                         )}
+                                        </div>
                                     </div>
                                 </div>
                             );
