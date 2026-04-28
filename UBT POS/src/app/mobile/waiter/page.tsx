@@ -65,11 +65,11 @@ export default function MobileWaiterPage() {
                                             : "bg-white border-slate-200 shadow-sm"}`}
                                 >
                                     <span className={`text-xl font-black mb-1 ${isBusy ? (isMyTable ? "text-sky-700" : "text-orange-700") : "text-slate-800"}`}>
-                                        {t.label}
+                                        {t.name}
                                     </span>
                                     {isBusy ? (
                                         <>
-                                            <span className="text-[10px] font-bold uppercase text-slate-500">{t.order ? t.order.items?.length : 0} xil buyurtma</span>
+                                            <span className="text-[10px] font-bold uppercase text-slate-500">Band stol</span>
                                             {isMyTable && <span className="absolute -top-2 -right-2 bg-sky-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">Sizniki</span>}
                                         </>
                                     ) : (
@@ -93,7 +93,7 @@ export default function MobileWaiterPage() {
                     <ChevronLeft size={24} />
                 </button>
                 <div className="text-center">
-                    <h1 className="text-lg font-black leading-tight">{selectedTable.label} - Stol</h1>
+                    <h1 className="text-lg font-black leading-tight">{selectedTable.name}</h1>
                     <p className="text-[10px] font-semibold text-sky-200 uppercase tracking-widest">Yangi buyurtma kiritish</p>
                 </div>
                 <div className="w-10"></div> {/* Placeholder for centering */}
