@@ -301,7 +301,7 @@ export default function MobileWaiterPage() {
                         </div>
                         <button onClick={sendOrder} disabled={sending} className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-black rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-200 disabled:opacity-60">
                             {sending ? <RefreshCw size={16} className="animate-spin" /> : <Send size={16} />}
-                            {sending ? "Yuborilmoqda..." : `Oshxonaga yuborish · ${cartCount} ta · ${fmt(cartTotal)}`}
+                            {sending ? "Yuborilmoqda..." : `Buyurtma berish · ${cartCount} ta · ${fmt(cartTotal)}`}
                         </button>
                     </div>
                 )}

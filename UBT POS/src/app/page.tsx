@@ -347,6 +347,11 @@ function LoginForm() {
         if (!isAdminMode) {
             const session = useStore.getState().kassirSession;
             if (session) {
+                // Rolga qarab to'g'ri sahifaga yo'naltirish
+                const role = (session as any).role;
+                if (role === "Ofitsiant") { router.replace("/mobile/waiter"); return; }
+                if (role === "Kuryer") { router.replace("/mobile/courier"); return; }
+                if (role === "Zavsklad" || role === "Omborchi") { router.replace("/mobile/inventory"); return; }
                 router.replace("/ubt-pos");
                 return;
             }
