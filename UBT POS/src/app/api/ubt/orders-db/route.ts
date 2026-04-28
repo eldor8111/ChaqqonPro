@@ -52,7 +52,9 @@ export async function GET(request: NextRequest) {
         for (const ord of kdsOrders) {
             try {
                 const parsed = JSON.parse(ord.description);
-                if (Array.isArray(parsed)) allItems.push(...parsed);
+                // Support both old format (plain array) and new format ({waiterName, items})
+                const items = Array.isArray(parsed) ? parsed : (parsed.items ?? []);
+                if (Array.isArray(items)) allItems.push(...items);
             } catch {}
         }
 
@@ -97,11 +99,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Save cart as a new KDS order with priority="cart"
+        // description format: JSON with waiterName + items so we can query per-waiter stats
+        const descPayload = JSON.stringify({ waiterName: waiterName || auth.waiterName || "", items });
         const order = await prisma.kDSOrder.create({
             data: {
                 tenantId: auth.tenantId,
                 tableId,
-                description: JSON.stringify(items),
+                description: descPayload,
                 status: "pending",
                 priority: "cart",
             },
