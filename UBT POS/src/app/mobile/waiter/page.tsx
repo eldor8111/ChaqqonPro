@@ -108,6 +108,39 @@ export default function MobileWaiterPage() {
         finally { setSending(false); }
     };
 
+    const openTable = async (t: UbtTable) => {
+        setSelectedTable(t);
+        setCart([]);
+        setView("menu");
+
+        // Agar stol band bo'lsa — bazadagi mavjud zakazlarni yuklash
+        if (t.status === "occupied" || t.status === "receipt") {
+            try {
+                const res = await fetch(`/api/ubt/orders-db?tableId=${t.id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const existing: CartItem[] = (data.items || [])
+                        .filter((ci: any) => ci.item?.id || ci.id)
+                        .map((ci: any) => ({
+                            id: ci.item?.id ?? ci.id,
+                            name: ci.item?.name ?? ci.name,
+                            price: ci.item?.price ?? ci.price ?? 0,
+                            qty: ci.qty ?? 1,
+                        }))
+                        // merge duplicates
+                        .reduce((acc: CartItem[], cur: CartItem) => {
+                            const ex = acc.find(a => a.id === cur.id);
+                            if (ex) { ex.qty += cur.qty; return acc; }
+                            return [...acc, cur];
+                        }, []);
+                    if (existing.length > 0) setCart(existing);
+                }
+            } catch {}
+        }
+    };
+
     const filteredMenu = menu.filter(i =>
         i.inStock &&
         (activeCat === "all" || i.categoryId === activeCat) &&
@@ -347,7 +380,7 @@ export default function MobileWaiterPage() {
                             return (
                                 <button
                                     key={t.id}
-                                    onClick={() => { setSelectedTable(t); setCart([]); setView("menu"); }}
+                                    onClick={() => openTable(t)}
                                     className={`relative flex flex-col items-center justify-center p-5 rounded-2xl border-2 active:scale-95 transition-all
                                         ${isReceipt ? "bg-amber-50 border-amber-300" :
                                           isMine ? "bg-blue-50 border-blue-400 shadow-[0_4px_16px_rgba(59,130,246,0.12)]" :

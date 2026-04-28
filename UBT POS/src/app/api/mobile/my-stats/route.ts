@@ -33,12 +33,13 @@ export async function GET(req: NextRequest) {
         const monthStart = new Date(now); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
 
         // Ofitsiant zakazlari: KDSOrder.description ichida waiterName bo'ladi
-        // Eski format: plain array; Yangi format: {waiterName, items}
+        // "served" + "pending" — ikkalasini ham hisoblash (kassir to'lov qilsa "served" bo'ladi)
         const allKdsOrders = await prisma.kDSOrder.findMany({
             where: {
                 tenantId,
                 priority: "cart",
                 createdAt: { gte: monthStart, lte: todayEnd },
+                // status filter yo'q — served ham, pending ham hisoblanadi
             },
             select: { description: true, createdAt: true },
             orderBy: { createdAt: "desc" },
