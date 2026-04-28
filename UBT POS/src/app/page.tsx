@@ -637,7 +637,7 @@ function LoginForm() {
                                     <button type="button" onClick={() => setLoginModeState("admin")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${loginModeState === "admin" ? "bg-white text-blue-700 shadow-sm border border-slate-200/50" : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"}`}>
                                         <ShieldCheck size={14} /> Admin Panel
                                     </button>
-                                    <button type="button" onClick={() => setLoginModeState("staff")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${loginModeState === "staff" ? "bg-white text-blue-700 shadow-sm border border-slate-200/50" : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"}`}>
+                                    <button type="button" onClick={() => router.push("/login/staff")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-slate-200/50`}>
                                         <Users size={14} /> Xodimlar
                                     </button>
                                 </div>
