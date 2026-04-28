@@ -412,12 +412,21 @@ function LoginForm() {
                 useStore.getState().setDeviceSession(staffData);
                 
                 // Agar Manablog (Kassa apparati) kiritilgan bo'lsa, xodim tanlash pini so'raladi
-                if (staffData.role === "Manablog" || staffData.role === "Apparat") {
+                if (staffData.role === "Manablog" || staffData.role === "Apparat" || staffData.name?.toLowerCase().includes("apparat")) {
                     router.push("/kassa/login");
                 } else {
-                    // Shaxsiy xodim login bo'lsa, to'g'ridan-to'g'ri tizimga kiradi
+                    // Shaxsiy xodim login bo'lsa, to'g'ridan-to'g'ri o'z ish stoliga kiradi
                     useStore.getState().setKassirSession(staffData);
-                    router.push("/ubt-pos");
+                    
+                    if (staffData.role === "Ofitsiant") {
+                        router.push("/mobile/waiter");
+                    } else if (staffData.role === "Kuryer") {
+                        router.push("/mobile/courier");
+                    } else if (staffData.role === "Zavsklad" || staffData.role === "Omborchi") {
+                        router.push("/mobile/inventory");
+                    } else {
+                        router.push("/ubt-pos"); // Default kassir
+                    }
                 }
             } catch {
                 setError("Tizimga ulanishda xatolik yuz berdi");
