@@ -396,7 +396,7 @@ function LoginForm() {
         if (loginModeState === "staff") {
             const val = staffUsername.trim();
             if (!val || !password) {
-                setError("Iltimos, Apparat Logini va parolni kiriting");
+                setError("Iltimos, Xodim Logini va parolni kiriting");
                 return;
             }
             setIsLoading(true);
@@ -408,8 +408,10 @@ function LoginForm() {
                 });
                 const data = await res.json();
                 if (!res.ok) { setError(data.error || "Login yoki parol xato"); return; }
-                useStore.getState().setDeviceSession({ ...data.session.user, token: data.session.token, shopCode: data.shopCode, shopType: data.shopType });
-                router.push("/kassa/login");
+                const staffData = { ...data.session.user, token: data.session.token, shopCode: data.shopCode, shopType: data.shopType };
+                useStore.getState().setDeviceSession(staffData);
+                useStore.getState().setKassirSession(staffData);
+                router.push("/ubt-pos");
             } catch {
                 setError("Tizimga ulanishda xatolik yuz berdi");
             } finally {
@@ -666,7 +668,7 @@ function LoginForm() {
                                         {loginModeState === "staff" && (
                                             <div>
                                                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                                    Apparat Logini
+                                                    Xodim Logini <span className="lowercase text-[10px] normal-case">(Ism, raqam yoki @login)</span>
                                                 </label>
                                                 <div className="relative">
                                                     <User size={14} className="absolute left-3 top-3 text-slate-400" />
@@ -676,7 +678,7 @@ function LoginForm() {
                                                         value={staffUsername}
                                                         onChange={(e) => setStaffUsername(e.target.value)}
                                                         className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50 border border-slate-200 placeholder-slate-400 transition-all duration-200 outline-none hover:border-slate-300 focus:ring-2 ${focusClass}`}
-                                                        placeholder="Kassa/Apparat logini"
+                                                        placeholder="Masalan: eldorbek yoki 901234567"
                                                     />
                                                 </div>
                                             </div>
