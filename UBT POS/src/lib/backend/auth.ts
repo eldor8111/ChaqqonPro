@@ -337,12 +337,12 @@ export async function authenticateKassir(username: string, password: string, ten
     let permissions: string[] = [];
     try { if (staff.permissions) permissions = JSON.parse(staff.permissions); } catch {}
 
-    // Manablog (POS Apparat) roli uchun pos huquqi tekshirilmaydi
-    // ularga maxsus ruxsat berilgan, chunki ular POS qurilmasining o'zi
-    const isManablog = staff.role === "Manablog";
+    // Barcha xodimlar endi bevosita o'z telefoni orqali kira oladi
+    const allowedRoles = ["Manablog", "Kassir", "Ofitsiant", "Kuryer", "Zavsklad", "Oshpaz"];
+    const isAllowedRole = allowedRoles.includes(staff.role);
 
-    if (!isManablog && !permissions.includes("pos")) {
-        return { success: false, error: "Sizda kassa tizimiga kirish huquqi yo'q" };
+    if (!isAllowedRole && !permissions.includes("pos")) {
+        return { success: false, error: "Sizda tizimga kirish huquqi yo'q" };
     }
 
     await createSession(staff.id, tenantId, "KASSIR");
