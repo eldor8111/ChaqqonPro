@@ -8,7 +8,7 @@ import { UtensilsCrossed, LogOut, ChevronLeft, Plus, Minus, Send, BarChart2, Ref
 interface MenuItem { id: string; name: string; categoryId: string; price: number; image?: string; inStock: boolean; }
 interface Category { id: string; name: string; }
 interface CartItem { id: string; name: string; price: number; qty: number; }
-interface MyStats { today: { total: number; count: number }; week: { total: number; count: number }; month: { total: number; count: number }; hourlyTimeline: { hour: string; total: number }[]; recentOrders: { amount: number; method: string; time: string }[]; }
+interface MyStats { today: { total: number; count: number }; week: { total: number; count: number }; month: { total: number; count: number }; hourlyTimeline: { hour: string; total: number }[]; recentOrders: { id: string, amount: number; method: string; time: string; items: { name: string, qty: number, price: number }[] }[]; }
 
 function fmt(n: number) { return n.toLocaleString("uz-UZ") + " so'm"; }
 type ViewType = "tables" | "menu" | "stats" | "cart";
@@ -30,6 +30,7 @@ export default function MobileWaiterPage() {
     const [sent, setSent] = useState(false);
     const [stats, setStats] = useState<MyStats | null>(null);
     const [statsLoading, setStatsLoading] = useState(false);
+    const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
     const token = store.kassirSession?.token;
 
@@ -229,10 +230,25 @@ export default function MobileWaiterPage() {
                             {stats.recentOrders.length > 0 && (
                                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                                     <p className="text-[11px] font-black text-slate-400 uppercase tracking-wide px-4 pt-4 pb-2 flex items-center gap-1.5"><ShoppingBag size={12} /> Oxirgi zakazlar</p>
-                                    {stats.recentOrders.map((o, i) => (
-                                        <div key={i} className="px-4 py-3 border-t border-slate-50 flex justify-between items-center">
-                                            <p className="text-[11px] text-slate-400">{o.time} · {o.method}</p>
-                                            <p className="text-sm font-black text-emerald-600">{fmt(o.amount)}</p>
+                                    {stats.recentOrders.map((o) => (
+                                        <div key={o.id} className="border-t border-slate-50">
+                                            <div 
+                                                className="px-4 py-3 flex justify-between items-center active:bg-slate-50 transition-colors"
+                                                onClick={() => setExpandedOrder(expandedOrder === o.id ? null : o.id)}
+                                            >
+                                                <p className="text-[13px] font-bold text-slate-800">{o.method} <span className="text-[10px] text-slate-400 ml-1 font-medium">{o.time}</span></p>
+                                                <p className="text-sm font-black text-emerald-600">{fmt(o.amount)}</p>
+                                            </div>
+                                            {expandedOrder === o.id && o.items && o.items.length > 0 && (
+                                                <div className="px-4 pb-3 pt-1 bg-slate-50/50">
+                                                    {o.items.map((i, idx) => (
+                                                        <div key={idx} className="flex justify-between items-center py-1">
+                                                            <p className="text-[11px] text-slate-600 truncate mr-2 flex-1">{i.name}</p>
+                                                            <p className="text-[11px] font-bold text-slate-800 shrink-0">{i.qty} x {fmt(i.price)}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>

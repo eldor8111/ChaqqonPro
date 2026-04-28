@@ -41,12 +41,12 @@ export async function GET(req: NextRequest) {
                 createdAt: { gte: monthStart, lte: todayEnd },
                 // status filter yo'q — served ham, pending ham hisoblanadi
             },
-            select: { description: true, createdAt: true },
-            orderBy: { createdAt: "desc" },
+            select: { id: true, description: true, createdAt: true },
+            orderBy: { createdAt: "asc" }, // asc for numbering chronologically
         });
 
         // Faqat ushbu xodimning zakazlarini ajratib olish
-        type KdsEntry = { total: number; count: number; createdAt: Date };
+        type KdsEntry = { id: string, total: number; count: number; createdAt: Date; items: any[] };
         const myKdsAll: KdsEntry[] = [];
 
         for (const ord of allKdsOrders) {
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
                         const qty = ci.qty ?? 1;
                         return s + price * qty;
                     }, 0);
-                    myKdsAll.push({ total, count: 1, createdAt: new Date(ord.createdAt) });
+                    myKdsAll.push({ id: ord.id, total, count: 1, createdAt: new Date(ord.createdAt), items });
                 }
             } catch {}
         }
@@ -83,13 +83,19 @@ export async function GET(req: NextRequest) {
             .map(([hour, total]) => ({ hour, total }))
             .sort((a, b) => a.hour.localeCompare(b.hour));
 
-        // Oxirgi 5 ta zakaz
-        const recentOrders = todayOrders.slice(0, 5).map(o => ({
-            amount: o.total,
-            method: "Zakaz",
-            table: "—",
-            time: o.createdAt.toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" }),
-        }));
+        // Barcha bugungi zakazlarni teskari tartibda qaytarish (raqamlash bilan)
+        let orderNum = 1;
+        const recentOrders = todayOrders.map(o => {
+            const mapped = {
+                id: o.id,
+                amount: o.total,
+                method: `№${orderNum} Zakaz`,
+                time: o.createdAt.toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" }),
+                items: o.items.map((i:any) => ({ name: i.item?.name ?? i.name ?? "", qty: i.qty ?? 1, price: i.item?.price ?? i.price ?? 0 }))
+            };
+            orderNum++;
+            return mapped;
+        }).reverse();
 
         // Kassir tranzaksiyalari ham bo'lishi mumkin (kassir rolida ishlasa)
         const [todayTx, weekTx, monthTx] = await Promise.all([
@@ -123,14 +129,16 @@ export async function GET(req: NextRequest) {
             .map(([hour, total]) => ({ hour, total }))
             .sort((a, b) => a.hour.localeCompare(b.hour));
 
-        // Recent tranzaksiyalar ham qo'shish
-        const txRecent = todayTx.slice(-5).reverse().map(t => ({
+        // Recent tranzaksiyalar ham qo'shish (faqat kassirlar uchun)
+        const txRecent = todayTx.map(t => ({
+            id: "tx-" + Math.random(),
             amount: Number(t.amount),
             method: t.method || "—",
-            table: (t as any).notes || "—",
             time: new Date(t.createdAt).toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" }),
-        }));
-        const allRecent = [...txRecent, ...recentOrders].slice(0, 5);
+            items: []
+        })).reverse();
+        
+        const allRecent = [...recentOrders, ...txRecent];
 
         return NextResponse.json({
             name,
