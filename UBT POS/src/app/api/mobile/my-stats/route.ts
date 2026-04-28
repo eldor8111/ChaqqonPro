@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
         const [todayTx, weekTx, monthTx] = await Promise.all([
             prisma.transaction.findMany({
                 where: { tenantId, kassirName: name, status: "completed", createdAt: { gte: todayStart, lte: todayEnd } },
-                select: { amount: true, method: true, createdAt: true, tableLabel: true },
+                select: { amount: true, method: true, createdAt: true, notes: true },
             }),
             prisma.transaction.findMany({
                 where: { tenantId, kassirName: name, status: "completed", createdAt: { gte: weekStart, lte: todayEnd } },
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
         const recentOrders = todayTx.slice(-5).reverse().map(t => ({
             amount: Number(t.amount),
             method: t.method,
-            table: (t as any).tableLabel || "—",
+            table: (t as any).notes || "—",
             time: new Date(t.createdAt).toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" }),
         }));
 
