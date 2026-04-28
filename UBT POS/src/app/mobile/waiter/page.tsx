@@ -11,7 +11,7 @@ interface CartItem { id: string; name: string; price: number; qty: number; }
 interface MyStats { today: { total: number; count: number }; week: { total: number; count: number }; month: { total: number; count: number }; hourlyTimeline: { hour: string; total: number }[]; recentOrders: { amount: number; method: string; time: string }[]; }
 
 function fmt(n: number) { return n.toLocaleString("uz-UZ") + " so'm"; }
-type ViewType = "tables" | "menu" | "stats";
+type ViewType = "tables" | "menu" | "stats" | "cart";
 
 export default function MobileWaiterPage() {
     const router = useRouter();
@@ -113,7 +113,6 @@ export default function MobileWaiterPage() {
         setSelectedTable(t);
         setCart([]);
         setExistingCart([]);
-        setView("menu");
 
         // Agar stol band bo'lsa — bazadagi mavjud zakazlarni yuklash
         if (t.status === "occupied" || t.status === "receipt") {
@@ -137,10 +136,15 @@ export default function MobileWaiterPage() {
                             if (ex) { ex.qty += cur.qty; return acc; }
                             return [...acc, cur];
                         }, []);
-                    if (existing.length > 0) setExistingCart(existing);
+                    if (existing.length > 0) {
+                        setExistingCart(existing);
+                        setView("cart");
+                        return;
+                    }
                 }
             } catch {}
         }
+        setView("menu");
     };
 
     const filteredMenu = menu.filter(i =>
@@ -249,6 +253,55 @@ export default function MobileWaiterPage() {
                         </>
                     ) : <button onClick={fetchStats} className="w-full py-4 bg-blue-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2"><RefreshCw size={15} /> Yuklash</button>}
                 </main>
+            </div>
+        );
+    }
+
+    // ─── CART VIEW (Existing Orders) ─────────────────────────────────────────
+    if (view === "cart" && selectedTable) {
+        const existingTotal = existingCart.reduce((s, c) => s + c.price * c.qty, 0);
+        return (
+            <div className="flex flex-col h-screen bg-slate-50">
+                <header className="bg-white border-b border-slate-100 sticky top-0 z-20">
+                    <div className="flex items-center justify-between px-4 py-3">
+                        <button onClick={() => { setView("tables"); setSelectedTable(null); setCart([]); setExistingCart([]); }} className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center active:scale-95">
+                            <ChevronLeft size={18} className="text-slate-600" />
+                        </button>
+                        <div className="text-center">
+                            <h2 className="text-sm font-black text-slate-800">{selectedTable.name}</h2>
+                            <p className="text-[10px] font-bold text-orange-500 uppercase">Stoldagi zakazlar</p>
+                        </div>
+                        <div className="w-9"></div>
+                    </div>
+                </header>
+                <main className="flex-1 overflow-y-auto p-4 pb-32">
+                    {existingCart.length > 0 ? (
+                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                            <div className="space-y-4">
+                                {existingCart.map(c => (
+                                    <div key={c.id} className="flex justify-between items-center pb-3 border-b border-slate-50 last:border-0 last:pb-0">
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-800">{c.name}</p>
+                                            <p className="text-xs font-black text-slate-400">{fmt(c.price)} x {c.qty}</p>
+                                        </div>
+                                        <p className="text-sm font-black text-slate-800">{fmt(c.price * c.qty)}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
+                                <p className="text-xs font-bold text-slate-400 uppercase">Jami summa</p>
+                                <p className="text-lg font-black text-blue-600">{fmt(existingTotal)}</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-10 text-slate-400 text-sm font-bold">Stolda zakaz yo'q</div>
+                    )}
+                </main>
+                <div className="fixed bottom-0 inset-x-0 bg-white border-t border-slate-100 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-20">
+                    <button onClick={() => setView("menu")} className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-black rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-200">
+                        <Plus size={16} /> Yangi taom qo'shish
+                    </button>
+                </div>
             </div>
         );
     }
