@@ -75,68 +75,68 @@ function OfertaModal({ onAccept, onClose }: { onAccept: () => void; onClose?: ()
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">2. Tizimga kirish va foydalanish huquqi</h3>
                         <p>2.1. Foydalanuvchi tizimga faqat egasining ruxsati bilan kirish huquqiga ega.<br />
-                        2.2. Har bir kirish uchun shaxsiy login va parol ishlatiladi. Ularni uchinchi shaxslarga berish taqiqlanadi.<br />
-                        2.3. Administrator o&#39;z mas&#39;uliyatidagi xodimlar (kassirlar) uchun alohida hisob yaratishga majbur.</p>
+                            2.2. Har bir kirish uchun shaxsiy login va parol ishlatiladi. Ularni uchinchi shaxslarga berish taqiqlanadi.<br />
+                            2.3. Administrator o&#39;z mas&#39;uliyatidagi xodimlar (kassirlar) uchun alohida hisob yaratishga majbur.</p>
                     </section>
 
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">3. Ma&#39;lumotlarni muhofaza qilish</h3>
                         <p>3.1. Tizimga kiritilgan barcha ma&#39;lumotlar (mahsulotlar, mijozlar, tranzaksiyalar) faqat tizim egasiga tegishli bo&#39;lib, uchinchi shaxslarga berilmaydi.<br />
-                        3.2. "ChaqqonPro" serverlarida saqlangan ma&#39;lumotlar shifrlangan holda saqlanadi.<br />
-                        3.3. Ma&#39;lumotlar faqat O&#39;zbekiston Respublikasi qonunchiligiga asosan so&#39;rov bo&#39;lsa, tegishli organlarga taqdim etilishi mumkin.</p>
+                            3.2. "ChaqqonPro" serverlarida saqlangan ma&#39;lumotlar shifrlangan holda saqlanadi.<br />
+                            3.3. Ma&#39;lumotlar faqat O&#39;zbekiston Respublikasi qonunchiligiga asosan so&#39;rov bo&#39;lsa, tegishli organlarga taqdim etilishi mumkin.</p>
                     </section>
 
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">4. Shaxsiy ma&#39;lumotlarni qayta ishlash</h3>
                         <p>4.1. Tizim quyidagi shaxsiy ma&#39;lumotlarni to&#39;playdi: ism, telefon raqami, tashkilot nomi, manzil.<br />
-                        4.2. Ushbu ma&#39;lumotlar foydalanuvchi profilini yaratish, hisob-kitob va texnik yordam ko&#39;rsatish uchun ishlatiladi.<br />
-                        4.3. Foydalanuvchi o&#39;z ma&#39;lumotlarini o&#39;chirish yoki o&#39;zgartirish huquqini saqlaydi.</p>
+                            4.2. Ushbu ma&#39;lumotlar foydalanuvchi profilini yaratish, hisob-kitob va texnik yordam ko&#39;rsatish uchun ishlatiladi.<br />
+                            4.3. Foydalanuvchi o&#39;z ma&#39;lumotlarini o&#39;chirish yoki o&#39;zgartirish huquqini saqlaydi.</p>
                     </section>
 
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">5. Taqiqlangan harakatlar</h3>
                         <p>5.1. Tizimga ruxsatsiz kirish yoki kirishga urinish.<br />
-                        5.2. Tizim kodini o&#39;zgartirish, ko&#39;chirish yoki tarqatish.<br />
-                        5.3. Boshqa foydalanuvchilarning ma&#39;lumotlarini o&#39;g&#39;irlash yoki o&#39;zgartirish.<br />
-                        5.4. Tizim yordamida qonunga xilof moliyaviy operatsiyalar amalga oshirish.</p>
+                            5.2. Tizim kodini o&#39;zgartirish, ko&#39;chirish yoki tarqatish.<br />
+                            5.3. Boshqa foydalanuvchilarning ma&#39;lumotlarini o&#39;g&#39;irlash yoki o&#39;zgartirish.<br />
+                            5.4. Tizim yordamida qonunga xilof moliyaviy operatsiyalar amalga oshirish.</p>
                     </section>
 
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">6. To&#39;lov va tariflar</h3>
                         <p>6.1. ChaqqonPro tizimidan foydalanish obuna asosida amalga oshiriladi.<br />
-                        6.2. Tariflar alohida shartnomada yoki tizim boshqaruv panelida ko&#39;rsatiladi.<br />
-                        6.3. To&#39;lov muddati o&#39;tganda tizimga kirish cheklanishi mumkin.<br />
-                        6.4. Hisob-faktura oyning 1-kuniga qadar taqdim etiladi.</p>
+                            6.2. Tariflar alohida shartnomada yoki tizim boshqaruv panelida ko&#39;rsatiladi.<br />
+                            6.3. To&#39;lov muddati o&#39;tganda tizimga kirish cheklanishi mumkin.<br />
+                            6.4. Hisob-faktura oyning 1-kuniga qadar taqdim etiladi.</p>
                     </section>
 
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">7. Mas&#39;uliyat chegarasi</h3>
                         <p>7.1. "ChaqqonPro" foydalanuvchi tomonidan noto&#39;g&#39;ri kiritilgan ma&#39;lumotlar uchun mas&#39;uliyat olmaydi.<br />
-                        7.2. Internet uzilib qolishi yoki kuch ta&#39;minotidagi uzilishlar sababli yuzaga kelgan yo&#39;qotishlar uchun mas&#39;uliyat yuklatilmaydi.<br />
-                        7.3. Tizim texnik xizmatlari vaqtida (maintenance) ma&#39;lumotlarga kirish muvaqqat cheklanishi mumkin.</p>
+                            7.2. Internet uzilib qolishi yoki kuch ta&#39;minotidagi uzilishlar sababli yuzaga kelgan yo&#39;qotishlar uchun mas&#39;uliyat yuklatilmaydi.<br />
+                            7.3. Tizim texnik xizmatlari vaqtida (maintenance) ma&#39;lumotlarga kirish muvaqqat cheklanishi mumkin.</p>
                     </section>
 
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">8. Texnik yordam</h3>
                         <p>8.1. Texnik yordam 24/7 rejimida ko&#39;rsatiladi.<br />
-                        8.2. Murojaat uchun: <span className="font-semibold text-slate-900">+998 77 293 10 14</span> yoki <span className="font-semibold text-slate-900">support@chaqqonpro.uz</span><br />
-                        8.3. Barcha muammolar tezkor va sifatli hal etiladi.</p>
+                            8.2. Murojaat uchun: <span className="font-semibold text-slate-900">+998 77 293 10 14</span> yoki <span className="font-semibold text-slate-900">support@chaqqonpro.uz</span><br />
+                            8.3. Barcha muammolar tezkor va sifatli hal etiladi.</p>
                     </section>
 
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">9. Shartnomani bekor qilish</h3>
                         <p>9.1. Foydalanuvchi istalgan vaqtda tizimdan chiqish va ma&#39;lumotlarini o&#39;chirish talebini yuborishi mumkin.<br />
-                        9.2. &quot;ChaqqonPro&quot; oferta shartlari buzilganda foydalanuvchi hisobini bloklash huquqini saqlaydi.<br />
-                        9.3. Obuna bekor qilinganda ma&#39;lumotlar 30 kun davomida arxivda saqlanadi.<br />
-                        9.4. Shartnoma bir tomonlama bekor qilinganda tizim uchun qilingan xarajatlar qaytarib berilmaydi.</p>
+                            9.2. &quot;ChaqqonPro&quot; oferta shartlari buzilganda foydalanuvchi hisobini bloklash huquqini saqlaydi.<br />
+                            9.3. Obuna bekor qilinganda ma&#39;lumotlar 30 kun davomida arxivda saqlanadi.<br />
+                            9.4. Shartnoma bir tomonlama bekor qilinganda tizim uchun qilingan xarajatlar qaytarib berilmaydi.</p>
                     </section>
 
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">10. Yakuniy qoidalar</h3>
                         <p>10.1. Ushbu oferta O&#39;zbekiston Respublikasi qonunchiligiga asosida tuzilgan.<br />
-                        10.2. Nizolar da&#39;vo tartibida hal etiladi.<br />
-                        10.3. "ChaqqonPro" oferta shartlarini oldindan xabardor qilgan holda o&#39;zgartirish huquqini saqlaydi.<br />
-                        10.4. Oferta ro&#39;yxatdan o&#39;tilgan kundan boshlab kuchga kiradi.</p>
+                            10.2. Nizolar da&#39;vo tartibida hal etiladi.<br />
+                            10.3. "ChaqqonPro" oferta shartlarini oldindan xabardor qilgan holda o&#39;zgartirish huquqini saqlaydi.<br />
+                            10.4. Oferta ro&#39;yxatdan o&#39;tilgan kundan boshlab kuchga kiradi.</p>
                         <p className="mt-2 text-xs text-slate-400">So&#39;nggi yangilanish: 2025-yil, 1-mart. "ChaqqonPro" &copy; 2025.</p>
                     </section>
                 </div>
@@ -223,13 +223,13 @@ function FeaturesModal({ onClose }: { onClose: () => void }) {
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" onClick={onClose} />
             <div className="relative bg-[#f8fafc] rounded-[2rem] shadow-2xl w-full max-w-[1250px] max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300">
-                
+
                 {/* Header Qo'ismi */}
                 <div className="bg-white border-b border-slate-200/60 px-8 py-8 md:py-10 flex items-center justify-between relative overflow-hidden shrink-0">
                     {/* Orqa fon effektlari */}
                     <div className="absolute -top-32 -right-32 w-96 h-96 bg-blue-100 rounded-full blur-[100px] opacity-60"></div>
                     <div className="absolute top-10 left-10 w-20 h-20 bg-indigo-100 rounded-full blur-[40px] opacity-60"></div>
-                    
+
                     <div className="relative z-10 flex flex-col md:flex-row gap-6 items-start md:items-center">
                         <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 shrink-0">
                             <Layers className="text-white" size={32} />
@@ -243,7 +243,7 @@ function FeaturesModal({ onClose }: { onClose: () => void }) {
                             </p>
                         </div>
                     </div>
-                    
+
                     <button onClick={onClose} className="hidden md:flex absolute top-8 right-8 bg-slate-100 hover:bg-slate-200 text-slate-500 p-2.5 rounded-full transition-colors z-20">
                         <X size={24} />
                     </button>
@@ -257,17 +257,17 @@ function FeaturesModal({ onClose }: { onClose: () => void }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {modules.map((mod) => (
                             <div key={mod.id} className="group relative bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col h-full overflow-hidden">
-                                
+
                                 {/* Gradient Chiziq Tepada */}
                                 <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${mod.gradient}`}></div>
-                                
+
                                 {/* Ikonka va Sarlavha */}
                                 <div className={`w-14 h-14 rounded-[1.25rem] flex items-center justify-center bg-gradient-to-br ${mod.gradient} text-white mb-6 shadow-lg shadow-slate-200 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
                                     <mod.icon size={26} />
                                 </div>
-                                
+
                                 <h3 className="text-lg font-extrabold text-slate-800 mb-4 leading-tight group-hover:text-slate-900">{mod.title}</h3>
-                                
+
                                 {/* Ro'yxat */}
                                 <ul className="space-y-3.5 mt-2 flex-1 relative z-10">
                                     {mod.features.map((feat, i) => (
@@ -279,14 +279,14 @@ function FeaturesModal({ onClose }: { onClose: () => void }) {
                                         </li>
                                     ))}
                                 </ul>
-                                
+
                                 {/* Tag yozuvi */}
                                 <div className="mt-8 pt-4 border-t border-slate-50 w-full relative z-10">
                                     <span className="text-[10px] font-bold bg-slate-100 text-slate-400 px-3 py-1.5 rounded-lg group-hover:bg-slate-800 group-hover:text-white transition-colors uppercase tracking-wider">
                                         Asosiy Modul
                                     </span>
                                 </div>
-                                
+
                                 {/* Orqa fon suv osti logotip */}
                                 <div className="absolute right-[-40px] bottom-[-40px] opacity-[0.03] transform group-hover:scale-150 transition-transform duration-700 pointer-events-none">
                                     <mod.icon size={180} />
@@ -387,7 +387,8 @@ function LoginForm() {
         e.preventDefault();
         setError("");
 
-        if (!agreed) {
+        // Xodimlar uchun oferta tekshiruvi shart emas
+        if (!agreed && loginModeState !== "staff") {
             setError("Iltimos, oferta shartlarini qabul qiling");
             setShowOferta(true);
             return;
@@ -410,14 +411,14 @@ function LoginForm() {
                 if (!res.ok) { setError(data.error || "Login yoki parol xato"); return; }
                 const staffData = { ...data.session.user, token: data.session.token, shopCode: data.shopCode, shopType: data.shopType };
                 useStore.getState().setDeviceSession(staffData);
-                
+
                 // Agar Manablog (Kassa apparati) kiritilgan bo'lsa, xodim tanlash pini so'raladi
                 if (staffData.role === "Manablog" || staffData.role === "Apparat" || staffData.name?.toLowerCase().includes("apparat")) {
                     router.push("/kassa/login");
                 } else {
                     // Shaxsiy xodim login bo'lsa, to'g'ridan-to'g'ri o'z ish stoliga kiradi
                     useStore.getState().setKassirSession(staffData);
-                    
+
                     if (staffData.role === "Ofitsiant") {
                         router.push("/mobile/waiter");
                     } else if (staffData.role === "Kuryer") {
@@ -637,7 +638,7 @@ function LoginForm() {
                                     <button type="button" onClick={() => setLoginModeState("admin")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${loginModeState === "admin" ? "bg-white text-blue-700 shadow-sm border border-slate-200/50" : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"}`}>
                                         <ShieldCheck size={14} /> Admin Panel
                                     </button>
-                                    <button type="button" onClick={() => router.push("/login/staff")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-slate-200/50`}>
+                                    <button type="button" onClick={() => setLoginModeState("staff")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${loginModeState === "staff" ? "bg-white text-blue-700 shadow-sm border border-slate-200/50" : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"}`}>
                                         <Users size={14} /> Xodimlar
                                     </button>
                                 </div>
@@ -654,51 +655,51 @@ function LoginForm() {
 
                                 {/* Form */}
                                 <form onSubmit={handleLogin} className="space-y-3">
-                                        {/* ── ADMIN: phone field ── */}
-                                        {loginModeState === "admin" && (
-                                            <div>
-                                                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                                    Telefon raqam (Login)
-                                                </label>
-                                                <div className="relative">
-                                                    <Phone size={14} className="absolute left-3 top-3 text-slate-400" />
-                                                    <input
-                                                        id="login-phone"
-                                                        type="text"
-                                                        value={phone}
-                                                        onChange={handlePhoneChange}
-                                                        onFocus={(e) => {
-                                                            if (!e.target.value.startsWith(PHONE_PREFIX)) {
-                                                                setPhone(PHONE_PREFIX);
-                                                            }
-                                                        }}
-                                                        autoComplete="tel"
-                                                        className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50 border border-slate-200 placeholder-slate-400 transition-all duration-200 outline-none hover:border-slate-300 focus:ring-2 ${focusClass}`}
-                                                        placeholder="+998 90 123 45 67"
-                                                    />
-                                                </div>
+                                    {/* ── ADMIN: phone field ── */}
+                                    {loginModeState === "admin" && (
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                                                Telefon raqam (Login)
+                                            </label>
+                                            <div className="relative">
+                                                <Phone size={14} className="absolute left-3 top-3 text-slate-400" />
+                                                <input
+                                                    id="login-phone"
+                                                    type="text"
+                                                    value={phone}
+                                                    onChange={handlePhoneChange}
+                                                    onFocus={(e) => {
+                                                        if (!e.target.value.startsWith(PHONE_PREFIX)) {
+                                                            setPhone(PHONE_PREFIX);
+                                                        }
+                                                    }}
+                                                    autoComplete="tel"
+                                                    className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50 border border-slate-200 placeholder-slate-400 transition-all duration-200 outline-none hover:border-slate-300 focus:ring-2 ${focusClass}`}
+                                                    placeholder="+998 90 123 45 67"
+                                                />
                                             </div>
-                                        )}
+                                        </div>
+                                    )}
 
-                                        {/* ── STAFF: username field ── */}
-                                        {loginModeState === "staff" && (
-                                            <div>
-                                                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                                    Xodim Logini <span className="lowercase text-[10px] normal-case">(Ism, raqam yoki @login)</span>
-                                                </label>
-                                                <div className="relative">
-                                                    <User size={14} className="absolute left-3 top-3 text-slate-400" />
-                                                    <input
-                                                        id="staff-username"
-                                                        type="text"
-                                                        value={staffUsername}
-                                                        onChange={(e) => setStaffUsername(e.target.value)}
-                                                        className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50 border border-slate-200 placeholder-slate-400 transition-all duration-200 outline-none hover:border-slate-300 focus:ring-2 ${focusClass}`}
-                                                        placeholder="Masalan: eldorbek yoki 901234567"
-                                                    />
-                                                </div>
+                                    {/* ── STAFF: username field ── */}
+                                    {loginModeState === "staff" && (
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                                                Xodim Logini <span className="lowercase text-[10px] normal-case">(Ism, raqam yoki @login)</span>
+                                            </label>
+                                            <div className="relative">
+                                                <User size={14} className="absolute left-3 top-3 text-slate-400" />
+                                                <input
+                                                    id="staff-username"
+                                                    type="text"
+                                                    value={staffUsername}
+                                                    onChange={(e) => setStaffUsername(e.target.value)}
+                                                    className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50 border border-slate-200 placeholder-slate-400 transition-all duration-200 outline-none hover:border-slate-300 focus:ring-2 ${focusClass}`}
+                                                    placeholder="Masalan: eldorbek yoki 901234567"
+                                                />
                                             </div>
-                                        )}
+                                        </div>
+                                    )}
 
                                     {/* Password */}
                                     <div>
@@ -724,13 +725,15 @@ function LoginForm() {
                                             </button>
                                         </div>
                                         <div className="mt-1.5 flex justify-end">
-                                            <button 
-                                                type="button" 
+                                            {loginModeState === "admin" && (
+                                            <button
+                                                type="button"
                                                 onClick={() => setShowForgotPassword(true)}
                                                 className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 transition-colors"
                                             >
                                                 Parolni unutdingizmi?
                                             </button>
+                                            )}
                                         </div>
                                     </div>
 
@@ -756,7 +759,7 @@ function LoginForm() {
                                     <button
                                         id="login-submit-btn"
                                         type="submit"
-                                        disabled={isLoading || !agreed}
+                                        disabled={isLoading || (loginModeState === "admin" && !agreed)}
                                         className={`w-full relative overflow-hidden rounded-xl py-3 text-sm font-bold text-white active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg group ${btnClass}`}
                                     >
                                         <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/15 to-transparent skew-x-12" />
