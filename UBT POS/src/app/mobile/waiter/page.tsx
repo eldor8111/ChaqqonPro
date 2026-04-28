@@ -24,6 +24,7 @@ export default function MobileWaiterPage() {
     const [activeCat, setActiveCat] = useState<string>("all");
     const [cart, setCart] = useState<CartItem[]>([]);
     const [existingCart, setExistingCart] = useState<CartItem[]>([]);
+    const [activeZone, setActiveZone] = useState<string | null>(null);
     const [search, setSearch] = useState("");
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
@@ -420,46 +421,79 @@ export default function MobileWaiterPage() {
     }
 
     // ─── TABLES VIEW ─────────────────────────────────────────────────────────
+    const uniqueZones = Array.from(new Set(store.ubtTables.map(t => t.zone).filter(Boolean)));
+
     return (
         <div className="flex flex-col min-h-screen bg-slate-50">
             <Header title="Chaqqon Mobile" sub={`${sess.name} · Ofitsiant`} />
             <main className="flex-1 overflow-y-auto p-4 pb-10">
-                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                    <UtensilsCrossed size={12} /> Stollar ro'yxati
-                </p>
-                {store.ubtTables.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
-                        <UtensilsCrossed size={36} className="text-slate-200" />
-                        <p className="font-bold text-slate-500">Stollar topilmadi</p>
-                        <button onClick={() => store.fetchUbtTables()} className="px-5 py-2.5 bg-blue-500 text-white rounded-xl text-sm font-bold flex items-center gap-2 active:scale-95"><RefreshCw size={13} /> Yangilash</button>
-                    </div>
+                {!activeZone ? (
+                    <>
+                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                            <UtensilsCrossed size={12} /> Joy kategoriyalari
+                        </p>
+                        {uniqueZones.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
+                                <UtensilsCrossed size={36} className="text-slate-200" />
+                                <p className="font-bold text-slate-500">Zonalar topilmadi</p>
+                                <button onClick={() => store.fetchUbtTables()} className="px-5 py-2.5 bg-blue-500 text-white rounded-xl text-sm font-bold flex items-center gap-2 active:scale-95"><RefreshCw size={13} /> Yangilash</button>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-3">
+                                {uniqueZones.map(zone => {
+                                    const zoneTables = store.ubtTables.filter(t => t.zone === zone);
+                                    const busyCount = zoneTables.filter(t => t.status === "occupied" || t.status === "receipt").length;
+                                    return (
+                                        <button
+                                            key={zone}
+                                            onClick={() => setActiveZone(zone)}
+                                            className="bg-white border-2 border-slate-200 rounded-2xl p-5 flex flex-col items-center justify-center active:scale-95 transition-all shadow-sm"
+                                        >
+                                            <span className="text-xl font-black text-slate-800 mb-1">{zone}</span>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase">{zoneTables.length} ta stol · {busyCount} ta band</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </>
                 ) : (
-                    <div className="grid grid-cols-2 gap-3">
-                        {store.ubtTables.map(t => {
-                            const isBusy = t.status === "occupied";
-                            const isReceipt = t.status === "receipt";
-                            const isMine = isBusy && t.waiter === sess.name;
-                            return (
-                                <button
-                                    key={t.id}
-                                    onClick={() => openTable(t)}
-                                    className={`relative flex flex-col items-center justify-center p-5 rounded-2xl border-2 active:scale-95 transition-all
-                                        ${isReceipt ? "bg-amber-50 border-amber-300" :
-                                          isMine ? "bg-blue-50 border-blue-400 shadow-[0_4px_16px_rgba(59,130,246,0.12)]" :
-                                          isBusy ? "bg-orange-50 border-orange-300 opacity-70" :
-                                          "bg-white border-slate-200 shadow-sm"}`}
-                                >
-                                    {isMine && <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm">Sizniki</span>}
-                                    {isReceipt && <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm">Hisob</span>}
-                                    <span className={`text-2xl font-black mb-1 ${isReceipt ? "text-amber-700" : isMine ? "text-blue-700" : isBusy ? "text-orange-600" : "text-slate-800"}`}>{t.name}</span>
-                                    <span className={`text-[10px] font-bold uppercase ${isReceipt ? "text-amber-500" : isMine ? "text-blue-500" : isBusy ? "text-orange-400" : "text-emerald-500"}`}>
-                                        {isReceipt ? "Hisob kutmoqda" : isBusy ? (isMine ? "Sizning stolingiz" : "Band") : "Bo'sh"}
-                                    </span>
-                                    <span className="text-[9px] text-slate-400 mt-1">{t.zone} · {t.seats} o'rin</span>
-                                </button>
-                            );
-                        })}
-                    </div>
+                    <>
+                        <div className="flex items-center justify-between mb-3">
+                            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                <UtensilsCrossed size={12} /> {activeZone} stollari
+                            </p>
+                            <button onClick={() => setActiveZone(null)} className="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg active:scale-95 flex items-center gap-1">
+                                <ChevronLeft size={12} /> Ortga qaytish
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            {store.ubtTables.filter(t => t.zone === activeZone).map(t => {
+                                const isBusy = t.status === "occupied";
+                                const isReceipt = t.status === "receipt";
+                                const isMine = isBusy && t.waiter === sess.name;
+                                return (
+                                    <button
+                                        key={t.id}
+                                        onClick={() => openTable(t)}
+                                        className={`relative flex flex-col items-center justify-center p-5 rounded-2xl border-2 active:scale-95 transition-all
+                                            ${isReceipt ? "bg-amber-50 border-amber-300" :
+                                              isMine ? "bg-blue-50 border-blue-400 shadow-[0_4px_16px_rgba(59,130,246,0.12)]" :
+                                              isBusy ? "bg-orange-50 border-orange-300 opacity-70" :
+                                              "bg-white border-slate-200 shadow-sm"}`}
+                                    >
+                                        {isMine && <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm">Sizniki</span>}
+                                        {isReceipt && <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm">Hisob</span>}
+                                        <span className={`text-2xl font-black mb-1 ${isReceipt ? "text-amber-700" : isMine ? "text-blue-700" : isBusy ? "text-orange-600" : "text-slate-800"}`}>{t.name}</span>
+                                        <span className={`text-[10px] font-bold uppercase ${isReceipt ? "text-amber-500" : isMine ? "text-blue-500" : isBusy ? "text-orange-400" : "text-emerald-500"}`}>
+                                            {isReceipt ? "Hisob kutmoqda" : isBusy ? (isMine ? "Sizning stolingiz" : "Band") : "Bo'sh"}
+                                        </span>
+                                        <span className="text-[9px] text-slate-400 mt-1">{t.seats} o'rin</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </>
                 )}
             </main>
         </div>
