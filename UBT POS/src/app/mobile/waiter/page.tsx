@@ -52,7 +52,7 @@ export default function MobileWaiterPage() {
                     
                     <div className="grid grid-cols-2 gap-3">
                         {store.ubtTables.map(t => {
-                            const isBusy = t.status === "busy";
+                            const isBusy = t.status === "occupied";
                             const isMyTable = isBusy && t.waiter === store.kassirSession?.name;
                             
                             return (
