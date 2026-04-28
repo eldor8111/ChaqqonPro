@@ -78,19 +78,34 @@ export default function MobileWaiterPage() {
         if (!selectedTable || cart.length === 0) return;
         setSending(true);
         try {
-            await fetch("/api/ubt/orders", {
+            // items formatini orders-db ga mos qilish
+            const items = cart.map(c => ({
+                item: { id: c.id, name: c.name, price: c.price },
+                qty: c.qty,
+                price: c.price,
+                name: c.name,
+            }));
+
+            const res = await fetch("/api/ubt/orders-db", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
                     tableId: selectedTable.id,
-                    items: cart.map(c => ({ name: c.name, qty: c.qty, price: c.price })),
+                    items,
                     waiterName: sess.name,
                 }),
             });
-            setSent(true);
-            setCart([]);
-            setTimeout(() => { setSent(false); setSelectedTable(null); setView("tables"); store.fetchUbtTables(); }, 1800);
-        } catch {} finally { setSending(false); }
+
+            if (res.ok) {
+                setSent(true);
+                setCart([]);
+                setTimeout(() => { setSent(false); setSelectedTable(null); setView("tables"); store.fetchUbtTables(); }, 1800);
+            } else {
+                const err = await res.json();
+                alert(err.error || "Zakaz yuborishda xatolik");
+            }
+        } catch { alert("Tizimga ulanishda xatolik"); }
+        finally { setSending(false); }
     };
 
     const filteredMenu = menu.filter(i =>
