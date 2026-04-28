@@ -410,8 +410,15 @@ function LoginForm() {
                 if (!res.ok) { setError(data.error || "Login yoki parol xato"); return; }
                 const staffData = { ...data.session.user, token: data.session.token, shopCode: data.shopCode, shopType: data.shopType };
                 useStore.getState().setDeviceSession(staffData);
-                useStore.getState().setKassirSession(staffData);
-                router.push("/ubt-pos");
+                
+                // Agar Manablog (Kassa apparati) kiritilgan bo'lsa, xodim tanlash pini so'raladi
+                if (staffData.role === "Manablog" || staffData.role === "Apparat") {
+                    router.push("/kassa/login");
+                } else {
+                    // Shaxsiy xodim login bo'lsa, to'g'ridan-to'g'ri tizimga kiradi
+                    useStore.getState().setKassirSession(staffData);
+                    router.push("/ubt-pos");
+                }
             } catch {
                 setError("Tizimga ulanishda xatolik yuz berdi");
             } finally {
