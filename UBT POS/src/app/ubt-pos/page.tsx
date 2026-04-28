@@ -984,7 +984,7 @@ export default function UbtPosPage() {
     const store = useStore();
     const tables = store.ubtTables;
     const waiterName = store.kassirSession?.name ?? "Xodim";
-    const hasPaymentPerm = (store.kassirSession as any)?.role === "Kassir" || store.kassirSession?.permissions?.includes("acceptCash") || store.kassirSession?.id === "admin";
+    const hasPaymentPerm = (store.kassirSession as any)?.role === "Kassir" || store.kassirSession?.id === "admin";
 
     const [printerStatus, setPrinterStatus] = useState<{ id: string; name: string; online: boolean }[]>([]);
     const [tab, setTab] = useState<"tables" | "takeaway" | "delivery" | "reservation">("tables");
@@ -2008,14 +2008,14 @@ export default function UbtPosPage() {
             </header>
 
             {/* ── BODY ────────────────────────────────────────────────────── */}
-            <div className="flex flex-1 overflow-hidden relative">
+            <div className="flex flex-col sm:flex-row flex-1 overflow-hidden relative pb-[64px] sm:pb-0">
 
-                {/* ── LEFT SIDEBAR — Flat Corporate ── */}
-                <aside className={`w-[84px] shrink-0 flex flex-col items-center gap-4 py-6 z-20 transition-colors duration-500 ${dark ? "bg-slate-950 border-r border-white/5" : "bg-white border-r border-slate-200"}`}>
+                {/* ── LEFT SIDEBAR / BOTTOM NAV — Premium Modern UI ── */}
+                <aside className={`fixed bottom-0 left-0 right-0 md:relative md:w-[84px] w-full h-[64px] md:h-auto flex flex-row md:flex-col justify-around md:justify-start items-center py-1 md:py-6 z-[100] md:z-20 transition-all duration-300 ${dark ? "bg-slate-950/80 md:bg-slate-950 border-t md:border-t-0 md:border-r border-white/10 backdrop-blur-2xl" : "bg-white/80 md:bg-white border-t md:border-t-0 md:border-r border-slate-200 backdrop-blur-2xl shadow-[0_-10px_30px_rgba(0,0,0,0.03)] md:shadow-none"}`}>
                     {([
-                        { id: "tables" as const,   icon: UtensilsCrossed, label: t("tablesLabel", lang),   bg: "text-[#0078d7]", count: activeCnt, badge: "bg-orange-500" },
-                        { id: "takeaway" as const, icon: Package,          label: t("takeawayLabel", lang), bg: "text-[#0078d7]", count: twOrders.filter(o => o.status === "pending").length, badge: "bg-pink-500" },
-                        { id: "delivery" as const, icon: Bike,             label: t("deliveryLabel", lang), bg: "text-[#0078d7]", count: dlOrders.filter(o => o.status === "pending").length, badge: "bg-red-500" },
+                        { id: "tables" as const,   icon: UtensilsCrossed, label: t("tablesLabel", lang),   count: activeCnt, badge: "bg-orange-500" },
+                        { id: "takeaway" as const, icon: Package,          label: t("takeawayLabel", lang), count: twOrders.filter(o => o.status === "pending").length, badge: "bg-pink-500" },
+                        { id: "delivery" as const, icon: Bike,             label: t("deliveryLabel", lang), count: dlOrders.filter(o => o.status === "pending").length, badge: "bg-red-500" },
                     ] as const).filter(item => {
                         const sess = store.kassirSession || store.deviceSession;
                         if (sess?.id === "admin") return true; 
@@ -2026,7 +2026,6 @@ export default function UbtPosPage() {
                         const canDelivery = perms.includes("delivery") || !hasAnyOrderType;
                         const canTakeaway = perms.includes("takeaway") || !hasAnyOrderType;
 
-                        // Legacy check
                         const isOfitsiant = ((sess as any)?.role === "Ofitsiant" || perms.includes("Ofitsiant"));
                         if (isOfitsiant && !hasAnyOrderType) {
                             return item.id === "tables";
@@ -2042,12 +2041,12 @@ export default function UbtPosPage() {
                         return (
                             <button key={item.id} onClick={() => { setTab(item.id); setSelTable(null); setSelOrder(null); }}
                                 title={item.label}
-                                className={`relative flex flex-col items-center justify-center gap-1.5 py-3 px-1 rounded-xl w-[64px] h-[64px] transition-all group shadow-sm
-                                    ${active ? `bg-sky-500/10 backdrop-blur-md text-[#0078d7] dark:text-sky-400 ring-1 ring-sky-500/30` : `${dark ? "text-slate-400 hover:bg-white/5 hover:text-slate-200" : "text-slate-400 hover:bg-slate-100/50 hover:text-slate-700"}`}`}>
-                                <item.icon size={22} strokeWidth={active ? 3 : 2.5} className="transition-transform group-hover:scale-110" />
-                                <span className="text-[10px] uppercase font-black leading-tight text-center tracking-widest">{item.label}</span>
+                                className={`relative flex flex-col items-center justify-center gap-1 md:gap-1.5 py-1 md:py-3 px-2 rounded-2xl w-[60px] md:w-[64px] h-[54px] md:h-[64px] transition-all duration-300 group
+                                    ${active ? (dark ? "bg-sky-500/15 text-sky-400 shadow-[inset_0_0_12px_rgba(14,165,233,0.1)]" : "bg-sky-50 text-sky-600 shadow-[inset_0_0_12px_rgba(14,165,233,0.05)]") : (dark ? "text-slate-400 hover:bg-white/5 hover:text-slate-200" : "text-slate-500 hover:bg-slate-100 hover:text-slate-800")}`}>
+                                <item.icon size={22} strokeWidth={active ? 2.5 : 2} className={`transition-transform duration-300 ${active ? "scale-110" : "group-hover:scale-110"}`} />
+                                <span className={`text-[9px] md:text-[10px] uppercase font-bold leading-tight text-center tracking-widest transition-opacity ${active ? "opacity-100" : "opacity-70"}`}>{item.label}</span>
                                 {item.count > 0 && (
-                                    <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white ${dark ? "ring-2 ring-slate-900" : "ring-2 ring-white"} ${item.badge}`}>
+                                    <span className={`absolute -top-1 -right-1 w-[18px] h-[18px] rounded-full text-[9px] font-black flex items-center justify-center text-white shadow-sm ${dark ? "ring-2 ring-slate-900" : "ring-2 ring-white"} ${item.badge}`}>
                                         {item.count}
                                     </span>
                                 )}
@@ -2127,22 +2126,24 @@ export default function UbtPosPage() {
                         {selTable && (
                             <div className={`absolute inset-0 z-50 flex flex-col ${th.panel(dark)}`}>
                                 {/* Header */}
-                                <div className="flex items-center justify-between px-6 py-4 shrink-0 border-b bg-sky-600">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center border border-white/20">
+                                <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 shrink-0 border-b border-white/10 shadow-md z-10" style={{ background: "linear-gradient(135deg, #0284c7 0%, #2563eb 100%)" }}>
+                                    <div className="flex items-center gap-3 md:gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center border border-white/20 backdrop-blur-sm shadow-inner">
                                             <UtensilsCrossed size={20} className="text-white" />
                                         </div>
                                         <div>
-                                            <p className="font-bold text-xl text-white leading-none">{selTable.name}</p>
-                                            <p className="text-[11px] text-sky-100 mt-1 font-bold uppercase tracking-widest leading-none opacity-90">{selTable.zone}</p>
+                                            <p className="font-black text-lg md:text-xl text-white leading-none tracking-tight">{selTable.name}</p>
+                                            <p className="text-[10px] md:text-[11px] text-sky-100 mt-1 font-bold uppercase tracking-widest leading-none opacity-90">{selTable.zone}</p>
                                         </div>
                                         {selTable.amount > 0 && (
-                                            <span className="ml-5 px-3 py-1.5 rounded bg-amber-400 text-amber-950 text-sm font-bold border border-amber-300">
-                                                {fmt(selTable.amount)} <span className="text-[10px] uppercase font-semibold">UZS</span>
-                                            </span>
+                                            <div className="ml-2 md:ml-6 flex items-center">
+                                                <span className="px-3 py-1.5 rounded-xl bg-white text-sky-700 text-xs md:text-sm font-black shadow-lg shadow-black/10 tracking-tight">
+                                                    {fmt(selTable.amount)} <span className="text-[9px] md:text-[10px] uppercase font-bold opacity-70">UZS</span>
+                                                </span>
+                                            </div>
                                         )}
                                     </div>
-                                    <button onClick={() => setSelTable(null)} className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors border border-transparent hover:border-white/30">
+                                    <button onClick={() => setSelTable(null)} className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/25 flex items-center justify-center transition-all border border-transparent hover:border-white/40 shadow-sm active:scale-95">
                                         <X size={22} className="text-white" />
                                     </button>
                                 </div>
@@ -2150,14 +2151,10 @@ export default function UbtPosPage() {
 
 
                                 {/* Body: left=MenuPanel, right=receipt+actions */}
-
-                                <div className="flex flex-1 overflow-hidden">
-
-
+                                <div className="flex flex-col lg:flex-row flex-1 overflow-y-auto lg:overflow-hidden relative custom-scrollbar">
 
                                     {/* LEFT: MenuPanel (always visible) */}
-
-                                    <div className="flex-1 overflow-hidden border-r border-gray-200">
+                                    <div className="w-full h-[75vh] lg:h-auto lg:flex-1 shrink-0 overflow-hidden lg:border-r border-gray-200">
 
                                         <MenuPanel
 
@@ -2221,7 +2218,7 @@ export default function UbtPosPage() {
 
 
                                     {/* RIGHT: Receipt + action buttons */}
-                                    <div className={`w-[340px] shrink-0 flex flex-col border-l z-20 transition-all duration-300 ${dark ? "bg-[#0a101d] border-white/5" : "bg-sky-50 border-sky-100"}`}>
+                                    <div className={`w-full lg:w-[340px] h-auto lg:h-full shrink-0 flex flex-col lg:border-l z-20 transition-all duration-300 ${dark ? "bg-[#0a101d] border-white/5" : "bg-sky-50 border-sky-100"}`}>
 
                                         {/* Table info */}
                                         <div className={`px-5 py-4 border-b shrink-0 flex items-center justify-between ${dark ? "border-white/5" : "border-slate-200"}`}>
