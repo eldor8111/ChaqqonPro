@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "Token yaroqsiz" }, { status: 401 });
         }
 
-        const url = new URL(request.url);
+        const url = new URL(req.url);
         const explicitName = url.searchParams.get("staffName");
         const { tenantId } = payload;
         const name = explicitName || payload.name;
