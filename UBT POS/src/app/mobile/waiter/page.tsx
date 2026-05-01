@@ -25,6 +25,7 @@ export default function MobileWaiterPage() {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [existingCart, setExistingCart] = useState<CartItem[]>([]);
     const [activeZone, setActiveZone] = useState<string | null>(null);
+    const [activeShot, setActiveShot] = useState(1);
     const [search, setSearch] = useState("");
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
@@ -96,6 +97,7 @@ export default function MobileWaiterPage() {
                     tableId: selectedTable.id,
                     items,
                     waiterName: sess.name,
+                    shotId: activeShot,
                 }),
             });
 
@@ -115,6 +117,7 @@ export default function MobileWaiterPage() {
         setSelectedTable(t);
         setCart([]);
         setExistingCart([]);
+        setActiveShot(1);
 
         // Agar stol band bo'lsa — bazadagi mavjud zakazlarni yuklash
         if (t.status === "occupied" || t.status === "receipt") {
@@ -358,6 +361,25 @@ export default function MobileWaiterPage() {
                             {search && <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2"><X size={12} className="text-slate-400" /></button>}
                         </div>
                     </div>
+                    {/* Hisob (Shot) Selector */}
+                    {selectedTable && (selectedTable.seats ?? 1) > 1 && (
+                        <div className="flex gap-2 overflow-x-auto px-4 pb-2 no-scrollbar">
+                            <span className="shrink-0 text-[10px] font-black text-slate-400 uppercase tracking-widest self-center">Hisob:</span>
+                            {Array.from({ length: selectedTable.seats ?? 1 }, (_, i) => i + 1).map(shot => (
+                                <button
+                                    key={shot}
+                                    onClick={() => setActiveShot(shot)}
+                                    className={`shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-black border transition-all ${
+                                        activeShot === shot
+                                            ? "bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-200"
+                                            : "bg-white text-slate-600 border-slate-200 hover:border-orange-300"
+                                    }`}
+                                >
+                                    {shot}-Hisob
+                                </button>
+                            ))}
+                        </div>
+                    )}
                     {/* Categories */}
                     <div className="flex gap-2 overflow-x-auto px-4 pb-3 no-scrollbar">
                         <button onClick={() => setActiveCat("all")} className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${activeCat === "all" ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200"}`}>Barchasi</button>
@@ -426,6 +448,11 @@ export default function MobileWaiterPage() {
                             )).slice(0, 2)}
                             {cart.length > 2 && <span className="text-[11px] text-slate-400">+{cart.length - 2} ta</span>}
                         </div>
+                        {selectedTable && (selectedTable.seats ?? 1) > 1 && (
+                            <div className="text-center text-[11px] font-black text-orange-500 mb-1">
+                                {activeShot}-Hisob uchun buyurtma
+                            </div>
+                        )}
                         <button onClick={sendOrder} disabled={sending} className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-black rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-200 disabled:opacity-60">
                             {sending ? <RefreshCw size={16} className="animate-spin" /> : <Send size={16} />}
                             {sending ? "Yuborilmoqda..." : `Buyurtma berish · ${cartCount} ta · ${fmt(cartTotal)}`}

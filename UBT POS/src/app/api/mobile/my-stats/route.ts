@@ -23,7 +23,10 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "Token yaroqsiz" }, { status: 401 });
         }
 
-        const { tenantId, name } = payload;
+        const url = new URL(request.url);
+        const explicitName = url.searchParams.get("staffName");
+        const { tenantId } = payload;
+        const name = explicitName || payload.name;
         if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const now = new Date();
@@ -53,7 +56,7 @@ export async function GET(req: NextRequest) {
             try {
                 const parsed = JSON.parse(ord.description);
                 // Yangi format: {waiterName, items}
-                if (!Array.isArray(parsed) && parsed.waiterName === name) {
+                if (!Array.isArray(parsed) && String(parsed.waiterName || "").trim().toLowerCase() === String(name).trim().toLowerCase()) {
                     const items: any[] = parsed.items || [];
                     const total = items.reduce((s: number, ci: any) => {
                         const price = ci.item?.price ?? ci.price ?? 0;

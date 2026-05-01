@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         const auth = await resolveAuth(request);
         if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        const { tableId, items, waiterName, replace } = await request.json();
+        const { tableId, items, waiterName, replace, shotId } = await request.json();
         if (!tableId || !Array.isArray(items)) {
             return NextResponse.json({ error: "tableId va items kerak" }, { status: 400 });
         }
@@ -98,9 +98,17 @@ export async function POST(request: NextRequest) {
             });
         }
 
+        // Count previous orders to determine suffix (A, B, C)
+        const pendingCount = await prisma.kDSOrder.count({
+            where: { tenantId: auth.tenantId, tableId, status: "pending" },
+        });
+        
+        const suffixMap = ["", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
+        const suffix = suffixMap[Math.min(pendingCount, suffixMap.length - 1)] || "";
+
         // Save cart as a new KDS order with priority="cart"
-        // description format: JSON with waiterName + items so we can query per-waiter stats
-        const descPayload = JSON.stringify({ waiterName: waiterName || auth.waiterName || "", items });
+        // description format: JSON with waiterName + items + suffix + shotId
+        const descPayload = JSON.stringify({ waiterName: waiterName || auth.waiterName || "", items, suffix, shotId: shotId || 1 });
         const order = await prisma.kDSOrder.create({
             data: {
                 tenantId: auth.tenantId,
@@ -121,7 +129,7 @@ export async function POST(request: NextRequest) {
         // Update table: mark as occupied, add to amount, set waiter
         const currentTable = await prisma.ubtTable.findUnique({
             where: { id: tableId, tenantId: auth.tenantId },
-            select: { amount: true, since: true, status: true },
+            select: { name: true, amount: true, since: true, status: true },
         });
         if (currentTable) {
             const prevAmount = Number(currentTable.amount ?? 0);
@@ -136,7 +144,56 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        return NextResponse.json({ success: true, orderId: order.id });
+        // --- AUTO-PRINT KITCHEN RECEIPT FOR DINE-IN ORDERS ---
+        try {
+            const itemIds = items.map((c: any) => c.item?.id || c.id).filter(Boolean);
+            const products = await prisma.product.findMany({
+                where: { tenantId: auth.tenantId, id: { in: itemIds } },
+                select: { id: true, printerIp: true },
+            });
+            const printerIpMap = new Map<string, string | null>();
+            products.forEach(p => printerIpMap.set(p.id, p.printerIp));
+
+            const printerGroups: Record<string, any[]> = {};
+            for (const c of items) {
+                const id = c.item?.id || c.id;
+                const ip = printerIpMap.get(id);
+                if (ip) {
+                    if (!printerGroups[ip]) printerGroups[ip] = [];
+                    printerGroups[ip].push(c);
+                }
+            }
+
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            // Build table label: "Stol 5", or "Stol 5 - 2-Hisob" if shotId > 1, + suffix
+            const baseTableName = currentTable ? currentTable.name : "Noma'lum stol";
+            const shotLabel = (shotId && shotId > 1) ? ` · ${shotId}-Hisob` : "";
+            const suffixLabel = suffix ? `-${suffix}` : "";
+            const tableNameToPrint = baseTableName + suffixLabel + shotLabel;
+
+            import("@/lib/services/PrinterService").then(m => {
+                for (const [printerIp, pItems] of Object.entries(printerGroups)) {
+                    const printItems = pItems.map((c: any) => ({
+                        name: c.item?.name || c.name || "",
+                        qty: c.qty || 1,
+                        price: c.item?.price || c.price || 0,
+                        unit: c.item?.unit || c.unit || "ta",
+                    }));
+                    const total = printItems.reduce((s, c) => s + c.price * c.qty, 0);
+
+                    m.PrinterService.print({
+                        printerIp, port: 9100, receiptType: "kitchen", tableName: tableNameToPrint, time: timeStr,
+                        items: printItems, total,
+                        orderNum: order.id,
+                    }).catch(e => console.warn("[Auto Kitchen Print Error]", e));
+                }
+            }).catch(() => {});
+        } catch (printErr) {
+            console.error("[orders-db Kitchen Print Error]", printErr);
+        }
+
+        return NextResponse.json({ success: true, orderId: order.id, suffix });
     } catch (error) {
         console.error("[orders-db POST]", error);
         return NextResponse.json({ error: "Server error" }, { status: 500 });

@@ -7,7 +7,7 @@ import {
     Plus, Minus, Receipt, X, CreditCard, Banknote,
     QrCode, Search, CheckCircle, Check, Maximize2, Minimize2, RefreshCw,
     ShoppingBag, Lock, Phone, MapPin, User, CalendarCheck, Calendar,
-    Wifi, Monitor, Moon, Sun, ChevronLeft
+    Wifi, Monitor, Moon, Sun, ChevronLeft, TrendingUp, BarChart2
 } from "lucide-react";
 import { useStore, UbtTable } from "@/lib/store";
 import { PhoneInput } from "@/components/ui/PhoneInput";
@@ -427,9 +427,6 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, instantAdd, servicePct =
     const handleConfirm = async () => {
         if (cart.length === 0) return;
         setLoading(true);
-
-        // 🖨️ AUTO-PRINT KITCHEN RECEIPT
-        await printKitchenReceipt(cart, tableName);
 
         await onConfirm(cart);
         setCart([]);          // ← eski itemlarni tozalash, modal ochiq qoladi
@@ -1469,6 +1466,8 @@ export default function UbtPosPage() {
     const [showZakazModal, setShowZakazModal] = useState(false);
     const [reportData, setReportData] = useState<any[]>([]);
     const [reportLoading, setReportLoading] = useState(false);
+    const [waiterStats, setWaiterStats] = useState<any>(null);
+    const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
     const loadReportData = async () => {
         setReportLoading(true);
@@ -1520,7 +1519,34 @@ export default function UbtPosPage() {
     };
 
     const handleOpenOtchot = () => { console.log('Opening Otchot'); setShowOtchotModal(true); loadReportData(); };
-    const handleOpenZakaz = () => { console.log('Opening Zakaz'); setShowZakazModal(true); loadReportData(); };
+    const handleOpenZakaz = async () => {
+        console.log('Opening Zakaz');
+        setShowZakazModal(true);
+        setWaiterStats(null);
+        setReportLoading(true);
+        try {
+            const token = store.kassirSession?.token || store.deviceSession?.token;
+            // Load both in parallel: my-stats (KDS-based) + transactions (fallback)
+            const [statsRes] = await Promise.allSettled([
+                fetch(`/api/mobile/my-stats?staffName=${encodeURIComponent(waiterName)}`, {
+                    headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                }),
+            ]);
+            if (statsRes.status === "fulfilled" && statsRes.value.ok) {
+                const data = await statsRes.value.json();
+                if (data && data.today !== undefined) {
+                    setWaiterStats(data);
+                }
+            }
+            // Always load transactions as well (for fallback table)
+            await loadReportData();
+        } catch (e) {
+            console.error("Waiter stats error", e);
+            await loadReportData();
+        } finally {
+            setReportLoading(false);
+        }
+    };
 
     const handlePrintOtchot = async () => {
         const printerIp = (store.kassirSession as any)?.printerIp || (store.deviceSession as any)?.printerIp;
@@ -3377,54 +3403,106 @@ export default function UbtPosPage() {
                 <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex py-10 justify-center overflow-y-auto">
                     <div className={`w-[800px] max-w-[95vw] h-max min-h-[50vh] rounded-2xl shadow-2xl p-6 border ${dark ? "bg-slate-900 text-slate-100 border-slate-700" : "bg-white text-slate-800 border-transparent"}`}>
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-black flex items-center gap-2">🍽️ Mening Zakazlarim <span className="text-sm font-normal text-slate-500">({waiterName})</span></h2>
+                            <h2 className="text-2xl font-black flex items-center gap-2">🛍️ Mening Zakazlarim <span className="text-sm font-normal text-slate-500">({waiterName})</span></h2>
                             <button onClick={() => setShowZakazModal(false)} className={`p-2 rounded-full transition-colors ${dark ? "bg-slate-800 hover:bg-slate-700 text-slate-400" : "bg-gray-100 hover:bg-gray-200"}`}><X size={20} /></button>
                         </div>
                         {reportLoading ? (
                             <div className="flex justify-center py-10"><RefreshCw className="animate-spin text-sky-500" size={30} /></div>
-                        ) : (
+                        ) : waiterStats ? (
                             <div className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/30">
-                                        <div className="text-xs font-bold text-orange-600 dark:text-orange-400">MENING JAMI SAVDOM</div>
+                                        <div className="text-xs font-bold text-orange-600 dark:text-orange-400">BUGUNGI SAVDO</div>
                                         <div className="text-3xl font-black text-orange-700 dark:text-orange-300">
-                                            {fmt(reportData.filter((t:any) => t.waiter === waiterName).reduce((s:any, t:any) => s + (t.totalAmount||0), 0))} UZS
+                                            {fmt(waiterStats.today.total)} UZS
+                                        </div>
+                                        <div className="text-sm font-bold text-orange-600 dark:text-orange-400 mt-2">
+                                            {waiterStats.today.count} ta zakaz
                                         </div>
                                     </div>
                                     <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/30">
                                         <div className="text-xs font-bold text-sky-600 dark:text-sky-400">XIZMAT HAQQI DOLYASI ({(store.kassirSession as any)?.serviceFeePct ?? 10}%)</div>
                                         <div className="text-3xl font-black text-sky-700 dark:text-sky-300">
+                                            {fmt(waiterStats.today.total - (waiterStats.today.total / (1 + (((store.kassirSession as any)?.serviceFeePct ?? 10) / 100))))} UZS
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 mt-2">
+                                            <div className="bg-sky-500/20 rounded p-1 text-center text-xs font-bold text-sky-700 dark:text-sky-300">
+                                                Hafta: {fmt(waiterStats.week.total)}
+                                            </div>
+                                            <div className="bg-sky-500/20 rounded p-1 text-center text-xs font-bold text-sky-700 dark:text-sky-300">
+                                                Oy: {fmt(waiterStats.month.total)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="max-h-[400px] overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                                    {waiterStats.recentOrders.length > 0 ? waiterStats.recentOrders.map((o: any) => (
+                                        <div key={o.id} className="border-b border-slate-200 dark:border-slate-700 last:border-0">
+                                            <div 
+                                                className="px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                                onClick={() => setExpandedOrder(expandedOrder === o.id ? null : o.id)}
+                                            >
+                                                <div className="flex flex-col">
+                                                    <p className="text-[14px] font-bold text-slate-800 dark:text-slate-200">{o.method}</p>
+                                                    <p className="text-[11px] font-medium text-slate-500">{o.time}</p>
+                                                </div>
+                                                <p className="text-[15px] font-black text-emerald-600 dark:text-emerald-400">{fmt(o.amount)} UZS</p>
+                                            </div>
+                                            {expandedOrder === o.id && o.items && o.items.length > 0 && (
+                                                <div className="px-4 pb-3 pt-1 bg-slate-100/50 dark:bg-slate-900/30">
+                                                    {o.items.map((i: any, idx: number) => (
+                                                        <div key={idx} className="flex justify-between items-center py-1">
+                                                            <p className="text-xs text-slate-600 dark:text-slate-400 truncate mr-2 flex-1">{i.name}</p>
+                                                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200 shrink-0">{i.qty} x {fmt(i.price)}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )) : (
+                                        <div className="text-center py-8 text-slate-500 dark:text-slate-400 font-medium">Hali buyurtmalar yo'q</div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            // Fallback: reportData (transactions) when my-stats is unavailable
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/30">
+                                        <div className="text-xs font-bold text-orange-600 dark:text-orange-400">BUGUNGI SAVDO</div>
+                                        <div className="text-3xl font-black text-orange-700 dark:text-orange-300">
+                                            {fmt(reportData.filter((t:any) => t.waiter === waiterName).reduce((s:any, t:any) => s + (t.totalAmount||0), 0))} UZS
+                                        </div>
+                                        <div className="text-sm text-orange-500 mt-1">
+                                            {reportData.filter((t:any) => t.waiter === waiterName).length} ta tranzaksiya
+                                        </div>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/30">
+                                        <div className="text-xs font-bold text-sky-600 dark:text-sky-400">XIZMAT HAQQI ({(store.kassirSession as any)?.serviceFeePct ?? 10}%)</div>
+                                        <div className="text-3xl font-black text-sky-700 dark:text-sky-300">
                                             {fmt(reportData.filter((t:any) => t.waiter === waiterName).reduce((s:any, t:any) => {
                                                 const feePct = ((store.kassirSession as any)?.serviceFeePct ?? 10) / 100;
-                                                // calculate how much service fee was inside the totalAmount (totalAmount = amount + fee)
-                                                // formula: feeComponent = totalAmount - (totalAmount / (1 + feePct))
                                                 return s + (t.totalAmount - (t.totalAmount / (1 + feePct)));
                                             }, 0))} UZS
                                         </div>
                                     </div>
                                 </div>
-                                <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
-                                    <table className="w-full text-left text-sm">
-                                        <thead className={`sticky top-0 ${dark ? "bg-slate-800" : "bg-gray-50"}`}>
-                                            <tr>
-                                                <th className="py-2 px-3">Vaqti</th>
-                                                <th className="py-2 px-3">Stol</th>
-                                                <th className="py-2 px-3">Chek No</th>
-                                                <th className="py-2 px-3">Summa</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {reportData.filter((t:any) => t.waiter === waiterName).map((t: any) => (
-                                                <tr key={t.id} className={`border-b ${dark ? "border-slate-800" : "border-gray-100"}`}>
-                                                    <td className="py-2 px-3">{new Date(t.createdAt).toLocaleTimeString("uz-UZ", {hour:'2-digit', minute:'2-digit'})}</td>
-                                                    <td className="py-2 px-3">{t.tableLabel || "Olib ketish"}</td>
-                                                    <td className="py-2 px-3 font-mono text-xs">{t.receiptNumber}</td>
-                                                    <td className="py-2 px-3 font-bold text-emerald-600 dark:text-emerald-400">{fmt(t.totalAmount)}</td>
-                                                </tr>
-                                            ))}
-                                            {reportData.filter((t:any) => t.waiter === waiterName).length === 0 && <tr><td colSpan={4} className={`text-center py-4 ${dark ? "text-slate-500" : "text-gray-400"}`}>Bugun hali savdo qilmadingiz</td></tr>}
-                                        </tbody>
-                                    </table>
+                                <div className="max-h-[400px] overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                                    {reportData.filter((t:any) => t.waiter === waiterName).length > 0 ? (
+                                        reportData.filter((t:any) => t.waiter === waiterName).map((t: any) => (
+                                            <div key={t.id} className={`px-4 py-3 border-b ${dark ? "border-slate-700" : "border-slate-100"} flex justify-between items-center last:border-0`}>
+                                                <div className="flex flex-col">
+                                                    <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200">{t.tableLabel || "Olib ketish"}</p>
+                                                    <p className="text-[11px] text-slate-500">{new Date(t.createdAt).toLocaleTimeString("uz-UZ", {hour:"2-digit", minute:"2-digit"})}</p>
+                                                </div>
+                                                <p className="text-[14px] font-black text-emerald-600 dark:text-emerald-400">{fmt(t.totalAmount)} UZS</p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center py-8 text-slate-500 dark:text-slate-400 font-medium">
+                                            {waiterName ? `"${waiterName}" nomli xodim uchun bugun ma'lumot yo'q` : "Bugun hali savdo qilmadingiz"}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
