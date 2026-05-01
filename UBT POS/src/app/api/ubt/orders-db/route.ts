@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
         // Update table: mark as occupied, add to amount, set waiter
         const currentTable = await prisma.ubtTable.findUnique({
             where: { id: tableId, tenantId: auth.tenantId },
-            select: { name: true, amount: true, since: true, status: true },
+            select: { tableNumber: true, amount: true, since: true, status: true },
         });
         if (currentTable) {
             const prevAmount = Number(currentTable.amount ?? 0);
