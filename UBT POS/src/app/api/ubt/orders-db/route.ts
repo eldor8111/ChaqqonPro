@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
             const now = new Date();
             const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
             // Build table label: "Stol 5", or "Stol 5 - 2-Hisob" if shotId > 1, + suffix
-            const baseTableName = currentTable ? currentTable.name : "Noma'lum stol";
+            const baseTableName = currentTable ? currentTable.tableNumber : "Noma'lum stol";
             const shotLabel = (shotId && shotId > 1) ? ` · ${shotId}-Hisob` : "";
             const suffixLabel = suffix ? `-${suffix}` : "";
             const tableNameToPrint = baseTableName + suffixLabel + shotLabel;
