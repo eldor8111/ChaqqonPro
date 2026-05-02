@@ -84,7 +84,7 @@ export interface PrintJob {
     time?: string;
     items?: { name: string; qty: number; price: number; unit?: string }[];
     total: number;
-    orderNum?: number;
+    orderNum?: number | string;
     paymentMethod?: string;
     cashAmount?: number;
     cardAmount?: number;
