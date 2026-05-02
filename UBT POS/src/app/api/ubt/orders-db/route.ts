@@ -149,10 +149,10 @@ export async function POST(request: NextRequest) {
             const itemIds = items.map((c: any) => c.item?.id || c.id).filter(Boolean);
             const products = await prisma.product.findMany({
                 where: { tenantId: auth.tenantId, id: { in: itemIds } },
-                select: { id: true, printerIp: true },
+                select: { id: true },
             });
             const printerIpMap = new Map<string, string | null>();
-            products.forEach(p => printerIpMap.set(p.id, p.printerIp));
+            products.forEach((p: any) => printerIpMap.set(p.id, p.printerIp || null));
 
             const printerGroups: Record<string, any[]> = {};
             for (const c of items) {
