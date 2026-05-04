@@ -1,6 +1,5 @@
-const CACHE_NAME = 'chaqqonpro-v2';
+const CACHE_NAME = 'chaqqonpro-v3';
 const STATIC_ASSETS = [
-  '/',
   '/manifest.json',
   '/chaqqon-logo-transparent.svg',
 ];
@@ -24,34 +23,54 @@ self.addEventListener('activate', (event) => {
 });
 
 // Fetch strategy:
-// - API requests: Network first, no caching (always fresh data)
-// - Static assets: Stale-while-revalidate
+// - API requests: Network only (always fresh data, never cache)
+// - Navigation (HTML pages): Network first, NO cache fallback for 4xx/5xx
+// - Static assets: Stale-while-revalidate (only cache 2xx responses)
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Skip non-GET and API routes
-  if (event.request.method !== 'GET' || url.pathname.startsWith('/api/')) {
+  // Skip non-GET requests entirely
+  if (event.request.method !== 'GET') {
     return;
   }
 
-  // Network first for navigation (HTML pages)
+  // Skip API routes — always go to network
+  if (url.pathname.startsWith('/api/')) {
+    return;
+  }
+
+  // Network first for all navigation requests (HTML pages)
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match('/'))
+      fetch(event.request)
+        .then((response) => {
+          // Only return valid responses — do NOT cache or serve 4xx/5xx from SW
+          return response;
+        })
+        .catch(() => {
+          // Offline fallback: try cached root only for genuine network failures
+          return caches.match('/').then((cached) => {
+            if (cached) return cached;
+            // If nothing in cache, let browser handle it normally
+            return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+          });
+        })
     );
     return;
   }
 
-  // Cache first for static assets
+  // Cache first for static assets (CSS, JS, images, fonts)
+  // IMPORTANT: Only cache successful (2xx) responses
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const fetchPromise = fetch(event.request).then((response) => {
-        if (response && response.status === 200) {
+        // Only cache valid 2xx responses
+        if (response && response.status >= 200 && response.status < 300) {
           const cloned = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
         }
         return response;
-      });
+      }).catch(() => cached); // Offline: serve from cache if available
       return cached || fetchPromise;
     })
   );
