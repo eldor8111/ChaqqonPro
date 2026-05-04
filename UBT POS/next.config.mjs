@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    assetPrefix: '/ubt',
     output: 'standalone',
     reactStrictMode: true,
     compress: true,
