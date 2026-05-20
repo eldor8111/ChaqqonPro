@@ -12,6 +12,36 @@ const nextConfig = {
         optimizePackageImports: ['lucide-react', 'recharts'],
     },
 
+    // Eski URL lardan yangi URL larga redirect (ubt → smart rename)
+    async redirects() {
+        return [
+            // /ubt-pos → /smart-pos
+            {
+                source: '/ubt-pos',
+                destination: '/smart-pos',
+                permanent: true,
+            },
+            // /ubt-pos/main, /ubt-pos/staff va boshqalar
+            {
+                source: '/ubt-pos/:path*',
+                destination: '/smart-pos/:path*',
+                permanent: true,
+            },
+            // /ubt → /smart (dashboard)
+            {
+                source: '/ubt',
+                destination: '/smart',
+                permanent: true,
+            },
+            // /ubt/moliya, /ubt/ombor/kirim va boshqalar
+            {
+                source: '/ubt/:path*',
+                destination: '/smart/:path*',
+                permanent: true,
+            },
+        ];
+    },
+
     // Security Headers - XSS, Clickjacking va boshqa hujumlardan himoya
     async headers() {
         return [
@@ -20,11 +50,11 @@ const nextConfig = {
                 headers: [
                     {
                         key: 'X-Frame-Options',
-                        value: 'DENY', // Clickjacking dan himoya
+                        value: 'DENY',
                     },
                     {
                         key: 'X-Content-Type-Options',
-                        value: 'nosniff', // MIME-sniffing dan himoya
+                        value: 'nosniff',
                     },
                     {
                         key: 'Referrer-Policy',
@@ -32,11 +62,11 @@ const nextConfig = {
                     },
                     {
                         key: 'Permissions-Policy',
-                        value: 'geolocation=(), microphone=(), camera=()', // Keraksiz APIlarni o'chirish
+                        value: 'geolocation=(), microphone=(), camera=()',
                     },
                     {
                         key: 'X-XSS-Protection',
-                        value: '1; mode=block', // Legacy XSS himoyasi
+                        value: '1; mode=block',
                     },
                 ],
             },
