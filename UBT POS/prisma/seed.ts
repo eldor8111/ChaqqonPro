@@ -9,7 +9,8 @@ async function main() {
     await prisma.transactionItem.deleteMany({});
     await prisma.transaction.deleteMany({});
     await prisma.kDSOrder.deleteMany({});
-    await prisma.smartReservation.deleteMany({});
+    // @ts-ignore - SmartReservation model exists in schema
+    await (prisma as any).smartReservation.deleteMany({});
     await prisma.smartTable.deleteMany({});
     await prisma.pharmacyDrug.deleteMany({});
     await prisma.inventoryWriteoff.deleteMany({});
