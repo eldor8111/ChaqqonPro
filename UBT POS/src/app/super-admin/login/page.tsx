@@ -83,7 +83,7 @@ export default function SuperAdminLoginPage() {
                 <div className="text-center mb-10">
                     <div className="flex justify-center mb-3">
                         <span className="font-black text-5xl tracking-tight text-white drop-shadow-md">
-                            Chaqqon<span className="text-blue-500">Pro</span>
+                            SMART<span className="text-blue-500">POS</span>
                         </span>
                     </div>
                     <h1 className="text-xl font-bold text-slate-300 tracking-tight">Super Admin Portal</h1>
@@ -153,7 +153,7 @@ export default function SuperAdminLoginPage() {
                         Xodim (Agent/Menejer) sifatida kirish <ArrowRight size={16} />
                     </a>
                     <p className="text-sm text-slate-500 pt-2">
-                        &copy; {new Date().getFullYear()} ChaqqonPro Super Admin.
+                        &copy; {new Date().getFullYear()} SMART Super Admin.
                     </p>
                 </div>
             </div>

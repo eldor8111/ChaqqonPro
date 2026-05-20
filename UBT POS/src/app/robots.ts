@@ -9,13 +9,13 @@ export default function robots(): MetadataRoute.Robots {
                 disallow: [
                     "/api/",
                     "/super-admin/",
-                    "/ubt/",
-                    "/ubt-pos/",
+                    "/smart/",
+                    "/smart-pos/",
                     "/kassa/",
                     "/agent-portal/",
                 ],
             },
         ],
-        sitemap: "https://chaqqonpro.e-code.uz/sitemap.xml",
+        sitemap: "https://smart.e-code.uz/sitemap.xml",
     };
 }

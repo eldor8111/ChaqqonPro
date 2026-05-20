@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
     LayoutDashboard, Package, BarChart3,
     UserCheck, Warehouse,
@@ -28,57 +28,57 @@ const BLOCKED_NAV_ITEMS: NavItem[] = [
 ];
 
 const NAV_ITEMS: NavItem[] = [
-    { href: "/ubt", icon: LayoutDashboard, key: "nav.dashboard" },
-    { href: "/ubt/reports", icon: BarChart3, key: "nav.reports" },
-    { href: "/ubt/davomat", icon: Clock, key: "nav.attendance" },
+    { href: "/smart", icon: LayoutDashboard, key: "nav.dashboard" },
+    { href: "/smart/reports", icon: BarChart3, key: "nav.reports" },
+    { href: "/smart/davomat", icon: Clock, key: "nav.attendance" },
     {
-        href: "/ubt/nomenklatura", icon: Package, key: "nav.nomenclature",
+        href: "/smart/nomenklatura", icon: Package, key: "nav.nomenclature",
         subItems: [
-            { href: "/ubt/nomenklatura/taomlar", label: "nav.nom_dishes", isI18n: true },
-            { href: "/ubt/nomenklatura/kategoriya", label: "nav.nom_dish_cats", isI18n: true },
-            { href: "/ubt/nomenklatura/polfabrikat", label: "nav.nom_semi", isI18n: true },
-            { href: "/ubt/nomenklatura/kategoriya-polfabrikat", label: "nav.nom_semi_cats", isI18n: true },
-            { href: "/ubt/nomenklatura/xomashyo", label: "nav.nom_raw", isI18n: true },
-            { href: "/ubt/nomenklatura/kategoriya-xomashyo", label: "nav.nom_raw_cats", isI18n: true },
+            { href: "/smart/nomenklatura/taomlar", label: "nav.nom_dishes", isI18n: true },
+            { href: "/smart/nomenklatura/kategoriya", label: "nav.nom_dish_cats", isI18n: true },
+            { href: "/smart/nomenklatura/polfabrikat", label: "nav.nom_semi", isI18n: true },
+            { href: "/smart/nomenklatura/kategoriya-polfabrikat", label: "nav.nom_semi_cats", isI18n: true },
+            { href: "/smart/nomenklatura/xomashyo", label: "nav.nom_raw", isI18n: true },
+            { href: "/smart/nomenklatura/kategoriya-xomashyo", label: "nav.nom_raw_cats", isI18n: true },
         ]
     },
     {
-        href: "/ubt/ombor", icon: Warehouse, key: "nav.ombor",
+        href: "/smart/ombor", icon: Warehouse, key: "nav.ombor",
         subItems: [
-            { href: "/ubt/ombor/qoldiqlar", label: "nav.ombor_qoldiqlar", isI18n: true },
-            { href: "/ubt/ombor/kirim", label: "nav.ombor_kirim", isI18n: true },
-            { href: "/ubt/ombor/kochirish", label: "nav.ombor_kochirish", isI18n: true },
-            { href: "/ubt/ombor/inventarizatsiya", label: "nav.ombor_inventarizatsiya", isI18n: true },
-            { href: "/ubt/ombor/sjisaniya", label: "nav.ombor_sjisaniya", isI18n: true },
+            { href: "/smart/ombor/qoldiqlar", label: "nav.ombor_qoldiqlar", isI18n: true },
+            { href: "/smart/ombor/kirim", label: "nav.ombor_kirim", isI18n: true },
+            { href: "/smart/ombor/kochirish", label: "nav.ombor_kochirish", isI18n: true },
+            { href: "/smart/ombor/inventarizatsiya", label: "nav.ombor_inventarizatsiya", isI18n: true },
+            { href: "/smart/ombor/sjisaniya", label: "nav.ombor_sjisaniya", isI18n: true },
         ]
     },
     {
-        href: "/ubt/users", icon: UserCheck, key: "nav.users",
+        href: "/smart/users", icon: UserCheck, key: "nav.users",
         subItems: [
-            { href: "/ubt/users/kassir", label: "nav.users_kassir", isI18n: true },
-            { href: "/ubt/users/ofitsiant", label: "nav.users_ofitsiant", isI18n: true },
-            { href: "/ubt/users/kuryer", label: "nav.users_kuryer", isI18n: true },
-            { href: "/ubt/users/manablog", label: "nav.users_manablog", isI18n: true },
-            { href: "/ubt/users/povar", label: "nav.users_povar", isI18n: true },
-            { href: "/ubt/users/menejer", label: "nav.users_menejer", isI18n: true },
-            { href: "/ubt/users/omborchi", label: "nav.users_omborchi", isI18n: true },
+            { href: "/smart/users/kassir", label: "nav.users_kassir", isI18n: true },
+            { href: "/smart/users/ofitsiant", label: "nav.users_ofitsiant", isI18n: true },
+            { href: "/smart/users/kuryer", label: "nav.users_kuryer", isI18n: true },
+            { href: "/smart/users/manablog", label: "nav.users_manablog", isI18n: true },
+            { href: "/smart/users/povar", label: "nav.users_povar", isI18n: true },
+            { href: "/smart/users/menejer", label: "nav.users_menejer", isI18n: true },
+            { href: "/smart/users/omborchi", label: "nav.users_omborchi", isI18n: true },
         ]
     },
     {
-        href: "/ubt/moliya", icon: DollarSign, key: "nav.finance",
+        href: "/smart/moliya", icon: DollarSign, key: "nav.finance",
         subItems: [
-            { href: "/ubt/moliya", label: "nav.fin_cash", isI18n: true },
+            { href: "/smart/moliya", label: "nav.fin_cash", isI18n: true },
         ]
     },
     {
-        href: "/ubt/kontragent", icon: Building2, key: "nav.contractors",
+        href: "/smart/kontragent", icon: Building2, key: "nav.contractors",
         subItems: [
-            { href: "/ubt/kontragent/yetkazib-beruvchilar", label: "nav.kont_suppliers", isI18n: true },
-            { href: "/ubt/kontragent/klientlar", label: "nav.kont_clients", isI18n: true }
+            { href: "/smart/kontragent/yetkazib-beruvchilar", label: "nav.kont_suppliers", isI18n: true },
+            { href: "/smart/kontragent/klientlar", label: "nav.kont_clients", isI18n: true }
         ]
     },
     {
-        href: "/ubt/support", icon: Headset, key: "nav.support",
+        href: "/smart/support", icon: Headset, key: "nav.support",
     },
     {
         href: "/billing", icon: CreditCard, key: "nav.billing",
@@ -87,10 +87,10 @@ const NAV_ITEMS: NavItem[] = [
 
 // Bottom navigation items for mobile (most used 4)
 const MOBILE_BOTTOM_NAV = [
-    { href: "/ubt", icon: Home, label: "Bosh sahifa" },
-    { href: "/ubt/reports", icon: PieChart, label: "Hisobotlar" },
-    { href: "/ubt/users", icon: Users, label: "Xodimlar" },
-    { href: "/ubt/ombor/qoldiqlar", icon: ShoppingBag, label: "Ombor" },
+    { href: "/smart", icon: Home, label: "Bosh sahifa" },
+    { href: "/smart/reports", icon: PieChart, label: "Hisobotlar" },
+    { href: "/smart/users", icon: Users, label: "Xodimlar" },
+    { href: "/smart/ombor/qoldiqlar", icon: ShoppingBag, label: "Ombor" },
 ];
 
 interface SidebarProps {
@@ -106,6 +106,11 @@ export default function Sidebar({ mobileOpen = false, onMobileClose, onMobileOpe
     const [collapsed, setCollapsed] = useState(false);
     const [openMenus, setOpenMenus] = useState<string[]>([]);
 
+    const settings = user?.tenant?.settings || {};
+    const useWarehouse = settings.useWarehouse ?? true;
+    const useCRM = settings.useCRM ?? false;
+    const useAnalytics = settings.useAnalytics ?? true;
+
     // Close mobile drawer on route change
     useEffect(() => {
         onMobileClose?.();
@@ -117,7 +122,24 @@ export default function Sidebar({ mobileOpen = false, onMobileClose, onMobileOpe
         );
     };
 
-    const navItems = subscriptionExpired ? BLOCKED_NAV_ITEMS : NAV_ITEMS;
+    const rawNavItems = subscriptionExpired ? BLOCKED_NAV_ITEMS : NAV_ITEMS;
+
+    const navItems = useMemo(() => {
+        return rawNavItems.map(item => {
+            if (item.key === "nav.ombor" && !useWarehouse) return null;
+            if (item.key === "nav.reports" && !useAnalytics) return null;
+            if (item.key === "nav.contractors" && !useCRM) return null;
+            return item;
+        }).filter(Boolean) as NavItem[];
+    }, [rawNavItems, useWarehouse, useAnalytics, useCRM]);
+
+    const mobileNavItems = useMemo(() => {
+        return MOBILE_BOTTOM_NAV.filter(item => {
+            if (item.href === "/smart/reports" && !useAnalytics) return false;
+            if (item.href.startsWith("/smart/ombor") && !useWarehouse) return false;
+            return true;
+        });
+    }, [useWarehouse, useAnalytics]);
 
     const sidebarContent = (
         <>
@@ -251,7 +273,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose, onMobileOpe
 
             {/* Mobile Bottom Navigation */}
             <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-surface-card border-t border-surface-border flex items-center safe-area-pb">
-                {MOBILE_BOTTOM_NAV.map((item) => {
+                {mobileNavItems.map((item) => {
                     const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                     return (
                         <Link

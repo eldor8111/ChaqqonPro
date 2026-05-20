@@ -27,6 +27,7 @@ export default function BillingPage() {
     const [months, setMonths] = useState(1);
     const [copied, setCopied] = useState(false);
     const [trialLoading, setTrialLoading] = useState(false);
+    const [buyLoading, setBuyLoading] = useState(false);
     const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
     const showToast = (msg: string, ok: boolean) => {
@@ -85,8 +86,33 @@ export default function BillingPage() {
         }
     };
 
+    const buyTariff = async () => {
+        if (!buyModal || !tenant) return;
+        setBuyLoading(true);
+        try {
+            const res = await fetch("/api/billing/buy-tariff", { 
+                method: "POST", 
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ tariffId: buyModal.id, months })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Xatolik yuz berdi");
+            
+            showToast(data.message || "Tarif faollashtirildi!", true);
+            setBuyModal(null);
+            
+            // Refresh tenant data
+            const r = await fetch("/api/billing/my-tenant");
+            if (r.ok) { const d = await r.json(); setTenant(d.tenant); }
+        } catch (e: any) {
+            showToast(e.message || "Xatolik yuz berdi", false);
+        } finally {
+            setBuyLoading(false);
+        }
+    };
+
     const total = buyModal ? Math.round(buyModal.pricePerMonth * (months === 12 ? 10 : months)) : 0;
-    const tgUsername = platformSettings.tg_username || "chaqqon_support";
+    const tgUsername = platformSettings.tg_username || "smart_support";
     const tgMessage = buyModal
         ? encodeURIComponent(
             `Salom! Men ${tenant?.shopName || "korxona"} uchun ${buyModal.name} tarifini ${months} oyga sotib olmoqchiman.\n` +
@@ -374,25 +400,42 @@ export default function BillingPage() {
                                 </ol>
                             </div>
 
-                            {/* Harakatlar */}
-                            <div className="grid grid-cols-2 gap-3">
-                                <a
-                                    href={`https://t.me/${tgUsername}?text=${tgMessage}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center justify-center gap-2 py-3 bg-[#2AABEE] hover:bg-[#1d9bd6] text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-blue-200"
-                                >
-                                    {TG_ICON} Telegram
-                                </a>
-                                {platformSettings.phone_raw && (
-                                    <a
-                                        href={`tel:${platformSettings.phone_raw}`}
-                                        className="flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-emerald-200"
+                            {/* Harakatlar yoki Balansdan to'lash */}
+                            {(tenant?.balance || 0) >= total ? (
+                                <div className="space-y-3">
+                                    <button
+                                        onClick={buyTariff}
+                                        disabled={buyLoading}
+                                        className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-black rounded-xl text-sm transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
                                     >
-                                        {PHONE_ICON} Qo&apos;ng&apos;iroq
+                                        {buyLoading ? (
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        ) : (
+                                            "Balansdan to'lash va faollashtirish"
+                                        )}
+                                    </button>
+                                    <p className="text-xs text-center text-slate-500 font-medium">Sizning balansingiz: <span className="font-bold text-emerald-600">{fmtMoney(tenant.balance)} so'm</span> (Yetarli)</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-2 gap-3">
+                                    <a
+                                        href={`https://t.me/${tgUsername}?text=${tgMessage}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-center gap-2 py-3 bg-[#2AABEE] hover:bg-[#1d9bd6] text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-blue-200"
+                                    >
+                                        {TG_ICON} Telegram orqali yuborish
                                     </a>
-                                )}
-                            </div>
+                                    {platformSettings.phone_raw && (
+                                        <a
+                                            href={`tel:${platformSettings.phone_raw}`}
+                                            className="flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-emerald-200"
+                                        >
+                                            {PHONE_ICON} Qo&apos;ng&apos;iroq qilish
+                                        </a>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

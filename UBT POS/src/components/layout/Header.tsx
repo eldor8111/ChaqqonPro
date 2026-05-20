@@ -36,11 +36,14 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
     const [showBranch, setShowBranch] = useState(false);
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
+    const settings = user?.tenant?.settings || {};
+    const useMultiBranch = settings.useMultiBranch ?? false;
+
     useEffect(() => {
         let mounted = true;
         const fetchNotifs = async () => {
             try {
-                const res = await fetch("/api/ubt/notifications");
+                const res = await fetch("/api/smart/notifications");
                 if (res.ok) {
                     const data = await res.json();
                     if (mounted && data.notifications) setNotifications(data.notifications);
@@ -59,7 +62,7 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
                 <div className="absolute left-1/2 -translate-x-1/2 pointer-events-none">
                     <div className="animate-fade-in flex items-center gap-2">
                         <span className="font-black text-[22px] md:text-[26px] tracking-wider text-slate-800 uppercase">
-                            CHAQQON<span className="text-blue-600">PRO</span>
+                            SMART<span className="text-blue-600">POS</span>
                         </span>
                     </div>
                 </div>
@@ -74,30 +77,32 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
                         <Menu size={20} />
                     </button>
                     {/* Branch selector */}
-                    <div className="relative">
-                        <button
-                            onClick={() => { setShowBranch(!showBranch); setShowLang(false); setShowNotif(false); }}
-                            className="flex items-center gap-2 bg-surface-elevated px-3 py-2 rounded-xl border border-surface-border hover:border-brand-500/50 transition-all text-sm text-slate-200"
-                        >
-                            <Building2 size={15} className="text-brand-400" />
-                            <span className="max-w-[140px] truncate">{selectedBranch.name}</span>
-                            <ChevronDown size={14} className="text-slate-400" />
-                        </button>
-                        {showBranch && (
-                            <div className="absolute top-full mt-2 left-0 w-56 glass-card shadow-card py-1 z-50 animate-fade-in">
-                                {mockBranches.map(b => (
-                                    <button
-                                        key={b.id}
-                                        onClick={() => { setSelectedBranch(b); setShowBranch(false); }}
-                                        className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-slate-200 hover:bg-surface-elevated transition-colors"
-                                    >
-                                        <span>{b.name}</span>
-                                        {selectedBranch.id === b.id && <Check size={14} className="text-brand-400" />}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    {useMultiBranch && (
+                        <div className="relative">
+                            <button
+                                onClick={() => { setShowBranch(!showBranch); setShowLang(false); setShowNotif(false); }}
+                                className="flex items-center gap-2 bg-surface-elevated px-3 py-2 rounded-xl border border-surface-border hover:border-brand-500/50 transition-all text-sm text-slate-200"
+                            >
+                                <Building2 size={15} className="text-brand-400" />
+                                <span className="max-w-[140px] truncate">{selectedBranch.name}</span>
+                                <ChevronDown size={14} className="text-slate-400" />
+                            </button>
+                            {showBranch && (
+                                <div className="absolute top-full mt-2 left-0 w-56 glass-card shadow-card py-1 z-50 animate-fade-in">
+                                    {mockBranches.map(b => (
+                                        <button
+                                            key={b.id}
+                                            onClick={() => { setSelectedBranch(b); setShowBranch(false); }}
+                                            className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-slate-200 hover:bg-surface-elevated transition-colors"
+                                        >
+                                            <span>{b.name}</span>
+                                            {selectedBranch.id === b.id && <Check size={14} className="text-brand-400" />}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Search */}
                     <div className="relative hidden md:flex items-center">

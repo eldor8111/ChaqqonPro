@@ -1,4 +1,4 @@
-// Mock data for all ChaqqonPro modules
+// Mock data for all SMART modules
 
 export const mockBranches = [
     { id: "1", name: "Asosiy Filial", city: "Toshkent", manager: "Admin", status: "active" },
@@ -26,7 +26,7 @@ export const mockProducts: any[] = [];
 export const mockCustomers: any[] = [];
 
 export const mockStaff = [
-    { id: "S001", name: "Admin Test", role: "Administrator", branch: "Asosiy Filial", phone: "+998 90 000 00 00", salary: 0, hireDate: "2026-01-01", status: "online" as const, shiftStart: "08:00", sales: 0, transactions: 0, pin: "0000", permissions: ["pos", "inventory", "crm", "reports", "staff", "ai", "ubt", "pharmacy", "wholesale", "ecommerce", "discounts", "refunds", "priceEdit", "stockEdit", "reportExport", "customerEdit", "shiftManage"], username: "admin", password: "admin" },
+    { id: "S001", name: "Admin Test", role: "Administrator", branch: "Asosiy Filial", phone: "+998 90 000 00 00", salary: 0, hireDate: "2026-01-01", status: "online" as const, shiftStart: "08:00", sales: 0, transactions: 0, pin: "0000", permissions: ["pos", "inventory", "crm", "reports", "staff", "ai", "smart", "pharmacy", "wholesale", "ecommerce", "discounts", "refunds", "priceEdit", "stockEdit", "reportExport", "customerEdit", "shiftManage"], username: "admin", password: "admin" },
     { id: "S002", name: "Kassir Test", role: "Kassir", branch: "Asosiy Filial", phone: "+998 90 111 11 11", salary: 0, hireDate: "2026-01-01", status: "online" as const, shiftStart: "08:00", sales: 0, transactions: 0, pin: "1111", permissions: ["pos", "discounts", "refunds"], username: "kassir", password: "kassir" },
 ];
 
@@ -34,7 +34,7 @@ export const mockFraudAlerts: any[] = [];
 
 export const mockAIForecasts: any[] = [];
 
-export const mockUbtTables = [
+export const mockSmartTables = [
     // Birinchi qavat — 16 tables
     { id: "BQ01", name: "1",  seats: 4, zone: "Birinchi qavat", status: "occupied", order: "#ORD-001", amount: 33000,   since: "17:34", waiter: "Kamoliddin" },
     { id: "BQ02", name: "2",  seats: 4, zone: "Birinchi qavat", status: "occupied", order: "#ORD-002", amount: 33000,   since: "11:15", waiter: "Kamoliddin" },

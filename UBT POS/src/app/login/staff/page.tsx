@@ -65,7 +65,7 @@ export default function StaffLoginPage() {
                 if (staffData.role === "Ofitsiant") router.push("/mobile/waiter");
                 else if (staffData.role === "Kuryer") router.push("/mobile/courier");
                 else if (staffData.role === "Zavsklad" || staffData.role === "Omborchi") router.push("/mobile/inventory");
-                else router.push("/ubt-pos");
+                else router.push("/smart-pos");
             }
         } catch {
             setError("Tizimga ulanishda xatolik yuz berdi");
@@ -83,7 +83,7 @@ export default function StaffLoginPage() {
                 <div className="w-16 h-16 rounded-2xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
                     <Smartphone size={28} className="text-blue-400" />
                 </div>
-                <h1 className="text-2xl font-black text-white tracking-tight">Chaqqon Pro</h1>
+                <h1 className="text-2xl font-black text-white tracking-tight">SMART POS</h1>
                 <p className="text-sm text-blue-300/80 font-medium mt-1">Xodim kirish portali</p>
             </div>
 

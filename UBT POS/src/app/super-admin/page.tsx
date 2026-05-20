@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { GEO_DATA } from "@/lib/geoData";
 import { useRouter } from "next/navigation";
 import {
     Plus, Search, Edit2, Trash2, LogIn, LogOut, X,
@@ -357,7 +358,7 @@ export default function SuperAdminPage() {
     /* ── Form state (tenant) ─────────────────────────────────────────── */
     const [formData, setFormData] = useState({
         shopCode: "", shopName: "", ownerName: "", phone: "", address: "",
-        plan: "basic" as string, status: "active" as string, shopType: "ubt" as string,
+        plan: "basic" as string, status: "active" as string, shopType: "smart" as string,
         adminPassword: "", settings: { ...DEFAULT_SETTINGS },
     });
     const f = (field: string, val: any) => setFormData((p) => ({ ...p, [field]: val }));
@@ -367,8 +368,8 @@ export default function SuperAdminPage() {
     const stats = {
         total: tenants.length,
         active: tenants.filter((t: any) => t.status === "active").length,
-        trial: tenants.filter((t: any) => t.status === "trial").length,
-        revenue: tenants.filter((t: any) => t.plan !== "starter").reduce((s: number, t: any) => s + (PLANS[t.plan as keyof typeof PLANS]?.amount || 0), 0),
+        trial: tenants.filter((t: any) => t.status === "trial" || t.isTrial).length,
+        revenue: billingRows.reduce((s: number, b: any) => s + (b.pricePerMonth || 0), 0),
     };
 
     const filteredTenants = useMemo(() => tenants.filter((t: any) => {
@@ -396,13 +397,13 @@ export default function SuperAdminPage() {
     /* ── Handlers ───────────────────────────────────────────────────── */
     const handleOpenAddModal = () => {
         setEditingTenant(null);
-        setFormData({ shopCode: `UBT${String(tenants.length + 1).padStart(3, "0")}`, shopName: "", ownerName: "", phone: "", address: "", plan: "basic", status: "active", shopType: "ubt", adminPassword: "", settings: { ...DEFAULT_SETTINGS, contacts: [] } });
+        setFormData({ shopCode: `SMS${String(tenants.length + 1).padStart(3, "0")}`, shopName: "", ownerName: "", phone: "", address: "", plan: "basic", status: "active", shopType: "smart", adminPassword: "", settings: { ...DEFAULT_SETTINGS, contacts: [] } });
         setShowExtra(false); setShowAddModal(true);
     };
     const handleOpenEditModal = (tenant: any) => {
         setEditingTenant(tenant);
         const s = tenant.settings || {};
-        setFormData({ shopCode: tenant.shopCode||"", shopName: tenant.shopName||"", ownerName: tenant.ownerName||"", phone: tenant.phone||"", address: tenant.address||"", plan: tenant.plan||"basic", status: tenant.status||"active", shopType: "ubt", adminPassword: "", settings: { workDays: s.workDays||DEFAULT_SETTINGS.workDays, subscriptionDays: s.subscriptionDays||DEFAULT_SETTINGS.subscriptionDays, tariffPrice: s.tariffPrice||0, useWarehouse: s.useWarehouse??true, useLoyalty: s.useLoyalty??false, useMultiBranch: s.useMultiBranch??false, useCRM: s.useCRM??false, useAnalytics: s.useAnalytics??true, contacts: s.contacts||[], country: s.country||"Uzbekiston", region: s.region||"", city: s.city||"", currencies: s.currencies||["UZS"], telegramGroupId: s.telegramGroupId||"", description: s.description||"" } });
+        setFormData({ shopCode: tenant.shopCode||"", shopName: tenant.shopName||"", ownerName: tenant.ownerName||"", phone: tenant.phone||"", address: tenant.address||"", plan: tenant.plan||"basic", status: tenant.status||"active", shopType: "smart", adminPassword: "", settings: { workDays: s.workDays||DEFAULT_SETTINGS.workDays, subscriptionDays: s.subscriptionDays||DEFAULT_SETTINGS.subscriptionDays, tariffPrice: s.tariffPrice||0, useWarehouse: s.useWarehouse??true, useLoyalty: s.useLoyalty??false, useMultiBranch: s.useMultiBranch??false, useCRM: s.useCRM??false, useAnalytics: s.useAnalytics??true, contacts: s.contacts||[], country: s.country||"Uzbekiston", region: s.region||"", city: s.city||"", currencies: s.currencies||["UZS"], telegramGroupId: s.telegramGroupId||"", description: s.description||"" } });
         setShowExtra(false); setShowAddModal(true);
     };
     const handleSave = async () => {
@@ -418,7 +419,7 @@ export default function SuperAdminPage() {
     const removeContact = (idx: number) => fs("contacts", formData.settings.contacts.filter((_:any,i:number)=>i!==idx));
     const toggleWorkDay = (day: string) => { const d=formData.settings.workDays; fs("workDays", d.includes(day)?d.filter((x:string)=>x!==day):[...d,day]); };
     const handleLogout = () => { useSuperAdminStore.getState().logout(); router.push("/super-admin/login"); };
-    const handleImpersonate = (shopCode: string, phone: string) => { localStorage.setItem("ubt-active-shop",shopCode); localStorage.setItem("ubt-tenant-admin-user",phone); window.location.href="/"; };
+    const handleImpersonate = (shopCode: string, phone: string) => { localStorage.setItem("smart-active-shop",shopCode); localStorage.setItem("smart-tenant-admin-user",phone); window.location.href="/"; };
 
     const isSaving = createMutation.isPending || updateMutation.isPending;
     const fmtMoney = (v: number) => new Intl.NumberFormat("uz-UZ").format(v);
@@ -440,7 +441,7 @@ export default function SuperAdminPage() {
                 <div className="mb-8 mt-2 px-2">
                     <div className="flex items-center mb-1">
                         <span className="font-black text-2xl tracking-tight text-slate-800">
-                            Chaqqon<span className="text-blue-600">Pro</span>
+                            SMART<span className="text-blue-600">POS</span>
                         </span>
                     </div>
                     <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Super Admin Portal</p>
@@ -534,7 +535,7 @@ export default function SuperAdminPage() {
                                  activeTab === "tariffs" ? "Tariflar boshqaruvi" :
                                  activeTab === "settings" ? "Sozlamalar" : ""}
                             </h1>
-                            <p className="text-xs sm:text-sm text-slate-500 hidden sm:block">Chaqqon platformasi umumlashgan boshqaruvi</p>
+                            <p className="text-xs sm:text-sm text-slate-500 hidden sm:block">SMART platformasi umumlashgan boshqaruvi</p>
                         </div>
                     </div>
                     {activeTab === "tenants" && canCreateTenants && (
@@ -609,7 +610,7 @@ export default function SuperAdminPage() {
                                             </thead>
                                             <tbody>
                                                 {filteredTenants.length === 0 ? (
-                                                    <tr><td colSpan={8} className="px-5 py-8 text-center text-slate-400">Tashkilotlar topilmadi</td></tr>
+                                                    <tr><td colSpan={10} className="px-5 py-8 text-center text-slate-400">Tashkilotlar topilmadi</td></tr>
                                                 ) : filteredTenants.map((t: any, idx: number) => (
                                                     <tr key={t.id} className="border-b border-slate-100 hover:bg-slate-100 transition-colors">
                                                         <td className="px-5 py-4 text-sm text-slate-400">{idx+1}</td>
@@ -824,7 +825,7 @@ export default function SuperAdminPage() {
                                                             <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${PLANS[b.plan as keyof typeof PLANS]?.color||""}`}>{PLANS[b.plan as keyof typeof PLANS]?.label||b.plan}</span>
                                                         </td>
                                                         <td className="px-5 py-4 text-sm font-bold text-emerald-400">
-                                                            {b.monthlyPrice > 0 ? `${fmtMoney(b.monthlyPrice)} UZS` : <span className="text-slate-400">Bepul</span>}
+                                                            {b.pricePerMonth > 0 ? `${fmtMoney(b.pricePerMonth)} UZS` : <span className="text-slate-400">Bepul</span>}
                                                         </td>
                                                         <td className="px-5 py-4 text-sm">
                                                             {b.expiresAt ? (
@@ -1070,36 +1071,68 @@ export default function SuperAdminPage() {
                                 </button>
                                 {showExtra && (
                                     <div className="mt-4 space-y-5">
-                                        {/* Address */}
-                                        <div><label className={labelClass}>Manzil</label>
-                                            <input type="text" value={formData.address} onChange={(e) => f("address", e.target.value)} className={inputClass} placeholder="Shahar, ko'cha, uy raqami"/>
-                                        </div>
-
                                         {/* Location */}
-                                        <div className="grid grid-cols-3 gap-3">
-                                            <div><label className={labelClass}>Mamlakat</label>
-                                                <input type="text" value={formData.settings.country} onChange={(e) => fs("country", e.target.value)} className={inputClass} placeholder="Uzbekiston"/>
-                                            </div>
-                                            <div><label className={labelClass}>Viloyat</label>
-                                                <input type="text" value={formData.settings.region} onChange={(e) => fs("region", e.target.value)} className={inputClass} placeholder="Toshkent"/>
-                                            </div>
-                                            <div><label className={labelClass}>Shahar</label>
-                                                <input type="text" value={formData.settings.city} onChange={(e) => fs("city", e.target.value)} className={inputClass} placeholder="Chilonzor"/>
-                                            </div>
-                                        </div>
+                                        {(() => {
+                                            // GEO_DATA imported from @/lib/geoData
+                                            const countries = Object.keys(GEO_DATA);
+                                            const currentCountry = formData.settings.country && GEO_DATA[formData.settings.country] ? formData.settings.country : countries[0];
+                                            const regions = Object.keys(GEO_DATA[currentCountry] || {});
+                                            const currentRegion = formData.settings.region && GEO_DATA[currentCountry]?.[formData.settings.region] ? formData.settings.region : regions[0] || "";
+                                            const cities = GEO_DATA[currentCountry]?.[currentRegion] || [];
+                                            const currentCity = formData.settings.city && cities.includes(formData.settings.city) ? formData.settings.city : cities[0] || "";
 
-                                        {/* Work days */}
-                                        <div>
-                                            <label className={labelClass}>Ish kunlari</label>
-                                            <div className="flex flex-wrap gap-2 mt-1">
-                                                {[{k:"mon",l:"Du"},{k:"tue",l:"Se"},{k:"wed",l:"Ch"},{k:"thu",l:"Pa"},{k:"fri",l:"Ju"},{k:"sat",l:"Sha"},{k:"sun",l:"Ya"}].map(d => (
-                                                    <button key={d.k} type="button" onClick={() => toggleWorkDay(d.k)}
-                                                        className={`w-10 h-10 rounded-xl text-xs font-bold transition-colors ${formData.settings.workDays.includes(d.k) ? "bg-sky-500 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>
-                                                        {d.l}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
+                                            return (
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    <div><label className={labelClass}>Mamlakat</label>
+                                                        <select
+                                                            value={currentCountry}
+                                                            onChange={(e) => {
+                                                                const newCountry = e.target.value;
+                                                                const newRegions = Object.keys(GEO_DATA[newCountry] || {});
+                                                                const newRegion = newRegions[0] || "";
+                                                                const newCities = GEO_DATA[newCountry]?.[newRegion] || [];
+                                                                const newCity = newCities[0] || "";
+                                                                setFormData((p: any) => ({
+                                                                    ...p,
+                                                                    settings: { ...p.settings, country: newCountry, region: newRegion, city: newCity }
+                                                                }));
+                                                            }}
+                                                            className={inputClass}
+                                                        >
+                                                            {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                                                        </select>
+                                                    </div>
+                                                    <div><label className={labelClass}>Viloyat</label>
+                                                        <select
+                                                            value={currentRegion}
+                                                            onChange={(e) => {
+                                                                const newRegion = e.target.value;
+                                                                const newCities = GEO_DATA[currentCountry]?.[newRegion] || [];
+                                                                const newCity = newCities[0] || "";
+                                                                setFormData((p: any) => ({
+                                                                    ...p,
+                                                                    settings: { ...p.settings, region: newRegion, city: newCity }
+                                                                }));
+                                                            }}
+                                                            className={inputClass}
+                                                            disabled={regions.length === 0}
+                                                        >
+                                                            {regions.map(r => <option key={r} value={r}>{r}</option>)}
+                                                        </select>
+                                                    </div>
+                                                    <div><label className={labelClass}>Shahar / Tuman</label>
+                                                        <select
+                                                            value={currentCity}
+                                                            onChange={(e) => fs("city", e.target.value)}
+                                                            className={inputClass}
+                                                            disabled={cities.length === 0}
+                                                        >
+                                                            {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
 
                                         {/* Telegram group ID */}
                                         <div><label className={labelClass}>Telegram guruh ID <span className="text-sky-400 font-normal">(bildirishnomalar uchun)</span></label>
@@ -1236,7 +1269,7 @@ export default function SuperAdminPage() {
                                         <label className={labelClass}>Telegram username (@ siz)</label>
                                         <input type="text" value={settingsFormData.tg_username}
                                             onChange={e => setSettingsFormData(p => ({ ...p, tg_username: e.target.value.trim() }))}
-                                            placeholder="chaqqon_support" className={inputClass} />
+                                            placeholder="smart_support" className={inputClass} />
                                     </div>
                                     <div>
                                         <label className={labelClass}>Telefon (ko&apos;rsatish uchun)</label>
@@ -1558,29 +1591,40 @@ const fmtM = (v: number) => new Intl.NumberFormat("uz-UZ").format(v || 0);
 function BillingSubscribeForm({ subForm, setSubForm }: { subForm: { tariffId: string; months: number }; setSubForm: (v: any) => void }) {
     const [tariffs, setTariffs] = useState<any[]>([]);
     useEffect(() => {
-        fetch("/api/super-admin/tariffs").then(r => r.json()).then(d => setTariffs(d.tariffs || [])).catch(() => {});
+        fetch("/api/super-admin/tariffs/all").then(r => r.json()).then(d => setTariffs(d.tariffs || [])).catch(() => {});
     }, []);
     const selectedTariff = tariffs.find(t => t.id === subForm.tariffId);
-    const total = selectedTariff ? (subForm.months === 12 ? selectedTariff.pricePerMonth * 10 : selectedTariff.pricePerMonth * subForm.months) : 0;
+    const isVip = selectedTariff?.pricePerMonth === 0;
+    const total = selectedTariff && !isVip ? (subForm.months === 12 ? selectedTariff.pricePerMonth * 10 : selectedTariff.pricePerMonth * subForm.months) : 0;
     return (
         <div className="space-y-3 mb-5">
             <div>
                 <label className="block text-xs font-bold text-slate-500 mb-1.5">Tarif</label>
-                <select value={subForm.tariffId} onChange={e => setSubForm((p: any) => ({ ...p, tariffId: e.target.value }))}
+                <select value={subForm.tariffId} onChange={e => setSubForm((p: any) => ({ ...p, tariffId: e.target.value, months: 1 }))}
                     className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-300 bg-white">
                     <option value="">— Tarif tanlang —</option>
                     {tariffs.filter(t => t.pricePerMonth > 0 && t.isActive).map(t => (
                         <option key={t.id} value={t.id}>{t.name} — {fmtM(t.pricePerMonth)} s/oy</option>
                     ))}
+                    {tariffs.filter(t => t.name === 'VIP').map(t => (
+                        <option key={t.id} value={t.id}>⭐ {t.name} (Bepul — faqat Super Admin)</option>
+                    ))}
                 </select>
             </div>
-            <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1.5">Muddat (oy)</label>
-                <select value={subForm.months} onChange={e => setSubForm((p: any) => ({ ...p, months: Number(e.target.value) }))}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-300 bg-white">
-                    {[1, 2, 3, 6, 12].map(m => <option key={m} value={m}>{m} oy{m === 12 ? " (20% chegirma)" : ""}</option>)}
-                </select>
-            </div>
+            {!isVip && (
+                <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1.5">Muddat (oy)</label>
+                    <select value={subForm.months} onChange={e => setSubForm((p: any) => ({ ...p, months: Number(e.target.value) }))}
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-300 bg-white">
+                        {[1, 2, 3, 6, 12].map(m => <option key={m} value={m}>{m} oy{m === 12 ? " (20% chegirma)" : ""}</option>)}
+                    </select>
+                </div>
+            )}
+            {isVip && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-sm text-yellow-700 font-semibold">
+                    ⭐ VIP tarif — 10 yil muddatga bepul beriladi
+                </div>
+            )}
             {subForm.tariffId && total > 0 && (
                 <div className="bg-blue-50 rounded-xl p-3 text-sm">
                     <span className="text-slate-500">Jami yechiladi: </span>

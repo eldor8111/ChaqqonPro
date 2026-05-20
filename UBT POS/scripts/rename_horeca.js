@@ -14,7 +14,7 @@ function walkAndRename(dir) {
         // Agar nomida 'horeca' bo'lsa
         let newName = item;
         if (newName.toLowerCase().includes('horeca')) {
-            newName = newName.replace(/horeca/g, 'ubt')
+            newName = newName.replace(/horeca/g, 'smart')
                              .replace(/Horeca/g, 'Ubt')
                              .replace(/HoReCa/g, 'UBT')
                              .replace(/HORECA/g, 'UBT');
@@ -45,7 +45,7 @@ function replaceInFile(filePath) {
     let content = fs.readFileSync(filePath, 'utf8');
     const original = content;
     
-    content = content.replace(/horeca/g, 'ubt');
+    content = content.replace(/horeca/g, 'smart');
     content = content.replace(/Horeca/g, 'Ubt');
     content = content.replace(/HoReCa/g, 'UBT');
     content = content.replace(/HORECA/g, 'UBT');

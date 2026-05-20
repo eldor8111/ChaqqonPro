@@ -35,7 +35,7 @@ export default function DashboardLayout({
             <div className="min-h-screen flex items-center justify-center bg-surface">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-glow animate-pulse bg-white">
-                        <img src="/logo.jpg" alt="ChaqqonPro" className="w-full h-full object-contain" />
+                        <img src="/smart-logo.svg" alt="SMART" className="w-full h-full object-contain" />
                     </div>
                     <p className="text-slate-400 text-sm animate-pulse">Yuklanmoqda...</p>
                 </div>
@@ -45,6 +45,19 @@ export default function DashboardLayout({
 
     const isBillingPage = pathname?.startsWith("/billing");
     const isSuspended = user?.tenant?.status === "suspended";
+
+    const settings = user?.tenant?.settings || {};
+    const useWarehouse = settings.useWarehouse ?? true;
+    const useCRM = settings.useCRM ?? false;
+    const useAnalytics = settings.useAnalytics ?? true;
+
+    // Route guard checking
+    const blockedFeatureName = (() => {
+        if (pathname?.startsWith("/smart/ombor") && !useWarehouse) return "Ombor boshqaruvi";
+        if (pathname?.startsWith("/smart/reports") && !useAnalytics) return "Analitika va Hisobotlar";
+        if (pathname?.startsWith("/smart/kontragent") && !useCRM) return "Mijozlar bilan ishlash (CRM)";
+        return null;
+    })();
 
     return (
         <div className="flex h-screen overflow-hidden bg-surface">
@@ -83,6 +96,22 @@ export default function DashboardLayout({
                                 className="bg-brand-500 text-white px-8 py-3 rounded-xl font-medium hover:bg-brand-600 transition-colors shadow-sm shadow-brand-500/20 w-full sm:w-auto text-lg"
                             >
                                 Obuna va To'lovlar
+                            </Link>
+                        </div>
+                    ) : blockedFeatureName ? (
+                        <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-surface-card rounded-2xl border border-surface-border animate-fade-in mx-auto max-w-2xl mt-12">
+                            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                                <Lock size={40} className="text-slate-400" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-3">Modul yopiq</h2>
+                            <p className="text-slate-500 mb-8 max-w-md">
+                                Tashkilotingiz sozlamalarida <b>{blockedFeatureName}</b> moduli o'chirib qo'yilgan. Bu moduldan foydalanish uchun ta'rif rejangizni yangilang yoki Super Admin bilan bog'laning.
+                            </p>
+                            <Link 
+                                href="/smart" 
+                                className="bg-brand-500 text-white px-8 py-3 rounded-xl font-medium hover:bg-brand-600 transition-colors shadow-sm shadow-brand-500/20 w-full sm:w-auto text-lg"
+                            >
+                                Asosiy sahifaga qaytish
                             </Link>
                         </div>
                     ) : (

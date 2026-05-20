@@ -135,7 +135,7 @@ function ClearReportsModal({ onClose }: { onClose: () => void }) {
         setError("");
         setLoading(true);
         try {
-            const res = await fetch("/api/ubt/reports/clear", { method: "DELETE" });
+            const res = await fetch("/api/smart/reports/clear", { method: "DELETE" });
             const data = await res.json();
             if (!res.ok) { setError(data.error || "Xatolik yuz berdi"); return; }
             setDone(data.deleted);
@@ -269,7 +269,7 @@ export default function UserProfile({ collapsed }: { collapsed?: boolean }) {
                     </button>
 
                     <button
-                        onClick={() => { router.push("/ubt/settings/printers"); setShowUser(false); }}
+                        onClick={() => { router.push("/smart/settings/printers"); setShowUser(false); }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-surface-elevated transition-colors"
                     >
                         <Printer size={15} className="text-slate-500 dark:text-slate-400" /> Printerlar

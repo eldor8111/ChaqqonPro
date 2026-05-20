@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const targetDir = path.join(__dirname, 'src', 'app', '(dashboard)', 'ubt');
+const targetDir = path.join(__dirname, 'src', 'app', '(dashboard)', 'smart');
 
 const translationsKeys = {
     // Davomat

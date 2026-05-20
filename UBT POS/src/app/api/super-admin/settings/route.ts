@@ -5,7 +5,7 @@ import { getSuperSession } from "@/lib/backend/auth";
 const DEFAULT_SETTINGS: Record<string, string> = {
     card_number: "8600 0000 0000 0000",
     card_owner:  "Karta egasi",
-    tg_username: "chaqqon_support",
+    tg_username: "smart_support",
     phone:       "+998 99 000 00 00",
     phone_raw:   "+998990000000",
 };

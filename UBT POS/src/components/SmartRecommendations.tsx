@@ -96,7 +96,7 @@ export default function SmartRecommendations({
                 headers["Authorization"] = `Bearer ${tenantToken}`;
             }
 
-            const res = await fetch(`/api/ubt/recommendations?${params}`, {
+            const res = await fetch(`/api/smart/recommendations?${params}`, {
                 headers
             });
 
@@ -120,7 +120,7 @@ export default function SmartRecommendations({
     const handleClick = async (rec: Recommendation) => {
         // Track click
         try {
-            await fetch("/api/ubt/recommendations", {
+            await fetch("/api/smart/recommendations", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: rec.id, action: "click" })
@@ -132,7 +132,7 @@ export default function SmartRecommendations({
 
         // Track conversion
         try {
-            await fetch("/api/ubt/recommendations", {
+            await fetch("/api/smart/recommendations", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: rec.id, action: "conversion" })

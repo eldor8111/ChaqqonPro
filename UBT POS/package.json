@@ -1,7 +1,7 @@
 {
-    "name": "ubt-pos",
+    "name": "smart-pos",
     "version": "1.0.0",
-    "description": "UBT POS - Professional POS & ERP System for Uzbekistan Market",
+    "description": "SMART POS - Professional POS & ERP System for Uzbekistan Market",
     "private": true,
     "scripts": {
         "dev": "next dev -p 3005",

@@ -9,8 +9,8 @@ async function main() {
     await prisma.transactionItem.deleteMany({});
     await prisma.transaction.deleteMany({});
     await prisma.kDSOrder.deleteMany({});
-    await prisma.ubtReservation.deleteMany({});
-    await prisma.ubtTable.deleteMany({});
+    await prisma.smartReservation.deleteMany({});
+    await prisma.smartTable.deleteMany({});
     await prisma.pharmacyDrug.deleteMany({});
     await prisma.inventoryWriteoff.deleteMany({});
     await prisma.inventoryCount.deleteMany({});
@@ -96,7 +96,7 @@ async function main() {
             status: "active",
             adminUsername: "zimzim",
             adminPasswordHash: ubtPasswordHash,
-            settings: JSON.stringify({ shopType: "ubt" }),
+            settings: JSON.stringify({ shopType: "smart" }),
         },
     });
 
@@ -372,7 +372,7 @@ async function main() {
 
     for (const { section, count } of ubtLayout) {
         for (let i = 1; i <= count; i++) {
-            await prisma.ubtTable.create({
+            await prisma.smartTable.create({
                 data: {
                     tenantId: ubtTenant.id,
                     tableNumber: String(i),
@@ -387,7 +387,7 @@ async function main() {
 
     // ===== Old tenant1 UBT tables (simple) =====
     for (let i = 1; i <= 8; i++) {
-        await prisma.ubtTable.create({
+        await prisma.smartTable.create({
             data: {
                 tenantId: tenant1.id,
                 tableNumber: String(i),

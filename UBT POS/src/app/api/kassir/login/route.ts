@@ -148,11 +148,11 @@ export async function POST(request: NextRequest) {
             staffPrinterIp = phoneData.printerIp || "";
         } catch { staffPrinterIp = ""; }
 
-        // Fallback: agar xodimda printerIp yo'q bo'lsa, UbtPrinter jadvalidan birinchi printerni olish
+        // Fallback: agar xodimda printerIp yo'q bo'lsa, SmartPrinter jadvalidan birinchi printerni olish
         if (!staffPrinterIp) {
             try {
                 const printers: any[] = await (prisma.$queryRawUnsafe(
-                    `SELECT ipAddress, port FROM UbtPrinter WHERE tenantId=? ORDER BY createdAt ASC LIMIT 1`,
+                    `SELECT ipAddress, port FROM SmartPrinter WHERE tenantId=? ORDER BY createdAt ASC LIMIT 1`,
                     authenticatedTenant.id
                 ) as Promise<any[]>);
                 if (printers.length > 0) {

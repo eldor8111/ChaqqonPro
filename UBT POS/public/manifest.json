@@ -1,7 +1,7 @@
 {
-  "name": "ChaqqonPro – Admin Panel",
-  "short_name": "ChaqqonPro",
-  "description": "Restoran, kafe va mehmonxonalar uchun professional POS va ERP tizimi – ChaqqonPro",
+  "name": "SMART – Admin Panel",
+  "short_name": "SMART",
+  "description": "Restoran, kafe va mehmonxonalar uchun professional POS va ERP tizimi – SMART",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
@@ -9,7 +9,7 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "uz",
-  "id": "chaqqonpro-admin",
+  "id": "SMART POS-admin",
   "categories": ["business", "productivity", "finance"],
   "prefer_related_applications": false,
   "icons": [
@@ -67,14 +67,14 @@
       "name": "Dashboard",
       "short_name": "Bosh sahifa",
       "description": "Kunlik savdo va statistika",
-      "url": "/ubt",
+      "url": "/smart",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
       "name": "Hisobotlar",
       "short_name": "Hisobotlar",
       "description": "Moliyaviy hisobotlar",
-      "url": "/ubt/reports",
+      "url": "/smart/reports",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ],

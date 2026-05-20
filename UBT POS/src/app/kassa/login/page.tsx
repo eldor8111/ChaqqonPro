@@ -42,7 +42,7 @@ export default function KassirLoginPage() {
     // Redirect if already logged in
     useEffect(() => {
         if (kassirSession) {
-            router.replace("/ubt-pos");
+            router.replace("/smart-pos");
         }
     }, [kassirSession, router]);
 
@@ -105,7 +105,7 @@ export default function KassirLoginPage() {
             const data = await res.json();
             if (data.success && data.staff) {
                 setKassirSession({ ...data.staff, token: deviceSession?.token, shopCode: deviceSession?.shopCode, shopType: deviceSession?.shopType });
-                router.push("/ubt-pos");
+                router.push("/smart-pos");
             } else { setPinError(data.error || "Parol noto'g'ri"); setPin(""); }
         } catch { setPinError("Tarmoq xatosi"); }
         finally { setPinLoading(false); }
@@ -155,7 +155,7 @@ export default function KassirLoginPage() {
                 <div className="relative z-10 w-full max-w-md mx-4 animate-fade-in">
                     <div className="text-center mb-8">
                         <div className="mx-auto mb-2 relative flex justify-center">
-                            <img src="/logo-pos.png" alt="ChaqqonPro" className="w-[300px] object-contain drop-shadow-2xl mix-blend-screen" />
+                            <img src="/smart-logo-white.svg" alt="SMART" className="w-[300px] object-contain drop-shadow-2xl" />
                         </div>
                         <p className="text-white/50 text-sm mt-1 font-medium tracking-widest uppercase">Qurilma Avtorizatsiyasi</p>
                     </div>
@@ -273,7 +273,7 @@ export default function KassirLoginPage() {
                         </button>
                         <div className="flex items-center gap-2">
                             <UtensilsCrossed size={18} className="text-amber-400" />
-                            <span className="text-white font-bold text-sm">ChaqqonPro</span>
+                            <span className="text-white font-bold text-sm">SMART</span>
                             <span className="text-white/30 text-xs">•</span>
                             <span className="text-white/50 text-xs">{deviceSession.branch}</span>
                         </div>
@@ -414,7 +414,7 @@ export default function KassirLoginPage() {
             <div className="relative z-10 flex flex-col items-center gap-8 animate-fade-in">
                 {/* Logo */}
                 <div className="text-center">
-                    <img src="/logo-pos.png" alt="ChaqqonPro" className="w-[500px] max-w-[90vw] mx-auto drop-shadow-2xl mix-blend-screen" />
+                    <img src="/smart-logo-white.svg" alt="SMART" className="w-[500px] max-w-[90vw] mx-auto drop-shadow-2xl" />
                     <p className="text-white/60 font-medium mt-2 text-lg tracking-widest uppercase">{deviceSession.branch}</p>
                     <p className="text-white/25 text-sm mt-1">{new Date().toLocaleDateString("uz-UZ", { weekday: "long", day: "numeric", month: "long" })}</p>
                 </div>

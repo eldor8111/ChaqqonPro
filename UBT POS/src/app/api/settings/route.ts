@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/backend/auth";
 import { prisma } from "@/lib/backend/db";
 import { createAuditLog } from "@/lib/backend/audit";
+import { PrinterService } from "@/lib/services/PrinterService";
 
 export async function GET(request: NextRequest) {
     try {
@@ -53,6 +54,8 @@ export async function PUT(request: NextRequest) {
             });
 
             await createAuditLog(tenantId, session.userId ? "Admin" : "System", "Sozlamalar yangilandi", typeof body.settings?.branches !== "undefined" ? "Filiallar o'zgardi" : "Tizim sozlamalari", "update");
+            
+            PrinterService.invalidateReceiptCache(tenantId);
         }
 
         return NextResponse.json({ success: true });

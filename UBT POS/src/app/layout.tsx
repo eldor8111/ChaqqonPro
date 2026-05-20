@@ -5,41 +5,41 @@ import { ThemeProvider } from "@/lib/LangContext";
 import QueryProvider from "./QueryProvider";
 
 export const metadata: Metadata = {
-    title: "ChaqqonPro – Restoran va Kafe uchun POS & ERP Tizimi",
-    description: "ChaqqonPro — O'zbekistondagi restoran, kafe va mehmonxonalar uchun eng qulay POS va ERP tizimi. Buyurtma boshqaruvi, ombor, moliya va xodimlar hisobi bir joyda.",
+    title: "SMART – Restoran va Kafe uchun POS & ERP Tizimi",
+    description: "SMART — O'zbekistondagi restoran, kafe va mehmonxonalar uchun eng qulay POS va ERP tizimi. Buyurtma boshqaruvi, ombor, moliya va xodimlar hisobi bir joyda.",
     keywords: [
         "POS tizimi", "ERP tizimi", "restoran dasturi", "kafe boshqaruvi",
-        "savdo tizimi", "ChaqqonPro", "O'zbekiston POS", "ombor boshqaruvi",
+        "savdo tizimi", "SMART", "O'zbekiston POS", "ombor boshqaruvi",
         "moliya hisobi", "buyurtma tizimi", "restaurant software", "uzbekistan pos",
     ],
-    authors: [{ name: "ChaqqonPro", url: "https://chaqqonpro.e-code.uz" }],
-    creator: "ChaqqonPro",
-    publisher: "ChaqqonPro",
-    metadataBase: new URL("https://chaqqonpro.e-code.uz"),
+    authors: [{ name: "SMART", url: "https://smart.e-code.uz" }],
+    creator: "SMART",
+    publisher: "SMART",
+    metadataBase: new URL("https://smart.e-code.uz"),
     alternates: {
-        canonical: "https://chaqqonpro.e-code.uz",
+        canonical: "https://smart.e-code.uz",
     },
     openGraph: {
-        title: "ChaqqonPro – Restoran va Kafe uchun POS & ERP Tizimi",
+        title: "SMART – Restoran va Kafe uchun POS & ERP Tizimi",
         description: "O'zbekistondagi restoran, kafe va mehmonxonalar uchun eng qulay POS va ERP tizimi. Buyurtma boshqaruvi, ombor, moliya va xodimlar hisobi bir joyda.",
-        url: "https://chaqqonpro.e-code.uz",
-        siteName: "ChaqqonPro",
+        url: "https://smart.e-code.uz",
+        siteName: "SMART",
         locale: "uz_UZ",
         type: "website",
         images: [
             {
-                url: "/logo.jpg",
+                url: "/smart-logo.svg",
                 width: 1200,
                 height: 630,
-                alt: "ChaqqonPro – POS & ERP Tizimi",
+                alt: "SMART – POS & ERP Tizimi",
             },
         ],
     },
     twitter: {
         card: "summary_large_image",
-        title: "ChaqqonPro – Restoran va Kafe uchun POS & ERP Tizimi",
+        title: "SMART – Restoran va Kafe uchun POS & ERP Tizimi",
         description: "O'zbekistondagi restoran, kafe va mehmonxonalar uchun eng qulay POS va ERP tizimi.",
-        images: ["/logo.jpg"],
+        images: ["/smart-logo.svg"],
     },
     robots: {
         index: true,
@@ -67,7 +67,7 @@ export default function RootLayout({
                 <meta name="mobile-web-app-capable" content="yes" />
                 <meta name="apple-mobile-web-app-capable" content="yes" />
                 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-                <meta name="apple-mobile-web-app-title" content="ChaqqonPro" />
+                <meta name="apple-mobile-web-app-title" content="SMART" />
                 <link rel="manifest" href="/manifest.json" />
                 <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -82,9 +82,9 @@ export default function RootLayout({
                         __html: JSON.stringify({
                             "@context": "https://schema.org",
                             "@type": "SoftwareApplication",
-                            "name": "ChaqqonPro",
+                            "name": "SMART",
                             "description": "O'zbekistondagi restoran, kafe va mehmonxonalar uchun POS va ERP tizimi",
-                            "url": "https://chaqqonpro.e-code.uz",
+                            "url": "https://smart.e-code.uz",
                             "applicationCategory": "BusinessApplication",
                             "operatingSystem": "Web",
                             "inLanguage": "uz",
@@ -95,8 +95,8 @@ export default function RootLayout({
                             },
                             "provider": {
                                 "@type": "Organization",
-                                "name": "ChaqqonPro",
-                                "url": "https://chaqqonpro.e-code.uz"
+                                "name": "SMART",
+                                "url": "https://smart.e-code.uz"
                             }
                         })
                     }}

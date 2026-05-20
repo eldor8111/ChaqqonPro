@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
             // Eskiz provider orqali SMS jo'natish
             // (Test vaqti provayder ishlamasa console.log ga qarab yoxud "777777" orqali kirish mumkin)
-            const message = `Sizning ChaqqonPro tizimi uchun tasdiqlash kodingiz: ${otpCode}`;
+            const message = `Sizning SMART tizimi uchun tasdiqlash kodingiz: ${otpCode}`;
             
             // Xatoliklarga qaramay kodni keshga saqlaymiz, sababi: test muhliti uchun SMS kelsin/kelmasin baribir Console'da chiquvchi log imkoni bor
             otpCache.set(normalizedPhone, {

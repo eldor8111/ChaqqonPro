@@ -13,7 +13,7 @@ export interface User {
         plan: string;
         status?: string;
         settings?: {
-            shopType?: "shop" | "ubt" | "pharmacy";
+            shopType?: "shop" | "smart" | "pharmacy";
             [key: string]: any;
         };
     };
@@ -98,7 +98,7 @@ export const useFrontendStore = create<FrontendStore>()(
             },
         }),
         {
-            name: "ubt-frontend-storage",
+            name: "smart-frontend-storage",
             storage: createJSONStorage(() => localStorage),
             partialize: (state) => ({
                 // Only persist essential state — _hasHydrated is intentionally excluded

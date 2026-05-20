@@ -71,7 +71,7 @@ export const useSuperAdminStore = create<SuperAdminStore>()(
             },
         }),
         {
-            name: 'ubt-super-admin-storage',
+            name: 'smart-super-admin-storage',
             storage: createJSONStorage(() => localStorage),
         }
     )

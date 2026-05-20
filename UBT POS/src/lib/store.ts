@@ -6,17 +6,17 @@ import {
     mockBranches, mockStaff, mockFraudAlerts, mockCustomers,
     mockOnlineOrders, mockPharmacyDrugs,
     mockWholesaleClients, mockProfitLoss,
-    mockUbtTables, mockKDSOrders,
+    mockSmartTables, mockKDSOrders,
     mockNomenklaturaKategoriyalar, mockNomenklaturaTaomlar, mockNomenklaturaXomashyo
 } from "./mockData";
 
 // Multi-tenant storage key helper
 const getStorageKey = (): string => {
     if (typeof window !== "undefined") {
-        const activeShop = localStorage.getItem("ubt-active-shop");
-        return activeShop ? `ubt-pos-storage-v2-${activeShop}` : "ubt-pos-storage-v2";
+        const activeShop = localStorage.getItem("smart-active-shop");
+        return activeShop ? `smart-pos-storage-v2-${activeShop}` : "smart-pos-storage-v2";
     }
-    return "ubt-pos-storage-v2";
+    return "smart-pos-storage-v2";
 };
 
 export interface Transaction {
@@ -114,7 +114,7 @@ const mockWriteoffs: InventoryWriteoff[] = [];
 export const ALL_PERMISSIONS = [
     // Modullar
     "pos", "inventory", "crm", "reports", "staff",
-    "ai", "ubt", "pharmacy", "wholesale", "ecommerce",
+    "ai", "smart", "pharmacy", "wholesale", "ecommerce",
     // Amallar
     "discounts", "refunds", "priceEdit", "stockEdit",
     "reportExport", "customerEdit", "shiftManage",
@@ -128,8 +128,8 @@ export const ROLE_DEFAULT_PERMISSIONS: Record<string, Permission[]> = {
     "Menejer": ["pos", "inventory", "crm", "reports", "discounts", "refunds", "priceEdit", "stockEdit", "reportExport", "customerEdit", "shiftManage"],
     "Kassir": ["pos", "discounts", "refunds"],
     "Omborchi": ["inventory", "stockEdit"],
-    "Ofitsiant": ["ubt", "waiterApp"],
-    "Kuryer": ["ubt", "deliveryApp"],
+    "Ofitsiant": ["smart", "waiterApp"],
+    "Kuryer": ["smart", "deliveryApp"],
     "Manablog": ["pos"],
 };
 
@@ -178,7 +178,7 @@ export interface PharmacyDrug {
 }
 
 // ===== UBT TYPES =====
-export interface UbtTable {
+export interface SmartTable {
     id: string;
     name: string;
     seats: number;
@@ -264,7 +264,7 @@ export interface AppState {
     writeoffs: InventoryWriteoff[];
 
     // UBT Data
-    ubtTables: UbtTable[];
+    smartTables: SmartTable[];
     kdsOrders: KDSOrder[];
     nomenklaturaKategoriyalar: NomenklaturaKategoriya[];
     nomenklaturaTaomlar: NomenklaturaTaom[];
@@ -322,12 +322,12 @@ export interface AppState {
     deleteDrug: (id: string) => void;
 
     // UBT Actions
-    fetchUbtTables: () => Promise<void>;
+    fetchSmartTables: () => Promise<void>;
     fetchKdsOrders: () => Promise<void>;
-    updateTableStatus: (id: string, updates: Partial<UbtTable>) => Promise<void>;
+    updateTableStatus: (id: string, updates: Partial<SmartTable>) => Promise<void>;
     updateKDSOrderStatus: (id: string, status: KDSOrder["status"]) => Promise<void>;
     addKDSOrder: (tableId: string, description: string) => Promise<void>;
-    addUbtReservation: (tableId: string, guestName: string, since: string) => void;
+    addSmartReservation: (tableId: string, guestName: string, since: string) => void;
     payTable: (params: {
         tableId: string;
         items: { name: string; qty: number; price: number }[];
@@ -394,7 +394,7 @@ export const useStore = create<AppState>()(
             transfers: [...mockTransfers],
             inventoryCounts: [...mockInventoryCounts],
             writeoffs: [...mockWriteoffs],
-            ubtTables: [...mockUbtTables] as UbtTable[],
+            smartTables: [...mockSmartTables] as SmartTable[],
             kdsOrders: [...mockKDSOrders] as KDSOrder[],
             nomenklaturaKategoriyalar: [...mockNomenklaturaKategoriyalar] as NomenklaturaKategoriya[],
             nomenklaturaTaomlar: [...mockNomenklaturaTaomlar] as NomenklaturaTaom[],
@@ -584,7 +584,7 @@ export const useStore = create<AppState>()(
             deleteDrug: (id) =>
                 set((state) => ({ pharmacyDrugs: state.pharmacyDrugs.filter(d => d.id !== id) })),
 
-            fetchUbtTables: async () => {
+            fetchSmartTables: async () => {
                 try {
                     // Get token from store (kassir or device session)
                     const state = useStore.getState();
@@ -592,7 +592,7 @@ export const useStore = create<AppState>()(
                     const headers: Record<string, string> = {};
                     if (token) headers["Authorization"] = `Bearer ${token}`;
 
-                    const res = await fetch("/api/ubt/tables", { headers });
+                    const res = await fetch("/api/smart/tables", { headers });
                     if (res.ok) {
                         const data = await res.json();
                         if (data.tables) {
@@ -608,7 +608,7 @@ export const useStore = create<AppState>()(
                                 waiter: t.waiter || undefined,
                                 serviceFee: t.serviceFee ?? 0,
                             }));
-                            set({ ubtTables: mapped });
+                            set({ smartTables: mapped });
                         }
                     }
                 } catch (err) {
@@ -618,7 +618,7 @@ export const useStore = create<AppState>()(
 
             fetchKdsOrders: async () => {
                 try {
-                    const res = await fetch("/api/ubt/orders");
+                    const res = await fetch("/api/smart/orders");
                     if (res.ok) {
                         const data = await res.json();
                         if (data.orders) {
@@ -639,24 +639,24 @@ export const useStore = create<AppState>()(
 
             updateTableStatus: async (id, updates) => {
                 // Save previous state for rollback
-                const prev = useStore.getState().ubtTables;
+                const prev = useStore.getState().smartTables;
                 // Optimistic local update
                 set((state) => ({
-                    ubtTables: state.ubtTables.map(t =>
+                    smartTables: state.smartTables.map(t =>
                         t.id === id ? { ...t, ...updates } : t
                     ),
                 }));
                 // Call API, rollback on failure
                 try {
-                    const res = await fetch("/api/ubt/tables", {
+                    const res = await fetch("/api/smart/tables", {
                         method: "PUT",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ id, ...updates })
                     });
-                    if (!res.ok) set({ ubtTables: prev });
+                    if (!res.ok) set({ smartTables: prev });
                 } catch (e) {
                     console.error(e);
-                    set({ ubtTables: prev });
+                    set({ smartTables: prev });
                 }
             },
 
@@ -669,7 +669,7 @@ export const useStore = create<AppState>()(
                 }));
                 // Persist to API (id here is last-4 chars of DB id — best effort)
                 try {
-                    await fetch("/api/ubt/orders", {
+                    await fetch("/api/smart/orders", {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ idSuffix: id, status }),
@@ -679,7 +679,7 @@ export const useStore = create<AppState>()(
 
             addKDSOrder: async (tableId, description) => {
                 try {
-                    const res = await fetch("/api/ubt/orders", {
+                    const res = await fetch("/api/smart/orders", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ tableId, description })
@@ -693,7 +693,7 @@ export const useStore = create<AppState>()(
 
             payTable: async ({ tableId, items, paymentMethod, total, waiterName, tableLabel }) => {
                 try {
-                    const res = await fetch("/api/ubt/pay", {
+                    const res = await fetch("/api/smart/pay", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ tableId, items, paymentMethod, total, waiterName, tableLabel }),
@@ -702,7 +702,7 @@ export const useStore = create<AppState>()(
                     if (res.ok && data.success) {
                         // Optimistic local update
                         set((state) => ({
-                            ubtTables: state.ubtTables.map(t =>
+                            smartTables: state.smartTables.map(t =>
                                 t.id === tableId
                                     ? { ...t, status: "free" as const, amount: 0, order: null, since: null, waiter: undefined }
                                     : t
@@ -717,17 +717,17 @@ export const useStore = create<AppState>()(
                 }
             },
 
-            addUbtReservation: (tableId, guestName, since) =>
+            addSmartReservation: (tableId, guestName, since) =>
                 set((state) => {
                     const updates = { status: "reserved" as const, since, order: guestName || null, amount: 0 };
                     // Async put request without awaiting to keep it snappy.
-                    fetch("/api/ubt/tables", {
+                    fetch("/api/smart/tables", {
                         method: "PUT",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ id: tableId, ...updates })
                     });
                     return {
-                        ubtTables: state.ubtTables.map(t =>
+                        smartTables: state.smartTables.map(t =>
                             t.id === tableId
                                 ? { ...t, ...updates }
                                 : t
@@ -825,7 +825,7 @@ export const useStore = create<AppState>()(
             clearTenantData: () =>
                 set({
                     receipts: [], expenditures: [], transfers: [], inventoryCounts: [], writeoffs: [],
-                    ubtTables: [], kdsOrders: [],
+                    smartTables: [], kdsOrders: [],
                     nomenklaturaKategoriyalar: [], nomenklaturaTaomlar: [], nomenklaturaXomashyo: [],
                     staff: [], fraudAlerts: [], customers: [],
                     products: [], topProducts: [], recentTransactions: [], pharmacyDrugs: [],
@@ -853,18 +853,12 @@ export const useStore = create<AppState>()(
             // ⚡ PERFORMANCE: Only persist small, auth-critical data.
             // Large arrays (nomenklatura with base64 images, customers, receipts, etc.)
             // are excluded — they are loaded from the API on demand.
-            // ubtTables is also excluded — fetched fresh every 10s from API.
+            // smartTables is also excluded — fetched fresh every 10s from API.
             partialize: (state) => ({
                 isAuthenticated: state.isAuthenticated,
                 user: state.user,
                 deviceSession: state.deviceSession,
                 kassirSession: state.kassirSession,
-                // Persist nomenklatura WITHOUT image field to avoid base64 bloat.
-                // staff is NOT persisted — staff page uses React Query (API fetch),
-                // so serializing it to localStorage on every action wastes CPU/IO.
-                nomenklaturaKategoriyalar: state.nomenklaturaKategoriyalar,
-                nomenklaturaTaomlar: state.nomenklaturaTaomlar.map(t => ({ ...t, image: null })),
-                nomenklaturaXomashyo: state.nomenklaturaXomashyo,
             }),
         }
     )

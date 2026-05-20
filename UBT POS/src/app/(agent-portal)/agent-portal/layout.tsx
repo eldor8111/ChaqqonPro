@@ -41,7 +41,7 @@ export default function AgentPortalLayout({
             <aside className="w-64 bg-slate-800 border-r border-slate-700 hidden md:flex flex-col">
                 <div className="p-6 border-b border-slate-700">
                     <h2 className="text-xl font-black text-sky-400">Agent Portal</h2>
-                    <p className="text-xs text-slate-400">ChaqqonPro CRM</p>
+                    <p className="text-xs text-slate-400">SMART CRM</p>
                 </div>
                 <nav className="flex-1 p-4 space-y-2">
                     <Link href="/agent-portal" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-sky-500/10 text-sky-400 font-medium">

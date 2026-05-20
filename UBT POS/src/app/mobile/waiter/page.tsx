@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useStore, UbtTable } from "@/lib/store";
+import { useStore, SmartTable } from "@/lib/store";
 import { UtensilsCrossed, LogOut, ChevronLeft, Plus, Minus, Send, BarChart2, RefreshCw, X, Search, Check, Clock, TrendingUp, ShoppingBag } from "lucide-react";
 
 interface MenuItem { id: string; name: string; categoryId: string; price: number; image?: string; inStock: boolean; }
@@ -18,7 +18,7 @@ export default function MobileWaiterPage() {
     const store = useStore();
     const [mounted, setMounted] = useState(false);
     const [view, setView] = useState<ViewType>("tables");
-    const [selectedTable, setSelectedTable] = useState<UbtTable | null>(null);
+    const [selectedTable, setSelectedTable] = useState<SmartTable | null>(null);
     const [menu, setMenu] = useState<MenuItem[]>([]);
     const [cats, setCats] = useState<Category[]>([]);
     const [activeCat, setActiveCat] = useState<string>("all");
@@ -38,7 +38,7 @@ export default function MobileWaiterPage() {
     const fetchMenu = useCallback(async () => {
         if (!token) return;
         try {
-            const res = await fetch("/api/ubt/menu", { headers: { Authorization: `Bearer ${token}` } });
+            const res = await fetch("/api/smart/menu", { headers: { Authorization: `Bearer ${token}` } });
             if (res.ok) { const d = await res.json(); setMenu(d.items ?? []); setCats(d.categories ?? []); }
         } catch {}
     }, [token]);
@@ -55,9 +55,9 @@ export default function MobileWaiterPage() {
     useEffect(() => {
         setMounted(true);
         if (!store.kassirSession) { router.replace("/"); return; }
-        store.fetchUbtTables();
+        store.fetchSmartTables();
         fetchMenu();
-        const ti = setInterval(() => store.fetchUbtTables(), 15000);
+        const ti = setInterval(() => store.fetchSmartTables(), 15000);
         return () => clearInterval(ti);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [store.kassirSession, router]);
@@ -90,7 +90,7 @@ export default function MobileWaiterPage() {
                 name: c.name,
             }));
 
-            const res = await fetch("/api/ubt/orders-db", {
+            const res = await fetch("/api/smart/orders-db", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
@@ -104,7 +104,7 @@ export default function MobileWaiterPage() {
             if (res.ok) {
                 setSent(true);
                 setCart([]);
-                setTimeout(() => { setSent(false); setSelectedTable(null); setView("tables"); store.fetchUbtTables(); }, 1800);
+                setTimeout(() => { setSent(false); setSelectedTable(null); setView("tables"); store.fetchSmartTables(); }, 1800);
             } else {
                 const err = await res.json();
                 alert(err.error || "Zakaz yuborishda xatolik");
@@ -113,7 +113,7 @@ export default function MobileWaiterPage() {
         finally { setSending(false); }
     };
 
-    const openTable = async (t: UbtTable) => {
+    const openTable = async (t: SmartTable) => {
         setSelectedTable(t);
         setCart([]);
         setExistingCart([]);
@@ -122,7 +122,7 @@ export default function MobileWaiterPage() {
         // Agar stol band bo'lsa — bazadagi mavjud zakazlarni yuklash
         if (t.status === "occupied" || t.status === "receipt") {
             try {
-                const res = await fetch(`/api/ubt/orders-db?tableId=${t.id}`, {
+                const res = await fetch(`/api/smart/orders-db?tableId=${t.id}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 if (res.ok) {
@@ -464,11 +464,11 @@ export default function MobileWaiterPage() {
     }
 
     // ─── TABLES VIEW ─────────────────────────────────────────────────────────
-    const uniqueZones = Array.from(new Set(store.ubtTables.map(t => t.zone).filter(Boolean)));
+    const uniqueZones = Array.from(new Set(store.smartTables.map(t => t.zone).filter(Boolean)));
 
     return (
         <div className="flex flex-col min-h-screen bg-slate-50">
-            <Header title="Chaqqon Mobile" sub={`${sess.name} · Ofitsiant`} />
+            <Header title="SMART Mobile" sub={`${sess.name} · Ofitsiant`} />
             <main className="flex-1 overflow-y-auto p-4 pb-10">
                 {!activeZone ? (
                     <>
@@ -479,12 +479,12 @@ export default function MobileWaiterPage() {
                             <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
                                 <UtensilsCrossed size={36} className="text-slate-200" />
                                 <p className="font-bold text-slate-500">Zonalar topilmadi</p>
-                                <button onClick={() => store.fetchUbtTables()} className="px-5 py-2.5 bg-blue-500 text-white rounded-xl text-sm font-bold flex items-center gap-2 active:scale-95"><RefreshCw size={13} /> Yangilash</button>
+                                <button onClick={() => store.fetchSmartTables()} className="px-5 py-2.5 bg-blue-500 text-white rounded-xl text-sm font-bold flex items-center gap-2 active:scale-95"><RefreshCw size={13} /> Yangilash</button>
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 gap-3">
                                 {uniqueZones.map(zone => {
-                                    const zoneTables = store.ubtTables.filter(t => t.zone === zone);
+                                    const zoneTables = store.smartTables.filter(t => t.zone === zone);
                                     const busyCount = zoneTables.filter(t => t.status === "occupied" || t.status === "receipt").length;
                                     return (
                                         <button
@@ -511,7 +511,7 @@ export default function MobileWaiterPage() {
                             </button>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                            {store.ubtTables.filter(t => t.zone === activeZone).map(t => {
+                            {store.smartTables.filter(t => t.zone === activeZone).map(t => {
                                 const isBusy = t.status === "occupied";
                                 const isReceipt = t.status === "receipt";
                                 const isMine = isBusy && t.waiter === sess.name;

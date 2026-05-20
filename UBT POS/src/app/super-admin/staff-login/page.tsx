@@ -107,7 +107,7 @@ export default function StaffLoginPage() {
                         <ShieldCheck size={32} className="text-sky-400" />
                     </div>
                     <h1 className="text-2xl font-bold text-sky-500 tracking-tight">Xodim Sifatida Kirish</h1>
-                    <p className="text-slate-400 mt-2 text-sm">ChaqqonPro Super Admin Platformasi</p>
+                    <p className="text-slate-400 mt-2 text-sm">SMART Super Admin Platformasi</p>
                 </div>
 
                 <div className="relative mb-6 z-50">

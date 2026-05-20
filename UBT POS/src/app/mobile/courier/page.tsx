@@ -44,7 +44,7 @@ export default function MobileCourierPage() {
         if (!token) return;
         setOrdersLoading(true);
         try {
-            const res = await fetch("/api/ubt/yetkazish", { headers: { Authorization: `Bearer ${token}` } });
+            const res = await fetch("/api/smart/yetkazish", { headers: { Authorization: `Bearer ${token}` } });
             if (res.ok) {
                 const data = await res.json();
                 setOrders((data.orders || []).filter((o: DeliveryOrder) => o.status !== "delivered"));
@@ -74,7 +74,7 @@ export default function MobileCourierPage() {
 
     const markDelivered = async (id: string) => {
         if (!token) return;
-        await fetch(`/api/ubt/yetkazish/${id}`, {
+        await fetch(`/api/smart/yetkazish/${id}`, {
             method: "PATCH",
             headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
             body: JSON.stringify({ status: "delivered" }),
@@ -192,7 +192,7 @@ export default function MobileCourierPage() {
             <header className="bg-white shadow-sm px-4 pt-4 pb-0 sticky top-0 z-10">
                 <div className="flex items-center justify-between mb-3">
                     <div>
-                        <h1 className="text-lg font-black text-slate-800 leading-tight">Chaqqon Mobile</h1>
+                        <h1 className="text-lg font-black text-slate-800 leading-tight">SMART Mobile</h1>
                         <p className="text-xs font-semibold text-red-600 uppercase tracking-widest">{store.kassirSession.name} · Kuryer</p>
                     </div>
                     <div className="flex items-center gap-2">

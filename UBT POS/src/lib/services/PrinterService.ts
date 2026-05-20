@@ -96,11 +96,39 @@ export interface PrintJob {
 interface ReceiptOpts {
     shopName: string;
     customShopName: string;
+    shopNameFontSize: number;
+    shopNameAlign: string;
+    shopNameBold: boolean;
     headerText: string;
+    headerFontSize: number;
+    headerAlign: string;
+    headerBold: boolean;
     footerText: string;
+    footerFontSize: number;
+    footerAlign: string;
+    footerBold: boolean;
     servicePercent: number;
     showQr: boolean;
     qrUrl: string;
+    showCashierName: boolean;
+    kitchenShowTable: boolean;
+    kitchenShowWaiter: boolean;
+    kitchenShowOrderNo: boolean;
+    kitchenShowTime: boolean;
+    kitchenShowNote: boolean;
+    kitchenShowOrderType: boolean;
+    kitchenItemFontSize: number;
+    kitchenHeaderText: string;
+}
+
+function alignCode(align: string): number {
+    if (align === "right") return 2;
+    if (align === "center") return 1;
+    return 0;
+}
+
+function sizeCmd(px: number): Buffer {
+    return px >= 18 ? cmd.doubleHW() : cmd.normal();
 }
 
 // ─── Receipt settings cache ──────────────────────────────────────────────────
@@ -117,41 +145,77 @@ async function getReceiptOpts(tenantId?: string): Promise<ReceiptOpts> {
         let settings: Record<string, unknown> = {};
         try { settings = JSON.parse((tenant as { settings?: string }).settings || "{}"); } catch {}
         const r = (settings.receiptSettings ?? {}) as Record<string, any>;
-        const h = (settings.ubtSettings  ?? {}) as Record<string, any>;
+        const h = (settings.smartSettings  ?? {}) as Record<string, any>;
+        const k = (settings.kitchenReceiptSettings ?? {}) as Record<string, any>;
 
         const opts: ReceiptOpts = {
             shopName:       tenant.shopName || "RESTORAN",
             customShopName: (r.customShopName as string) || "",
+            shopNameFontSize: Number(r.shopNameFontSize) || 20,
+            shopNameAlign:  (r.shopNameAlign as string) || "center",
+            shopNameBold:   r.shopNameBold !== false, // default true
             headerText:     r.headerText    || "XARIDINGIZ UCHUN RAXMAT!",
+            headerFontSize: Number(r.headerFontSize) || 13,
+            headerAlign:    (r.headerAlign as string) || "center",
+            headerBold:     r.headerBold === true, // default false
             footerText:     r.footerText    || "",
+            footerFontSize: Number(r.footerFontSize) || 10,
+            footerAlign:    (r.footerAlign as string) || "center",
+            footerBold:     r.footerBold === true,
             servicePercent: Number(h.serviceFee) || 0,
             showQr:         r.showBarcode === true || r.showBarcode === "true" || (r.showBarcode as unknown) !== false,
             qrUrl:          (r.qrUrl as string)   || "",
+            showCashierName: r.showCashierName !== false, // default true
+            kitchenShowTable: k.kitchenShowTable !== false,
+            kitchenShowWaiter: k.kitchenShowWaiter !== false,
+            kitchenShowOrderNo: k.kitchenShowOrderNo !== false,
+            kitchenShowTime: k.kitchenShowTime !== false,
+            kitchenShowNote: k.kitchenShowNote !== false,
+            kitchenShowOrderType: k.kitchenShowOrderType !== false,
+            kitchenItemFontSize: Number(k.kitchenItemFontSize) || 16,
+            kitchenHeaderText: (k.kitchenHeaderText as string) || "OSHXONA BUYURTMASI",
         };
 
         cacheSet(cacheKey, opts, TTL.RECEIPT_SETTINGS);
         return opts;
     } catch {
-        return { shopName: "RESTORAN", customShopName: "", headerText: "XARIDINGIZ UCHUN RAXMAT!", footerText: "", servicePercent: 0, showQr: false, qrUrl: "" };
+        return { 
+            shopName: "RESTORAN", customShopName: "", shopNameFontSize: 20, shopNameAlign: "center", shopNameBold: true,
+            headerText: "XARIDINGIZ UCHUN RAXMAT!", headerFontSize: 13, headerAlign: "center", headerBold: false,
+            footerText: "", footerFontSize: 10, footerAlign: "center", footerBold: false,
+            servicePercent: 0, showQr: false, qrUrl: "", showCashierName: true,
+            kitchenShowTable: true, kitchenShowWaiter: true, kitchenShowOrderNo: true, kitchenShowTime: true,
+            kitchenShowNote: true, kitchenShowOrderType: true, kitchenItemFontSize: 16, kitchenHeaderText: "OSHXONA BUYURTMASI"
+        };
     }
 }
 
 // ─── Buffer builders ─────────────────────────────────────────────────────────
-function buildKitchenBuffer(job: PrintJob): Buffer {
+function buildKitchenBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
     const parts: Buffer[] = [];
     const now = job.time || new Date().toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" });
-    const headerTitle = job.isCancellation ? "BEKOR QILINDI" : "BUYURTMA";
+    const headerTitle = job.isCancellation ? "BEKOR QILINDI" : opts.kitchenHeaderText;
     
-    parts.push(cmd.init(), cmd.align(1), cmd.bold(true), cmd.doubleHW(), line(headerTitle), cmd.normal(), cmd.bold(false));
-    if (job.orderNum) parts.push(line(`Zakaz #${job.orderNum}`));
-    parts.push(line(now));
-    if (job.tableName) parts.push(line(`Stol: ${job.tableName}${job.tableZone ? ` (${job.tableZone})` : ""}`));
-    if (job.waiter)    parts.push(line(`Ofitsiant: ${job.waiter}`));
+    parts.push(cmd.init(), cmd.align(1), cmd.bold(true), cmd.doubleHW(), line(toAscii(headerTitle)), cmd.normal(), cmd.bold(false));
+    if (opts.kitchenShowOrderNo && job.orderNum) parts.push(line(`Zakaz #${job.orderNum}`));
+    if (opts.kitchenShowTime) parts.push(line(now));
+    if (opts.kitchenShowTable && job.tableName) parts.push(line(`Stol: ${job.tableName}${job.tableZone ? ` (${job.tableZone})` : ""}`));
+    if (opts.kitchenShowWaiter && job.waiter)    parts.push(line(`Ofitsiant: ${job.waiter}`));
+    if (opts.kitchenShowOrderType && job.tableType) parts.push(line(`Tur: ${job.tableType}`));
+    
     parts.push(cmd.align(0), dashed(), cmd.bold(true), line("TAOM                MIQDOR"), cmd.bold(false), dashed());
+    
+    const isItemLarge = opts.kitchenItemFontSize >= 18;
     for (const item of (job.items || [])) {
-        const name = item.name.substring(0, 20).padEnd(20);
-        const qty  = `${item.qty} ${item.unit || "ta"}`.padStart(8);
-        parts.push(line(`${name}${qty}`));
+        if (isItemLarge) {
+            parts.push(cmd.doubleHW(), cmd.bold(true));
+            parts.push(line(`${item.qty}x ${toAscii(item.name).substring(0, 16)}`));
+            parts.push(cmd.normal(), cmd.bold(false));
+        } else {
+            const name = toAscii(item.name).substring(0, 20).padEnd(20);
+            const qty  = `${item.qty} ${item.unit || "ta"}`.padStart(8);
+            parts.push(line(`${name}${qty}`));
+        }
     }
     parts.push(dashed(), line(""), line(""), cmd.cut());
     return Buffer.concat(parts);
@@ -162,7 +226,7 @@ function buildClientBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
     const now = new Date();
     const timeStr = job.time || `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
     const dateStr = `${String(now.getDate()).padStart(2,"0")}.${String(now.getMonth()+1).padStart(2,"0")}.${now.getFullYear()}`;
-    const shopName   = opts.shopName.toUpperCase();
+    const shopName   = (opts.customShopName || opts.shopName).toUpperCase();
     const serviceP   = job.servicePercent ?? opts.servicePercent ?? 0;
     const subtotal   = (job.items || []).reduce((s, it) => s + it.price * it.qty, 0);
     const serviceAmt = serviceP ? Math.round(subtotal * serviceP / 100) : 0;
@@ -170,7 +234,9 @@ function buildClientBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
 
     // ── Header ──────────────────────────────────────────────────
     parts.push(cmd.init());
-    parts.push(cmd.align(1), cmd.bold(true), cmd.doubleHW());
+    parts.push(cmd.align(alignCode(opts.shopNameAlign)));
+    parts.push(cmd.bold(opts.shopNameBold));
+    parts.push(sizeCmd(opts.shopNameFontSize));
     parts.push(line(shopName));
     parts.push(cmd.normal(), cmd.bold(false));
     parts.push(line(""));
@@ -186,7 +252,7 @@ function buildClientBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
         parts.push(line(pad("Stol:", label)));
     }
     if (job.tableType) parts.push(line(pad("Tur:", job.tableType)));
-    if (job.waiter)    parts.push(line(pad("Ofitsiant:", job.waiter)));
+    if (opts.showCashierName && job.waiter) parts.push(line(pad("Ofitsiant:", job.waiter)));
     parts.push(solid());
 
     // ── Items ────────────────────────────────────────────────────
@@ -228,13 +294,22 @@ function buildClientBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
 
     // ── Footer ───────────────────────────────────────────────────
     parts.push(line(""));
-    parts.push(cmd.align(1), cmd.bold(true));
-    const footer = opts.headerText || "XARIDINGIZ UCHUN RAXMAT!";
-    parts.push(line(toAscii(footer)));
-    parts.push(cmd.bold(false));
+    
+    if (opts.headerText) {
+        parts.push(cmd.align(alignCode(opts.headerAlign)));
+        parts.push(cmd.bold(opts.headerBold));
+        parts.push(sizeCmd(opts.headerFontSize));
+        parts.push(line(toAscii(opts.headerText)));
+        parts.push(cmd.normal(), cmd.bold(false));
+    }
+    
     if (opts.footerText) {
         parts.push(line(""));
+        parts.push(cmd.align(alignCode(opts.footerAlign)));
+        parts.push(cmd.bold(opts.footerBold));
+        parts.push(sizeCmd(opts.footerFontSize));
         parts.push(line(toAscii(opts.footerText)));
+        parts.push(cmd.normal(), cmd.bold(false));
     }
     // ── QR Code ──────────────────────────────────────────────────
     if (opts.showQr) {
@@ -352,7 +427,8 @@ export const PrinterService = {
             try {
                 let buffer: Buffer;
                 if (job.receiptType === "kitchen") {
-                    buffer = buildKitchenBuffer(job);
+                    const opts = await getReceiptOpts(job.tenantId);
+                    buffer = buildKitchenBuffer(job, opts);
                 } else if (job.receiptType === "report") {
                     const opts = await getReceiptOpts(job.tenantId);
                     buffer = buildReportBuffer(job, opts);

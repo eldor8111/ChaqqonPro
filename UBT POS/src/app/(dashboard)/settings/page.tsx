@@ -108,7 +108,7 @@ export default function SettingsPage() {
     }, [settingsData]);
 
     // Sync ubtDraft
-    const ubtSettings = (settingsData as any)?.tenant?.settings?.ubtSettings || {
+    const smartSettings = (settingsData as any)?.tenant?.settings?.smartSettings || {
         serviceFee: 10,
         enableKDS: true,
         enableWaiterApp: true,
@@ -116,7 +116,7 @@ export default function SettingsPage() {
     };
     useEffect(() => {
         if (settingsData && !ubtDraft) {
-            setUbtDraft(ubtSettings);
+            setUbtDraft(smartSettings);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [settingsData]);
@@ -158,10 +158,10 @@ export default function SettingsPage() {
         // Save settings to tenant
         updateSettingsMutation.mutate({
             ...currentSettings,
-            ubtSettings: ubtDraft
+            smartSettings: ubtDraft
         });
 
-        // Also persist each zone's tables to DB as real UbtTable records
+        // Also persist each zone's tables to DB as real SmartTable records
         const zones: any[] = ubtDraft?.zones || [];
         for (const zone of zones) {
             const tables: any[] = zone.tables || [];
@@ -169,7 +169,7 @@ export default function SettingsPage() {
                 // Only create if it looks like a frontend-generated ID (not a real UUID)
                 if (!table.dbId) {
                     try {
-                        const res = await fetch("/api/ubt/tables", {
+                        const res = await fetch("/api/smart/tables", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
@@ -189,13 +189,13 @@ export default function SettingsPage() {
         }
         // Update draft with dbIds
         setUbtDraft({ ...ubtDraft, zones });
-        alert("ChaqqonPro sozlamalari saqlandi! Stollar POS terminalda ko'rinadi.");
+        alert("SMART sozlamalari saqlandi! Stollar POS terminalda ko'rinadi.");
     }
 
     const PERM_LABELS: Record<string, string> = {
         pos: t("staff.permPos"), inventory: t("staff.permInventory"), crm: t("staff.permCrm"),
         reports: t("staff.permReports"), staff: t("staff.permStaff"), ai: t("staff.permAi"),
-        ubt: t("staff.permUbt"), pharmacy: t("staff.permPharmacy"), wholesale: t("staff.permWholesale"), ecommerce: t("staff.permEcommerce"),
+        ubt: t("staff.permSmart"), pharmacy: t("staff.permPharmacy"), wholesale: t("staff.permWholesale"), ecommerce: t("staff.permEcommerce"),
         discounts: t("staff.permDiscounts"), refunds: t("staff.permRefunds"), priceEdit: t("staff.permPriceEdit"),
         stockEdit: t("staff.permStockEdit"), reportExport: t("staff.permReportExport"), customerEdit: t("staff.permCustomerEdit"), shiftManage: t("staff.permShiftManage"),
         waiterApp: "Ofitsiant paneli", deliveryApp: "Kuryer (Yetkazish)",
@@ -216,7 +216,7 @@ export default function SettingsPage() {
                             { key: "general", label: "Umumiy sozlamalar", icon: Settings },
                             { key: "branches", label: t("settings.branches"), icon: Building2 },
                             { key: "receipt", label: "Chek sozlamalari", icon: Printer },
-                            ...(shopType === "ubt" ? [{ key: "ubt", label: "ChaqqonPro sozlamalari", icon: UtensilsCrossed }] : []),
+                            ...(shopType === "smart" ? [{ key: "smart", label: "SMART sozlamalari", icon: UtensilsCrossed }] : []),
                             { key: "audit", label: t("settings.auditLog") || "Audit Jurnali", icon: ClipboardList },
                         ].map(tab => (
                             <button
@@ -1252,9 +1252,9 @@ export default function SettingsPage() {
                     )}
 
                     {/* UBT Settings */}
-                    {activeTab === "ubt" && (
+                    {activeTab === "smart" && (
                         <div className="space-y-4">
-                            <h2 className="section-title">ChaqqonPro Sozlamalari</h2>
+                            <h2 className="section-title">SMART Sozlamalari</h2>
 
                             <div className="glass-card p-5 space-y-4">
                                 <div className="space-y-4">
@@ -1293,7 +1293,7 @@ export default function SettingsPage() {
                                                                 const newZones = ubtDraft.zones.filter((z: any) => z.id !== zone.id);
                                                                 setUbtDraft({ ...ubtDraft, zones: newZones });
                                                                 // Delete all tables in this zone from DB
-                                                                fetch(`/api/ubt/tables?section=${encodeURIComponent(zone.name)}`, { method: "DELETE" }).catch(() => {});
+                                                                fetch(`/api/smart/tables?section=${encodeURIComponent(zone.name)}`, { method: "DELETE" }).catch(() => {});
                                                             }}
                                                             className="p-1.5 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
                                                             title="Zonani o'chirish"
@@ -1498,7 +1498,7 @@ export default function SettingsPage() {
                                     
                                     // Persist both draft and settings to DB immediately
                                     const currentSettings = (settingsData as any)?.tenant?.settings || {};
-                                    updateSettingsMutation.mutate({ ...currentSettings, ubtSettings: updatedDraft });
+                                    updateSettingsMutation.mutate({ ...currentSettings, smartSettings: updatedDraft });
                                     setIsZoneModalOpen(false);
                                     setZoneForm({ id: "", name: "", branchId: "", serviceFee: "", extraPriceType: "Qo'shimcha narx" });
                                 }}
@@ -1549,7 +1549,7 @@ export default function SettingsPage() {
                                     const zoneName = (ubtDraft?.zones || []).find((z: any) => z.id === tableForm.zoneId)?.name || tableForm.zoneId;
                                     
                                     // Create in DB immediately
-                                    const res = await fetch("/api/ubt/tables", {
+                                    const res = await fetch("/api/smart/tables", {
                                         method: "POST",
                                         headers: { "Content-Type": "application/json" },
                                         body: JSON.stringify({
@@ -1576,7 +1576,7 @@ export default function SettingsPage() {
                                         setUbtDraft(updatedDraft);
                                         // Also update tenant settings
                                         const currentSettings = (settingsData as any)?.tenant?.settings || {};
-                                        updateSettingsMutation.mutate({ ...currentSettings, ubtSettings: updatedDraft });
+                                        updateSettingsMutation.mutate({ ...currentSettings, smartSettings: updatedDraft });
                                     }
                                     setIsTableModalOpen(false);
                                     setTableForm({ id: "", zoneId: "", name: "", capacity: "" });
@@ -1639,7 +1639,7 @@ export default function SettingsPage() {
                                                                 const updatedDraft = { ...ubtDraft, zones: newZones };
                                                                 setUbtDraft(updatedDraft);
                                                                 const currentSettings = (settingsData as any)?.tenant?.settings || {};
-                                                                updateSettingsMutation.mutate({ ...currentSettings, ubtSettings: updatedDraft });
+                                                                updateSettingsMutation.mutate({ ...currentSettings, smartSettings: updatedDraft });
                                                             }
                                                         }
                                                     }}
@@ -1660,7 +1660,7 @@ export default function SettingsPage() {
                                                             const q = table.dbId 
                                                                 ? `id=${encodeURIComponent(table.dbId)}` 
                                                                 : `section=${encodeURIComponent(zoneName)}&tableNumber=${encodeURIComponent(table.name)}`;
-                                                            fetch(`/api/ubt/tables?${q}`, { method: "DELETE" }).catch(() => {});
+                                                            fetch(`/api/smart/tables?${q}`, { method: "DELETE" }).catch(() => {});
                                                         }
                                                     }}
                                                     className="absolute top-2 right-2 p-1.5 text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100"

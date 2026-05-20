@@ -79,9 +79,9 @@ model Tenant {
   inventoryCounts  InventoryCount[]
   writeoffs        InventoryWriteoff[]
   pharmacyDrugs    PharmacyDrug[]
-  ubtTables        UbtTable[]
+  smartTables        SmartTable[]
   kdsOrders        KDSOrder[]
-  ubtReservations  UbtReservation[]
+  ubtReservations  SmartReservation[]
   auditLogs        AuditLog[]
   kassiHarakatlar  KassiHarakat[]
   deliveryOrders   DeliveryOrder[]
@@ -339,7 +339,7 @@ model PharmacyDrug {
 
 // ===== UBT (Restaurants) =====
 
-model UbtPrinter {
+model SmartPrinter {
   id          String   @id @default(cuid())
   tenantId    String
   name        String
@@ -351,7 +351,7 @@ model UbtPrinter {
   @@index([tenantId])
 }
 
-model UbtTable {
+model SmartTable {
   id             String @id @default(cuid())
   tenantId       String
   tableNumber    String
@@ -365,7 +365,7 @@ model UbtTable {
   createdAt      DateTime @default(now())
 
   tenant         Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  reservations   UbtReservation[]
+  reservations   SmartReservation[]
   orders         KDSOrder[]
 
   @@unique([tenantId, section, tableNumber])
@@ -384,13 +384,13 @@ model KDSOrder {
   completedAt    DateTime?
 
   tenant         Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  table          UbtTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  table          SmartTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([tableId])
 }
 
-model UbtReservation {
+model SmartReservation {
   id             String @id @default(cuid())
   tenantId       String
   tableId        String
@@ -403,7 +403,7 @@ model UbtReservation {
   createdAt      DateTime @default(now())
 
   tenant         Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  table          UbtTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  table          SmartTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
 }
