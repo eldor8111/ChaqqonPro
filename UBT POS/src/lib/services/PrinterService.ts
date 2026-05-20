@@ -65,9 +65,9 @@ function toAscii(text: string): string {
 }
 
 function line(text = ""): Buffer { return Buffer.from(toAscii(text) + "\n", "utf8"); }
-function dashed(): Buffer { return line("- - - - - - - - - - - - - - - -"); }
-function solid(): Buffer  { return line("================================"); }
-function pad(left: string, right: string, width = 32): string {
+function dashed(): Buffer { return line("------------------------------------------------"); }
+function solid(): Buffer  { return line("================================================"); }
+function pad(left: string, right: string, width = 48): string {
     const gap = width - strLen(left) - strLen(right);
     return left + " ".repeat(Math.max(1, gap)) + right;
 }
@@ -256,17 +256,13 @@ function buildClientBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
     parts.push(solid());
 
     // ── Items ────────────────────────────────────────────────────
-    parts.push(cmd.bold(true));
-    parts.push(line("Taom nomi        Son   Narx   Jami"));
-    parts.push(cmd.bold(false));
-    parts.push(dashed());
+    parts.push(line(""));
 
     for (const item of (job.items || [])) {
-        const name  = toAscii(item.name).substring(0, 16).padEnd(16);
-        const qty   = String(item.qty).padStart(3);
-        const price = String(Math.round(item.price)).padStart(7);
-        const total = String(Math.round(item.price * item.qty)).padStart(7);
-        parts.push(line(`${name}${qty}${price}${total}`));
+        const totalAmount = String(Math.round(item.price * item.qty));
+        const namePart = toAscii(item.name).substring(0, 20);
+        const leftText = `${namePart} x ${item.qty}`;
+        parts.push(line(pad(leftText, totalAmount)));
     }
     parts.push(dashed());
 
@@ -280,7 +276,7 @@ function buildClientBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
     parts.push(cmd.bold(true));
     parts.push(solid());
     parts.push(cmd.doubleHW());
-    parts.push(line(pad("JAMI TO'LOV:", String(grandTotal) + " so'm")));
+    parts.push(line(pad("JAMI TO'LOV:", String(grandTotal) + " so'm", 24)));
     parts.push(cmd.normal(), cmd.bold(false));
     parts.push(solid());
 
@@ -374,16 +370,81 @@ async function printTcp(ip: string, port: number, data: Buffer): Promise<void> {
 }
 
 async function printUsb(printerName: string, data: Buffer): Promise<void> {
-    const { exec }        = await import("child_process");
+    const { execFile }    = await import("child_process");
     const { promisify }   = await import("util");
     const { writeFile, unlink } = await import("fs/promises");
     const { join }        = await import("path");
-    const execAsync       = promisify(exec);
-    const tmpFile         = join(process.cwd(), `tmp_print_${Date.now()}.bin`);
+    const execFileAsync   = promisify(execFile);
+
+    // ESC/POS binary faylni vaqtincha saqlash
+    const tmpFile = join(process.cwd(), `tmp_print_${Date.now()}.bin`);
+    await writeFile(tmpFile, data);
+
+    // PowerShell inline C# orqali Windows Spooler RAW print
+    const psScript = `
+$code = @"
+using System;
+using System.IO;
+using System.Runtime.InteropServices;
+public class RawPrint {
+    [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Ansi)]
+    public class DOCINFOA {
+        [MarshalAs(UnmanagedType.LPStr)] public string pDocName;
+        [MarshalAs(UnmanagedType.LPStr)] public string pOutputFile;
+        [MarshalAs(UnmanagedType.LPStr)] public string pDataType;
+    }
+    [DllImport("winspool.Drv", EntryPoint="OpenPrinterA", SetLastError=true, CharSet=CharSet.Ansi, ExactSpelling=true, CallingConvention=CallingConvention.StdCall)]
+    public static extern bool OpenPrinter([MarshalAs(UnmanagedType.LPStr)] string szPrinter, out IntPtr hPrinter, IntPtr pd);
+    [DllImport("winspool.Drv", EntryPoint="ClosePrinter", SetLastError=true, ExactSpelling=true, CallingConvention=CallingConvention.StdCall)]
+    public static extern bool ClosePrinter(IntPtr hPrinter);
+    [DllImport("winspool.Drv", EntryPoint="StartDocPrinterA", SetLastError=true, CharSet=CharSet.Ansi, ExactSpelling=true, CallingConvention=CallingConvention.StdCall)]
+    public static extern bool StartDocPrinter(IntPtr hPrinter, Int32 level, [In, MarshalAs(UnmanagedType.LPStruct)] DOCINFOA di);
+    [DllImport("winspool.Drv", EntryPoint="EndDocPrinter", SetLastError=true, ExactSpelling=true, CallingConvention=CallingConvention.StdCall)]
+    public static extern bool EndDocPrinter(IntPtr hPrinter);
+    [DllImport("winspool.Drv", EntryPoint="StartPagePrinter", SetLastError=true, ExactSpelling=true, CallingConvention=CallingConvention.StdCall)]
+    public static extern bool StartPagePrinter(IntPtr hPrinter);
+    [DllImport("winspool.Drv", EntryPoint="EndPagePrinter", SetLastError=true, ExactSpelling=true, CallingConvention=CallingConvention.StdCall)]
+    public static extern bool EndPagePrinter(IntPtr hPrinter);
+    [DllImport("winspool.Drv", EntryPoint="WritePrinter", SetLastError=true, ExactSpelling=true, CallingConvention=CallingConvention.StdCall)]
+    public static extern bool WritePrinter(IntPtr hPrinter, IntPtr pBytes, Int32 dwCount, out Int32 dwWritten);
+    public static bool SendFileToPrinter(string szPrinterName, string szFileName) {
+        FileStream fs = new FileStream(szFileName, FileMode.Open);
+        BinaryReader br = new BinaryReader(fs);
+        Byte[] bytes = br.ReadBytes((int)fs.Length);
+        IntPtr pBytes = Marshal.AllocCoTaskMem(bytes.Length);
+        Marshal.Copy(bytes, 0, pBytes, bytes.Length);
+        Int32 dwWritten = 0;
+        IntPtr hPrinter = IntPtr.Zero;
+        DOCINFOA di = new DOCINFOA();
+        di.pDocName = "RAW";
+        di.pDataType = null; // null makes it bypass strict datatype check and use printer's default
+        bool ok = false;
+        if (OpenPrinter(szPrinterName, out hPrinter, IntPtr.Zero)) {
+            if (StartDocPrinter(hPrinter, 1, di)) {
+                if (StartPagePrinter(hPrinter)) {
+                    ok = WritePrinter(hPrinter, pBytes, bytes.Length, out dwWritten);
+                    EndPagePrinter(hPrinter);
+                }
+                EndDocPrinter(hPrinter);
+            }
+            ClosePrinter(hPrinter);
+        }
+        Marshal.FreeCoTaskMem(pBytes);
+        fs.Close();
+        return ok;
+    }
+}
+"@
+Add-Type -TypeDefinition $code -Language CSharp
+$result = [RawPrint]::SendFileToPrinter("${printerName}", "${tmpFile}")
+if (-not $result) { exit 1 }
+`;
+
     try {
-        await writeFile(tmpFile, data);
-        await execAsync(`copy /b "${tmpFile}" "\\\\.\\${printerName}"`, { shell: "cmd.exe" })
-            .catch(() => execAsync(`print /d:"${printerName}" "${tmpFile}"`));
+        await execFileAsync("powershell", [
+            "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+            "-Command", psScript
+        ], { timeout: 15000 });
     } finally {
         await unlink(tmpFile).catch(() => {});
     }
@@ -456,5 +517,6 @@ export const PrinterService = {
     invalidateReceiptCache(tenantId?: string): void {
         const { cacheInvalidate } = require("@/lib/cache");
         cacheInvalidate(`receiptOpts:${tenantId ?? "default"}`);
+        cacheInvalidate("receiptOpts:default");
     },
 };

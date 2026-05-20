@@ -13,16 +13,23 @@ import { JWT_SECRET } from "@/lib/backend/jwt";
 export async function POST(req: NextRequest) {
     // Auth tekshiruvi — faqat autentifikatsiya qilingan foydalanuvchilar
     let authorized = false;
+    let tenantIdFromToken: string | undefined = undefined;
     try {
         const session = await getSession();
-        if (session?.tenantId || session?.role === "SUPER_ADMIN") authorized = true;
+        if (session?.tenantId || session?.role === "SUPER_ADMIN") {
+            authorized = true;
+            if (session?.tenantId) tenantIdFromToken = session.tenantId as string;
+        }
     } catch {}
     if (!authorized) {
         const authHeader = req.headers.get("Authorization");
         if (authHeader?.startsWith("Bearer ")) {
             try {
                 const { payload } = await jwtVerify(authHeader.slice(7), JWT_SECRET);
-                if (payload.tenantId) authorized = true;
+                if (payload.tenantId) {
+                    authorized = true;
+                    tenantIdFromToken = payload.tenantId as string;
+                }
             } catch {}
         }
     }
@@ -38,6 +45,11 @@ export async function POST(req: NextRequest) {
                 .map((e) => `${e.path.map(String).join(".")}: ${e.message}`)
                 .join("; ");
             return NextResponse.json({ success: false, error: message }, { status: 400 });
+        }
+
+        // Attach tenantId from session if available and not explicitly provided
+        if (tenantIdFromToken && !parsed.data.tenantId) {
+            parsed.data.tenantId = tenantIdFromToken;
         }
 
         const result = await PrinterService.print(parsed.data);

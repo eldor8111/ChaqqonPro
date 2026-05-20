@@ -17,35 +17,20 @@ async function getAuthTenantId(request: NextRequest): Promise<string | null> {
             if (payload.tenantId) return payload.tenantId as string;
         } catch {}
     }
-    // POS fallback
     const firstTenant = await prisma.tenant.findFirst({ where: { status: "active" } });
     return firstTenant?.id ?? null;
 }
 
-// Module-level — faqat bir marta ishlaydigan CREATE TABLE
-const _tableReady = prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS SmartPrinter (
-        id          TEXT PRIMARY KEY,
-        tenantId    TEXT NOT NULL,
-        name        TEXT NOT NULL,
-        ipAddress   TEXT NOT NULL,
-        port        INTEGER NOT NULL DEFAULT 9100,
-        description TEXT,
-        createdAt   TEXT NOT NULL DEFAULT (datetime('now'))
-    )
-`).catch(() => {});
-
 // GET — list printers
 export async function GET(req: NextRequest) {
     try {
-        await _tableReady;
         const tenantId = await getAuthTenantId(req);
         if (!tenantId) return NextResponse.json([], { status: 200 });
-        const rows: any[] = await prisma.$queryRaw`
-            SELECT id, name, ipAddress, port, description, createdAt
-            FROM SmartPrinter WHERE tenantId=${tenantId} ORDER BY createdAt ASC
-        `;
-        return NextResponse.json(rows);
+        const printers = await prisma.smartPrinter.findMany({
+            where: { tenantId },
+            orderBy: { createdAt: "asc" }
+        });
+        return NextResponse.json(printers);
     } catch (e) {
         return NextResponse.json({ error: String(e) }, { status: 500 });
     }
@@ -54,18 +39,24 @@ export async function GET(req: NextRequest) {
 // POST — add printer
 export async function POST(req: NextRequest) {
     try {
-        await _tableReady;
         const tenantId = await getAuthTenantId(req);
         if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         const { name, ipAddress, port, description } = await req.json();
+        
         if (!name || !ipAddress) return NextResponse.json({ error: "Nomi va IP manzil kiritilishi shart" }, { status: 400 });
-        const id = `prn_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        
         const portNum = Number(port) || 9100;
-        await prisma.$executeRaw`
-            INSERT INTO SmartPrinter (id, tenantId, name, ipAddress, port, description)
-            VALUES (${id}, ${tenantId}, ${name}, ${ipAddress}, ${portNum}, ${description || ""})
-        `;
-        return NextResponse.json({ success: true, id });
+        
+        const printer = await prisma.smartPrinter.create({
+            data: {
+                tenantId,
+                name,
+                ipAddress,
+                port: portNum,
+                description: description || ""
+            }
+        });
+        return NextResponse.json({ success: true, id: printer.id });
     } catch (e) {
         return NextResponse.json({ error: String(e) }, { status: 500 });
     }
@@ -77,8 +68,12 @@ export async function DELETE(req: NextRequest) {
         const tenantId = await getAuthTenantId(req);
         if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         const { id } = await req.json();
+        
         if (!id) return NextResponse.json({ error: "ID kiritilmagan" }, { status: 400 });
-        await prisma.$executeRaw`DELETE FROM SmartPrinter WHERE id=${id} AND tenantId=${tenantId}`;
+        
+        await prisma.smartPrinter.deleteMany({
+            where: { id, tenantId }
+        });
         return NextResponse.json({ success: true });
     } catch (e) {
         return NextResponse.json({ error: String(e) }, { status: 500 });

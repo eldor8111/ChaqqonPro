@@ -71,7 +71,7 @@ export default function PrintersPage() {
     };
 
     const handleAdd = async () => {
-        const finalName = form.name.trim();
+        const finalName = connectType === "usb" && !form.name.trim() ? form.usbName.trim() : form.name.trim();
         const finalIp = connectType === "usb" ? `usb://${form.usbName.trim()}` : form.ipAddress.trim();
 
         if (!finalName) { setError("Printer nomi kiritilishi shart"); return; }

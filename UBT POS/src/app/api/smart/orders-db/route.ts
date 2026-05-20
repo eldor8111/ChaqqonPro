@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         const auth = await resolveAuth(request);
         if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        const { tableId, items, waiterName, replace, shotId } = await request.json();
+        const { tableId, items, waiterName, replace, shotId, skipAutoPrint, fallbackPrinterIp: clientFallbackIp } = await request.json();
         if (!tableId || !Array.isArray(items)) {
             return NextResponse.json({ error: "tableId va items kerak" }, { status: 400 });
         }
@@ -145,11 +145,8 @@ export async function POST(request: NextRequest) {
         }
 
         // --- AUTO-PRINT KITCHEN RECEIPT FOR DINE-IN ORDERS ---
-        // Strategy:
-        //   1. Har bir taomning o'z printerIp si bo'lsa → guruhlash
-        //   2. printerIp yo'q bo'lgan taomlar → SmartPrinter jadvalidagi birinchi printer (fallback)
-        //   3. Fallback printer ham yo'q → silent skip (print qilinmaydi)
-        try {
+        if (!skipAutoPrint) {
+            try {
             const itemIds = items.map((c: any) => c.item?.id || c.id).filter(Boolean);
 
             // 1. Har bir product ning printerIp sini olish
@@ -164,16 +161,18 @@ export async function POST(request: NextRequest) {
             products.forEach((p: any) => printerIpMap.set(p.id, p.printerIp || null));
 
             // 2. Fallback printer — SmartPrinter jadvalidagi birinchi printer
-            let fallbackPrinterIp: string | null = null;
-            try {
+            let fallbackPrinterIp: string | null = clientFallbackIp || null;
+            if (!fallbackPrinterIp) {
+                try {
                 const fallbackPrinters: any[] = await prisma.$queryRawUnsafe(
                     `SELECT ipAddress FROM SmartPrinter WHERE tenantId = ? ORDER BY createdAt ASC LIMIT 1`,
                     auth.tenantId
                 );
                 if (fallbackPrinters.length > 0) {
                     fallbackPrinterIp = fallbackPrinters[0].ipAddress || null;
-                }
-            } catch { /* SmartPrinter jadvali bo'lmasa skip */ }
+                    }
+                } catch { /* SmartPrinter jadvali bo'lmasa skip */ }
+            }
 
             // 3. Taomlarni printer IP ga guruhlash (fallback bilan)
             const printerGroups: Record<string, any[]> = {};
@@ -238,9 +237,10 @@ export async function POST(request: NextRequest) {
                         });
                     }
             }
-        } catch (printErr) {
-            // Print xatosi to'lovni bloklamasin
-            console.error("[orders-db Kitchen Print Error]", printErr);
+            } catch (printErr) {
+                // Print xatosi to'lovni bloklamasin
+                console.error("[orders-db Kitchen Print Error]", printErr);
+            }
         }
 
         return NextResponse.json({ success: true, orderId: order.id, suffix });

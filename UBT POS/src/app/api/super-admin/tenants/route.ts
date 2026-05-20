@@ -12,11 +12,47 @@ export async function GET(_request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const tenants = await prisma.$queryRaw`
-            SELECT id, shopCode, billingId, shopName, ownerName, phone, email, address, plan, status, adminUsername, settings, agentCode, createdAt
-            FROM Tenant
-            ORDER BY createdAt DESC
-        ` as any[];
+        // Identify if the user is a SuperAdmin or an Agent/Menejer
+        let platformUser = null;
+        let isMaster = false;
+        let canViewTenants = false;
+        
+        if (session.userId === "superadmin") {
+            isMaster = true;
+            canViewTenants = true;
+        } else {
+            platformUser = await prisma.platformUser.findUnique({ where: { id: session.userId } });
+            if (!platformUser || platformUser.status !== "active") {
+                return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            }
+            
+            let permissions: string[] = [];
+            try { permissions = JSON.parse(platformUser.permissions || "[]"); } catch {}
+            
+            isMaster = platformUser.role === "MASTER"; // if there is such role
+            canViewTenants = isMaster || platformUser.role === "Agent" || permissions.includes("tenants:view") || permissions.includes("tenants:create") || permissions.includes("tenants:edit");
+            
+            if (!canViewTenants) {
+                return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+            }
+        }
+
+        let query;
+        if (!isMaster && platformUser?.role === "Agent") {
+            query = prisma.$queryRaw`
+                SELECT id, shopCode, billingId, shopName, ownerName, phone, email, address, plan, status, adminUsername, settings, agentCode, createdAt
+                FROM Tenant
+                WHERE agentCode = ${platformUser.agentCode || ""}
+                ORDER BY createdAt DESC
+            ` as Promise<any[]>;
+        } else {
+            query = prisma.$queryRaw`
+                SELECT id, shopCode, billingId, shopName, ownerName, phone, email, address, plan, status, adminUsername, settings, agentCode, createdAt
+                FROM Tenant
+                ORDER BY createdAt DESC
+            ` as Promise<any[]>;
+        }
+        const tenants = await query;
 
         return NextResponse.json({
             tenants: tenants.map(t => ({
@@ -35,6 +71,30 @@ export async function POST(request: NextRequest) {
         const session = await getSuperSession();
         if (session?.role !== "SUPER_ADMIN") {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        let platformUser = null;
+        let isMaster = false;
+        let canCreateTenants = false;
+
+        if (session.userId === "superadmin") {
+            isMaster = true;
+            canCreateTenants = true;
+        } else {
+            platformUser = await prisma.platformUser.findUnique({ where: { id: session.userId } });
+            if (!platformUser || platformUser.status !== "active") {
+                 return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            }
+            
+            let permissions: string[] = [];
+            try { permissions = JSON.parse(platformUser.permissions || "[]"); } catch {}
+            
+            isMaster = platformUser.role === "MASTER";
+            canCreateTenants = isMaster || platformUser.role === "Agent" || permissions.includes("tenants:create");
+            
+            if (!canCreateTenants) {
+                 return NextResponse.json({ error: "Permission denied" }, { status: 403 });
+            }
         }
 
         const body = await request.json();

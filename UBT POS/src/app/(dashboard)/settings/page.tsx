@@ -979,112 +979,159 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
 
-                                {/* Preview */}
+                                {/* Preview - Real Thermal Receipt Look */}
                                 <div className="sticky top-4">
-                                    <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">🔍 Jonli Ko'rinish (Preview)</p>
-                                    <div className="bg-white text-black rounded-sm shadow-2xl w-72 mx-auto font-mono text-sm leading-tight flex flex-col overflow-hidden border border-slate-200">
-                                        {/* Top - Logo + Shop Name */}
-                                        <div className="bg-slate-50 border-b border-dashed border-slate-300 p-4 flex flex-col items-center">
-                                            {receiptDraft.showLogo && (
-                                                receiptDraft.logoBase64
-                                                    ? <img src={receiptDraft.logoBase64} alt="logo" className="h-14 object-contain mb-2" />
-                                                    : <div className="w-12 h-12 bg-slate-200 rounded-full mb-2 flex items-center justify-center text-xs text-slate-500">LOGO</div>
-                                            )}
-                                            <p
-                                                className="whitespace-pre-line leading-snug w-full"
-                                                style={{
-                                                    fontSize: `${receiptDraft.shopNameFontSize || 20}px`,
-                                                    textAlign: receiptDraft.shopNameAlign || "center",
-                                                    fontWeight: receiptDraft.shopNameBold !== false ? "bold" : "normal",
-                                                }}>
-                                                {receiptDraft.customShopName || shopSettings?.shopName || "RESTORAN NOMI"}
-                                            </p>
-                                        </div>
+                                    <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-4">🧾 Jonli Ko'rinish (Preview)</p>
+                                    <div className="flex flex-col items-center">
+                                        {/* Thermal receipt wrapper */}
+                                        <div style={{
+                                            width: '280px',
+                                            filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.35))',
+                                        }}>
+                                            {/* Torn top edge */}
+                                            <svg width="280" height="12" viewBox="0 0 280 12" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+                                                <polygon points="0,12 10,0 20,12 30,0 40,12 50,0 60,12 70,0 80,12 90,0 100,12 110,0 120,12 130,0 140,12 150,0 160,12 170,0 180,12 190,0 200,12 210,0 220,12 230,0 240,12 250,0 260,12 270,0 280,12" fill="#fdf8f0" />
+                                            </svg>
 
-                                        {/* Body */}
-                                        <div className="p-4 space-y-1">
-                                            <p className="text-[10px] text-slate-500">Sana: 08.03.2026 12:45</p>
-                                            <p className="text-[10px] text-slate-500">Buyurtma #: 9812</p>
-                                            {receiptDraft.showCashierName && <p className="text-[10px] text-slate-500">Kassir: Aziz Yusupov</p>}
-
-                                            <div className="border-t border-dashed border-slate-300 my-2"></div>
-
-                                            <div className="flex justify-between text-xs">
-                                                <span>Olma (kg) x 2</span><span>30 000</span>
-                                            </div>
-                                            <div className="flex justify-between text-xs">
-                                                <span>Coca-Cola (L) x 1</span><span>12 000</span>
-                                            </div>
-
-                                            <div className="border-t border-dashed border-slate-300 my-2"></div>
-                                            <div className="flex justify-between font-bold text-sm">
-                                                <span>JAMI TO'LOV:</span><span>42 000 so'm</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Footer - Greeting + Optional note + Barcode */}
-                                        <div className="bg-slate-50 border-t border-dashed border-slate-300 p-3 space-y-1">
-                                            {receiptDraft.headerText && (
-                                                <p
-                                                    className="whitespace-pre-line w-full"
-                                                    style={{
-                                                        fontSize: `${receiptDraft.headerFontSize || 13}px`,
-                                                        textAlign: receiptDraft.headerAlign || "center",
-                                                        fontWeight: receiptDraft.headerBold ? "bold" : "normal",
+                                            {/* Receipt body */}
+                                            <div style={{
+                                                backgroundColor: '#fdf8f0',
+                                                color: '#111',
+                                                fontFamily: "'Courier New', Courier, monospace",
+                                                fontSize: '12px',
+                                                lineHeight: '1.5',
+                                                padding: '0 14px',
+                                            }}>
+                                                {/* Logo + Shop name */}
+                                                <div style={{ textAlign: receiptDraft.shopNameAlign || 'center', paddingBottom: '10px', paddingTop: '6px' }}>
+                                                    {receiptDraft.showLogo && (
+                                                        receiptDraft.logoBase64
+                                                            ? <img src={receiptDraft.logoBase64} alt="logo" style={{ height: '48px', objectFit: 'contain', margin: '0 auto 6px', display: 'block' }} />
+                                                            : <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#e5e0d4', margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#888' }}>LOGO</div>
+                                                    )}
+                                                    <div style={{
+                                                        fontSize: `${receiptDraft.shopNameFontSize || 18}px`,
+                                                        fontWeight: receiptDraft.shopNameBold !== false ? 'bold' : 'normal',
+                                                        textAlign: receiptDraft.shopNameAlign || 'center',
+                                                        letterSpacing: '1px',
                                                     }}>
-                                                    {receiptDraft.headerText}
-                                                </p>
-                                            )}
-                                            {receiptDraft.footerText && (
-                                                <p
-                                                    className="italic text-slate-500 whitespace-pre-line w-full"
-                                                    style={{
-                                                        fontSize: `${receiptDraft.footerFontSize || 10}px`,
-                                                        textAlign: receiptDraft.footerAlign || "center",
-                                                        fontWeight: receiptDraft.footerBold ? "bold" : "normal",
-                                                    }}>
-                                                    {receiptDraft.footerText}
-                                                </p>
-                                            )}
-                                            {receiptDraft.showBarcode && (
-                                                <div className="flex flex-col items-center mt-3">
-                                                    {/* QR code simulation with SVG squares */}
-                                                    <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-                                                        {/* Corner squares */}
-                                                        <rect x="2" y="2" width="18" height="18" fill="none" stroke="#1e293b" strokeWidth="2"/>
-                                                        <rect x="6" y="6" width="10" height="10" fill="#1e293b"/>
-                                                        <rect x="44" y="2" width="18" height="18" fill="none" stroke="#1e293b" strokeWidth="2"/>
-                                                        <rect x="48" y="6" width="10" height="10" fill="#1e293b"/>
-                                                        <rect x="2" y="44" width="18" height="18" fill="none" stroke="#1e293b" strokeWidth="2"/>
-                                                        <rect x="6" y="48" width="10" height="10" fill="#1e293b"/>
-                                                        {/* Data dots */}
-                                                        {[24,28,32,36,40].map(x => [24,28,32,36,40].map(y =>
-                                                            Math.random() > 0.5 ? <rect key={`${x}-${y}`} x={x} y={y} width="3" height="3" fill="#1e293b"/> : null
-                                                        ))}
-                                                        <rect x="24" y="24" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="31" y="24" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="38" y="24" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="27" y="28" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="35" y="28" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="24" y="32" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="31" y="32" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="38" y="32" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="27" y="36" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="35" y="36" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="24" y="40" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="31" y="40" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="38" y="40" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="44" y="24" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="44" y="32" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="24" y="44" width="3" height="3" fill="#1e293b"/>
-                                                        <rect x="32" y="44" width="3" height="3" fill="#1e293b"/>
-                                                    </svg>
-                                                    <p className="text-[9px] text-slate-400 mt-0.5">QR kod</p>
+                                                        {receiptDraft.customShopName || shopSettings?.shopName || 'RESTORAN NOMI'}
+                                                    </div>
                                                 </div>
-                                            )}
+
+                                                {/* Divider */}
+                                                <div style={{ borderTop: '1px dashed #aaa', margin: '4px 0' }} />
+
+                                                {/* Meta info */}
+                                                <div style={{ fontSize: '10px', color: '#555', marginBottom: '4px' }}>
+                                                    <div>Sana: 08.03.2026  Vaqt: 12:45</div>
+                                                    <div>Buyurtma #: 9812</div>
+                                                    {receiptDraft.showCashierName && <div>Kassir: Aziz Yusupov</div>}
+                                                </div>
+
+                                                <div style={{ borderTop: '1px dashed #aaa', margin: '6px 0' }} />
+
+                                                {/* Header row */}
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#777', marginBottom: '3px' }}>
+                                                    <span>MAHSULOT</span>
+                                                    <span>NARX</span>
+                                                </div>
+
+                                                {/* Items */}
+                                                {[
+                                                    { name: 'Olma (kg) x 2', price: '30 000' },
+                                                    { name: "Coca-Cola (L) x 1", price: '12 000' },
+                                                    { name: "Non x 3", price: '6 000' },
+                                                ].map((item, i) => (
+                                                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '2px' }}>
+                                                        <span>{item.name}</span>
+                                                        <span>{item.price}</span>
+                                                    </div>
+                                                ))}
+
+                                                <div style={{ borderTop: '1px dashed #aaa', margin: '6px 0' }} />
+
+                                                {/* Total */}
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
+                                                    <span>JAMI:</span>
+                                                    <span>48 000 so'm</span>
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#444', marginBottom: '2px' }}>
+                                                    <span>To'lov (Naqd):</span>
+                                                    <span>50 000 so'm</span>
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#444' }}>
+                                                    <span>Qaytim:</span>
+                                                    <span>2 000 so'm</span>
+                                                </div>
+
+                                                <div style={{ borderTop: '1px dashed #aaa', margin: '8px 0' }} />
+
+                                                {/* Footer greeting */}
+                                                {receiptDraft.headerText && (
+                                                    <div style={{
+                                                        fontSize: `${receiptDraft.headerFontSize || 12}px`,
+                                                        textAlign: receiptDraft.headerAlign || 'center',
+                                                        fontWeight: receiptDraft.headerBold ? 'bold' : 'normal',
+                                                        marginBottom: '4px',
+                                                    }}>
+                                                        {receiptDraft.headerText}
+                                                    </div>
+                                                )}
+
+                                                {receiptDraft.footerText && (
+                                                    <div style={{
+                                                        fontSize: `${receiptDraft.footerFontSize || 10}px`,
+                                                        textAlign: receiptDraft.footerAlign || 'center',
+                                                        fontWeight: receiptDraft.footerBold ? 'bold' : 'normal',
+                                                        color: '#666',
+                                                        fontStyle: 'italic',
+                                                        marginBottom: '4px',
+                                                    }}>
+                                                        {receiptDraft.footerText}
+                                                    </div>
+                                                )}
+
+                                                {/* QR code */}
+                                                {receiptDraft.showBarcode && (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '8px', marginBottom: '6px' }}>
+                                                        <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                                                            <rect x="2" y="2" width="18" height="18" fill="none" stroke="#1e293b" strokeWidth="2"/>
+                                                            <rect x="6" y="6" width="10" height="10" fill="#1e293b"/>
+                                                            <rect x="44" y="2" width="18" height="18" fill="none" stroke="#1e293b" strokeWidth="2"/>
+                                                            <rect x="48" y="6" width="10" height="10" fill="#1e293b"/>
+                                                            <rect x="2" y="44" width="18" height="18" fill="none" stroke="#1e293b" strokeWidth="2"/>
+                                                            <rect x="6" y="48" width="10" height="10" fill="#1e293b"/>
+                                                            <rect x="24" y="24" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="31" y="24" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="38" y="24" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="27" y="28" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="35" y="28" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="24" y="32" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="31" y="32" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="38" y="32" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="27" y="36" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="35" y="36" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="24" y="40" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="31" y="40" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="38" y="40" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="44" y="24" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="44" y="32" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="24" y="44" width="3" height="3" fill="#1e293b"/>
+                                                            <rect x="32" y="44" width="3" height="3" fill="#1e293b"/>
+                                                        </svg>
+                                                        <div style={{ fontSize: '9px', color: '#888', marginTop: '2px' }}>QR kod</div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Torn bottom edge */}
+                                            <svg width="280" height="12" viewBox="0 0 280 12" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+                                                <polygon points="0,0 10,12 20,0 30,12 40,0 50,12 60,0 70,12 80,0 90,12 100,0 110,12 120,0 130,12 140,0 150,12 160,0 170,12 180,0 190,12 200,0 210,12 220,0 230,12 240,0 250,12 260,0 270,12 280,0" fill="#fdf8f0" />
+                                            </svg>
                                         </div>
                                     </div>
-                                    <p className="text-center text-slate-500 text-xs mt-3">Bu namuna chek ko'rinishi (jonli yangilanadi)</p>
+                                    <p className="text-center text-slate-500 text-xs mt-4">Bu namuna chek ko'rinishi (jonli yangilanadi)</p>
                                 </div>
                             </div>
                         </div>
@@ -1158,48 +1205,80 @@ export default function SettingsPage() {
                                                     className="w-full accent-brand"
                                                 />
                                             </div>
-                                        </div>
                                     </div>
                                 </div>
-
-                                {/* Kitchen Preview */}
+                                </div>
+                                
+                                {/* Kitchen Preview - Real Thermal Receipt */}
                                 <div className="sticky top-4">
-                                    <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">🔍 Oshxona cheki ko'rinishi</p>
-                                    <div className="bg-white text-black rounded-sm shadow-2xl w-72 mx-auto font-mono text-sm leading-tight flex flex-col overflow-hidden border border-slate-200">
-                                        {/* Header */}
-                                        <div className="bg-slate-100 border-b border-dashed border-slate-400 p-3 text-center">
-                                            <p className="font-black text-lg uppercase tracking-wider">
-                                                {receiptDraft.kitchenHeaderText || "OSHXONA BUYURTMASI"}
-                                            </p>
-                                        </div>
-                                        {/* Order info */}
-                                        <div className="p-4 space-y-1">
-                                            {receiptDraft.kitchenShowOrderNo !== false && <p className="text-xs font-bold">BUYURTMA #: 0042</p>}
-                                            {receiptDraft.kitchenShowTime !== false && <p className="text-[10px] text-slate-600">Vaqt: 12:45 · 22.04.2026</p>}
-                                            {receiptDraft.kitchenShowTable !== false && <p className="text-xs font-bold">STOL: 7</p>}
-                                            {receiptDraft.kitchenShowWaiter !== false && <p className="text-[10px] text-slate-600">Ofitsiant: Sardor</p>}
-                                            {receiptDraft.kitchenShowOrderType !== false && <p className="text-[10px] font-semibold text-slate-700">📍 Zal</p>}
+                                    <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-4">🍳 Oshxona cheki ko'rinishi</p>
+                                    <div className="flex flex-col items-center">
+                                        <div style={{
+                                            width: '280px',
+                                            filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.35))',
+                                        }}>
+                                            {/* Torn top edge */}
+                                            <svg width="280" height="12" viewBox="0 0 280 12" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+                                                <polygon points="0,12 10,0 20,12 30,0 40,12 50,0 60,12 70,0 80,12 90,0 100,12 110,0 120,12 130,0 140,12 150,0 160,12 170,0 180,12 190,0 200,12 210,0 220,12 230,0 240,12 250,0 260,12 270,0 280,12" fill="#fdf8f0" />
+                                            </svg>
 
-                                            <div className="border-t-2 border-black my-2"></div>
-
-                                            {[
-                                                { name: "1x  Qovurma lag'mon", qty: "1" },
-                                                { name: "2x  Shashlyk", qty: "2" },
-                                                { name: "1x  Choy (katta)", qty: "1" },
-                                            ].map((item, i) => (
-                                                <p key={i} className="font-bold" style={{ fontSize: `${receiptDraft.kitchenItemFontSize || 16}px` }}>
-                                                    {item.name}
-                                                </p>
-                                            ))}
-
-                                            {receiptDraft.kitchenShowNote !== false && (
-                                                <div className="border-t border-dashed border-slate-400 mt-2 pt-2">
-                                                    <p className="text-[10px] text-slate-600 italic">💬 Izoh: Sho'rsiz tayyorlang</p>
+                                            <div style={{
+                                                backgroundColor: '#fdf8f0',
+                                                color: '#111',
+                                                fontFamily: "'Courier New', Courier, monospace",
+                                                padding: '8px 14px 12px',
+                                            }}>
+                                                {/* Kitchen header - big bold */}
+                                                <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+                                                    <div style={{ fontSize: '18px', fontWeight: 900, letterSpacing: '2px', textTransform: 'uppercase', lineHeight: 1.2 }}>
+                                                        {receiptDraft.kitchenHeaderText || 'OSHXONA'}
+                                                    </div>
+                                                    <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>BUYURTMA CHEKI</div>
                                                 </div>
-                                            )}
+
+                                                <div style={{ borderTop: '2px solid #111', borderBottom: '2px solid #111', padding: '4px 0', marginBottom: '8px' }}>
+                                                    {receiptDraft.kitchenShowOrderNo !== false && (
+                                                        <div style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center' }}>BUYURTMA # 0042</div>
+                                                    )}
+                                                </div>
+
+                                                {/* Meta */}
+                                                <div style={{ fontSize: '11px', color: '#333', marginBottom: '8px', lineHeight: 1.8 }}>
+                                                    {receiptDraft.kitchenShowTime !== false && <div>📅 Vaqt: 12:45 · 22.04.2026</div>}
+                                                    {receiptDraft.kitchenShowTable !== false && <div style={{ fontWeight: 'bold', fontSize: '14px' }}>🪑 STOL: 7</div>}
+                                                    {receiptDraft.kitchenShowWaiter !== false && <div>👤 Ofitsiant: Sardor</div>}
+                                                    {receiptDraft.kitchenShowOrderType !== false && <div>📍 Zakaz turi: Zal</div>}
+                                                </div>
+
+                                                <div style={{ borderTop: '1px dashed #888', margin: '6px 0' }} />
+
+                                                {/* Items - large font for kitchen */}
+                                                <div style={{ marginBottom: '8px' }}>
+                                                    {[
+                                                        { name: "1x  Qovurma lag'mon" },
+                                                        { name: "2x  Shashlyk" },
+                                                        { name: "1x  Choy (katta)" },
+                                                    ].map((item, i) => (
+                                                        <div key={i} style={{ fontWeight: 'bold', fontSize: `${receiptDraft.kitchenItemFontSize || 16}px`, lineHeight: 1.6, borderBottom: '1px dotted #ccc', paddingBottom: '2px', marginBottom: '2px' }}>
+                                                            {item.name}
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                {receiptDraft.kitchenShowNote !== false && (
+                                                    <div style={{ borderTop: '1px dashed #888', marginTop: '6px', paddingTop: '6px', fontSize: '11px', color: '#555', fontStyle: 'italic' }}>
+                                                        💬 Izoh: Sho'rsiz tayyorlang
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Torn bottom edge */}
+                                            <svg width="280" height="12" viewBox="0 0 280 12" xmlns="http://www.w3.org/2000/svg" style={{ display: 'block' }}>
+                                                <polygon points="0,0 10,12 20,0 30,12 40,0 50,12 60,0 70,12 80,0 90,12 100,0 110,12 120,0 130,12 140,0 150,12 160,0 170,12 180,0 190,12 200,0 210,12 220,0 230,12 240,0 250,12 260,0 270,12 280,0" fill="#fdf8f0" />
+                                            </svg>
                                         </div>
                                     </div>
-                                    <p className="text-center text-slate-500 text-xs mt-3">Namuna oshxona cheki (jonli yangilanadi)</p>
+                                    <p className="text-center text-slate-500 text-xs mt-4">Namuna oshxona cheki (jonli yangilanadi)</p>
                                 </div>
                             </div>
                         </div>

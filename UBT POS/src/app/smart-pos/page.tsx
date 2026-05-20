@@ -1390,6 +1390,7 @@ export default function UbtPosPage() {
                     items: transferredItems,
                     waiterName: store.kassirSession?.name,
                     replace: false,
+                    skipAutoPrint: true,
                 })
             });
             if (!postRes.ok) throw new Error("Yangi stolga saqlashda xatolik");
@@ -1455,6 +1456,7 @@ export default function UbtPosPage() {
                     items: newItems,
                     waiterName: store.kassirSession?.name,
                     replace: false,
+                    skipAutoPrint: true,
                 }),
             }).catch(() => {});
         }
@@ -2368,6 +2370,7 @@ export default function UbtPosPage() {
                                                         items: modCart,
                                                         waiterName: store.kassirSession?.name,
                                                         replace: false,
+                                                        skipAutoPrint: true,
                                                     }),
                                                 }).catch(() => {});
                                                 // Update local state
