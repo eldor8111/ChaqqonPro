@@ -374,14 +374,17 @@ async function printUsb(printerName: string, data: Buffer): Promise<void> {
     const { promisify }   = await import("util");
     const { writeFile, unlink } = await import("fs/promises");
     const { join }        = await import("path");
+    const os              = await import("os");
     const execFileAsync   = promisify(execFile);
 
     // ESC/POS binary faylni vaqtincha saqlash
     const tmpFile = join(process.cwd(), `tmp_print_${Date.now()}.bin`);
     await writeFile(tmpFile, data);
 
-    // PowerShell inline C# orqali Windows Spooler RAW print
-    const psScript = `
+    try {
+        if (os.platform() === 'win32') {
+            // --- WINDOWS (PowerShell) ---
+            const psScript = `
 $code = @"
 using System;
 using System.IO;
@@ -439,12 +442,26 @@ Add-Type -TypeDefinition $code -Language CSharp
 $result = [RawPrint]::SendFileToPrinter("${printerName}", "${tmpFile}")
 if (-not $result) { exit 1 }
 `;
-
-    try {
-        await execFileAsync("powershell", [
-            "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
-            "-Command", psScript
-        ], { timeout: 15000 });
+            await execFileAsync("powershell", [
+                "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+                "-Command", psScript
+            ], { timeout: 15000 });
+        } else {
+            // --- LINUX (Ahost yoki Raspberry Pi) ---
+            try {
+                // Agar printerName fayl manzili bo'lsa (masalan: /dev/usb/lp0)
+                if (printerName.startsWith('/dev/')) {
+                    const fs = require('fs');
+                    fs.writeFileSync(printerName, data);
+                } else {
+                    // CUPS tizimi orqali 'lp' kommandasi bilan xom (raw) ma'lumot jo'natish
+                    await execFileAsync("lp", ["-d", printerName, "-o", "raw", tmpFile], { timeout: 15000 });
+                }
+            } catch (linuxErr) {
+                console.error("[PrinterService Linux USB Error]:", linuxErr);
+                throw linuxErr;
+            }
+        }
     } finally {
         await unlink(tmpFile).catch(() => {});
     }
