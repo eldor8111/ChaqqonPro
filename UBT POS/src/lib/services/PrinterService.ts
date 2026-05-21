@@ -454,8 +454,21 @@ if (-not $result) { exit 1 }
                     const fs = require('fs');
                     fs.writeFileSync(printerName, data);
                 } else {
-                    // CUPS tizimi orqali 'lp' kommandasi bilan xom (raw) ma'lumot jo'natish
-                    await execFileAsync("lp", ["-d", printerName, "-o", "raw", tmpFile], { timeout: 15000 });
+                    // Bulutli tizimda bo'lib lokal printer bo'lsa, polling orqali topshiriqqa yozamiz
+                    const fs = require('fs');
+                    const path = require('path');
+                    const queueDir = path.join(process.cwd(), ".print_queue");
+                    if (!fs.existsSync(queueDir)) fs.mkdirSync(queueDir, { recursive: true });
+                    
+                    const jobId = Date.now().toString() + Math.random().toString().slice(2, 6);
+                    const jobData = {
+                        printerName: printerName, // masalan "XP-80C"
+                        data: data.toString('base64'),
+                        timestamp: Date.now()
+                    };
+                    
+                    fs.writeFileSync(path.join(queueDir, jobId + ".json"), JSON.stringify(jobData));
+                    console.log(`[PrinterService] USB printer navbatiga qo'shildi: ${jobId}.json`);
                 }
             } catch (linuxErr) {
                 console.error("[PrinterService Linux USB Error]:", linuxErr);

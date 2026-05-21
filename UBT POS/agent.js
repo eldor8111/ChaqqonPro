@@ -1,4 +1,3 @@
-const http = require('http');
 const { execFile } = require("child_process");
 const { promisify } = require("util");
 const { writeFile, unlink } = require("fs/promises");
@@ -6,60 +5,49 @@ const { join } = require("path");
 
 const execFileAsync = promisify(execFile);
 
-const server = http.createServer(async (req, res) => {
-    // CORS headers for Google Chrome Private Network Access
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.setHeader('Access-Control-Allow-Private-Network', 'true'); // <--- CRITICAL FIX!
+// E-Code UZ orqali bulutli server bilan sinxronizatsiya
+const SERVER_URL = "https://chaqqonpro.e-code.uz";
 
-    if (req.method === 'OPTIONS') {
-        res.writeHead(204);
-        res.end();
-        return;
-    }
-
-    if (req.method === 'GET' && req.url === '/printers') {
+async function getWindowsPrinters() {
+    try {
+        const { stdout } = await execFileAsync("powershell", [
+            "-Command",
+            "Get-Printer | Select-Object -ExpandProperty Name | ConvertTo-Json"
+        ], { timeout: 8000 });
+        let printers = [];
         try {
-            const { stdout } = await execFileAsync("powershell", [
-                "-Command",
-                "Get-Printer | Select-Object -ExpandProperty Name | ConvertTo-Json"
-            ], { timeout: 8000 });
-            let printers = [];
-            try {
-                const parsed = JSON.parse(stdout.trim());
-                printers = Array.isArray(parsed) ? parsed : [parsed];
-            } catch {
-                printers = stdout.trim().split("\n").map(s => s.trim()).filter(Boolean);
-            }
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ printers }));
+            const parsed = JSON.parse(stdout.trim());
+            printers = Array.isArray(parsed) ? parsed : [parsed];
         } catch {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ printers: ["XP-80", "XP-80C", "POS-80"] }));
+            printers = stdout.trim().split("\n").map(s => s.trim()).filter(Boolean);
         }
-        return;
+        return printers;
+    } catch {
+        return [];
     }
+}
 
-    if (req.method === 'POST' && req.url === '/print') {
-        let body = '';
-        req.on('data', chunk => {
-            body += chunk.toString();
-        });
-        req.on('end', async () => {
-            try {
-                const data = JSON.parse(body);
-                const { printerName, base64data } = data;
-                if (!printerName || !base64data) {
-                    res.writeHead(400, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ error: "Ma'lumot to'liq emas" }));
-                    return;
-                }
+async function syncPrinters() {
+    try {
+        const printers = await getWindowsPrinters();
+        if (printers.length > 0) {
+            await fetch(`${SERVER_URL}/api/smart/agent-printers`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ printers, _t: Date.now() })
+            });
+            console.log(`[SYNC] Serverga uzatildi, ${printers.length} ta printer mavjud.`);
+        }
+    } catch (e) {
+        console.log(`[XATO] Printerlarni serverga ulab bo'lmadi.`);
+    }
+}
 
-                const tmpFile = join(process.cwd(), `tmp_print_${Date.now()}.bin`);
-                await writeFile(tmpFile, Buffer.from(base64data, 'base64'));
+async function printRaw(printerName, base64data) {
+    const tmpFile = join(process.cwd(), `tmp_print_${Date.now()}.bin`);
+    await writeFile(tmpFile, Buffer.from(base64data, 'base64'));
 
-                const psScript = `
+    const psScript = `
 $code = @"
 using System;
 using System.IO;
@@ -118,36 +106,42 @@ $result = [RawPrint]::SendFileToPrinter("${printerName}", "${tmpFile}")
 if (-not $result) { exit 1 }
 `;
 
-                try {
-                    await execFileAsync("powershell", [
-                        "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
-                        "-Command", psScript
-                    ], { timeout: 15000 });
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ success: true }));
-                } catch(err) {
-                    res.writeHead(500, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ error: String(err) }));
-                } finally {
-                    await unlink(tmpFile).catch(() => {});
-                }
-            } catch (err) {
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: "Invalid JSON body" }));
-            }
-        });
-        return;
+    try {
+        await execFileAsync("powershell", [
+            "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+            "-Command", psScript
+        ], { timeout: 15000 });
+        console.log(`[PECHAT] ${printerName} ga chop etildi.`);
+    } catch(err) {
+        console.log(`[XATO] ${printerName} ga chop etib bo'lmadi:`, String(err));
+    } finally {
+        await unlink(tmpFile).catch(() => {});
     }
+}
 
-    res.writeHead(404);
-    res.end();
-});
+async function pollJobs() {
+    try {
+        const res = await fetch(`${SERVER_URL}/api/smart/poll-jobs`);
+        if (res.ok) {
+            const data = await res.json();
+            if (data.jobs && data.jobs.length > 0) {
+                for (const job of data.jobs) {
+                    await printRaw(job.printerName, job.data);
+                }
+            }
+        }
+    } catch (e) {
+        // Tizimga kirish biroz kechiksa ogohlantirmay turaveradi.
+    }
+    setTimeout(pollJobs, 2500); // Har 2.5 soniyada serverdan chop etish uchun job kutadi
+}
 
-const PORT = 18080;
-server.listen(PORT, () => {
-    console.log("=========================================");
-    console.log("  CHAQQON PRO - LOKAL PRINTER AGENTI     ");
-    console.log(`  Ishlamoqda: http://localhost:${PORT}   `);
-    console.log("  Oynani yopmang!                        ");
-    console.log("=========================================");
-});
+console.log("=========================================");
+console.log("  CHAQQON PRO - LOKAL PRINTER AGENTI     ");
+console.log(`  Tarmoq: ${SERVER_URL}   `);
+console.log("  Diqqat: Ushbu ayna ochiq tursin!       ");
+console.log("=========================================");
+
+syncPrinters();
+setInterval(syncPrinters, 30000); // printerlar o'zgarsa har 30 sekunda sinxron qiladi
+pollJobs();

@@ -49,14 +49,16 @@ export default function PrintersPage() {
         setLoadingWinPrinters(true);
         setError("");
         try {
-            // Webdan lokal printerlarni bilish usuli: kassadagi kompyuterda agent.js yonib turishi shart
-            const res = await fetch("http://localhost:18080/printers");
+            // Web browser fetch directly goes to VPS. Cloud gets from agent's polling payload.
+            const res = await fetch("/api/smart/agent-printers");
             const data = await res.json();
             setWinPrinters(Array.isArray(data.printers) ? data.printers : []);
-            if (data.printers.length === 0) setError("Printer topilmadi.");
+            if (!data.printers || data.printers.length === 0) {
+                setError("Printer topilmadi. Agar 'agent.js' ishlayotgan bo'lsa biroz kutib yana urinib ko'ring (sinxronlash 30 soniya olishi mumkin).");
+            }
         } catch {
             setWinPrinters([]);
-            setError("Lokal Agent ishlamayapti! Iltimos, kassada 'node agent.js' ni yurgizing.");
+            setError("Lokal Agent ishlamayapti ko'rinadi! Iltimos, kassada 'node agent.js' ni yurgizing.");
         } finally {
             setLoadingWinPrinters(false);
         }
@@ -120,41 +122,20 @@ export default function PrintersPage() {
     const handlePing = async (p: SmartPrinter) => {
         setPingStatus(s => ({ ...s, [p.id]: "checking" }));
         try {
-            const isUsbType = p.ipAddress.startsWith("usb://");
-            let printSuccess = false;
-
-            if (isUsbType) {
-                // Agar USB bo'lsa to'g'ridan to'g'ri Lokaldagi windows agentiga yuboramiz
-                // Aslida buffer kerak, lekin biz VPS ga yuboramiz va VPS base64 qaytarsa, uni yuboramiz.
-                // hozircha VPS da ping tekshirmoqdamiz, VPS yiqilmasligi uchun local test:
-                const res = await fetch("http://localhost:18080/print", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        printerName: p.ipAddress.slice(6),
-                        // Test chek base64 kodlanishi (brauzerda Buffer yo'qligi uchun tayyor string ishlatildi)
-                        base64data: "G0BUZXN0IENoZWsgTXV2YWZmYXFpeWF0bGkhCgoKCgoddkED"
-                    }),
-                });
-                printSuccess = res.ok;
-            } else {
-                // WiFi/LAN printer bo'lsa serverdan turib ping qilamiz
-                const res = await fetch("/api/smart/print", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        printerIp: p.ipAddress,
-                        port: p.port,
-                        tableName: "Test",
-                        items: [{ name: "Test chek", qty: 1, price: 0 }],
-                        total: 0,
-                        time: new Date().toLocaleString("uz-UZ"),
-                    }),
-                });
-                printSuccess = res.ok;
-            }
-            
-            setPingStatus(s => ({ ...s, [p.id]: printSuccess ? "ok" : "fail" }));
+            // Xoh USB xoh LAN bo'lsin baribir VPS Backend orqali ishlaydi (ajoyib Polling Arxitekturamiz!).
+            const res = await fetch("/api/smart/print", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    printerIp: p.ipAddress,
+                    port: p.port,
+                    tableName: "Test",
+                    items: [{ name: "Test chek", qty: 1, price: 0 }],
+                    total: 0,
+                    time: new Date().toLocaleString("uz-UZ"),
+                }),
+            });
+            setPingStatus(s => ({ ...s, [p.id]: res.ok ? "ok" : "fail" }));
         } catch {
             setPingStatus(s => ({ ...s, [p.id]: "fail" }));
         }
