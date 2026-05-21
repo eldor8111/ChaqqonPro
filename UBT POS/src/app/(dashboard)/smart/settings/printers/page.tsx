@@ -46,12 +46,20 @@ export default function PrintersPage() {
     useEffect(() => { loadPrinters(); }, []);
 
     const loadWindowsPrinters = async () => {
-        // Endi ro'yxatni agent orqali olmaymiz, sababi standart window.print ishlatiladi.
         setLoadingWinPrinters(true);
-        setTimeout(() => {
-            setWinPrinters(["Brauzer Pechat Oynasi (Standart)"]);
+        setError("");
+        try {
+            // Webdan lokal printerlarni bilish usuli: kassadagi kompyuterda agent.js yonib turishi shart
+            const res = await fetch("http://localhost:18080/printers");
+            const data = await res.json();
+            setWinPrinters(Array.isArray(data.printers) ? data.printers : []);
+            if (data.printers.length === 0) setError("Printer topilmadi.");
+        } catch {
+            setWinPrinters([]);
+            setError("Lokal Agent ishlamayapti! Iltimos, kassada 'node agent.js' ni yurgizing.");
+        } finally {
             setLoadingWinPrinters(false);
-        }, 500);
+        }
     };
 
     const handleOpenModal = () => {
@@ -108,48 +116,6 @@ export default function PrintersPage() {
         } catch {}
     };
 
-    const printHtmlReceiptLocal = (p: SmartPrinter) => {
-        const iframe = document.createElement('iframe');
-        iframe.style.position = 'absolute';
-        iframe.style.left = '-9999px';
-        iframe.style.width = '0px';
-        iframe.style.height = '0px';
-        document.body.appendChild(iframe);
-        const doc = iframe.contentWindow?.document;
-        if (doc) {
-            doc.write(`
-                <html>
-                <head>
-                    <style>
-                        @page { margin: 0; }
-                        body { width: 80mm; margin: 0 auto; padding: 10px; font-family: 'Courier New', monospace; font-size: 14px; color: #000; }
-                        .center { text-align: center; }
-                        .line { border-bottom: 1px dashed #000; margin: 10px 0; }
-                        h2 { text-align: center; margin: 0 0 10px 0; font-size: 20px; }
-                    </style>
-                </head>
-                <body>
-                    <h2>ChaqqonPro</h2>
-                    <div class="center">TEST CHEK</div>
-                    <div class="line"></div>
-                    <p><b>Printer:</b> ${p.name}</p>
-                    <p><b>Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}</p>
-                    <p><b>Holat:</b> Muvaffaqiyatli ulangan!</p>
-                    <div class="line"></div>
-                    <div class="center">Xizmatingizdan xursandmiz.</div>
-                    <br/><br/><br/><br/>
-                </body>
-                </html>
-            `);
-            doc.close();
-            setTimeout(() => {
-                iframe.contentWindow?.focus();
-                iframe.contentWindow?.print();
-                setTimeout(() => document.body.removeChild(iframe), 1000);
-            }, 300);
-        }
-    };
-
     // Test print
     const handlePing = async (p: SmartPrinter) => {
         setPingStatus(s => ({ ...s, [p.id]: "checking" }));
@@ -158,11 +124,21 @@ export default function PrintersPage() {
             let printSuccess = false;
 
             if (isUsbType) {
-                // USB bo'lsa hech qanday agent, api kutib o'tirmaymiz. To'g'ridan-to'g'ri brauzer oyna chiqaradi.
-                printHtmlReceiptLocal(p);
-                printSuccess = true;
+                // Agar USB bo'lsa to'g'ridan to'g'ri Lokaldagi windows agentiga yuboramiz
+                // Aslida buffer kerak, lekin biz VPS ga yuboramiz va VPS base64 qaytarsa, uni yuboramiz.
+                // hozircha VPS da ping tekshirmoqdamiz, VPS yiqilmasligi uchun local test:
+                const res = await fetch("http://localhost:18080/print", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        printerName: p.ipAddress.slice(6),
+                        // Test chek base64 kodlanishi (brauzerda Buffer yo'qligi uchun tayyor string ishlatildi)
+                        base64data: "G0BUZXN0IENoZWsgTXV2YWZmYXFpeWF0bGkhCgoKCgoddkED"
+                    }),
+                });
+                printSuccess = res.ok;
             } else {
-                // WiFi/LAN printer bo'lsa serverdan turib TCP socket orqali ping qilamiz
+                // WiFi/LAN printer bo'lsa serverdan turib ping qilamiz
                 const res = await fetch("/api/smart/print", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -329,19 +305,23 @@ export default function PrintersPage() {
                             ) : (
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Chop etish turi</label>
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Windows qurilmasi nomi</label>
                                         <button onClick={loadWindowsPrinters} disabled={loadingWinPrinters} className="text-[10px] text-sky-500 font-bold uppercase tracking-wider flex items-center gap-1 hover:text-sky-600 transition-colors">
-                                            {loadingWinPrinters ? <Loader2 size={12} className="animate-spin" /> : "Tanlash"}
+                                            {loadingWinPrinters ? <Loader2 size={12} className="animate-spin" /> : "Topish"}
                                         </button>
                                     </div>
-                                    <div className="relative">
-                                        <select value={form.usbName} onChange={e => setForm({ ...form, usbName: e.target.value })}
-                                            className="input-field w-full h-12 appearance-none pr-10 font-medium">
-                                            <option value="" disabled>Qurilmani tanlang...</option>
-                                            <option value="Brauzer">Brauzer Pechat Oynasi (Standart)</option>
-                                        </select>
-                                    </div>
-                                    <p className="text-[11px] text-slate-400 mt-2">USB qilinganda chek brauzer orqali to'g'ridan to'g'ri chop etiladi (boshqa tizimlar kabi).</p>
+                                    {winPrinters.length > 0 ? (
+                                        <div className="relative">
+                                            <select value={form.usbName} onChange={e => setForm({ ...form, usbName: e.target.value })}
+                                                className="input-field w-full h-12 appearance-none pr-10 font-medium">
+                                                <option value="" disabled>Qurilmani tanlang...</option>
+                                                {winPrinters.map(p => <option key={p} value={p}>{p}</option>)}
+                                            </select>
+                                        </div>
+                                    ) : (
+                                        <input value={form.usbName} onChange={e => setForm({ ...form, usbName: e.target.value })} placeholder="XP-80 Printer" className="input-field w-full h-12" />
+                                    )}
+                                    <p className="text-[11px] text-slate-400 mt-2">Kompyuteringizga ulangan USB printerning aniq nomini kiriting.</p>
                                 </div>
                             )}
                         </div>
