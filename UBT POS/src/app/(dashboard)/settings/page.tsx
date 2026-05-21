@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import {
     Building2, Users, Shield, Database, ClipboardList,
-    Globe, Check, Plus, Edit, Lock, Bell, Server, Key, X, Printer, UtensilsCrossed, Trash2, ChevronRight, ChevronDown, Settings, Eye, EyeOff, CreditCard
+    Globe, Check, Plus, Edit, Lock, Bell, Server, Key, X, Printer, UtensilsCrossed, Trash2, ChevronRight, ChevronDown, Settings, Eye, EyeOff, CreditCard, DownloadCloud
 } from "lucide-react";
 import { mockBranches } from "@/lib/mockData";
 import { useLang } from "@/lib/LangContext";
@@ -218,6 +218,7 @@ export default function SettingsPage() {
                             { key: "receipt", label: "Chek sozlamalari", icon: Printer },
                             ...(shopType === "smart" ? [{ key: "smart", label: "SMART sozlamalari", icon: UtensilsCrossed }] : []),
                             { key: "audit", label: t("settings.auditLog") || "Audit Jurnali", icon: ClipboardList },
+                            { key: "downloads", label: "Dasturlar (Magazin)", icon: DownloadCloud },
                         ].map(tab => (
                             <button
                                 key={tab.key}
@@ -1326,6 +1327,61 @@ export default function SettingsPage() {
                                         )}
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Downloads / App Store */}
+                    {activeTab === "downloads" && (
+                        <div className="space-y-4 animate-fade-in">
+                            <h2 className="section-title">Magazin / Dasturlar (App Store)</h2>
+                            <p className="text-sm text-slate-400">
+                                ChaqqonPro tizimi bilan birgalikda ishlash uchun kerakli yordamchi dasturlarni yuklab oling.
+                            </p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                                {/* SMART Agent Card */}
+                                <div className="glass-card p-5 relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 p-3">
+                                        <span className="badge badge-green text-[10px]">Yangi</span>
+                                    </div>
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-16 h-16 rounded-2xl bg-gradient-brand flex items-center justify-center shadow-lg shadow-brand/20">
+                                            <Printer size={32} className="text-white" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-lg font-bold text-slate-200">SMART Agent</h3>
+                                            <p className="text-xs text-brand font-medium mb-2">v1.0.0 | Windows 10/11</p>
+                                            <p className="text-sm text-slate-400">
+                                                Kassa kompyuterlari uchun maxsus dastur. Cheklarni brauzersiz va reklamasiz, avtomatik ravishda to'g'ridan-to'g'ri USB printerdan chiqarish imkonini beradi. QZ Tray shart emas!
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="mt-6 flex items-center justify-between border-t border-slate-700/50 pt-4">
+                                        <span className="text-xs text-slate-500 flex items-center gap-1">
+                                            <Shield size={14} /> Tizimda ishlaydi (Orqa fonda)
+                                        </span>
+                                        <a 
+                                            href="/downloads/SMART-Agent-Setup-1.0.0.exe" 
+                                            download
+                                            className="btn-primary flex items-center gap-2 shadow-lg shadow-brand/20 hover:scale-105 transition-all"
+                                        >
+                                            <DownloadCloud size={16} /> Yuklab olish (.exe)
+                                        </a>
+                                    </div>
+                                </div>
+
+                                {/* Placeholder for future apps */}
+                                <div className="glass-card p-5 relative overflow-hidden border border-dashed border-slate-700 bg-slate-800/30 flex flex-col items-center justify-center text-center">
+                                    <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mb-3">
+                                        <Plus size={24} className="text-slate-500" />
+                                    </div>
+                                    <h3 className="text-md font-bold text-slate-400">Tez kunda</h3>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        Elektron tarozilar va xaridor displeyi uchun maxsus yordamchi dasturlar tez orada qo'shiladi.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     )}
