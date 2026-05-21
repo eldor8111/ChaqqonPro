@@ -5,6 +5,8 @@
 import * as net from "net";
 import { cacheGet, cacheSet, TTL } from "@/lib/cache";
 import { prisma } from "@/lib/backend/db";
+import fs from "fs";
+import path from "path";
 
 // ─── ESC/POS helper commands ────────────────────────────────────────────────
 const ESC = 0x1b, GS = 0x1d;
@@ -451,12 +453,9 @@ if (-not $result) { exit 1 }
             try {
                 // Agar printerName fayl manzili bo'lsa (masalan: /dev/usb/lp0)
                 if (printerName.startsWith('/dev/')) {
-                    const fs = require('fs');
                     fs.writeFileSync(printerName, data);
                 } else {
                     // Bulutli tizimda bo'lib lokal printer bo'lsa, polling orqali topshiriqqa yozamiz
-                    const fs = require('fs');
-                    const path = require('path');
                     const queueDir = path.join(process.cwd(), ".print_queue");
                     if (!fs.existsSync(queueDir)) fs.mkdirSync(queueDir, { recursive: true });
                     
