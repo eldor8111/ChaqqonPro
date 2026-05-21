@@ -110,7 +110,10 @@ export default function PrintersPage() {
 
     const printHtmlReceiptLocal = (p: SmartPrinter) => {
         const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '0px';
+        iframe.style.height = '0px';
         document.body.appendChild(iframe);
         const doc = iframe.contentWindow?.document;
         if (doc) {
