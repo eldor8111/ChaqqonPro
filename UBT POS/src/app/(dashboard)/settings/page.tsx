@@ -1333,53 +1333,127 @@ export default function SettingsPage() {
 
                     {/* Downloads / App Store */}
                     {activeTab === "downloads" && (
-                        <div className="space-y-4 animate-fade-in">
-                            <h2 className="section-title">Magazin / Dasturlar (App Store)</h2>
-                            <p className="text-sm text-slate-400">
-                                ChaqqonPro tizimi bilan birgalikda ishlash uchun kerakli yordamchi dasturlarni yuklab oling.
-                            </p>
+                        <div className="space-y-6 animate-fade-in">
+                            <div>
+                                <h2 className="section-title">Magazin / Dasturlar (App Store)</h2>
+                                <p className="text-sm text-slate-400 mt-1">
+                                    ChaqqonPro tizimi bilan birgalikda ishlash uchun kerakli yordamchi dasturlarni yuklab oling.
+                                </p>
+                            </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                                {/* SMART Agent Card */}
-                                <div className="glass-card p-5 relative overflow-hidden group">
+                            {/* SMART POS Desktop — Featured */}
+                            <div className="relative glass-card p-6 overflow-hidden border border-brand/30 shadow-xl shadow-brand/5">
+                                {/* Glow effect */}
+                                <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-purple-500/5 pointer-events-none" />
+                                
+                                <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
+                                    {/* Icon */}
+                                    <div className="w-20 h-20 rounded-2xl bg-gradient-brand flex items-center justify-center shadow-2xl shadow-brand/30 flex-shrink-0">
+                                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                            <rect x="4" y="8" width="32" height="22" rx="3" stroke="white" strokeWidth="2.5" fill="none"/>
+                                            <rect x="13" y="30" width="14" height="3" rx="1" fill="white" fillOpacity="0.6"/>
+                                            <rect x="9" y="32" width="22" height="2" rx="1" fill="white" fillOpacity="0.4"/>
+                                            <path d="M14 19l3.5 3.5L26 14" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </div>
+
+                                    {/* Info */}
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-3 flex-wrap mb-2">
+                                            <h3 className="text-xl font-bold text-white">SMART POS Desktop</h3>
+                                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-brand text-white uppercase tracking-wider">Tavsiya etiladi ⭐</span>
+                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">v1.0.0</span>
+                                        </div>
+                                        <p className="text-sm text-slate-300 leading-relaxed mb-4">
+                                            To'liq kiosk rejimidagi kassa dasturi. Brauzersiz ishlaydi — Windows kompyuterda to'g'ridan-to'g'ri o'rnatiladi. 
+                                            Ichida <strong className="text-brand">Print Agent</strong> ham mavjud — alohida dastur shart emas!
+                                        </p>
+                                        <div className="flex flex-wrap gap-3">
+                                            {[
+                                                { icon: "🖥️", text: "Kiosk to'liq ekran" },
+                                                { icon: "🖨️", text: "Print Agent ichida" },
+                                                { icon: "🔒", text: "Xavfsiz (F11 bloklangan)" },
+                                                { icon: "⚡", text: "Avto-ishga tushish" },
+                                            ].map((f) => (
+                                                <span key={f.text} className="flex items-center gap-1.5 text-xs bg-slate-800/60 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700/60">
+                                                    <span>{f.icon}</span> {f.text}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Download Button */}
+                                    <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                                        <a
+                                            href="/downloads/SMART-POS-Setup-1.0.0.exe"
+                                            download
+                                            className="btn-primary flex items-center gap-2.5 px-6 py-3 text-base font-semibold shadow-xl shadow-brand/30 hover:scale-105 transition-all whitespace-nowrap"
+                                        >
+                                            <DownloadCloud size={20} /> Yuklab olish
+                                        </a>
+                                        <p className="text-[10px] text-slate-500 text-center">Windows 10/11 · x64 · ~76 MB</p>
+                                    </div>
+                                </div>
+
+                                {/* Install instructions */}
+                                <div className="relative mt-5 pt-4 border-t border-slate-700/40">
+                                    <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-3">O'rnatish tartibi:</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            "1. .exe faylni yuklab oling",
+                                            "2. Administrator sifatida o'rnating",
+                                            "3. Printer nomini kassa sozlamalarida kiriting",
+                                            "4. Dastur avtomatik ishga tushadi",
+                                        ].map((step) => (
+                                            <span key={step} className="text-xs bg-slate-800/50 text-slate-400 px-3 py-1.5 rounded-lg border border-slate-700/40">
+                                                {step}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Other apps grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Legacy SMART Agent Card */}
+                                <div className="glass-card p-5 relative overflow-hidden group opacity-80">
                                     <div className="absolute top-0 right-0 p-3">
-                                        <span className="badge badge-green text-[10px]">Yangi</span>
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-700 text-slate-400">Eski versiya</span>
                                     </div>
                                     <div className="flex items-start gap-4">
-                                        <div className="w-16 h-16 rounded-2xl bg-gradient-brand flex items-center justify-center shadow-lg shadow-brand/20">
-                                            <Printer size={32} className="text-white" />
+                                        <div className="w-14 h-14 rounded-2xl bg-slate-700 flex items-center justify-center shadow-lg">
+                                            <Printer size={28} className="text-slate-400" />
                                         </div>
                                         <div className="flex-1">
-                                            <h3 className="text-lg font-bold text-slate-200">SMART Agent</h3>
-                                            <p className="text-xs text-brand font-medium mb-2">v1.0.0 | Windows 10/11</p>
-                                            <p className="text-sm text-slate-400">
-                                                Kassa kompyuterlari uchun maxsus dastur. Cheklarni brauzersiz va reklamasiz, avtomatik ravishda to'g'ridan-to'g'ri USB printerdan chiqarish imkonini beradi. QZ Tray shart emas!
+                                            <h3 className="text-base font-bold text-slate-300">SMART Agent (Print Only)</h3>
+                                            <p className="text-xs text-slate-500 font-medium mb-2">v1.0.0 | Windows 10/11</p>
+                                            <p className="text-sm text-slate-500">
+                                                Faqat printer agent — brauzer orqali ishlashni davom ettirmoqchi bo'lsangiz shu dasturni o'rnating.
                                             </p>
                                         </div>
                                     </div>
-                                    
-                                    <div className="mt-6 flex items-center justify-between border-t border-slate-700/50 pt-4">
-                                        <span className="text-xs text-slate-500 flex items-center gap-1">
-                                            <Shield size={14} /> Tizimda ishlaydi (Orqa fonda)
+                                    <div className="mt-5 flex items-center justify-between border-t border-slate-700/40 pt-4">
+                                        <span className="text-xs text-slate-600 flex items-center gap-1">
+                                            <Shield size={13} /> Orqa fonda ishlaydi
                                         </span>
                                         <a 
                                             href="/downloads/SMART-Agent-Setup-1.0.0.exe" 
                                             download
-                                            className="btn-primary flex items-center gap-2 shadow-lg shadow-brand/20 hover:scale-105 transition-all"
+                                            className="flex items-center gap-2 text-sm font-semibold text-slate-400 border border-slate-600 px-4 py-2 rounded-xl hover:border-slate-500 hover:text-slate-200 transition-all"
                                         >
-                                            <DownloadCloud size={16} /> Yuklab olish (.exe)
+                                            <DownloadCloud size={15} /> Yuklab olish
                                         </a>
                                     </div>
                                 </div>
 
                                 {/* Placeholder for future apps */}
-                                <div className="glass-card p-5 relative overflow-hidden border border-dashed border-slate-700 bg-slate-800/30 flex flex-col items-center justify-center text-center">
+                                <div className="glass-card p-5 relative overflow-hidden border border-dashed border-slate-700 bg-slate-800/20 flex flex-col items-center justify-center text-center min-h-[160px]">
                                     <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mb-3">
-                                        <Plus size={24} className="text-slate-500" />
+                                        <Plus size={24} className="text-slate-600" />
                                     </div>
-                                    <h3 className="text-md font-bold text-slate-400">Tez kunda</h3>
-                                    <p className="text-xs text-slate-500 mt-1">
-                                        Elektron tarozilar va xaridor displeyi uchun maxsus yordamchi dasturlar tez orada qo'shiladi.
+                                    <h3 className="text-sm font-bold text-slate-500">Tez kunda</h3>
+                                    <p className="text-xs text-slate-600 mt-1 max-w-[200px]">
+                                        Elektron tarozilar va xaridor displeyi uchun dasturlar
                                     </p>
                                 </div>
                             </div>

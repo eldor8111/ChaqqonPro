@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain, Menu, nativeImage, Tray } = require('electron');
+const { app, BrowserWindow, screen, ipcMain, Menu, nativeImage, Tray, shell, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -10,6 +10,38 @@ if (!gotTheLock) {
 
 const { startPolling, stopPolling, syncPrinters } = require('./tray-agent');
 const { getWindowsPrinters } = require('./printer');
+
+// ─── Version Check ───
+const CURRENT_VERSION = app.getVersion();
+let updateAvailable = false;
+let updateUrl = null;
+
+async function checkForUpdates(serverUrl) {
+    try {
+        const res = await fetch(`${serverUrl}/api/smart/app-version`, {
+            signal: AbortSignal.timeout(8000),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const latest = data.version;
+        if (latest && latest !== CURRENT_VERSION) {
+            updateAvailable = true;
+            updateUrl = data.downloadUrl || `${serverUrl}/settings`;
+            console.log(`[UPDATE] Yangi versiya mavjud: ${latest} (joriy: ${CURRENT_VERSION})`);
+            // Windows notification
+            if (Notification.isSupported()) {
+                new Notification({
+                    title: 'SMART POS — Yangilanish mavjud! 🎉',
+                    body: `v${latest} versiyasi chiqdi. Yuklab olish uchun bosing.`,
+                    silent: false,
+                }).show();
+            }
+            rebuildTrayMenu();
+        }
+    } catch (e) {
+        // Network xato — jimgina o'tkazib yuborish
+    }
+}
 
 let mainWindow = null;
 let splashWindow = null;
@@ -57,6 +89,67 @@ function getIconPath() {
 }
 
 // ─── Tray Icon ───
+function buildTrayMenuTemplate() {
+    const cfg = loadConfig();
+    const template = [
+        { label: `SMART POS v${CURRENT_VERSION}`, enabled: false },
+        { type: 'separator' },
+        { 
+            label: '🖥️  Kassa oynasini ko\'rsatish', 
+            click: () => {
+                if (mainWindow) {
+                    if (mainWindow.isMinimized()) mainWindow.restore();
+                    mainWindow.show();
+                    mainWindow.focus();
+                } else {
+                    createMainWindow();
+                }
+            } 
+        },
+        { type: 'separator' },
+        { label: '🟢 Print Agent: Ishlamoqda', enabled: false },
+        {
+            label: '🔄 Printerlarni sinxronlash',
+            click: async () => {
+                await syncPrinters(cfg.serverUrl);
+            }
+        },
+        { type: 'separator' },
+    ];
+
+    if (updateAvailable && updateUrl) {
+        template.push({
+            label: '🎉 Yangi versiya mavjud — Yuklab olish',
+            click: () => shell.openExternal(updateUrl)
+        });
+        template.push({ type: 'separator' });
+    }
+
+    template.push({
+        label: '⚙️  Sozlamalar',
+        click: () => shell.openExternal(`${cfg.serverUrl}/settings`)
+    });
+    template.push({
+        label: '❌ Dasturdan chiqish',
+        click: () => {
+            stopPolling();
+            app.quit();
+        }
+    });
+
+    return template;
+}
+
+function rebuildTrayMenu() {
+    if (!tray) return;
+    const menu = Menu.buildFromTemplate(buildTrayMenuTemplate());
+    tray.setContextMenu(menu);
+    tray.setToolTip(updateAvailable
+        ? 'SMART POS — Yangi versiya mavjud! 🎉'
+        : 'SMART POS ✅ Ishlamoqda'
+    );
+}
+
 function createTray() {
     const iconPath = getIconPath();
     let icon;
@@ -70,43 +163,7 @@ function createTray() {
     }
 
     tray = new Tray(icon);
-    tray.setToolTip('SMART POS Agent ✅');
-
-    const contextMenu = Menu.buildFromTemplate([
-        { label: 'SMART POS', enabled: false },
-        { type: 'separator' },
-        { 
-            label: 'Oynani ko\\'rsatish', 
-            click: () => {
-                if (mainWindow) {
-                    if (mainWindow.isMinimized()) mainWindow.restore();
-                    mainWindow.show();
-                    mainWindow.focus();
-                } else {
-                    createMainWindow();
-                }
-            } 
-        },
-        { type: 'separator' },
-        { label: 'Print Agent Holati: Ishlamoqda ✅', enabled: false },
-        {
-            label: '🔄 Printerlarni sinxronlash',
-            click: async () => {
-                const cfg = loadConfig();
-                await syncPrinters(cfg.serverUrl);
-            }
-        },
-        { type: 'separator' },
-        {
-            label: '❌ Dasturdan chiqish',
-            click: () => {
-                stopPolling();
-                app.quit();
-            }
-        }
-    ]);
-
-    tray.setContextMenu(contextMenu);
+    rebuildTrayMenu();
     
     tray.on('double-click', () => {
         if (mainWindow) {
@@ -253,6 +310,13 @@ app.whenReady().then(() => {
 
     // Print agentni fonda ishga tushirish
     startPolling(config);
+
+    // Versiya tekshiruvi: dastlab 30 sekundan so'ng, keyin har 6 soatda
+    setTimeout(() => checkForUpdates(config.serverUrl), 30_000);
+    setInterval(() => {
+        const cfg = loadConfig();
+        checkForUpdates(cfg.serverUrl);
+    }, 6 * 60 * 60 * 1000); // har 6 soatda
 });
 
 app.on('window-all-closed', (e) => {
