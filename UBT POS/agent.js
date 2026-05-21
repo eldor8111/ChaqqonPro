@@ -7,10 +7,11 @@ const { join } = require("path");
 const execFileAsync = promisify(execFile);
 
 const server = http.createServer(async (req, res) => {
-    // CORS headers
+    // CORS headers for Google Chrome Private Network Access
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Private-Network', 'true'); // <--- CRITICAL FIX!
 
     if (req.method === 'OPTIONS') {
         res.writeHead(204);
