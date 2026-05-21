@@ -1,45 +1,64 @@
-const express = require('express');
-const cors = require('cors');
+const http = require('http');
 const { execFile } = require("child_process");
 const { promisify } = require("util");
 const { writeFile, unlink } = require("fs/promises");
 const { join } = require("path");
 
 const execFileAsync = promisify(execFile);
-const app = express();
 
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+const server = http.createServer(async (req, res) => {
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-// Windows printerlarni izlash
-app.get('/printers', async (req, res) => {
-    try {
-        const { stdout } = await execFileAsync("powershell", [
-            "-Command",
-            "Get-Printer | Select-Object -ExpandProperty Name | ConvertTo-Json"
-        ], { timeout: 8000 });
-        let printers = [];
-        try {
-            const parsed = JSON.parse(stdout.trim());
-            printers = Array.isArray(parsed) ? parsed : [parsed];
-        } catch {
-            printers = stdout.trim().split("\n").map(s => s.trim()).filter(Boolean);
-        }
-        res.json({ printers });
-    } catch {
-        res.json({ printers: ["XP-80", "XP-80C", "POS-80"] }); // fallback
+    if (req.method === 'OPTIONS') {
+        res.writeHead(204);
+        res.end();
+        return;
     }
-});
 
-// USB printerga chek chiqarish
-app.post('/print', async (req, res) => {
-    const { printerName, base64data } = req.body;
-    if (!printerName || !base64data) return res.status(400).json({ error: "Ma'lumot to'liq emas" });
+    if (req.method === 'GET' && req.url === '/printers') {
+        try {
+            const { stdout } = await execFileAsync("powershell", [
+                "-Command",
+                "Get-Printer | Select-Object -ExpandProperty Name | ConvertTo-Json"
+            ], { timeout: 8000 });
+            let printers = [];
+            try {
+                const parsed = JSON.parse(stdout.trim());
+                printers = Array.isArray(parsed) ? parsed : [parsed];
+            } catch {
+                printers = stdout.trim().split("\n").map(s => s.trim()).filter(Boolean);
+            }
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ printers }));
+        } catch {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ printers: ["XP-80", "XP-80C", "POS-80"] }));
+        }
+        return;
+    }
 
-    const tmpFile = join(process.cwd(), `tmp_print_${Date.now()}.bin`);
-    await writeFile(tmpFile, Buffer.from(base64data, 'base64'));
+    if (req.method === 'POST' && req.url === '/print') {
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', async () => {
+            try {
+                const data = JSON.parse(body);
+                const { printerName, base64data } = data;
+                if (!printerName || !base64data) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: "Ma'lumot to'liq emas" }));
+                    return;
+                }
 
-    const psScript = `
+                const tmpFile = join(process.cwd(), `tmp_print_${Date.now()}.bin`);
+                await writeFile(tmpFile, Buffer.from(base64data, 'base64'));
+
+                const psScript = `
 $code = @"
 using System;
 using System.IO;
@@ -98,21 +117,33 @@ $result = [RawPrint]::SendFileToPrinter("${printerName}", "${tmpFile}")
 if (-not $result) { exit 1 }
 `;
 
-    try {
-        await execFileAsync("powershell", [
-            "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
-            "-Command", psScript
-        ], { timeout: 15000 });
-        res.json({ success: true });
-    } catch(err) {
-        res.status(500).json({ error: String(err) });
-    } finally {
-        await unlink(tmpFile).catch(() => {});
+                try {
+                    await execFileAsync("powershell", [
+                        "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+                        "-Command", psScript
+                    ], { timeout: 15000 });
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: true }));
+                } catch(err) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: String(err) }));
+                } finally {
+                    await unlink(tmpFile).catch(() => {});
+                }
+            } catch (err) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: "Invalid JSON body" }));
+            }
+        });
+        return;
     }
+
+    res.writeHead(404);
+    res.end();
 });
 
 const PORT = 18080;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log("=========================================");
     console.log("  CHAQQON PRO - LOKAL PRINTER AGENTI     ");
     console.log(`  Ishlamoqda: http://localhost:${PORT}   `);
