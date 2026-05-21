@@ -132,8 +132,8 @@ export default function PrintersPage() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         printerName: p.ipAddress.slice(6),
-                        // Test chek bufferBase64: (kichkina test)
-                        base64data: Buffer.from([0x1B, 0x40, ...Buffer.from("Test Chek Muvaffaqiyatli!\n\n\n\n\n"), 0x1D, 0x56, 0x41, 0x03]).toString('base64')
+                        // Test chek base64 kodlanishi (brauzerda Buffer yo'qligi uchun tayyor string ishlatildi)
+                        base64data: "G0BUZXN0IENoZWsgTXV2YWZmYXFpeWF0bGkhCgoKCgoddkED"
                     }),
                 });
                 printSuccess = res.ok;
