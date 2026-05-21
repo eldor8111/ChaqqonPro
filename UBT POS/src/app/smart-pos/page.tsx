@@ -1752,7 +1752,7 @@ export default function UbtPosPage() {
         let printerIp = store.kassirSession?.printerIp || store.deviceSession?.printerIp || "";
         if (!printerIp) {
             try {
-                const res = await fetch("/api/smart/printers");
+                const res = await fetch("/api/smart/printers", { headers: hdrs });
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.length > 0) printerIp = data[0].ipAddress;
@@ -1844,7 +1844,7 @@ export default function UbtPosPage() {
         let printerIp = store.kassirSession?.printerIp || store.deviceSession?.printerIp || "";
         if (!printerIp) {
             try {
-                const res = await fetch("/api/smart/printers");
+                const res = await fetch("/api/smart/printers", { headers: hdrs });
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.length > 0) printerIp = data[0].ipAddress;
@@ -1910,7 +1910,13 @@ export default function UbtPosPage() {
         if (cart.length === 0) { alert("Chek bo'sh — avval taom qo'shing"); return; }
         let ip = store.kassirSession?.printerIp || store.deviceSession?.printerIp || "";
         if (!ip) {
-            try { const res = await fetch("/api/smart/printers"); const data = await res.json(); if (data && data.length > 0) ip = data[0].ipAddress; } catch {}
+            try { 
+                const res = await fetch("/api/smart/printers", { headers: store.kassirSession?.token ? { "Authorization": `Bearer ${store.kassirSession.token}` } : {} }); 
+                if (res.ok) {
+                    const data = await res.json(); 
+                    if (data && data.length > 0) ip = data[0].ipAddress; 
+                }
+            } catch {}
         }
         if (!ip) { alert("Printer topilmadi!"); return; }
         const now = new Date(); const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
