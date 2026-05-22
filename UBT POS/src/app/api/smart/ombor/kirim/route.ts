@@ -3,17 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/backend/db";
 import { getSession } from "@/lib/backend/auth";
 
-// ─── Ensure extra columns exist ──────────────────────────────────────────────
-const _ensureReceiptFields = async () => {
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE InventoryReceipt ADD COLUMN currency TEXT DEFAULT 'UZS'`); } catch (e) {}
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE InventoryReceipt ADD COLUMN invoiceNo TEXT`); } catch (e) {}
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE InventoryReceipt ADD COLUMN documentId TEXT`); } catch (e) {}
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE InventoryReceipt ADD COLUMN costPriceUzs REAL DEFAULT 0`); } catch (e) {}
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE InventoryReceipt ADD COLUMN totalCostUzs REAL DEFAULT 0`); } catch (e) {}
-    // KassiHarakat ga refId (documentId bilan bog'lash uchun)
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE KassiHarakat ADD COLUMN refId TEXT`); } catch (e) {}
-};
-_ensureReceiptFields();
+
 
 // ─── Helper: get usdRate for tenant ──────────────────────────────────────────
 async function getUsdRate(tenantId: string): Promise<number> {

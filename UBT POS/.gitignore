@@ -60,3 +60,7 @@ messages/
 # VS Code
 .vscode/extensions.json
 *.vsix
+
+# Large binary downloads (installer fayllar serverda saqlanadi, git'da shart emas)
+/public/downloads/*.exe
+/public/downloads/*.dmg

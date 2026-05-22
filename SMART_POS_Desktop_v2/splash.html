@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMART POS YUKLANMOQDA...</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0f172a; /* Tailwind slate-900 */
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            border-radius: 12px;
+            border: 1px solid #1e293b; /* slate-800 */
+        }
+
+        .logo-container {
+            width: 120px;
+            height: 120px;
+            background-color: #38bdf8; /* sky-400 */
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3);
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        .logo-text {
+            font-size: 48px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            letter-spacing: 1px;
+        }
+
+        p {
+            color: #94a3b8; /* slate-400 */
+            font-size: 16px;
+            margin: 0 0 30px 0;
+        }
+
+        .loader-container {
+            width: 250px;
+            height: 6px;
+            background-color: #1e293b;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .loader-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            border-radius: 10px;
+            width: 0%;
+            animation: load 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .version {
+            position: absolute;
+            bottom: 20px;
+            color: #475569; /* slate-600 */
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        @keyframes load {
+            0% { width: 0%; }
+            50% { width: 60%; }
+            80% { width: 85%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 15px 35px rgba(56, 189, 248, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3); }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <span class="logo-text">S</span>
+    </div>
+    
+    <h1>SMART POS</h1>
+    <p>Kassa tizimi ishga tushirilmoqda...</p>
+
+    <div class="loader-container">
+        <div class="loader-bar"></div>
+    </div>
+
+    <div class="version">Tizim holati tekshirilmoqda • v2.0.0</div>
+</body>
+</html>

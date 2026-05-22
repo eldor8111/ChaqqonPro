@@ -16,9 +16,11 @@ const _ensureSupplierTable = prisma.$executeRawUnsafe(`
     )
 `).catch(() => {});
 
-const _ensureSupplierCurrency = prisma.$executeRawUnsafe(`
-    ALTER TABLE UbtSupplier ADD COLUMN currency TEXT DEFAULT 'UZS'
-`).catch(() => {});
+const _ensureSupplierCurrency = (async () => {
+    try {
+        await prisma.$executeRawUnsafe(`ALTER TABLE UbtSupplier ADD COLUMN currency TEXT DEFAULT 'UZS'`);
+    } catch {}
+})();
 
 // GET: Returns mijozlar (customers) + yetkazib beruvchilar (suppliers) for a tenant
 export async function GET(req: NextRequest) {

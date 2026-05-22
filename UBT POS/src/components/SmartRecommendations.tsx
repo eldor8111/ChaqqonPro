@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { X, Sparkles, TrendingUp, Gift } from "lucide-react";
 
 interface Product {
@@ -72,18 +72,7 @@ export default function SmartRecommendations({
     const [loading, setLoading] = useState(false);
     const [visible, setVisible] = useState(false);
 
-    // Fetch recommendations when cart changes
-    useEffect(() => {
-        if (cartItems.length === 0) {
-            setRecommendations([]);
-            setVisible(false);
-            return;
-        }
-
-        fetchRecommendations();
-    }, [cartItems, cartTotal]);
-
-    const fetchRecommendations = async () => {
+    const fetchRecommendations = useCallback(async () => {
         setLoading(true);
         try {
             const params = new URLSearchParams({
@@ -115,7 +104,18 @@ export default function SmartRecommendations({
         } finally {
             setLoading(false);
         }
-    };
+    }, [cartItems, cartTotal, tenantToken]);
+
+    // Fetch recommendations when cart changes
+    useEffect(() => {
+        if (cartItems.length === 0) {
+            setRecommendations([]);
+            setVisible(false);
+            return;
+        }
+
+        fetchRecommendations();
+    }, [cartItems, cartTotal, fetchRecommendations]);
 
     const handleClick = async (rec: Recommendation) => {
         // Track click

@@ -1,18 +1,27 @@
-const { app, BrowserWindow, screen, ipcMain, Menu, nativeImage, Tray, shell, Notification } = require('electron');
+const { app, BrowserWindow, screen, ipcMain, Menu, nativeImage, Tray, shell, Notification, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
+
+// Asosiy xatolarni global darajada ushlash (app crash bo'lmasligi uchun)
+process.on('uncaughtException', (error) => {
+    console.error('CRITICAL ERROR (Uncaught Exception):', error);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('CRITICAL ERROR (Unhandled Rejection):', reason);
+});
 
 // Single instance lock
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
     app.quit();
+    process.exit(0);
 }
 
 const { startPolling, stopPolling, syncPrinters } = require('./tray-agent');
 const { getWindowsPrinters } = require('./printer');
 
 // ─── Version Check ───
-const CURRENT_VERSION = app.getVersion();
+const CURRENT_VERSION = '2.0.0'; // V2 Version
 let updateAvailable = false;
 let updateUrl = null;
 
@@ -24,14 +33,13 @@ async function checkForUpdates(serverUrl) {
         if (!res.ok) return;
         const data = await res.json();
         const latest = data.version;
-        if (latest && latest !== CURRENT_VERSION) {
+        if (latest && latest !== CURRENT_VERSION && latest > CURRENT_VERSION) {
             updateAvailable = true;
             updateUrl = data.downloadUrl || `${serverUrl}/settings`;
-            console.log(`[UPDATE] Yangi versiya mavjud: ${latest} (joriy: ${CURRENT_VERSION})`);
-            // Windows notification
+            console.log(`[UPDATE] Yangi versiya mavjud: ${latest}`);
             if (Notification.isSupported()) {
                 new Notification({
-                    title: 'SMART POS — Yangilanish mavjud! 🎉',
+                    title: 'SMART POS V2 — Yangilanish mavjud!',
                     body: `v${latest} versiyasi chiqdi. Yuklab olish uchun bosing.`,
                     silent: false,
                 }).show();
@@ -39,7 +47,7 @@ async function checkForUpdates(serverUrl) {
             rebuildTrayMenu();
         }
     } catch (e) {
-        // Network xato — jimgina o'tkazib yuborish
+        // Network error - jimgina o'tkazib yuborish
     }
 }
 
@@ -48,7 +56,7 @@ let splashWindow = null;
 let tray = null;
 
 // ─── Configuration ───
-const CONFIG_FILE = path.join(app.getPath('userData'), 'config.json');
+const CONFIG_FILE = path.join(app.getPath('userData'), 'config_v2.json'); // Yangi nom
 
 function loadConfig() {
     try {
@@ -70,6 +78,14 @@ function saveConfig(cfg) {
     } catch (e) {}
 }
 
+// SSL Xatolarini o'tkazib yuborish (Oq oyna oldini olish uchun muhim qadam)
+app.commandLine.appendSwitch('ignore-certificate-errors');
+
+app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
+    event.preventDefault();
+    callback(true); // SSL xatosini inkor qilish
+});
+
 // ─── Auto Start ───
 function setAutoStart(enable) {
     app.setLoginItemSettings({
@@ -79,7 +95,6 @@ function setAutoStart(enable) {
     });
 }
 
-// ─── Helper Functions ───
 function getIconPath() {
     const devPath = path.join(__dirname, 'assets', 'icon.ico');
     const prodPath = path.join(process.resourcesPath, 'assets', 'icon.ico');
@@ -88,11 +103,10 @@ function getIconPath() {
     return null;
 }
 
-// ─── Tray Icon ───
 function buildTrayMenuTemplate() {
     const cfg = loadConfig();
     const template = [
-        { label: `SMART POS v${CURRENT_VERSION}`, enabled: false },
+        { label: `SMART POS v${CURRENT_VERSION} (Ideal)`, enabled: false },
         { type: 'separator' },
         { 
             label: '🖥️  Kassa oynasini ko\'rsatish', 
@@ -103,6 +117,16 @@ function buildTrayMenuTemplate() {
                     mainWindow.focus();
                 } else {
                     createMainWindow();
+                }
+            } 
+        },
+        { 
+            label: '🔄 Kassani qayta yuklash (Oq ekran bo\'lsa)', 
+            click: () => {
+                if (mainWindow) {
+                    mainWindow.webContents.session.clearCache().then(() => {
+                        mainWindow.reload();
+                    });
                 }
             } 
         },
@@ -144,27 +168,20 @@ function rebuildTrayMenu() {
     if (!tray) return;
     const menu = Menu.buildFromTemplate(buildTrayMenuTemplate());
     tray.setContextMenu(menu);
-    tray.setToolTip(updateAvailable
-        ? 'SMART POS — Yangi versiya mavjud! 🎉'
-        : 'SMART POS ✅ Ishlamoqda'
-    );
+    tray.setToolTip('SMART POS V2 ✅ Ishlamoqda');
 }
 
 function createTray() {
     const iconPath = getIconPath();
     let icon;
-
     if (iconPath && fs.existsSync(iconPath)) {
         icon = nativeImage.createFromPath(iconPath);
     } else {
-        icon = nativeImage.createFromDataURL(
-            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAklEQVQ4jWNgYGD4DwABBAEAwGYhiQAAAABJRU5ErkJggg=='
-        );
+        // Fallback icon
+        icon = nativeImage.createFromDataURL('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAklEQVQ4jWNgYGD4DwABBAEAwGYhiQAAAABJRU5ErkJggg==');
     }
-
     tray = new Tray(icon);
     rebuildTrayMenu();
-    
     tray.on('double-click', () => {
         if (mainWindow) {
             if (mainWindow.isMinimized()) mainWindow.restore();
@@ -176,7 +193,6 @@ function createTray() {
     });
 }
 
-// ─── Splash Screen ───
 function createSplashWindow() {
     splashWindow = new BrowserWindow({
         width: 600,
@@ -190,12 +206,42 @@ function createSplashWindow() {
             contextIsolation: true
         }
     });
-
     splashWindow.loadFile('splash.html');
     splashWindow.center();
 }
 
-// ─── Main Window (Kiosk) ───
+function loadFallbackErrorHtml(url) {
+    if (!mainWindow) return;
+    mainWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(`
+        <html>
+        <head>
+            <title>Aloqa xatosi</title>
+            <style>
+                body { background-color:#0f172a; color:#fff; font-family:sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; margin:0; }
+                h1 { color:#ef4444; }
+                button { padding:12px 24px; font-size:16px; background:#3b82f6; color:#fff; border:none; border-radius:8px; cursor:pointer; margin-top:20px; transition: 0.2s; }
+                button:hover { background:#2563eb; }
+                .retry-auto { margin-top: 15px; font-size: 14px; color: #94a3b8; }
+            </style>
+        </head>
+        <body>
+            <h1>Xatolik yuz berdi! (Oq oyna himoyasi)</h1>
+            <p>Tarmoqqa ulanib bo'lmadi yoki kassa tizimida xato yuz berdi.</p>
+            <p>URL: <span style="color:#3b82f6">${url}</span></p>
+            <button onclick="window.ipcAPI.reloadApp()">Qayta yuklash (Tuzatish)</button>
+            <p class="retry-auto">Dastur o'zi avtomatik qayta ulanishga harakat qiladi...</p>
+            <script>
+                setInterval(() => {
+                    fetch('${url}', { method: 'HEAD', mode: 'no-cors' })
+                        .then(() => window.ipcAPI.reloadApp())
+                        .catch(()=>{});
+                }, 5000);
+            </script>
+        </body>
+        </html>
+    `));
+}
+
 function createMainWindow() {
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width, height } = primaryDisplay.workAreaSize;
@@ -204,33 +250,47 @@ function createMainWindow() {
     mainWindow = new BrowserWindow({
         width,
         height,
-        kiosk: true, // Fullscreen without borders and menus
-        show: false, // Don't show immediately
+        kiosk: true,
+        show: false,
         icon: getIconPath(),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
-            devTools: false // Disable devtools for security
+            devTools: false, // Security
+            webSecurity: false // CORS and mixed content oq oyna sababchilarini bloklash uchun
         }
     });
 
-    // Oynani yopish xavfsizligi
     mainWindow.setMenu(null);
     mainWindow.setMenuBarVisibility(false);
 
-    // Kassa sahifasini yuklash
-    mainWindow.loadURL(config.kioskUrl).catch(e => {
-        console.error("Failed to load kiosk URL:", e);
-        // Optionally load an offline page or retry mechanism here
+    // Keshni tozalash oq oyna (stale react code) chiqmasligi uchun kafolat
+    mainWindow.webContents.session.clearCache().then(() => {
+        mainWindow.loadURL(config.kioskUrl).catch(e => {
+            console.error("Failed to load kiosk URL:", e);
+        });
     });
 
-    // F11 yoki boshqa tugmalarni bloklash
+    // Qotib qolish yoki yuklay olmaslik
+    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+        if (isMainFrame) {
+            console.error(`[DID FAIL LOAD] ${errorDescription} (${errorCode}) at ${validatedURL}`);
+            loadFallbackErrorHtml(config.kioskUrl);
+        }
+    });
+
+    // Agar render process crash bo'lsa (Out of memory, fatal React xatosi, va h.k.)
+    mainWindow.webContents.on('render-process-gone', (event, details) => {
+        console.error('[CRASH] Renderer process o\'ldi:', details.reason);
+        loadFallbackErrorHtml(config.kioskUrl);
+    });
+
     mainWindow.webContents.on('before-input-event', (event, input) => {
         if (
             input.key === 'F11' || 
-            (input.control && input.shift && input.key.toLowerCase() === 'i') || // Ctrl+Shift+I
-            (input.control && input.key.toLowerCase() === 'r') // Ctrl+R
+            (input.control && input.shift && input.key.toLowerCase() === 'i') || 
+            (input.control && input.key.toLowerCase() === 'r')
         ) {
             event.preventDefault();
         }
@@ -253,7 +313,7 @@ function createMainWindow() {
 // ─── IPC Handlers ───
 ipcMain.handle('get-config', () => loadConfig());
 ipcMain.handle('get-printers', async () => await getWindowsPrinters());
-ipcMain.handle('get-version', () => app.getVersion());
+ipcMain.handle('get-version', () => CURRENT_VERSION);
 ipcMain.handle('get-agent-status', () => 'running');
 
 ipcMain.handle('save-config', (event, cfg) => {
@@ -261,6 +321,9 @@ ipcMain.handle('save-config', (event, cfg) => {
     setAutoStart(cfg.autoStart);
     stopPolling();
     startPolling(cfg);
+    if (mainWindow) {
+        mainWindow.loadURL(cfg.kioskUrl).catch(() => loadFallbackErrorHtml(cfg.kioskUrl));
+    }
     return true;
 });
 
@@ -275,52 +338,58 @@ ipcMain.on('minimize-app', () => {
 
 ipcMain.on('toggle-fullscreen', () => {
     if (mainWindow) {
-        const isKiosk = mainWindow.isKiosk();
-        mainWindow.setKiosk(!isKiosk);
+        mainWindow.setKiosk(!mainWindow.isKiosk());
     }
 });
 
+ipcMain.on('client-error', (event, errorInfo) => {
+    console.error('[CLIENT UI ERROR]:', errorInfo);
+    // UI crash bo'lib oq oyna bo'lib qolgan bo'lishi mumkin. 
+    // Bu holatda oynani avtomatik reload qilib yuboramiz.
+    if (mainWindow && typeof errorInfo === 'string' && errorInfo.includes('Minified React error')) {
+        console.log('React crash aniqlandi. Kesh tozalanib qayta yuklanmoqda...');
+        mainWindow.webContents.session.clearCache().then(() => {
+            mainWindow.reload();
+        });
+    }
+});
+
+ipcMain.on('reload-app', () => {
+    if (mainWindow) {
+        const config = loadConfig();
+        mainWindow.webContents.session.clearCache().then(() => {
+            mainWindow.loadURL(config.kioskUrl).catch(() => loadFallbackErrorHtml(config.kioskUrl));
+        });
+    }
+});
 
 // ─── App Events ───
 app.whenReady().then(() => {
-    app.setAppUserModelId('uz.chaqqonpro.smart-pos');
-
+    app.setAppUserModelId('uz.chaqqonpro.smart-pos-v2');
     const config = loadConfig();
     setAutoStart(config.autoStart);
 
     createTray();
     
-    // Asosiy oyna va splash ni yaratish
     const args = process.argv;
     const isHidden = args.includes('--hidden');
 
     if (!isHidden) {
         createSplashWindow();
-        
-        // Splash ko'rsatish va orqa fonda yuklash
         setTimeout(() => {
             createMainWindow();
-        }, 2000); // Splash ni kamida 2 sekund ushlab turamiz animatsiya uchun
-    } else {
-        // Agar kompyuter yonganda avto-start qilsa, faqat trayda ochiladi.
-        // Kassir kassa qilishni xohlasa oynani o'zi ochadi yoki 
-        // to'g'ridan to'g'ri ekranga chiqarish uchun quyidagini ochib qo'yish mumkin:
-        // createMainWindow();
+        }, 2000);
     }
 
-    // Print agentni fonda ishga tushirish
     startPolling(config);
-
-    // Versiya tekshiruvi: dastlab 30 sekundan so'ng, keyin har 6 soatda
-    setTimeout(() => checkForUpdates(config.serverUrl), 30_000);
+    setTimeout(() => checkForUpdates(config.serverUrl), 30000);
     setInterval(() => {
         const cfg = loadConfig();
         checkForUpdates(cfg.serverUrl);
-    }, 6 * 60 * 60 * 1000); // har 6 soatda
+    }, 6 * 60 * 60 * 1000);
 });
 
 app.on('window-all-closed', (e) => {
-    // Kiosk yopilsa ham dastur trayda ishlab turishi kerak (print agent uchun)
     e.preventDefault();
 });
 
@@ -329,7 +398,6 @@ app.on('before-quit', () => {
 });
 
 app.on('second-instance', () => {
-    // Agar dastur allaqachon ishlab turgan bo'lsa va yana ochilsa oynani ko'rsatish
     if (mainWindow) {
         if (mainWindow.isMinimized()) mainWindow.restore();
         mainWindow.show();

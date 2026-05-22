@@ -1,9 +1,3 @@
-/**
- * printer.js — Raw ESC/POS chek chiqarish moduli
- * Windows printeriga to'g'ridan-to'g'ri (Raw) ma'lumot yuboradi
- * (chaqqonpro-agent dan ko'chirilgan va SMART POS ga integratsiya qilingan)
- */
-
 const { execFile } = require('child_process');
 const { promisify } = require('util');
 const { writeFile, unlink } = require('fs/promises');
@@ -33,7 +27,8 @@ async function getWindowsPrinters() {
         } catch {
             return trimmed.split('\n').map(s => s.trim()).filter(Boolean);
         }
-    } catch {
+    } catch (err) {
+        console.error('[PRINTER API ERROR]', err);
         return [];
     }
 }
@@ -44,7 +39,12 @@ async function getWindowsPrinters() {
  * @param {string} base64data  - Base64 formatidagi ESC/POS bytelar
  */
 async function printRaw(printerName, base64data) {
-    const tmpFile = join(os.tmpdir(), `cq_print_${Date.now()}.bin`);
+    if (!printerName || !base64data) {
+        console.error('[PRINT ERROR] Printer nomi yoki ma\'lumot kiritilmadi.');
+        return { success: false, error: 'Printer nomi yoki ma\'lumot kiritilmadi.' };
+    }
+
+    const tmpFile = join(os.tmpdir(), `cq_print_v2_${Date.now()}_${Math.floor(Math.random() * 1000)}.bin`);
 
     try {
         await writeFile(tmpFile, Buffer.from(base64data, 'base64'));
@@ -85,7 +85,7 @@ public class RawPrint {
         Int32 dwWritten = 0;
         IntPtr hPrinter = IntPtr.Zero;
         DOCINFOA di = new DOCINFOA();
-        di.pDocName = "SMART POS Invoice";
+        di.pDocName = "SMART POS Invoice V2";
         di.pDataType = null;
         bool ok = false;
         if (OpenPrinter(szPrinterName, out hPrinter, IntPtr.Zero)) {
@@ -105,14 +105,14 @@ public class RawPrint {
 }
 "@
 Add-Type -TypeDefinition $code -Language CSharp
-$result = [RawPrint]::SendFileToPrinter("${printerName}", "${tmpFile}")
+$result = [RawPrint]::SendFileToPrinter("${printerName.replace(/"/g, '`"')}", "${tmpFile.replace(/\\/g, '\\\\')}")
 if (-not $result) { exit 1 }
 `;
 
         await execFileAsync('powershell', [
             '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
             '-Command', psScript
-        ], { timeout: 20000 });
+        ], { timeout: 25000 });
 
         console.log(`[PRINT ✅] "${printerName}" ga muvaffaqiyatli chop etildi.`);
         return { success: true };

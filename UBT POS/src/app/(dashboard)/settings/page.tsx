@@ -1360,19 +1360,19 @@ export default function SettingsPage() {
                                     {/* Info */}
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 flex-wrap mb-2">
-                                            <h3 className="text-xl font-bold text-white">SMART POS Desktop</h3>
+                                            <h3 className="text-xl font-bold text-white">SMART POS Desktop V2</h3>
                                             <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-brand text-white uppercase tracking-wider">Tavsiya etiladi ⭐</span>
-                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">v1.0.0</span>
+                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">v2.0.0</span>
                                         </div>
                                         <p className="text-sm text-slate-300 leading-relaxed mb-4">
-                                            To'liq kiosk rejimidagi kassa dasturi. Brauzersiz ishlaydi — Windows kompyuterda to'g'ridan-to'g'ri o'rnatiladi. 
-                                            Ichida <strong className="text-brand">Print Agent</strong> ham mavjud — alohida dastur shart emas!
+                                            To'liq kiosk rejimidagi kassa dasturining mukammallashgan versiyasi. Oq ekran va qotib qolishlardan to'liq himoyalangan. 
+                                            Ichida <strong className="text-brand">Yangi Print Agent</strong> ham mavjud!
                                         </p>
                                         <div className="flex flex-wrap gap-3">
                                             {[
-                                                { icon: "🖥️", text: "Kiosk to'liq ekran" },
-                                                { icon: "🖨️", text: "Print Agent ichida" },
-                                                { icon: "🔒", text: "Xavfsiz (F11 bloklangan)" },
+                                                { icon: "🛡️", text: "Oq ekran himoyasi" },
+                                                { icon: "🖨️", text: "Barqaror Print Agent" },
+                                                { icon: "🔄", text: "Oson Kesh tozalash" },
                                                 { icon: "⚡", text: "Avto-ishga tushish" },
                                             ].map((f) => (
                                                 <span key={f.text} className="flex items-center gap-1.5 text-xs bg-slate-800/60 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700/60">
@@ -1385,7 +1385,7 @@ export default function SettingsPage() {
                                     {/* Download Button */}
                                     <div className="flex flex-col items-center gap-2 flex-shrink-0">
                                         <a
-                                            href="/downloads/SMART-POS-Setup-1.0.0.exe"
+                                            href="/downloads/SMART-POS-V2-Setup-2.0.0.exe"
                                             download
                                             className="btn-primary flex items-center gap-2.5 px-6 py-3 text-base font-semibold shadow-xl shadow-brand/30 hover:scale-105 transition-all whitespace-nowrap"
                                         >

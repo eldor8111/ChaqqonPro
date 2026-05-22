@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect, Fragment } from "react";
+import { useState, useMemo, useEffect, useCallback, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { useLang } from "@/lib/LangContext";
 import { formatCurrency, formatCurrencyShort } from "@/lib/mockData";
@@ -68,12 +68,12 @@ export default function UbtReportsPage() {
     });
     const [expandedTxId, setExpandedTxId] = useState<string | null>(null);
 
-    function buildQuery(base: string) {
+    const buildQuery = useCallback((base: string) => {
         if (dateFilter.range) {
             return `${base}&from=${dateFilter.range.from}&to=${dateFilter.range.to}`;
         }
         return `${base}&timeframe=${dateFilter.timeframe}`;
-    }
+    }, [dateFilter]);
 
     const [txData, setTxData] = useState<{
         transactions: any[];
@@ -125,7 +125,7 @@ export default function UbtReportsPage() {
             } catch {}
         };
         fetchReportsData();
-    }, [router, dateFilter]);
+    }, [router, dateFilter, buildQuery]);
 
     const recentTransactions = txData.transactions;
 

@@ -1,18 +1,9 @@
-/**
- * tray-agent.js — Orqa fonda ishlaydigan Print Agent moduli
- * SMART POS ichiga integratsiya qilingan — serverdan print joblarni polling qiladi
- */
-
 const { getWindowsPrinters, printRaw } = require('./printer');
 
 let pollTimer = null;
 let syncTimer = null;
 let isPolling = false;
 
-/**
- * Serverga printerlar ro'yxatini yuborish
- * @param {string} serverUrl
- */
 async function syncPrinters(serverUrl) {
     try {
         const printers = await getWindowsPrinters();
@@ -40,17 +31,13 @@ async function syncPrinters(serverUrl) {
     }
 }
 
-/**
- * Serverdan yangi print joblarini olish va chop etish
- * @param {string} serverUrl
- */
 async function pollJobs(serverUrl) {
     if (isPolling) return;
     isPolling = true;
 
     try {
-        const res = await fetch(`${serverUrl}/api/smart/poll-jobs`, {
-            signal: AbortSignal.timeout(8000),
+        const res = await fetch(`${serverUrl}/api/smart/poll-jobs?v=2`, {
+            signal: AbortSignal.timeout(10000), // timeout biroz ko'paytirildi
         });
 
         if (res.ok) {
@@ -60,30 +47,29 @@ async function pollJobs(serverUrl) {
             if (jobs.length > 0) {
                 console.log(`[POLL] ${jobs.length} ta yangi print job topildi.`);
                 for (const job of jobs) {
-                    await printRaw(job.printerName, job.data);
+                    try {
+                        await printRaw(job.printerName, job.data);
+                    } catch (printErr) {
+                        console.error('[POLL PRINT ERROR]', printErr);
+                    }
                 }
             }
         }
     } catch (e) {
         if (e.name !== 'TimeoutError' && e.name !== 'AbortError' && e.code !== 'ECONNREFUSED') {
-            console.error('[POLL ❌]', e.message || String(e));
+            // qisqa qilib xatoni yozamiz
         }
     } finally {
         isPolling = false;
     }
 }
 
-/**
- * Polling loop'ni boshlash
- * @param {{ serverUrl: string, pollInterval: number }} config
- */
 function startPolling(config) {
     if (pollTimer) stopPolling();
 
     const { serverUrl, pollInterval = 2500 } = config;
-    console.log(`[AGENT] Polling boshlandi → ${serverUrl} (har ${pollInterval}ms)`);
+    console.log(`[AGENT V2] Polling boshlandi → ${serverUrl} (har ${pollInterval}ms)`);
 
-    // Darhol bir marta tekshirish
     pollJobs(serverUrl);
     syncPrinters(serverUrl);
 
@@ -91,13 +77,9 @@ function startPolling(config) {
         pollJobs(serverUrl);
     }, pollInterval);
 
-    // Har 30 sekundda printerlarni sinxronlash
     syncTimer = setInterval(() => syncPrinters(serverUrl), 30_000);
 }
 
-/**
- * Polling loop'ni to'xtatish
- */
 function stopPolling() {
     if (pollTimer) {
         clearInterval(pollTimer);
@@ -107,7 +89,7 @@ function stopPolling() {
         clearInterval(syncTimer);
         syncTimer = null;
     }
-    console.log('[AGENT] Polling to\'xtatildi.');
+    console.log('[AGENT V2] Polling to\'xtatildi.');
 }
 
 module.exports = { startPolling, stopPolling, syncPrinters };

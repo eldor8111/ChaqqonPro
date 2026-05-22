@@ -114,7 +114,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose, onMobileOpe
     // Close mobile drawer on route change
     useEffect(() => {
         onMobileClose?.();
-    }, [pathname]);
+    }, [pathname, onMobileClose]);
 
     const toggleMenu = (key: string) => {
         setOpenMenus(prev =>

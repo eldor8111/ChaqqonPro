@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chaqqonpro-v3';
+const CACHE_NAME = 'chaqqonpro-v4';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/chaqqon-logo-transparent.svg',

@@ -32,9 +32,7 @@ const _tableReady = prisma.$executeRawUnsafe(
         "categoryId  TEXT NULL," +
         "createdAt   TEXT NOT NULL DEFAULT (datetime('now'))" +
     ")"
-).catch(() => {})
-  .then(() => prisma.$executeRawUnsafe(`ALTER TABLE UbtIngredient ADD COLUMN type TEXT NOT NULL DEFAULT 'xomashyo'`)).catch(() => {})
-  .then(() => prisma.$executeRawUnsafe(`ALTER TABLE UbtIngredient ADD COLUMN categoryId TEXT NULL`)).catch(() => {});
+).catch(() => {});
 
 export async function GET(req: NextRequest) {
     try {

@@ -69,7 +69,7 @@ export default function OmborQoldiqlarPage() {
             }
         };
         load();
-    }, []);
+    }, [t]);
 
     const filteredAndSorted = useMemo(() => {
         let res = items.filter(p => {

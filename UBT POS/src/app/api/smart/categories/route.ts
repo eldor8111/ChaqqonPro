@@ -28,8 +28,7 @@ const _tableReady = prisma.$executeRawUnsafe(
         "itemCount   INTEGER NOT NULL DEFAULT 0," +
         "createdAt   TEXT NOT NULL DEFAULT (datetime('now'))" +
     ")"
-).catch(() => {})
-  .then(() => prisma.$executeRawUnsafe(`ALTER TABLE UbtCategory ADD COLUMN type TEXT NOT NULL DEFAULT 'taom'`)).catch(() => {});
+).catch(() => {});
 
 export async function GET(req: NextRequest) {
     try {

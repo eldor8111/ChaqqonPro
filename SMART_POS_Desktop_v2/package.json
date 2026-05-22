@@ -1,7 +1,7 @@
 {
-  "name": "smart-pos",
-  "version": "1.0.0",
-  "description": "SMART POS — ChaqqonPro Kassa Dasturi",
+  "name": "smart-pos-v2",
+  "version": "2.0.0",
+  "description": "SMART POS V2 — ChaqqonPro Kassa Dasturi",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -9,8 +9,8 @@
     "build-installer": "electron-builder --win nsis --x64"
   },
   "build": {
-    "appId": "uz.chaqqonpro.smart-pos",
-    "productName": "SMART POS",
+    "appId": "uz.chaqqonpro.smart-pos-v2",
+    "productName": "SMART POS V2",
     "copyright": "Copyright © 2024 ChaqqonPro",
     "win": {
       "target": [
@@ -27,7 +27,7 @@
       "allowToChangeInstallationDirectory": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "SMART POS",
+      "shortcutName": "SMART POS V2",
       "runAfterFinish": true,
       "installerIcon": "assets/icon.ico",
       "uninstallerIcon": "assets/icon.ico"
