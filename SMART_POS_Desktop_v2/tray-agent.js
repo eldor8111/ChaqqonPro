@@ -41,14 +41,23 @@ async function pollJobs(serverUrl) {
         });
 
         if (res.ok) {
-            const data = await res.json();
-            const jobs = data.jobs || [];
+            const responseData = await res.json();
+            const jobs = responseData.jobs || [];
 
             if (jobs.length > 0) {
                 console.log(`[POLL] ${jobs.length} ta yangi print job topildi.`);
                 for (const job of jobs) {
                     try {
-                        await printRaw(job.printerName, job.data);
+                        // Server printerName yoki printer maydonini yuborishi mumkin
+                        const printerName = job.printerName || job.printer || job.name || '';
+                        // Server data yoki payload maydonini yuborishi mumkin
+                        const base64data = job.data || job.payload || job.escpos || '';
+                        
+                        if (!printerName || !base64data) {
+                            console.warn(`[POLL] Job tarkibi: ${JSON.stringify(Object.keys(job))}`);
+                        }
+                        
+                        await printRaw(printerName, base64data);
                     } catch (printErr) {
                         console.error('[POLL PRINT ERROR]', printErr);
                     }

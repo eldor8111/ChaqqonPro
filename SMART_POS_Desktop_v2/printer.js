@@ -40,8 +40,8 @@ async function getWindowsPrinters() {
  */
 async function printRaw(printerName, base64data) {
     if (!printerName || !base64data) {
-        console.error('[PRINT ERROR] Printer nomi yoki ma\'lumot kiritilmadi.');
-        return { success: false, error: 'Printer nomi yoki ma\'lumot kiritilmadi.' };
+        console.error(`[PRINT ERROR] Printer nomi yoki ma'lumot kiritilmadi. printerName="${printerName}", data boylik=${base64data ? base64data.length : 0}`);
+        return { success: false, error: `Printer nomi yoki ma'lumot kiritilmadi. Printer: "${printerName}"` };
     }
 
     const tmpFile = join(os.tmpdir(), `cq_print_v2_${Date.now()}_${Math.floor(Math.random() * 1000)}.bin`);
