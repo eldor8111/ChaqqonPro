@@ -60,7 +60,7 @@ function loadConfig() {
         serverUrl: 'https://chaqqonpro.e-code.uz',
         pollInterval: 2500,
         autoStart: true,
-        kioskUrl: 'https://chaqqonpro.uz/smart-pos'
+        kioskUrl: 'https://chaqqonpro.e-code.uz/smart-pos'
     };
 }
 
