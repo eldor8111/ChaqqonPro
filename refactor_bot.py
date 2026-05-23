@@ -2,7 +2,7 @@ import os
 import re
 import shutil
 
-root_dirs = [r'd:\ChaqqonPro\telegram_bot', r'd:\ChaqqonPro\billing_service']
+root_dirs = [r'd:\Smart\telegram_bot', r'd:\Smart\billing_service']
 
 def replace_in_file(filepath):
     try:
@@ -30,8 +30,8 @@ def replace_in_file(filepath):
         'permUbt': 'permSmart',
         '"ubt"': '"smart"',
         "'ubt'": "'smart'",
-        'ChaqqonPro': 'SMART POS',
-        'Chaqqon': 'SMART'
+        'Smart': 'SMART POS',
+        'Smart': 'SMART'
     }
 
     new_content = content

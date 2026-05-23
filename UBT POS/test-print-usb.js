@@ -47,7 +47,7 @@ public class RawPrint {
         
         // Bu safar pDataType ni null qilib jo'natib ko'ramiz (yoki kerak bo'lsa "TEXT")
         DOCINFOA di = new DOCINFOA();
-        di.pDocName = "ChaqqonPro Receipt";
+        di.pDocName = "Smart Receipt";
         di.pDataType = null; // NULL qilsak printer o'zining default turini ishlatishi kerak
         
         bool ok = false;

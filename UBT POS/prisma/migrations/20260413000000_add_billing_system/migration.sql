@@ -52,6 +52,6 @@ CREATE INDEX "Tenant_tariffId_idx" ON "Tenant"("tariffId");
 INSERT INTO "PlatformSettings" ("id", "key", "value", "updatedAt") VALUES
   ('ps_card_number', 'card_number', '8600 0000 0000 0000', CURRENT_TIMESTAMP),
   ('ps_card_owner',  'card_owner',  'Karta egasi',         CURRENT_TIMESTAMP),
-  ('ps_tg_username', 'tg_username', 'chaqqon_support',     CURRENT_TIMESTAMP),
+  ('ps_tg_username', 'tg_username', 'smart_support',     CURRENT_TIMESTAMP),
   ('ps_phone',       'phone',       '+998 99 000 00 00',   CURRENT_TIMESTAMP),
   ('ps_phone_raw',   'phone_raw',   '+998990000000',        CURRENT_TIMESTAMP);

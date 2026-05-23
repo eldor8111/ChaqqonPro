@@ -65,10 +65,10 @@ function loadConfig() {
         }
     } catch (e) {}
     return {
-        serverUrl: 'https://chaqqonpro.e-code.uz',
+        serverUrl: 'https://smart.e-code.uz',
         pollInterval: 2500,
         autoStart: true,
-        kioskUrl: 'https://chaqqonpro.e-code.uz/smart-pos'
+        kioskUrl: 'https://smart.e-code.uz/smart-pos'
     };
 }
 
@@ -365,7 +365,7 @@ ipcMain.on('reload-app', () => {
 
 // ─── App Events ───
 app.whenReady().then(() => {
-    app.setAppUserModelId('uz.chaqqonpro.smart-pos-v2');
+    app.setAppUserModelId('uz.smart.smart-pos-v2');
     const config = loadConfig();
     setAutoStart(config.autoStart);
 

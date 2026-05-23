@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: chaqqonpro_app
+    container_name: smart_app
     ports:
       - "3000:3000"
     environment:
@@ -28,7 +28,7 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: chaqqonpro_proxy
+    container_name: smart_proxy
     ports:
       - "80:80"
     volumes:

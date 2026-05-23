@@ -1337,7 +1337,7 @@ export default function SettingsPage() {
                             <div>
                                 <h2 className="section-title">Magazin / Dasturlar (App Store)</h2>
                                 <p className="text-sm text-slate-400 mt-1">
-                                    ChaqqonPro tizimi bilan birgalikda ishlash uchun kerakli yordamchi dasturlarni yuklab oling.
+                                    Smart tizimi bilan birgalikda ishlash uchun kerakli yordamchi dasturlarni yuklab oling.
                                 </p>
                             </div>
 

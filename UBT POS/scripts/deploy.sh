@@ -1,5 +1,5 @@
 #!/bin/bash
-# ChaqqonPro Deployment Script
+# Smart Deployment Script
 set -e
 
 echo "🚀 Boshlanmoqda..."
@@ -16,7 +16,7 @@ npm run build
 
 echo "4. Serverni qayta ishga tushirish..."
 # Agar PM2 bo'lsa:
-# pm2 reload chaqqonpro-app || pm2 start ecosystem.config.js
+# pm2 reload smart-app || pm2 start ecosystem.config.js
 # Agar Docker bo'lsa:
 docker-compose down
 docker-compose up -d --build

@@ -1,3 +1,3 @@
-content = open(r'd:\ChaqqonPro\UBT POS\src\app\super-admin\page.tsx', 'r', encoding='utf-8').read()
+content = open(r'd:\Smart\UBT POS\src\app\super-admin\page.tsx', 'r', encoding='utf-8').read()
 old = "                                                         <td className=""px-5 py-4 text-sm"">\r\n                                                             <span className={px-2.5 py-1 rounded-full text-xs font-bold }>{PLANS[b.plan as keyof typeof PLANS]?.label||b.plan}</span>\r\n                                                         </td>\r\n                                                         <td className=""px-5 py-4 text-sm font-bold text-emerald-400"">\r\n                                                             {b.monthlyPrice > 0 ? ${fmtMoney(b.monthlyPrice)} UZS : <span className=""text-slate-400"">Bepul</span>}\r\n                                                         </td>"
 print('Found:', old in content)

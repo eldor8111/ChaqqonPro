@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "chaqqonpro-app",
+      name: "smart-app",
       script: "npm",
       args: "start",
       instances: "max",           // Barcha CPU Core larni ishlatish (Cluster mode)

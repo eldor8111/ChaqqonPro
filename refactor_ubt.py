@@ -2,7 +2,7 @@ import os
 import re
 import shutil
 
-root_dir = r'd:\ChaqqonPro\UBT POS'
+root_dir = r'd:\Smart\UBT POS'
 
 # Rename directories first
 dirs_to_rename = [
@@ -46,8 +46,8 @@ def replace_in_file(filepath):
         'permUbt': 'permSmart',
         '"ubt"': '"smart"',
         "'ubt'": "'smart'",
-        'ChaqqonPro': 'SMART POS',
-        'Chaqqon': 'SMART'
+        'Smart': 'SMART POS',
+        'Smart': 'SMART'
     }
 
     new_content = content

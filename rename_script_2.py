@@ -14,7 +14,7 @@ def replace_in_file(filepath):
     # Replace SMART<span ...>POS</span> with SMART<span ...>POS</span>
     new_content = re.sub(r'SMART\s*<span([^>]*)>Pro</span>', r'SMART<span\1>POS</span>', new_content, flags=re.IGNORECASE)
     # Replace SMART<span ...>POS</span> with SMART<span ...>POS</span>
-    new_content = re.sub(r'CHAQQON\s*<span([^>]*)>PRO</span>', r'SMART<span\1>POS</span>', new_content, flags=re.IGNORECASE)
+    new_content = re.sub(r'SMART\s*<span([^>]*)>PRO</span>', r'SMART<span\1>POS</span>', new_content, flags=re.IGNORECASE)
     
     new_content = re.sub(r'SMART\s*Pro', 'SMART POS', new_content, flags=re.IGNORECASE)
     new_content = re.sub(r'SMART', 'SMART', new_content)

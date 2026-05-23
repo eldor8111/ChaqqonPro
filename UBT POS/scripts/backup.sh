@@ -1,10 +1,10 @@
 #!/bin/bash
-# ChaqqonPro DB Zaxiralash skripti (Backup)
+# Smart DB Zaxiralash skripti (Backup)
 
 # Bu skriptni crontab orqali har kuni kurgizish mumkin (Masalan 02:00 tunda)
-# 0 2 * * * /path/to/chaqqonpro/scripts/backup.sh
+# 0 2 * * * /path/to/smart/scripts/backup.sh
 
-BACKUP_DIR="/var/backups/chaqqonpro"
+BACKUP_DIR="/var/backups/smart"
 DATE=$(date +%Y-%m-%d_%H-%M-%S)
 mkdir -p "$BACKUP_DIR"
 
@@ -18,6 +18,6 @@ if [ -f "./dev.db" ]; then
 else
     # PostgreSQL bo'lsa
     echo "🐘 PostgreSQL zaxirasini olish..."
-    # pg_dump -U postgres -d chaqqonpro > "$BACKUP_DIR/db_backup_$DATE.sql"
+    # pg_dump -U postgres -d smart > "$BACKUP_DIR/db_backup_$DATE.sql"
     echo "⚠️ PostgreSQL sozlangan bo'lsa, commentni ochaverasiz."
 fi

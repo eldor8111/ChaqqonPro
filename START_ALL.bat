@@ -4,7 +4,7 @@ cls
 color 0A
 
 echo ============================================
-echo      CHAQQONPRO TIZIMINI ISHGA TUSHIRISH
+echo      SMART TIZIMINI ISHGA TUSHIRISH
 echo ============================================
 echo.
 

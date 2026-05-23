@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 // Joriy versiya va yuklab olish manzili
 const CURRENT_VERSION = "2.0.0";
-const DOWNLOAD_BASE = process.env.NEXT_PUBLIC_APP_URL || "https://chaqqonpro.uz";
+const DOWNLOAD_BASE = process.env.NEXT_PUBLIC_APP_URL || "https://smart.uz";
 
 export async function GET() {
     return NextResponse.json({

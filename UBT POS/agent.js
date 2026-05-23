@@ -6,7 +6,7 @@ const { join } = require("path");
 const execFileAsync = promisify(execFile);
 
 // E-Code UZ orqali bulutli server bilan sinxronizatsiya
-const SERVER_URL = "https://chaqqonpro.e-code.uz";
+const SERVER_URL = "https://smart.e-code.uz";
 
 async function getWindowsPrinters() {
     try {
@@ -82,7 +82,7 @@ public class RawPrint {
         Int32 dwWritten = 0;
         IntPtr hPrinter = IntPtr.Zero;
         DOCINFOA di = new DOCINFOA();
-        di.pDocName = "ChaqqonPro USB Invoice";
+        di.pDocName = "Smart USB Invoice";
         di.pDataType = null;
         bool ok = false;
         if (OpenPrinter(szPrinterName, out hPrinter, IntPtr.Zero)) {
@@ -137,7 +137,7 @@ async function pollJobs() {
 }
 
 console.log("=========================================");
-console.log("  CHAQQON PRO - LOKAL PRINTER AGENTI     ");
+console.log("  SMART PRO - LOKAL PRINTER AGENTI     ");
 console.log(`  Tarmoq: ${SERVER_URL}   `);
 console.log("  Diqqat: Ushbu ayna ochiq tursin!       ");
 console.log("=========================================");
