@@ -56,6 +56,25 @@ export async function PUT(
             values.push(params.id);
             await prisma.$executeRawUnsafe(sql, ...values);
 
+            // Ensure only one main monoblock exists if this update sets isMainMonoblock to true
+            if (body.phone) {
+                try {
+                    const phoneData = JSON.parse(body.phone);
+                    if (phoneData.isMainMonoblock) {
+                        const otherManablogs = await prisma.$queryRaw`SELECT id, phone FROM Staff WHERE tenantId = ${tenantId} AND role = 'Manablog' AND id != ${params.id}` as any[];
+                        for (const m of otherManablogs) {
+                            try {
+                                const p2 = JSON.parse(m.phone || '{}');
+                                if (p2.isMainMonoblock) {
+                                    p2.isMainMonoblock = false;
+                                    await prisma.$executeRaw`UPDATE Staff SET phone = ${JSON.stringify(p2)} WHERE id = ${m.id}`;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                } catch (e) {}
+            }
+
             await createAuditLog(tenantId, session.userId ? "Admin" : "System", "Xodim ma'lumotlari yangilandi", `ID: ${params.id}`, "update");
         }
 

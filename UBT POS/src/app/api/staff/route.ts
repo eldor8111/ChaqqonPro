@@ -77,6 +77,25 @@ export async function POST(request: NextRequest) {
             VALUES (${id}, ${tenantId}, ${name}, ${roleVal}, ${username}, ${passwordHash}, ${permStr}, ${branchVal}, ${phoneVal}, ${metaVal}, 'active', 0, 0, datetime('now'))
         `;
 
+        // Ensure only one main monoblock exists if this creation sets isMainMonoblock to true
+        if (roleVal === "Manablog" && phoneVal) {
+            try {
+                const phoneData = JSON.parse(phoneVal);
+                if (phoneData.isMainMonoblock) {
+                    const otherManablogs = await prisma.$queryRaw`SELECT id, phone FROM Staff WHERE tenantId = ${tenantId} AND role = 'Manablog' AND id != ${id}` as any[];
+                    for (const m of otherManablogs) {
+                        try {
+                            const p2 = JSON.parse(m.phone || '{}');
+                            if (p2.isMainMonoblock) {
+                                p2.isMainMonoblock = false;
+                                await prisma.$executeRaw`UPDATE Staff SET phone = ${JSON.stringify(p2)} WHERE id = ${m.id}`;
+                            }
+                        } catch (e) {}
+                    }
+                }
+            } catch (e) {}
+        }
+
         await createAuditLog(tenantId, session.userId ? "Admin" : "System", "Yangi xodim qo'shildi", `${name} (${roleVal})`, "create");
 
         return NextResponse.json(

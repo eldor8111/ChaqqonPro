@@ -1,5 +1,6 @@
 /**
  * tray.js — Serverdan print joblarini polling va printerlarni sinxronlash
+ * LAN (TCP/IP) va USB (Windows Spooler) ikkalasini qo'llab-quvvatlaydi.
  */
 
 const { getWindowsPrinters, printRaw } = require('./printer');
@@ -39,11 +40,12 @@ async function syncPrinters(serverUrl) {
 }
 
 /**
- * Serverdan yangi print joblarini olish va chop etish
+ * Serverdan yangi print joblarini olish va chop etish.
+ * Job ichida printerIp bo'lsa → LAN, bo'lmasa → USB Spooler.
  * @param {string} serverUrl
  */
 async function pollJobs(serverUrl) {
-    if (isPolling) return; // Bir vaqtda ikki poll bo'lmasin
+    if (isPolling) return;
     isPolling = true;
 
     try {
@@ -58,12 +60,45 @@ async function pollJobs(serverUrl) {
             if (jobs.length > 0) {
                 console.log(`[POLL] ${jobs.length} ta yangi print job topildi.`);
                 for (const job of jobs) {
-                    await printRaw(job.printerName, job.data);
+                    try {
+                        const printerName = job.printerName || job.printer || job.name || '';
+                        const base64data  = job.data || job.payload || job.escpos || '';
+
+                        // LAN printer uchun IP va port (server tomondan berilsa)
+                        const printerIp   = job.printerIp   || job.ip   || null;
+                        const printerPort = job.printerPort || job.port || 9100;
+
+                        if (!base64data) {
+                            console.warn(`[POLL] Job ma'lumoti bo'sh: ${JSON.stringify(Object.keys(job))}`);
+                            continue;
+                        }
+
+                        if (!printerName && !printerIp) {
+                            console.warn(`[POLL] printerName yoki printerIp ko'rsatilmagan.`);
+                            continue;
+                        }
+
+                        const result = await printRaw(printerName, base64data, {
+                            printerIp,
+                            printerPort,
+                        });
+
+                        if (result.success) {
+                            const method = result.method === 'lan'
+                                ? `LAN (${printerIp}:${printerPort})`
+                                : `USB/Spooler ("${printerName}")`;
+                            console.log(`[POLL ✅] Chop etildi → ${method}`);
+                        } else {
+                            console.error(`[POLL ❌] Chop etib bo'lmadi:`, result.error);
+                        }
+
+                    } catch (printErr) {
+                        console.error('[POLL PRINT ERROR]', printErr);
+                    }
                 }
             }
         }
     } catch (e) {
-        // Tarmoq xatolari — jimgina o'tamiz
         if (e.name !== 'TimeoutError' && e.name !== 'AbortError' && e.code !== 'ECONNREFUSED') {
             console.error('[POLL ❌]', e.message || String(e));
         }
@@ -80,18 +115,15 @@ function startPolling(config) {
     if (pollTimer) stopPolling();
 
     const { serverUrl, pollInterval = 2500 } = config;
-
     console.log(`[AGENT] Polling boshlandi → ${serverUrl} (har ${pollInterval}ms)`);
 
-    // Darhol bir marta tekshirish
     pollJobs(serverUrl);
+    syncPrinters(serverUrl);
 
     pollTimer = setInterval(() => {
         pollJobs(serverUrl);
     }, pollInterval);
 
-    // Har 30 sekundda printerlarni sinxronlash
-    syncPrinters(serverUrl);
     setInterval(() => syncPrinters(serverUrl), 30_000);
 }
 

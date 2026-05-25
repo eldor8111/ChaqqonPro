@@ -37,7 +37,7 @@ async function pollJobs(serverUrl) {
 
     try {
         const res = await fetch(`${serverUrl}/api/smart/poll-jobs?v=2`, {
-            signal: AbortSignal.timeout(10000), // timeout biroz ko'paytirildi
+            signal: AbortSignal.timeout(10000),
         });
 
         if (res.ok) {
@@ -46,18 +46,42 @@ async function pollJobs(serverUrl) {
 
             if (jobs.length > 0) {
                 console.log(`[POLL] ${jobs.length} ta yangi print job topildi.`);
+
                 for (const job of jobs) {
                     try {
-                        // Server printerName yoki printer maydonini yuborishi mumkin
+                        // Server tomondan kelgan maydonlar
                         const printerName = job.printerName || job.printer || job.name || '';
-                        // Server data yoki payload maydonini yuborishi mumkin
-                        const base64data = job.data || job.payload || job.escpos || '';
-                        
-                        if (!printerName || !base64data) {
-                            console.warn(`[POLL] Job tarkibi: ${JSON.stringify(Object.keys(job))}`);
+                        const base64data  = job.data || job.payload || job.escpos || '';
+
+                        // LAN printer uchun IP va port (server tomondan berilsa)
+                        const printerIp   = job.printerIp   || job.ip   || null;
+                        const printerPort = job.printerPort || job.port || 9100;
+
+                        if (!base64data) {
+                            console.warn(`[POLL] Job tarkibi noto'g'ri: ${JSON.stringify(Object.keys(job))}`);
+                            continue;
                         }
-                        
-                        await printRaw(printerName, base64data);
+
+                        if (!printerName && !printerIp) {
+                            console.warn(`[POLL] printerName yoki printerIp ko'rsatilmagan. Job: ${JSON.stringify(Object.keys(job))}`);
+                            continue;
+                        }
+
+                        // LAN yoki USB — printRaw o'zi aniqlab yuboradi
+                        const result = await printRaw(printerName, base64data, {
+                            printerIp,
+                            printerPort,
+                        });
+
+                        if (result.success) {
+                            const method = result.method === 'lan'
+                                ? `LAN (${printerIp}:${printerPort})`
+                                : `USB/Spooler ("${printerName}")`;
+                            console.log(`[POLL ✅] Chop etildi → ${method}`);
+                        } else {
+                            console.error(`[POLL ❌] Chop etib bo'lmadi:`, result.error);
+                        }
+
                     } catch (printErr) {
                         console.error('[POLL PRINT ERROR]', printErr);
                     }
@@ -66,7 +90,7 @@ async function pollJobs(serverUrl) {
         }
     } catch (e) {
         if (e.name !== 'TimeoutError' && e.name !== 'AbortError' && e.code !== 'ECONNREFUSED') {
-            // qisqa qilib xatoni yozamiz
+            console.error('[POLL ❌]', e.message || String(e));
         }
     } finally {
         isPolling = false;

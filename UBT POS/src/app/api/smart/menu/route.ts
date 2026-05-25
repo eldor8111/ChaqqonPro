@@ -134,6 +134,7 @@ export async function GET(request: NextRequest) {
         const returnAll = request.nextUrl.searchParams.get("all") === "1";
 
         let cancelCode = "";
+        let blockSell = false;
         let paymentMethods: any[] = [];
         if (!returnAll) {
             const tObj = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { settings: true } });
@@ -142,6 +143,7 @@ export async function GET(request: NextRequest) {
                     const parsed = JSON.parse(tObj.settings as string);
                     if (parsed.cancelCode) cancelCode = parsed.cancelCode;
                     if (parsed.paymentMethods) paymentMethods = parsed.paymentMethods;
+                    if (parsed.blockSell) blockSell = parsed.blockSell;
                 } catch {}
             }
         }
@@ -210,10 +212,10 @@ export async function GET(request: NextRequest) {
 
         // ?all=1 bo'lsa — kirim sahifasi uchun barcha productlarni qaytarish
         if (returnAll) {
-            return NextResponse.json({ categories, items, cancelCode: "", paymentMethods: [] });
+            return NextResponse.json({ categories, items, cancelCode: "", blockSell: false, paymentMethods: [] });
         }
 
-        return NextResponse.json({ categories, items, cancelCode, paymentMethods });
+        return NextResponse.json({ categories, items, cancelCode, blockSell, paymentMethods });
     } catch (error) {
         console.error("UBT menu GET error:", error);
         return NextResponse.json({ categories: [], items: [], error: String(error) });

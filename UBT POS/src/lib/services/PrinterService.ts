@@ -358,6 +358,29 @@ function printTcpOnce(ip: string, port: number, data: Buffer): Promise<void> {
 
 /** Retry: muvaffaqiyatsiz bo'lsa 2s dan keyin 1 marta qayta urinadi */
 async function printTcp(ip: string, port: number, data: Buffer): Promise<void> {
+    // Agar server Linux (Bulutli) bo'lsa va IP lokal tarmoq bo'lsa, uni agentga uzatamiz.
+    const os = await import("os");
+    const isLocalNetwork = /^(192\.168|10\.|172\.(1[6-9]|2[0-9]|3[0-1]))\./.test(ip) || ip === "127.0.0.1" || ip === "localhost";
+    
+    if (os.platform() !== 'win32' && isLocalNetwork) {
+        const fs = await import("fs");
+        const path = await import("path");
+        const queueDir = path.join(process.cwd(), ".print_queue");
+        if (!fs.existsSync(queueDir)) fs.mkdirSync(queueDir, { recursive: true });
+        
+        const jobId = Date.now().toString() + Math.random().toString().slice(2, 6);
+        const jobData = {
+            printerIp: ip,
+            printerPort: port,
+            data: data.toString('base64'),
+            timestamp: Date.now()
+        };
+        
+        fs.writeFileSync(path.join(queueDir, jobId + ".json"), JSON.stringify(jobData));
+        console.log(`[PrinterService] LAN printer (Agent uchun) navbatga qo'shildi: ${jobId}.json (${ip}:${port})`);
+        return;
+    }
+
     try {
         await printTcpOnce(ip, port, data);
     } catch (firstErr) {

@@ -2,6 +2,8 @@ const { execFile } = require("child_process");
 const { promisify } = require("util");
 const { writeFile, unlink } = require("fs/promises");
 const { join } = require("path");
+const net = require("net");
+const os = require("os");
 
 const execFileAsync = promisify(execFile);
 
@@ -43,9 +45,79 @@ async function syncPrinters() {
     }
 }
 
-async function printRaw(printerName, base64data) {
-    const tmpFile = join(process.cwd(), `tmp_print_${Date.now()}.bin`);
-    await writeFile(tmpFile, Buffer.from(base64data, 'base64'));
+/**
+ * LAN printer'ga to'g'ridan-to'g'ri TCP/IP (port 9100) orqali chop etish.
+ * Windows spooler'siz ishlaydi — oshxona printeriga eng ishonchli usul.
+ */
+function printOverNetwork(ip, data, port = 9100, timeout = 8000) {
+    return new Promise((resolve, reject) => {
+        const client = new net.Socket();
+        let settled = false;
+
+        const done = (err) => {
+            if (settled) return;
+            settled = true;
+            client.destroy();
+            if (err) reject(err);
+            else resolve();
+        };
+
+        const timer = setTimeout(() => {
+            done(new Error(`TCP timeout: ${ip}:${port} ga ${timeout}ms ichida ulanib bo'lmadi`));
+        }, timeout);
+
+        client.connect(port, ip, () => {
+            client.write(data, (writeErr) => {
+                clearTimeout(timer);
+                setTimeout(() => done(writeErr || null), 200);
+            });
+        });
+
+        client.on('error', (err) => {
+            clearTimeout(timer);
+            done(err);
+        });
+
+        client.on('close', () => {
+            clearTimeout(timer);
+            done(null);
+        });
+    });
+}
+
+/**
+ * Base64 ESC/POS ma'lumotini printer'ga yuborish.
+ * printerIp berilsa → LAN TCP/IP, aks holda → USB Windows Spooler.
+ */
+async function printRaw(printerName, base64data, options = {}) {
+    if (!base64data) {
+        console.log(`[XATO] Ma'lumot bo'sh.`);
+        return;
+    }
+
+    const rawBuffer = Buffer.from(base64data, 'base64');
+    const { printerIp, printerPort = 9100 } = options;
+
+    // ── LAN (TCP/IP) ─────────────────────────────────────────────────────────
+    if (printerIp) {
+        try {
+            console.log(`[LAN] ${printerIp}:${printerPort} ga ulanilmoqda...`);
+            await printOverNetwork(printerIp, rawBuffer, printerPort);
+            console.log(`[PECHAT ✅ LAN] ${printerIp}:${printerPort} ga chop etildi.`);
+        } catch (err) {
+            console.log(`[XATO LAN] ${printerIp}:${printerPort} → ${String(err)}`);
+        }
+        return;
+    }
+
+    // ── USB / Windows Spooler ─────────────────────────────────────────────────
+    if (!printerName) {
+        console.log(`[XATO] printerName yoki printerIp ko'rsatilmagan.`);
+        return;
+    }
+
+    const tmpFile = join(os.tmpdir(), `tmp_print_${Date.now()}.bin`);
+    await writeFile(tmpFile, rawBuffer);
 
     const psScript = `
 $code = @"
@@ -102,7 +174,7 @@ public class RawPrint {
 }
 "@
 Add-Type -TypeDefinition $code -Language CSharp
-$result = [RawPrint]::SendFileToPrinter("${printerName}", "${tmpFile}")
+$result = [RawPrint]::SendFileToPrinter("${printerName.replace(/"/g, '`"')}", "${tmpFile.replace(/\\/g, '\\\\')}")
 if (-not $result) { exit 1 }
 `;
 
@@ -111,9 +183,9 @@ if (-not $result) { exit 1 }
             "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
             "-Command", psScript
         ], { timeout: 15000 });
-        console.log(`[PECHAT] ${printerName} ga chop etildi.`);
+        console.log(`[PECHAT ✅ USB] "${printerName}" ga chop etildi.`);
     } catch(err) {
-        console.log(`[XATO] ${printerName} ga chop etib bo'lmadi:`, String(err));
+        console.log(`[XATO USB] "${printerName}" ga chop etib bo'lmadi:`, String(err));
     } finally {
         await unlink(tmpFile).catch(() => {});
     }
@@ -126,22 +198,28 @@ async function pollJobs() {
             const data = await res.json();
             if (data.jobs && data.jobs.length > 0) {
                 for (const job of data.jobs) {
-                    await printRaw(job.printerName, job.data);
+                    const printerName = job.printerName || job.printer || job.name || '';
+                    const base64data  = job.data || job.payload || job.escpos || '';
+                    const printerIp   = job.printerIp   || job.ip   || null;
+                    const printerPort = job.printerPort || job.port || 9100;
+
+                    await printRaw(printerName, base64data, { printerIp, printerPort });
                 }
             }
         }
     } catch (e) {
         // Tizimga kirish biroz kechiksa ogohlantirmay turaveradi.
     }
-    setTimeout(pollJobs, 2500); // Har 2.5 soniyada serverdan chop etish uchun job kutadi
+    setTimeout(pollJobs, 2500);
 }
 
 console.log("=========================================");
 console.log("  SMART PRO - LOKAL PRINTER AGENTI     ");
 console.log(`  Tarmoq: ${SERVER_URL}   `);
+console.log("  USB + LAN (TCP/IP 9100) qo'llab-quvvatlanadi");
 console.log("  Diqqat: Ushbu ayna ochiq tursin!       ");
 console.log("=========================================");
 
 syncPrinters();
-setInterval(syncPrinters, 30000); // printerlar o'zgarsa har 30 sekunda sinxron qiladi
+setInterval(syncPrinters, 30000);
 pollJobs();

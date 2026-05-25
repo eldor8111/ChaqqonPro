@@ -291,10 +291,11 @@ export interface AppState {
         shopType?: string;
         token?: string;
         printerIp?: string;
+        autoPrintReceipt?: boolean;
     } | null;
 
     // Kassir / Ofitsiant sessiyasi
-    kassirSession: { id: string; name: string; branch: string; permissions: string[]; shopCode?: string; shopType?: string; token?: string; printerIp?: string; serviceFeePct?: number } | null;
+    kassirSession: { id: string; name: string; branch: string; permissions: string[]; shopCode?: string; shopType?: string; token?: string; printerIp?: string; autoPrintReceipt?: boolean; serviceFeePct?: number } | null;
 
     // Actions
     addTransaction: (tx: Transaction) => void;
@@ -394,14 +395,14 @@ export const useStore = create<AppState>()(
             transfers: [...mockTransfers],
             inventoryCounts: [...mockInventoryCounts],
             writeoffs: [...mockWriteoffs],
-            smartTables: [...mockSmartTables] as SmartTable[],
-            kdsOrders: [...mockKDSOrders] as KDSOrder[],
-            nomenklaturaKategoriyalar: [...mockNomenklaturaKategoriyalar] as NomenklaturaKategoriya[],
-            nomenklaturaTaomlar: [...mockNomenklaturaTaomlar] as NomenklaturaTaom[],
-            nomenklaturaXomashyo: [...mockNomenklaturaXomashyo] as NomenklaturaXomashyo[],
-            staff: [...mockStaff],
-            fraudAlerts: [...mockFraudAlerts],
-            customers: [...mockCustomers],
+            smartTables: [] as SmartTable[],
+            kdsOrders: [] as KDSOrder[],
+            nomenklaturaKategoriyalar: [] as NomenklaturaKategoriya[],
+            nomenklaturaTaomlar: [] as NomenklaturaTaom[],
+            nomenklaturaXomashyo: [] as NomenklaturaXomashyo[],
+            staff: [],
+            fraudAlerts: [],
+            customers: [],
 
             isAuthenticated: false,
             user: null,

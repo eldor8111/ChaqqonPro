@@ -77,24 +77,24 @@ const PERMISSIONS_LIST = [
 type ContactItem = { type: string; value: string };
 type SideTab = "tenants" | "users" | "billing" | "tariffs" | "settings";
 
-const inputClass = "w-full bg-slate-100 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-800 placeholder-slate-500 focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/30";
-const labelClass = "block text-sm font-medium mb-1.5 text-slate-600";
+const inputClass = "w-full bg-white/70 backdrop-blur-sm border border-slate-200/80 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-500/15 transition-all duration-300 hover:bg-white hover:shadow-sm";
+const labelClass = "block text-[13px] font-bold tracking-wide mb-1.5 text-slate-500 uppercase";
 
 /* ─── Sidebar nav item ───────────────────────────────────────────────── */
 function NavItem({ icon: Icon, label, active, onClick, badge }: any) {
     return (
         <button
             onClick={onClick}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+            className={`group w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${
                 active
-                    ? "bg-sky-500/20 text-sky-300 shadow-lg ring-1 ring-sky-500/30"
-                    : "text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                    ? "bg-gradient-to-r from-sky-500/15 to-indigo-500/10 text-sky-500 shadow-[0_4px_20px_rgba(56,189,248,0.15)] ring-1 ring-sky-500/30"
+                    : "text-slate-400 hover:bg-white hover:shadow-sm hover:text-slate-700 hover:translate-x-1"
             }`}
         >
-            <Icon size={18} />
+            <Icon size={18} className={active ? "text-sky-500 drop-shadow-md" : "text-slate-400 group-hover:text-sky-400 transition-colors"} />
             <span className="flex-1 text-left">{label}</span>
             {badge != null && badge > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-sky-500/30 text-sky-300">{badge}</span>
+                <span className="px-2 py-0.5 rounded-full text-xs font-black bg-sky-500/20 text-sky-500">{badge}</span>
             )}
         </button>
     );
@@ -425,17 +425,21 @@ export default function SuperAdminPage() {
     const fmtMoney = (v: number) => new Intl.NumberFormat("uz-UZ").format(v);
 
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-800 flex overflow-hidden">
+        <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex overflow-hidden relative">
+            {/* Ambient Background glow */}
+            <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-sky-400/20 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
+            
             {/* ── MOBILE OVERLAY ─────────── */}
             {isMobileMenuOpen && (
                 <div 
-                    className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden"
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}
 
             {/* ── LEFT SIDEBAR ─────────────────────────────────────── */}
-            <aside className={`w-64 shrink-0 flex flex-col gap-2 border-r border-slate-200 bg-white px-4 py-6 fixed inset-y-0 left-0 z-50 lg:sticky lg:top-0 lg:h-screen transform transition-transform duration-300 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
+            <aside className={`w-64 shrink-0 flex flex-col gap-2 border-r border-white/50 bg-white/70 backdrop-blur-2xl px-4 py-6 fixed inset-y-0 left-0 z-50 lg:sticky lg:top-0 lg:h-screen transform transition-transform duration-300 shadow-[4px_0_24px_rgba(0,0,0,0.02)] ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
                 <div className="flex items-center justify-between lg:block">
                     {/* Brand */}
                 <div className="mb-8 mt-2 px-2">
@@ -519,7 +523,7 @@ export default function SuperAdminPage() {
             {/* ── MAIN CONTENT ─────────────────────────────────────── */}
             <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden relative flex flex-col h-screen">
                 {/* ── HEADER ───────────────────────────────────────────── */}
-                <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 sm:px-8 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-2xl border-b border-white/50 px-4 sm:px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
                     <div className="flex items-center gap-3">
                         <button 
                             onClick={() => setIsMobileMenuOpen(true)}
@@ -996,6 +1000,12 @@ export default function SuperAdminPage() {
                                             <option value="active">Faol</option>
                                             <option value="trial">Sinov</option>
                                             <option value="suspended">To&apos;xtatilgan</option>
+                                        </select>
+                                    </div>
+                                    <div><label className={labelClass}>Tashkilot (Loyixa) turi</label>
+                                        <select value={formData.shopType} onChange={(e)=>f("shopType",e.target.value)} className={inputClass}>
+                                            <option value="smart">Savdo soxasi (Restoran, Do'kon)</option>
+                                            <option value="clinic">Tibbiyot klinikasi (Med. Klinika)</option>
                                         </select>
                                     </div>
                                 </div>

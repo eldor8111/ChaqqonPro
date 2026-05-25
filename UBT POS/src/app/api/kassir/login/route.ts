@@ -141,11 +141,12 @@ export async function POST(request: NextRequest) {
         let parsedPermissions: string[] = [];
         try { parsedPermissions = JSON.parse(authenticatedStaff.permissions); } catch { parsedPermissions = []; }
 
-        // Extract printerIp from phone field JSON
         let staffPrinterIp = "";
+        let autoPrintReceipt = true;
         try {
             const phoneData = authenticatedStaff.phone ? JSON.parse(authenticatedStaff.phone) : {};
             staffPrinterIp = phoneData.printerIp || "";
+            if (phoneData.autoPrintReceipt !== undefined) autoPrintReceipt = phoneData.autoPrintReceipt;
         } catch { staffPrinterIp = ""; }
 
         // Fallback: agar xodimda printerIp yo'q bo'lsa, SmartPrinter jadvalidan birinchi printerni olish
@@ -176,6 +177,7 @@ export async function POST(request: NextRequest) {
                 branch: authenticatedStaff.branch,
                 permissions: parsedPermissions,
                 printerIp: staffPrinterIp,
+                autoPrintReceipt,
                 serviceFeePct,
             },
             token,

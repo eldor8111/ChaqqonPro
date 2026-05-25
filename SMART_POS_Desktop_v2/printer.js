@@ -3,6 +3,7 @@ const { promisify } = require('util');
 const { writeFile, unlink } = require('fs/promises');
 const { join } = require('path');
 const os = require('os');
+const net = require('net');
 
 const execFileAsync = promisify(execFile);
 
@@ -34,23 +35,58 @@ async function getWindowsPrinters() {
 }
 
 /**
- * Base64 ESC/POS ma'lumotini printer'ga Raw yuborish
- * @param {string} printerName - Printer nomi
- * @param {string} base64data  - Base64 formatidagi ESC/POS bytelar
+ * LAN printer'ga to'g'ridan-to'g'ri TCP/IP (port 9100) orqali chop etish
+ * Bu usul Windows spooler'siz ishlaydi — oshxona printeriga ideal
+ * @param {string} ip      - Printer IP manzili (masalan: "192.168.1.100")
+ * @param {Buffer} data    - ESC/POS raw bytes
+ * @param {number} port    - TCP port (odatda 9100)
+ * @param {number} timeout - Timeout ms (default: 8000)
  */
-async function printRaw(printerName, base64data) {
-    if (!printerName || !base64data) {
-        console.error(`[PRINT ERROR] Printer nomi yoki ma'lumot kiritilmadi. printerName="${printerName}", data boylik=${base64data ? base64data.length : 0}`);
-        return { success: false, error: `Printer nomi yoki ma'lumot kiritilmadi. Printer: "${printerName}"` };
-    }
+function printOverNetwork(ip, data, port = 9100, timeout = 8000) {
+    return new Promise((resolve, reject) => {
+        const client = new net.Socket();
+        let settled = false;
 
-    const tmpFile = join(os.tmpdir(), `cq_print_v2_${Date.now()}_${Math.floor(Math.random() * 1000)}.bin`);
+        const done = (err) => {
+            if (settled) return;
+            settled = true;
+            client.destroy();
+            if (err) reject(err);
+            else resolve();
+        };
 
-    try {
-        await writeFile(tmpFile, Buffer.from(base64data, 'base64'));
+        const timer = setTimeout(() => {
+            done(new Error(`TCP timeout: ${ip}:${port} ga ${timeout}ms ichida ulanib bo'lmadi`));
+        }, timeout);
 
-        // PowerShell orqali Windows Raw Print API ishlatish
-        const psScript = `
+        client.connect(port, ip, () => {
+            client.write(data, (writeErr) => {
+                clearTimeout(timer);
+                // Ma'lumot yozib bo'lingach, printer tomondan javob kutmaymiz
+                // Kichik kutish — printer bufferini to'ldirish uchun
+                setTimeout(() => done(writeErr || null), 200);
+            });
+        });
+
+        client.on('error', (err) => {
+            clearTimeout(timer);
+            done(err);
+        });
+
+        client.on('close', () => {
+            clearTimeout(timer);
+            done(null);
+        });
+    });
+}
+
+/**
+ * Windows Spooler orqali USB/lokal printer'ga Raw chop etish
+ * @param {string} printerName - Windows'dagi printer nomi
+ * @param {string} tmpFile     - Chop etiladigan vaqtinchalik fayl yo'li
+ */
+async function printViaSpooler(printerName, tmpFile) {
+    const psScript = `
 $code = @"
 using System;
 using System.IO;
@@ -109,19 +145,66 @@ $result = [RawPrint]::SendFileToPrinter("${printerName.replace(/"/g, '`"')}", "$
 if (-not $result) { exit 1 }
 `;
 
-        await execFileAsync('powershell', [
-            '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
-            '-Command', psScript
-        ], { timeout: 25000 });
+    await execFileAsync('powershell', [
+        '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
+        '-Command', psScript
+    ], { timeout: 25000 });
+}
 
-        console.log(`[PRINT ✅] "${printerName}" ga muvaffaqiyatli chop etildi.`);
-        return { success: true };
+/**
+ * Base64 ESC/POS ma'lumotini printer'ga yuborish.
+ *
+ * Agar job'da `printerIp` berilgan bo'lsa → LAN (TCP/IP port 9100) orqali chop etadi.
+ * Aks holda → Windows Spooler orqali (USB / Windows network printer).
+ *
+ * @param {string} printerName - Windows printer nomi (USB/Spooler uchun)
+ * @param {string} base64data  - Base64 formatidagi ESC/POS bytelar
+ * @param {object} [options]   - Qo'shimcha sozlamalar
+ * @param {string} [options.printerIp]   - LAN printer IP (masalan "192.168.1.100")
+ * @param {number} [options.printerPort] - LAN printer TCP port (default: 9100)
+ */
+async function printRaw(printerName, base64data, options = {}) {
+    if (!base64data) {
+        const msg = `[PRINT ERROR] Ma'lumot (base64data) kiritilmadi.`;
+        console.error(msg);
+        return { success: false, error: msg };
+    }
+
+    const rawBuffer = Buffer.from(base64data, 'base64');
+    const { printerIp, printerPort = 9100 } = options;
+
+    // ── LAN (TCP/IP) ulanish ──────────────────────────────────────────────────
+    if (printerIp) {
+        try {
+            console.log(`[PRINT LAN] ${printerIp}:${printerPort} ga ulanilmoqda...`);
+            await printOverNetwork(printerIp, rawBuffer, printerPort);
+            console.log(`[PRINT ✅ LAN] ${printerIp}:${printerPort} ga muvaffaqiyatli chop etildi.`);
+            return { success: true, method: 'lan' };
+        } catch (err) {
+            console.error(`[PRINT ❌ LAN] ${printerIp}:${printerPort} → ${String(err)}`);
+            return { success: false, error: String(err), method: 'lan' };
+        }
+    }
+
+    // ── USB / Windows Spooler ulanish ─────────────────────────────────────────
+    if (!printerName) {
+        const msg = `[PRINT ERROR] printerName yoki printerIp ko'rsatilmadi.`;
+        console.error(msg);
+        return { success: false, error: msg };
+    }
+
+    const tmpFile = join(os.tmpdir(), `cq_print_v2_${Date.now()}_${Math.floor(Math.random() * 1000)}.bin`);
+    try {
+        await writeFile(tmpFile, rawBuffer);
+        await printViaSpooler(printerName, tmpFile);
+        console.log(`[PRINT ✅ USB] "${printerName}" ga muvaffaqiyatli chop etildi.`);
+        return { success: true, method: 'usb' };
     } catch (err) {
-        console.error(`[PRINT ❌] "${printerName}" ga chop etib bo'lmadi:`, String(err));
-        return { success: false, error: String(err) };
+        console.error(`[PRINT ❌ USB] "${printerName}" → ${String(err)}`);
+        return { success: false, error: String(err), method: 'usb' };
     } finally {
         await unlink(tmpFile).catch(() => {});
     }
 }
 
-module.exports = { getWindowsPrinters, printRaw };
+module.exports = { getWindowsPrinters, printRaw, printOverNetwork };

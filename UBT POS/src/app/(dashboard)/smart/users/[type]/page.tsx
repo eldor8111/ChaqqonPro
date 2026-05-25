@@ -53,7 +53,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
     const [searchQuery, setSearchQuery] = useState("");
     const [showAddUser, setShowAddUser] = useState(false);
     const [editingStaff, setEditingStaff] = useState<any | null>(null);
-    const [editForm, setEditForm] = useState({ name: "", branch: "Asosiy Filial", password: "", printerIp: "", isMainMonoblock: false, showCashiersList: false, hasChefPrinter: false, printOrderCancellations: false, serviceFeePct: 10, acceptCash: false, canVoidOrder: false, canAuditInventory: false, receiveLowStockAlerts: false, canWriteOff: false, canZal: true, canDelivery: true, canTakeaway: true });
+    const [editForm, setEditForm] = useState({ name: "", branch: "Asosiy Filial", password: "", printerIp: "", isMainMonoblock: false, showCashiersList: false, hasChefPrinter: false, printOrderCancellations: false, serviceFeePct: 10, acceptCash: false, canVoidOrder: false, autoPrintReceipt: true, canAuditInventory: false, receiveLowStockAlerts: false, canWriteOff: false, canZal: true, canDelivery: true, canTakeaway: true });
 
     // Printers list from API
     const [printersList, setPrintersList] = useState<{ id: string; name: string; ipAddress: string }[]>([]);
@@ -71,7 +71,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
         printerIp: "", status: true, isMainMonoblock: false, showCashiersList: false, hasChefPrinter: false, printOrderCancellations: false, photoBase64: null as string | null,
         canZal: true, canDelivery: true, canTakeaway: true,
         // Kassir/Menejer
-        acceptCash: true, canDiscount: false, canVoidOrder: false,
+        acceptCash: true, canDiscount: false, canVoidOrder: false, autoPrintReceipt: true,
         // Ofitsiant
         pinCode: "", assignedZone: "", serviceFeePct: 10,
         // Kuryer
@@ -95,7 +95,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                 showCashiersList: false, hasChefPrinter: false, 
                 printOrderCancellations: false, photoBase64: null,
                 canZal: true, canDelivery: true, canTakeaway: true,
-                acceptCash: true, canDiscount: false, canVoidOrder: false,
+                acceptCash: true, canDiscount: false, canVoidOrder: false, autoPrintReceipt: true,
                 pinCode: "", assignedZone: "", serviceFeePct: 10,
                 vehiclePlate: "", canSelfPickup: false,
                 kitchenSection: "Issiq sex", canViewKds: true,
@@ -283,7 +283,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                                     <label className="text-xs text-slate-400">Parol <span className="text-red-500">*</span></label>
                                     <input type="password" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} className="input-field w-full" placeholder="Min. 6 ta belgi" />
                                 </div>
-                                {(targetRole === "Kassir" || targetRole === "Ofitsiant") && (
+                                {(targetRole === "Kassir" || targetRole === "Ofitsiant" || targetRole === "Menejer") && (
                                     <div className="space-y-1">
                                         <label className="text-xs text-slate-400">🖨️ Chek printeri (mijoz cheki)</label>
                                         <select value={newUser.printerIp} onChange={e => setNewUser({ ...newUser, printerIp: e.target.value })} className="input-field w-full">
@@ -306,6 +306,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                                             { key: 'acceptCash', label: 'Naqd pul qabul qilish' },
                                             { key: 'canDiscount', label: 'Chegirma berish huquqi' },
                                             { key: 'canVoidOrder', label: 'Buyurtmani bekor qilish huquqi' },
+                                            { key: 'autoPrintReceipt', label: 'To\'lovdan so\'ng avtomat chek chiqarish' },
                                         ].map(toggle => (
                                             <div key={toggle.key} className="flex items-center justify-between">
                                                 <span className="text-sm font-medium text-slate-400">{toggle.label}</span>
@@ -315,15 +316,6 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                                                 </label>
                                             </div>
                                         ))}
-                                        <div className="col-span-2 space-y-1 pt-2">
-                                            <label className="text-xs text-slate-400">🖨️ Chek printeri (mijoz cheki)</label>
-                                            <select value={newUser.printerIp} onChange={e => setNewUser({ ...newUser, printerIp: e.target.value })} className="input-field w-full">
-                                                <option value="">Printer tanlanmagan</option>
-                                                {printersList.map(p => (
-                                                    <option key={p.id} value={p.ipAddress}>{p.name} ({p.ipAddress})</option>
-                                                ))}
-                                            </select>
-                                        </div>
                                     </div>
                                 )}
 
@@ -471,7 +463,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                                     if (newUser.acceptCash) perms.push("acceptCash");
                                     if (newUser.canDiscount) perms.push("discounts");
                                     if (newUser.canVoidOrder) perms.push("refunds");
-                                    if (newUser.printerIp) customPhone = JSON.stringify({ printerIp: newUser.printerIp });
+                                    customPhone = JSON.stringify({ printerIp: newUser.printerIp, autoPrintReceipt: newUser.autoPrintReceipt });
                                 } else if (targetRole === "Ofitsiant") {
                                     if (newUser.acceptCash) perms.push("acceptCash");
                                     if (newUser.canVoidOrder) perms.push("refunds"); // Using refunds string for void capability
@@ -567,6 +559,24 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                             ))}
                         </div>
                     )}
+                    {(targetRole === "Kassir" || targetRole === "Menejer") && (
+                        <div className="grid grid-cols-2 gap-x-12 gap-y-4 max-w-2xl border-t border-slate-700/50 pt-4">
+                            {[
+                                { key: 'acceptCash', label: 'Naqd pul qabul qilish' },
+                                { key: 'canDiscount', label: 'Chegirma berish huquqi' },
+                                { key: 'canVoidOrder', label: 'Buyurtmani bekor qilish huquqi' },
+                                { key: 'autoPrintReceipt', label: 'To\'lovdan so\'ng avtomat chek chiqarish' },
+                            ].map(toggle => (
+                                <div key={toggle.key} className="flex items-center justify-between col-span-2">
+                                    <span className="text-sm font-medium text-slate-400">{toggle.label}</span>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" className="sr-only peer" checked={!!(editForm as any)[toggle.key]} onChange={e => setEditForm({ ...editForm, [toggle.key]: e.target.checked })} />
+                                        <div className="w-9 h-5 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand"></div>
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                     {targetRole === "Ofitsiant" && (
                         <div className="grid grid-cols-2 gap-x-12 gap-y-4 max-w-2xl border-t border-slate-700/50 pt-4">
                             <div className="space-y-1">
@@ -645,7 +655,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                                 } else if (targetRole === "Kassir" || targetRole === "Menejer" || targetRole === "Ofitsiant") {
                                     let existing: any = {};
                                     try { existing = JSON.parse(editingStaff.phone || '{}'); } catch { existing = {}; }
-                                    updateData.phone = JSON.stringify({ ...existing, printerIp: editForm.printerIp });
+                                    updateData.phone = JSON.stringify({ ...existing, printerIp: editForm.printerIp, autoPrintReceipt: editForm.autoPrintReceipt });
                                 }
                                 
                                 if (isManablog || targetRole === "Kassir" || targetRole === "Menejer" || targetRole === "Ofitsiant") {
@@ -774,6 +784,7 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                                                     serviceFeePct: existingMeta.serviceFeePct ?? 10,
                                                     acceptCash: perms.includes('acceptCash'),
                                                     canVoidOrder: perms.includes('refunds'),
+                                                    autoPrintReceipt: existingSettings.autoPrintReceipt ?? true,
                                                     canAuditInventory: perms.includes('inventory'),
                                                     receiveLowStockAlerts: perms.includes('stockEdit'),
                                                     canWriteOff: perms.includes('sjisaniya'),

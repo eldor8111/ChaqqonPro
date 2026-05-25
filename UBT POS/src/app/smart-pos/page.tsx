@@ -276,15 +276,16 @@ const isWeightUnit = (unit?: string) => {
 };
 
 // ─── Menu cache (module-level, survives tab switches, 90-sec TTL) ────────────────
-let _menuCache: { items: MenuItem[]; cats: MenuCategory[]; cancelCode?: string; paymentMethods?: any[] } | null = null;
+let _menuCache: { items: MenuItem[]; cats: MenuCategory[]; cancelCode?: string; paymentMethods?: any[]; blockSell?: boolean } | null = null;
 let _menuCacheAt = 0;
 const MENU_CACHE_TTL = 15 * 1000; // 15 sekund — admin o'zgartirsa darhol aks etadi
 
 // ─── Menu Panel ─────────────────────────────────────────────────────────────────
-function MenuPanel({ onConfirm, onPay, kassirPrinterIp, instantAdd, servicePct = 0, tableName = "Buyurtma" }: {
+function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instantAdd, servicePct = 0, tableName = "Buyurtma" }: {
     onConfirm: (cart: CartItem[]) => Promise<void>;
     onPay: (cart: CartItem[], method: string, customerId?: string) => Promise<void>;
     kassirPrinterIp?: string;
+    autoPrintReceipt?: boolean;
     instantAdd?: boolean;
     servicePct?: number;
     tableName?: string;
@@ -312,7 +313,7 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, instantAdd, servicePct =
         }
         fetch("/api/smart/menu").then(r => r.json()).then(d => {
             const items = d.items ?? []; const cats = d.categories ?? [];
-            _menuCache = { items, cats, cancelCode: d.cancelCode || "", paymentMethods: d.paymentMethods || [] };
+            _menuCache = { items, cats, cancelCode: d.cancelCode || "", paymentMethods: d.paymentMethods || [], blockSell: !!d.blockSell };
             _menuCacheAt = Date.now();
             setMenu(items); setCats_(cats);
         }).catch(() => {});
@@ -362,6 +363,11 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, instantAdd, servicePct =
     };
 
     const addItem = (item: MenuItem) => {
+        if (_menuCache?.blockSell && (item.stock !== undefined && item.stock <= 0)) {
+            alert("Mahsulot qoldig'i tugaganligi sababli sotish mumkin emas!");
+            return;
+        }
+
         if (item.isSetMenu && item.modifiers && Array.isArray(item.modifiers) && item.modifiers.length > 0) {
             // Admin panel saves modifiers as [{id, name, items:[{id,name}]}]
             // multi-select: each group maps to an array of selected items
@@ -385,6 +391,10 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, instantAdd, servicePct =
     };
     const addWithQty = (item: MenuItem, qty: number) => {
         if (qty <= 0) return;
+        if (_menuCache?.blockSell && (item.stock !== undefined && item.stock <= 0)) {
+            alert("Mahsulot qoldig'i tugaganligi sababli sotish mumkin emas!");
+            return;
+        }
         if (instantAdd) {
             onConfirm([{ item, qty }]).catch(() => {});
             return;
@@ -456,7 +466,7 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, instantAdd, servicePct =
             } catch {}
         }
 
-        if (finalIp) {
+        if (finalIp && autoPrintReceipt !== false) {
             const now = new Date();
             const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
             // get auth token from session cookies
@@ -1019,7 +1029,7 @@ export default function UbtPosPage() {
     const store = useStore();
     const tables = store.smartTables;
     const waiterName = store.kassirSession?.name ?? "Xodim";
-    const hasPaymentPerm = (store.kassirSession as any)?.role === "Kassir" || store.kassirSession?.id === "admin";
+    const hasPaymentPerm = ["Kassir", "Administrator", "Menejer", "Manablog"].includes((store.kassirSession as any)?.role) || store.kassirSession?.id === "admin" || !store.kassirSession;
 
     const [printerStatus, setPrinterStatus] = useState<{ id: string; name: string; online: boolean }[]>([]);
     const [tab, setTab] = useState<"tables" | "takeaway" | "delivery" | "reservation">("tables");
@@ -2412,6 +2422,7 @@ export default function UbtPosPage() {
                                             }}
 
                                             kassirPrinterIp={store.kassirSession?.printerIp || store.deviceSession?.printerIp || ""}
+                                            autoPrintReceipt={store.kassirSession?.autoPrintReceipt !== false && store.deviceSession?.autoPrintReceipt !== false}
                                             instantAdd
                                             servicePct={selTable.serviceFee ?? 0}
                                             tableName={selTable.name}
@@ -3100,6 +3111,7 @@ export default function UbtPosPage() {
                                             }}
                                             onPay={async () => {}}
                                             kassirPrinterIp={store.kassirSession?.printerIp || store.deviceSession?.printerIp || ""}
+                                            autoPrintReceipt={store.kassirSession?.autoPrintReceipt !== false && store.deviceSession?.autoPrintReceipt !== false}
                                             instantAdd
                                         />
                                     </div>
@@ -3299,6 +3311,7 @@ export default function UbtPosPage() {
                                             }}
                                             onPay={async () => {}}
                                             kassirPrinterIp={store.kassirSession?.printerIp || store.deviceSession?.printerIp || ""}
+                                            autoPrintReceipt={store.kassirSession?.autoPrintReceipt !== false && store.deviceSession?.autoPrintReceipt !== false}
                                             instantAdd
                                         />
                                     </div>
@@ -3498,6 +3511,7 @@ export default function UbtPosPage() {
                                     }}
                                     onPay={async () => {}}
                                     kassirPrinterIp={store.kassirSession?.printerIp || ""}
+                                    autoPrintReceipt={store.kassirSession?.autoPrintReceipt !== false && store.deviceSession?.autoPrintReceipt !== false}
                                     instantAdd
                                 />
                             </div>

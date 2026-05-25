@@ -296,6 +296,34 @@ export default function SettingsPage() {
                                     />
                                 </div>
 
+                                {/* Stock Block Sell Section */}
+                                <div className="mt-6 pt-4 border-t border-slate-700/50">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-slate-200">
+                                                Ombordagi qoldiqni tekshirib sotish (Sotishni bloklash)
+                                            </label>
+                                            <p className="text-xs text-slate-400 mt-1 max-w-[80%]">
+                                                Kassir mahsulotni sotayotganda omborda qoldiq qolmagan bo'lsa (0 dan kamayib ketsa), uni sotishga ruxsat bermaydigan sozlama.
+                                            </p>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                checked={!!((settingsData as any)?.tenant?.settings?.blockSell)}
+                                                onChange={(e) => {
+                                                    updateSettingsMutation.mutate({
+                                                        ...((settingsData as any)?.tenant?.settings || {}),
+                                                        blockSell: e.target.checked
+                                                    });
+                                                }}
+                                            />
+                                            <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                                        </label>
+                                    </div>
+                                </div>
+
                                 {/* Payment Methods Section */}
                                 <div className="mt-6 pt-4 border-t border-slate-700/50">
                                     <label className="block text-sm font-semibold text-slate-200">
