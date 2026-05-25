@@ -349,10 +349,24 @@ function buildReportBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
 function printTcpOnce(ip: string, port: number, data: Buffer): Promise<void> {
     return new Promise((resolve, reject) => {
         const socket = new net.Socket();
-        socket.setTimeout(5000);
-        socket.connect(port, ip, () => { socket.write(data, () => { socket.end(); resolve(); }); });
-        socket.on("timeout", () => { socket.destroy(); reject(new Error(`Timeout: ${ip}:${port}`)); });
-        socket.on("error",   (err) => { socket.destroy(); reject(err); });
+        let settled = false;
+        const done = (err?: Error) => {
+            if (settled) return;
+            settled = true;
+            socket.destroy();
+            if (err) reject(err);
+            else resolve();
+        };
+        const timer = setTimeout(() => {
+            done(new Error(`Timeout: ${ip}:${port}`));
+        }, 5000);
+        socket.on("error", (err) => done(err));
+        socket.connect(port, ip, () => {
+            clearTimeout(timer);
+            socket.write(data, () => {
+                setTimeout(() => done(), 200);
+            });
+        });
     });
 }
 
