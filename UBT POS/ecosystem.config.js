@@ -4,14 +4,14 @@ module.exports = {
       name: "smart-app",
       script: "npm",
       args: "start",
-      instances: "max",           // Barcha CPU Core larni ishlatish (Cluster mode)
-      exec_mode: "cluster",
+      instances: 1,               // Next.js da port band qilinmasligi uchun faqat 1 ta instance
+      exec_mode: "fork",          // Cluster rejimini o'chirib, Fork rejimiga o'tkazamiz
       autorestart: true,
       watch: false,
-      max_memory_restart: "1G",
+      max_memory_restart: "2G",   // Xotirani 2GB gacha oshiramiz
       env: {
         NODE_ENV: "production",
-        PORT: 3000
+        PORT: 3005                // To'g'ridan-to'g'ri 3005 portni yozamiz
       }
     }
   ]
