@@ -8,7 +8,8 @@ const os = require("os");
 const execFileAsync = promisify(execFile);
 
 // E-Code UZ orqali bulutli server bilan sinxronizatsiya
-const SERVER_URL = "https://smart.e-code.uz";
+// const SERVER_URL = "https://smart.e-code.uz";
+const SERVER_URL = "http://89.39.94.195";
 
 async function getWindowsPrinters() {
     try {

@@ -24,7 +24,7 @@ function loadConfig() {
         }
     } catch (e) {}
     return {
-        serverUrl: 'https://smart.e-code.uz',
+        serverUrl: 'http://89.39.94.195',
         pollInterval: 2500,
         autoStart: true,
     };
