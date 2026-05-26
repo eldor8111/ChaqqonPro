@@ -55,12 +55,32 @@ export default function MobileWaiterPage() {
     useEffect(() => {
         setMounted(true);
         if (!store.kassirSession) { router.replace("/"); return; }
+        
+        try {
+            const sm = localStorage.getItem("mob_waiter_menu");
+            if (sm) { const {m, c} = JSON.parse(sm); setMenu(m); setCats(c); }
+            const sc = localStorage.getItem("mob_waiter_cart");
+            if (sc) setCart(JSON.parse(sc));
+            const st = localStorage.getItem("mob_waiter_table");
+            if (st) {
+                setSelectedTable(JSON.parse(st));
+                setView("menu");
+            }
+        } catch {}
+
         store.fetchSmartTables();
         fetchMenu();
         const ti = setInterval(() => store.fetchSmartTables(), 15000);
         return () => clearInterval(ti);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [store.kassirSession, router]);
+
+    useEffect(() => { if (menu.length > 0) localStorage.setItem("mob_waiter_menu", JSON.stringify({m: menu, c: cats})); }, [menu, cats]);
+    useEffect(() => { localStorage.setItem("mob_waiter_cart", JSON.stringify(cart)); }, [cart]);
+    useEffect(() => { 
+        if (selectedTable) localStorage.setItem("mob_waiter_table", JSON.stringify(selectedTable)); 
+        else localStorage.removeItem("mob_waiter_table");
+    }, [selectedTable]);
 
     useEffect(() => { if (view === "stats") fetchStats(); }, [view, fetchStats]);
 
@@ -72,9 +92,22 @@ export default function MobileWaiterPage() {
         setCart(prev => {
             const ex = prev.find(c => c.id === id);
             if (!ex) return delta > 0 ? [...prev, { id, name, price, qty: 1 }] : prev;
-            const newQty = ex.qty + delta;
+            // Float hisoblashlarda xatolikni oldini olish
+            const newQty = Math.max(0, parseFloat((ex.qty + delta).toFixed(3)));
             if (newQty <= 0) return prev.filter(c => c.id !== id);
             return prev.map(c => c.id === id ? { ...c, qty: newQty } : c);
+        });
+    };
+
+    const setExactQty = (id: string, name: string, price: number) => {
+        const str = prompt(`${name} miqdorini kiriting (Masalan: 1.5):`);
+        if (!str) return;
+        const v = parseFloat(str.replace(',', '.'));
+        if (isNaN(v) || v <= 0) return;
+        setCart(prev => {
+            const ex = prev.find(c => c.id === id);
+            if (!ex) return [...prev, { id, name, price, qty: v }];
+            return prev.map(c => c.id === id ? { ...c, qty: v } : c);
         });
     };
 
@@ -125,29 +158,31 @@ export default function MobileWaiterPage() {
                 const res = await fetch(`/api/smart/orders-db?tableId=${t.id}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                if (res.ok) {
-                    const data = await res.json();
-                    const existing: CartItem[] = (data.items || [])
-                        .filter((ci: any) => ci.item?.id || ci.id)
-                        .map((ci: any) => ({
-                            id: ci.item?.id ?? ci.id,
-                            name: ci.item?.name ?? ci.name,
-                            price: ci.item?.price ?? ci.price ?? 0,
-                            qty: ci.qty ?? 1,
-                        }))
-                        // merge duplicates
-                        .reduce((acc: CartItem[], cur: CartItem) => {
-                            const ex = acc.find(a => a.id === cur.id);
-                            if (ex) { ex.qty += cur.qty; return acc; }
-                            return [...acc, cur];
-                        }, []);
-                    if (existing.length > 0) {
-                        setExistingCart(existing);
-                        setView("cart");
-                        return;
-                    }
+                if (!res.ok) throw new Error("API xatosi");
+                const data = await res.json();
+                const existing: CartItem[] = (data.items || [])
+                    .filter((ci: any) => ci.item?.id || ci.id)
+                    .map((ci: any) => ({
+                        id: ci.item?.id ?? ci.id,
+                        name: ci.item?.name ?? ci.name,
+                        price: ci.item?.price ?? ci.price ?? 0,
+                        qty: ci.qty ?? 1,
+                    }))
+                    // merge duplicates
+                    .reduce((acc: CartItem[], cur: CartItem) => {
+                        const ex = acc.find(a => a.id === cur.id);
+                        if (ex) { ex.qty += cur.qty; return acc; }
+                        return [...acc, cur];
+                    }, []);
+                if (existing.length > 0) {
+                    setExistingCart(existing);
+                    setView("cart");
+                    return;
                 }
-            } catch {}
+            } catch {
+                alert("Tarmoq xatosi! Stol ma'lumotlarini yuklab bo'lmadi. Iltimos qayta urinib ko'ring.");
+                return;
+            }
         }
         setView("menu");
     };
@@ -414,7 +449,7 @@ export default function MobileWaiterPage() {
                                         {inCart ? (
                                             <div className="flex items-center justify-between bg-blue-50 rounded-xl px-2 py-1.5 mt-2">
                                                 <button onClick={() => changeQty(item.id, item.name, item.price, -1)} className="w-7 h-7 rounded-full bg-white border border-blue-200 flex items-center justify-center active:scale-95 shadow-sm shrink-0"><Minus size={12} className="text-blue-600" /></button>
-                                                <span className="text-sm font-black text-blue-700 mx-1">{inCart.qty}</span>
+                                                <span onClick={() => setExactQty(item.id, item.name, item.price)} className="text-sm font-black text-blue-700 mx-1 px-2 py-1 active:bg-blue-200 rounded cursor-pointer">{inCart.qty}</span>
                                                 <button onClick={() => changeQty(item.id, item.name, item.price, 1)} className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center active:scale-95 shadow-sm shrink-0"><Plus size={12} className="text-white" /></button>
                                             </div>
                                         ) : (
