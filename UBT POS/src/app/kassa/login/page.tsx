@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, UtensilsCrossed, User, Loader2, LogOut, ArrowRight, X, CreditCard, ChevronLeft } from "lucide-react";
 import { useStore } from "@/lib/store";
@@ -46,14 +46,8 @@ export default function KassirLoginPage() {
         }
     }, [kassirSession, router]);
 
-    useEffect(() => {
-        if (typeof window !== "undefined" && window.location.search.includes("lock=1") && deviceSession && !kassirSession && !showStaff) {
-            openStaffList();
-        }
-    }, [deviceSession, kassirSession, showStaff]);
-
     // Load staff list
-    const loadStaff = async () => {
+    const loadStaff = useCallback(async () => {
         setStaffLoading(true);
         try {
             const res = await fetch("/api/staff");
@@ -67,7 +61,19 @@ export default function KassirLoginPage() {
         } finally {
             setStaffLoading(false);
         }
-    };
+    }, []);
+
+    // Open staff list
+    const openStaffList = useCallback(async () => {
+        setShowStaff(true);
+        await loadStaff();
+    }, [loadStaff]);
+
+    useEffect(() => {
+        if (typeof window !== "undefined" && window.location.search.includes("lock=1") && deviceSession && !kassirSession && !showStaff) {
+            openStaffList();
+        }
+    }, [deviceSession, kassirSession, showStaff, openStaffList]);
 
     // Device login
     const handleDeviceLogin = async (e: FormEvent) => {
@@ -89,12 +95,6 @@ export default function KassirLoginPage() {
             console.error("[kassir-login]", msg);
             setError("Server bilan ulanishda xato!");
         } finally { setLoading(false); }
-    };
-
-    // Open staff list
-    const openStaffList = async () => {
-        setShowStaff(true);
-        await loadStaff();
     };
 
     // Staff PIN submit

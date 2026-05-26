@@ -1436,8 +1436,10 @@ export default function UbtPosPage() {
         }
     };
 
+    type TableOrdersType = Record<string, { item: any; qty: number; unit?: string; shotId?: number; printedQty?: number; isSaboy?: boolean; }[]>;
+
     // ─── Table orders — DB-backed + localStorage fallback ────────────────────────
-    const [tableOrders, setTableOrdersRaw] = useState<Record<string, { item: any; qty: number; unit?: string; shotId?: number; printedQty?: number; isSaboy?: boolean; }[]>>(() => {
+    const [tableOrders, setTableOrdersRaw] = useState<TableOrdersType>(() => {
         // Sahifa ochilganda localStorage dan yuklaydi — zakazlar yo'qolmaydi
         try {
             const saved = localStorage.getItem("ubt_pos_tableOrders");
@@ -1445,7 +1447,7 @@ export default function UbtPosPage() {
         } catch {}
         return {};
     });
-    const setTableOrders = useCallback((val: any) => {
+    const setTableOrders = useCallback((val: TableOrdersType | ((prev: TableOrdersType) => TableOrdersType)) => {
         setTableOrdersRaw(prev => {
             const next = typeof val === "function" ? val(prev) : val;
             try { localStorage.setItem("ubt_pos_tableOrders", JSON.stringify(next)); } catch {}
@@ -1469,7 +1471,7 @@ export default function UbtPosPage() {
                 setTableOrders(prev => ({ ...prev, [tableId]: items }));
             }
         } catch {}
-    }, [store.kassirSession, store.deviceSession]);
+    }, [store.kassirSession, store.deviceSession, setTableOrders]);
 
     const saveTableOrders = async (orders: Record<string, any[]>, tableId?: string, newItems?: any[]) => {
         // Sync to local state immediately
