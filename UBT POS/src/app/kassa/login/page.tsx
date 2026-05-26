@@ -111,7 +111,11 @@ export default function KassirLoginPage() {
             const data = await res.json();
             if (data.success && data.staff) {
                 setKassirSession({ ...data.staff, token: deviceSession?.token, shopCode: deviceSession?.shopCode, shopType: deviceSession?.shopType });
-                router.push("/smart-pos");
+                if (data.staff.role === "Ofitsiant") {
+                    router.push("/mobile/waiter");
+                } else {
+                    router.push("/smart-pos");
+                }
             } else { setPinError(data.error || "Parol noto'g'ri"); setPin(""); }
         } catch { setPinError("Tarmoq xatosi"); }
         finally { setPinLoading(false); }
