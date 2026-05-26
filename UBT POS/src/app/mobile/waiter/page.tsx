@@ -32,8 +32,22 @@ export default function MobileWaiterPage() {
     const [stats, setStats] = useState<MyStats | null>(null);
     const [statsLoading, setStatsLoading] = useState(false);
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+    const [installPrompt, setInstallPrompt] = useState<any>(null);
 
     const token = store.kassirSession?.token;
+
+    useEffect(() => {
+        const handler = (e: any) => { e.preventDefault(); setInstallPrompt(e); };
+        window.addEventListener('beforeinstallprompt', handler);
+        return () => window.removeEventListener('beforeinstallprompt', handler);
+    }, []);
+
+    const handleInstall = async () => {
+        if (!installPrompt) return;
+        installPrompt.prompt();
+        const { outcome } = await installPrompt.userChoice;
+        if (outcome === 'accepted') setInstallPrompt(null);
+    };
 
     const fetchMenu = useCallback(async () => {
         if (!token) return;
@@ -211,9 +225,16 @@ export default function MobileWaiterPage() {
                         {sub && <p className="text-[11px] font-semibold text-blue-600 uppercase tracking-widest">{sub}</p>}
                     </div>
                 </div>
-                <button onClick={handleLogout} className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 active:scale-95 transition-all">
-                    <LogOut size={15} />
-                </button>
+                <div className="flex items-center gap-2">
+                    {installPrompt && (
+                        <button onClick={handleInstall} className="px-3 py-1.5 bg-emerald-500 text-white text-[10px] font-bold rounded-lg shadow-sm active:scale-95 transition-all animate-pulse">
+                            O'rnatish
+                        </button>
+                    )}
+                    <button onClick={handleLogout} className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 active:scale-95 transition-all">
+                        <LogOut size={15} />
+                    </button>
+                </div>
             </div>
             {!onBack && (
                 <div className="flex border-b border-slate-100">
