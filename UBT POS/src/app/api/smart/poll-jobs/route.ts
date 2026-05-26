@@ -9,11 +9,15 @@ export async function GET() {
     if (!fs.existsSync(queueDir)) fs.mkdirSync(queueDir, { recursive: true });
     
     try {
-        const files = fs.readdirSync(queueDir);
+        let files = fs.readdirSync(queueDir).filter(f => f.endsWith(".json"));
+        if (files.length === 0) {
+            await new Promise(r => setTimeout(r, 2000));
+            files = fs.readdirSync(queueDir).filter(f => f.endsWith(".json"));
+        }
+
         const jobs = [];
         
         for (const file of files) {
-            if (file.endsWith(".json")) {
                 const filepath = path.join(queueDir, file);
                 const processingPath = filepath + ".processing";
                 
@@ -32,8 +36,6 @@ export async function GET() {
                     console.error("Print job process error:", e);
                 }
             }
-        }
-        
         return NextResponse.json({ jobs });
     } catch (e) {
         return NextResponse.json({ jobs: [] });
