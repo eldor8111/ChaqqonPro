@@ -1695,7 +1695,7 @@ export default function UbtPosPage() {
         return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
     }, []);
 
-    const logout = () => { store.kassirLogout(); router.replace("/kassa/login"); };
+    const logout = () => { store.kassirLogout(); router.replace("/kassa/login?lock=1"); };
 
     // Load available printers for printer picker
     const loadAvailablePrinters = async () => {
@@ -2218,9 +2218,6 @@ export default function UbtPosPage() {
                             </div>
                         </div>
                     </div>
-                    <button onClick={toggleFullscreen} className={`w-8 h-8 rounded-full flex items-center justify-center ${th.tabInact(dark)}`}>
-                        {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-                    </button>
                 </div>
             </header>
 

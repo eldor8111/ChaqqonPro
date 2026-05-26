@@ -43,19 +43,36 @@ export async function GET(req: NextRequest) {
             tenantId
         ) as Promise<any[]>).catch(() => []);
 
-        // Batch processing — 5 tadan bir vaqtda (socket resource limit)
+        const os = require("os");
+        const isCloud = os.platform() !== "win32";
+
         const results: { id: string; name: string; ip: string; port: number; online: boolean }[] = [];
         const batchSize = 5;
         for (let i = 0; i < rows.length; i += batchSize) {
             const batch = rows.slice(i, i + batchSize);
             const batchResults = await Promise.all(
-                batch.map(async (p) => ({
-                    id: p.id,
-                    name: p.name,
-                    ip: p.ipAddress,
-                    port: p.port || 9100,
-                    online: await checkPrinter(p.ipAddress, p.port || 9100),
-                }))
+                batch.map(async (p) => {
+                    let isOnline = false;
+                    const ip = p.ipAddress;
+                    const port = p.port || 9100;
+                    
+                    const isLocalNetwork = /^(192\.168|10\.|172\.(1[6-9]|2[0-9]|3[0-1]))\./.test(ip) || ip === "127.0.0.1" || ip === "localhost";
+                    
+                    if (isCloud && isLocalNetwork) {
+                        // Bulutli serverdan lokal printerni ping qilib bo'lmaydi. Uni doim "online" deb olamiz (Agent hal qiladi).
+                        isOnline = true;
+                    } else {
+                        isOnline = await checkPrinter(ip, port);
+                    }
+
+                    return {
+                        id: p.id,
+                        name: p.name,
+                        ip: ip,
+                        port: port,
+                        online: isOnline,
+                    };
+                })
             );
             results.push(...batchResults);
         }

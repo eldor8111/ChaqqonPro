@@ -46,6 +46,12 @@ export default function KassirLoginPage() {
         }
     }, [kassirSession, router]);
 
+    useEffect(() => {
+        if (typeof window !== "undefined" && window.location.search.includes("lock=1") && deviceSession && !kassirSession && !showStaff) {
+            openStaffList();
+        }
+    }, [deviceSession, kassirSession, showStaff]);
+
     // Load staff list
     const loadStaff = async () => {
         setStaffLoading(true);
