@@ -89,7 +89,8 @@ async function pollJobs(serverUrl) {
             }
         }
     } catch (e) {
-        if (e.name !== 'TimeoutError' && e.name !== 'AbortError' && e.code !== 'ECONNREFUSED') {
+        const silent = ['TimeoutError','AbortError','TypeError'];
+        if (!silent.includes(e.name) && e.code !== 'ECONNREFUSED' && e.code !== 'ENOTFOUND') {
             console.error('[POLL ❌]', e.message || String(e));
         }
     } finally {

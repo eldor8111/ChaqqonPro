@@ -273,17 +273,31 @@ function createMainWindow() {
     });
 
     // Qotib qolish yoki yuklay olmaslik
+    // Kichik uzilishlarda (Wi-Fi o'chib-yonish) darhol xato oyna emas — 6 sek kutib qayta urinadi
+    let _failRetryTimer = null;
     mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
-        if (isMainFrame) {
-            console.error(`[DID FAIL LOAD] ${errorDescription} (${errorCode}) at ${validatedURL}`);
-            loadFallbackErrorHtml(config.kioskUrl);
-        }
+        if (!isMainFrame) return;
+        // -3 = ABORTED (navigatsiya to'xtatildi) — buni e'tiborsiz qoldur
+        if (errorCode === -3) return;
+        console.warn(`[DID FAIL LOAD] ${errorDescription} (${errorCode}) — 6 sek kutib qayta urinadi...`);
+        if (_failRetryTimer) clearTimeout(_failRetryTimer);
+        _failRetryTimer = setTimeout(() => {
+            if (!mainWindow) return;
+            mainWindow.loadURL(config.kioskUrl).catch(() => loadFallbackErrorHtml(config.kioskUrl));
+        }, 6000);
     });
 
-    // Agar render process crash bo'lsa (Out of memory, fatal React xatosi, va h.k.)
+    // Agar render process haqiqatan crash bo'lsa (Out of memory, fatal xato)
     mainWindow.webContents.on('render-process-gone', (event, details) => {
+        if (details.reason === 'clean-exit') return; // normal yopilish — e'tiborga olma
         console.error('[CRASH] Renderer process o\'ldi:', details.reason);
-        loadFallbackErrorHtml(config.kioskUrl);
+        // 2 sek kutib qayta yuklashga urinib ko'ramiz
+        setTimeout(() => {
+            if (!mainWindow) return;
+            mainWindow.webContents.session.clearCache().then(() => {
+                mainWindow.loadURL(config.kioskUrl).catch(() => loadFallbackErrorHtml(config.kioskUrl));
+            });
+        }, 2000);
     });
 
     mainWindow.webContents.on('before-input-event', (event, input) => {

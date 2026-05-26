@@ -275,10 +275,10 @@ const isWeightUnit = (unit?: string) => {
     return u.includes('kg') || u.includes('gr') || u.includes('g') || u.includes('litr') || u.includes('l') || u.includes('кг') || u.includes('гр');
 };
 
-// ─── Menu cache (module-level, survives tab switches, 90-sec TTL) ────────────────
+// ─── Menu cache (module-level, survives tab switches, 30-min TTL) ────────────────
 let _menuCache: { items: MenuItem[]; cats: MenuCategory[]; cancelCode?: string; paymentMethods?: any[]; blockSell?: boolean } | null = null;
 let _menuCacheAt = 0;
-const MENU_CACHE_TTL = 15 * 1000; // 15 sekund — admin o'zgartirsa darhol aks etadi
+const MENU_CACHE_TTL = 30 * 60 * 1000; // 30 daqiqa — oflayn bo'lsa eski menyu ko'rinadi
 
 // ─── Menu Panel ─────────────────────────────────────────────────────────────────
 function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instantAdd, servicePct = 0, tableName = "Buyurtma" }: {
@@ -311,12 +311,17 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
         if (_menuCache && (now - _menuCacheAt) < MENU_CACHE_TTL) {
             setMenu(_menuCache.items); setCats_(_menuCache.cats); return;
         }
+        // Eski kesh bo'lsa ham darhol ko'rsatamiz (oflayn holatda menyu yo'qolmasin)
+        if (_menuCache) { setMenu(_menuCache.items); setCats_(_menuCache.cats); }
         fetch("/api/smart/menu").then(r => r.json()).then(d => {
             const items = d.items ?? []; const cats = d.categories ?? [];
             _menuCache = { items, cats, cancelCode: d.cancelCode || "", paymentMethods: d.paymentMethods || [], blockSell: !!d.blockSell };
             _menuCacheAt = Date.now();
             setMenu(items); setCats_(cats);
-        }).catch(() => {});
+        }).catch(() => {
+            // Internet yo'q — eski keshdan davom etamiz, menyu o'chib ketmaydi
+            if (_menuCache) { setMenu(_menuCache.items); setCats_(_menuCache.cats); }
+        });
     }, []);
     const [qtyPop, setQtyPop] = useState<{ item: MenuItem; qty: string } | null>(null);
     const [modPop, setModPop] = useState<{ item: MenuItem; selected: Record<string, { id: string, name: string }[]> } | null>(null);
@@ -1431,8 +1436,23 @@ export default function UbtPosPage() {
         }
     };
 
-    // ─── Table orders — DB-backed ─────────────────────────────────────────────
-    const [tableOrders, setTableOrders] = useState<Record<string, { item: any; qty: number; unit?: string; shotId?: number; printedQty?: number; isSaboy?: boolean; }[]>>({});
+    // ─── Table orders — DB-backed + localStorage fallback ────────────────────────
+    const [tableOrders, setTableOrdersRaw] = useState<Record<string, { item: any; qty: number; unit?: string; shotId?: number; printedQty?: number; isSaboy?: boolean; }[]>>(() => {
+        // Sahifa ochilganda localStorage dan yuklaydi — zakazlar yo'qolmaydi
+        try {
+            const saved = localStorage.getItem("ubt_pos_tableOrders");
+            if (saved) return JSON.parse(saved);
+        } catch {}
+        return {};
+    });
+    const setTableOrders = useCallback((val: any) => {
+        setTableOrdersRaw(prev => {
+            const next = typeof val === "function" ? val(prev) : val;
+            try { localStorage.setItem("ubt_pos_tableOrders", JSON.stringify(next)); } catch {}
+            return next;
+        });
+    }, []);
+
     // ─── Multi-Shot (Split Bill) state ────────────────────────────────────────
     const [tableShotMap, setTableShotMap] = useState<Record<string, TableShotState>>({});
 
@@ -1695,7 +1715,7 @@ export default function UbtPosPage() {
         return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
     }, []);
 
-    const logout = () => { store.kassirLogout(); router.replace("/kassa/login?lock=1"); };
+    const logout = () => { store.kassirLogout(); router.replace("/kassa/login"); };
 
     // Load available printers for printer picker
     const loadAvailablePrinters = async () => {
