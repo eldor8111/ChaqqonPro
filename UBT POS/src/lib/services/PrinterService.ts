@@ -93,6 +93,7 @@ export interface PrintJob {
     servicePercent?: number;
     tenantId?: string;
     isCancellation?: boolean;
+    isReprint?: boolean;
 }
 
 interface ReceiptOpts {
@@ -243,6 +244,14 @@ function buildClientBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
     parts.push(cmd.normal(), cmd.bold(false));
     parts.push(line(""));
 
+    if (job.isReprint) {
+        parts.push(cmd.align(1));
+        parts.push(cmd.bold(true));
+        parts.push(line("*** NUSXA ***"));
+        parts.push(cmd.bold(false));
+        parts.push(line(""));
+    }
+
     // ── Order meta ──────────────────────────────────────────────
     parts.push(cmd.align(0));
     parts.push(solid());
@@ -354,11 +363,15 @@ function printTcpOnce(ip: string, port: number, data: Buffer): Promise<void> {
             if (settled) return;
             settled = true;
             socket.destroy();
-            if (err) reject(err);
-            else resolve();
+            if (err) {
+                const extendedMsg = `LAN Printer Error (${ip}:${port}) - ${err.message}. (Printer o'chiq, IP xato, yoki tarmoq/firewall bloklagan bo'lishi mumkin)`;
+                reject(new Error(extendedMsg));
+            } else {
+                resolve();
+            }
         };
         const timer = setTimeout(() => {
-            done(new Error(`Timeout: ${ip}:${port}`));
+            done(new Error(`Timeout`));
         }, 5000);
         socket.on("error", (err) => done(err));
         socket.connect(port, ip, () => {

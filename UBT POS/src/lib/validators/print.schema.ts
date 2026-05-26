@@ -28,6 +28,7 @@ export const PrintJobSchema = z.object({
     servicePercent: z.number().min(0).max(100).optional(),
     tenantId:       z.string().optional(),
     isCancellation: z.boolean().optional(),
+    isReprint:      z.boolean().optional(),
 });
 
 export type PrintJobDTO = z.infer<typeof PrintJobSchema>;

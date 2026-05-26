@@ -1916,7 +1916,7 @@ export default function UbtPosPage() {
         }
     };
 
-    const handlePrintClientReceiptHelper = async (cart: any[], tableName: string) => {
+    const handlePrintClientReceiptHelper = async (cart: any[], tableName: string, orderNumOverride?: string | number) => {
         if (cart.length === 0) { alert("Chek bo'sh — avval taom qo'shing"); return; }
         let ip = store.kassirSession?.printerIp || store.deviceSession?.printerIp || "";
         if (!ip) {
@@ -1933,7 +1933,7 @@ export default function UbtPosPage() {
         const total = cart.reduce((s, c) => s + c.item.price * c.qty, 0);
         fetch("/api/smart/print", {
             method: "POST", headers: { "Content-Type": "application/json", ...(store.kassirSession?.token || store.deviceSession?.token ? { "Authorization": `Bearer ${store.kassirSession?.token || store.deviceSession?.token}` } : {}) },
-            body: JSON.stringify({ printerIp: ip, port: 9100, receiptType: "client", tableName, time: timeStr, items: cart.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })), total, waiterName: store.kassirSession?.name || "", orderNum: Math.floor(Math.random() * 9000) + 1000 })
+            body: JSON.stringify({ printerIp: ip, port: 9100, receiptType: "client", tableName, time: timeStr, items: cart.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })), total, waiterName: store.kassirSession?.name || "", orderNum: orderNumOverride || (Math.floor(Math.random() * 9000) + 1000), isReprint: !!orderNumOverride })
         }).catch(() => {});
     };
 
@@ -3735,6 +3735,7 @@ export default function UbtPosPage() {
                                                 <th className="py-2 px-3">Stol</th>
                                                 <th className="py-2 px-3">Summa</th>
                                                 <th className="py-2 px-3">Tolov turi</th>
+                                                <th className="py-2 px-3 text-center">Harakatlar</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -3746,6 +3747,24 @@ export default function UbtPosPage() {
                                                     <td className="py-2 px-3 font-bold">{fmt(t.totalAmount)}</td>
                                                     <td className="py-2 px-3">
                                                         <span className={`px-2 py-0.5 rounded text-xs ${t.paymentMethod === "Naqd pul" ? "bg-emerald-500/20 text-emerald-600" : "bg-purple-500/20 text-purple-600"}`}>{t.paymentMethod}</span>
+                                                    </td>
+                                                    <td className="py-2 px-3 text-center">
+                                                        <button 
+                                                            onClick={() => {
+                                                                const printItems = t.items && t.items.length > 0 ? t.items.map((i: any) => ({
+                                                                    item: { id: i.menuItemId || i.id, name: i.name, price: Number(i.price) },
+                                                                    qty: Number(i.qty)
+                                                                })) : [];
+                                                                if (printItems.length === 0) {
+                                                                    alert("Bu tranzaksiyada taomlar ro'yxati saqlanmagan");
+                                                                    return;
+                                                                }
+                                                                handlePrintClientReceiptHelper(printItems, t.tableLabel || "Olib ketish", t.receiptNumber);
+                                                            }}
+                                                            title="Qayta chop etish"
+                                                            className={`p-1.5 rounded-lg transition-colors ${dark ? "bg-slate-800 text-sky-400 hover:bg-slate-700" : "bg-sky-50 text-sky-600 hover:bg-sky-100"}`}>
+                                                            <Receipt size={16} />
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             ))}
