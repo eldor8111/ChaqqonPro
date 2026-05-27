@@ -597,7 +597,6 @@ export const useStore = create<AppState>()(
                     if (res.status === 401) {
                         // Token muddati tugagan yoki yaroqsiz
                         state.kassirLogout();
-                        state.deviceLogout();
                         return;
                     }
                     if (res.ok) {
