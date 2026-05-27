@@ -53,33 +53,25 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Normalize input: strip all non-digits, take last 9 chars
-        const inputDigits = username.replace(/\D/g, "").slice(-9);
+        const rawUsername = username.trim();
+        const searchLower = rawUsername.toLowerCase();
+        const inputDigits = rawUsername.replace(/\D/g, "").slice(-9);
 
-        // Find active staff by username OR phone OR name
-        const staffByUsername = await prisma.staff.findMany({
-            where: { username, status: "active" },
+        // Fetch all active staff to do robust case-insensitive searching in memory
+        // Since a tenant typically has < 100 staff, this is fast enough.
+        const allActiveStaff = await prisma.staff.findMany({
+            where: { status: "active" },
         });
 
-        // Search by phone (last 9 digits match)
-        const staffByPhone: typeof staffByUsername = [];
-        if (staffByUsername.length === 0 && inputDigits.length >= 7) {
-            const allActive = await prisma.staff.findMany({ where: { status: "active" } });
-            for (const s of allActive) {
-                if (s.phone && s.phone.replace(/\D/g, "").slice(-9) === inputDigits) {
-                    staffByPhone.push(s);
-                }
+        const staffList = allActiveStaff.filter(s => {
+            if (s.username.toLowerCase().trim() === searchLower) return true;
+            if (s.name.toLowerCase().trim() === searchLower) return true;
+            if (inputDigits.length >= 7 && s.phone) {
+                const phoneDigits = s.phone.replace(/\D/g, "").slice(-9);
+                if (phoneDigits === inputDigits) return true;
             }
-        }
-
-        // Also try searching by name
-        const staffByName = staffByUsername.length === 0 && staffByPhone.length === 0
-            ? await prisma.staff.findMany({
-                where: { status: "active", name: { contains: username } },
-            }).then(all => all.filter(s => s.name.toLowerCase() === username.toLowerCase()))
-            : [];
-
-        const staffList = [...staffByUsername, ...staffByPhone, ...staffByName];
+            return false;
+        });
 
         if (staffList.length === 0) {
             return NextResponse.json({ success: false, error: "Foydalanuvchi topilmadi. Login: @username yoki qurilma nomi bilan kiring" }, { status: 401 });
