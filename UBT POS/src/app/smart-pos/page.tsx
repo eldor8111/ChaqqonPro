@@ -1664,32 +1664,9 @@ export default function UbtPosPage() {
 
     const playBeep = useCallback(() => {
         try {
-            const ctx = getAudioCtx();
-            if (!ctx) return;
-            if (ctx.state === "suspended") ctx.resume().catch(() => {});
-
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.type = "sine";
-            osc.frequency.setValueAtTime(880, ctx.currentTime);
-            gain.gain.setValueAtTime(0.1, ctx.currentTime);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.2);
-            
-            setTimeout(() => {
-                const osc2 = ctx.createOscillator();
-                const gain2 = ctx.createGain();
-                osc2.connect(gain2);
-                gain2.connect(ctx.destination);
-                osc2.type = "sine";
-                osc2.frequency.setValueAtTime(1046.50, ctx.currentTime);
-                gain2.gain.setValueAtTime(0.1, ctx.currentTime);
-                osc2.start();
-                osc2.stop(ctx.currentTime + 0.3);
-            }, 250);
-        } catch(e) {}
+            const audio = new Audio("/notification.mp3");
+            audio.play().catch(() => {});
+        } catch (e) {}
     }, []);
 
     const fetchTwAndDlOrders = useCallback(async () => {
