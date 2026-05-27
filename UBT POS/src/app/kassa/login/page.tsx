@@ -220,10 +220,6 @@ export default function KassirLoginPage() {
                                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
                                 {loading ? <Loader2 size={20} className="animate-spin mx-auto" /> : "Apparatni Ulash"}
                             </button>
-                            <button type="button" onClick={() => router.push("/")}
-                                className="w-full py-2 text-sm font-medium text-white/30 hover:text-white/60 transition-colors">
-                                Admin panelga qaytish
-                            </button>
                         </form>
                     </div>
                 </div>
