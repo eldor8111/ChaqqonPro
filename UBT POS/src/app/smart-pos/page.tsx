@@ -1664,9 +1664,10 @@ export default function UbtPosPage() {
 
     const playBeep = useCallback(() => {
         try {
-            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-            if (!AudioContext) return;
-            const ctx = new AudioContext();
+            const ctx = getAudioCtx();
+            if (!ctx) return;
+            if (ctx.state === "suspended") ctx.resume().catch(() => {});
+
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.connect(gain);
