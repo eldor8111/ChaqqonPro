@@ -34,17 +34,15 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
     ...props
 }) => {
 
-    const getInitialState = () => {
-        let code = defaultCountryCode;
-        let local = value || '';
-
-        if (value) {
-            // Check matching codes, longest first to avoid substring matching issues
+    const parsePhone = (val: string, fallbackCode: string) => {
+        let code = fallbackCode;
+        let local = val || '';
+        if (val) {
             const sortedCodes = [...COUNTRY_CODES].sort((a, b) => b.code.length - a.code.length);
             for (const c of sortedCodes) {
-                if (value.startsWith(c.code)) {
+                if (val.startsWith(c.code)) {
                     code = c.code;
-                    local = value.slice(c.code.length).trim();
+                    local = val.slice(c.code.length).trimStart();
                     break;
                 }
             }
@@ -52,13 +50,13 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         return { code, local };
     };
 
-    const [{ code, local }, setState] = useState(getInitialState());
+    const [state, setState] = useState(() => parsePhone(value, defaultCountryCode));
+    const { code, local } = state;
 
+    // Tashqaridan kelgan value o'zgarganda ichki holatni yangilaymiz (tahrirlash modali uchun)
     useEffect(() => {
-        const { code: newCode, local: newLocal } = getInitialState();
-        if (newCode !== code || newLocal !== local) {
-            setState({ code: newCode, local: newLocal });
-        }
+        const parsed = parsePhone(value, defaultCountryCode);
+        setState(parsed);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value, defaultCountryCode]);
 
