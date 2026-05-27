@@ -1450,10 +1450,10 @@ export default function SettingsPage() {
                                             <Printer size={28} className="text-slate-400" />
                                         </div>
                                         <div className="flex-1">
-                                            <h3 className="text-base font-bold text-slate-300">Lokal Printer Agenti (ZIP)</h3>
-                                            <p className="text-xs text-slate-500 font-medium mb-2">v1.0.1 | Windows / Linux / Mac</p>
+                                            <h3 className="text-base font-bold text-slate-300">Lokal Printer Agenti</h3>
+                                            <p className="text-xs text-slate-500 font-medium mb-2">v1.0.1 | Windows 10/11 · x64</p>
                                             <p className="text-sm text-slate-500">
-                                                To'g'ridan-to'g'ri bulutli (Cloud) tizim orqali lokal tarmoqdagi printerlarga chek chiqarish uchun Node.js yordamchisi.
+                                                Node.js o'rnatmasdan ishlaydi! Yuklab oling va ikki marta bosib ishga tushiring — shunchaki.
                                             </p>
                                         </div>
                                     </div>
@@ -1462,11 +1462,11 @@ export default function SettingsPage() {
                                             <Shield size={13} /> Orqa fonda ishlaydi
                                         </span>
                                         <a 
-                                            href="/downloads/smart-agent.zip" 
+                                            href="/downloads/ChaqqonPro-Agent.exe" 
                                             download
                                             className="flex items-center gap-2 text-sm font-semibold text-slate-400 border border-slate-600 px-4 py-2 rounded-xl hover:border-slate-500 hover:text-slate-200 transition-all"
                                         >
-                                            <DownloadCloud size={15} /> Yuklab olish (.zip)
+                                            <DownloadCloud size={15} /> Yuklab olish (.exe)
                                         </a>
                                     </div>
                                 </div>
