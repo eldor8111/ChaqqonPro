@@ -65,7 +65,18 @@ export default function MobileInventoryPage() {
 
     useEffect(() => {
         setMounted(true);
-        if (!store.kassirSession) { router.replace("/"); return; }
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
+        if (!store.kassirSession) { 
+            const checkAuth = setTimeout(() => {
+                if (!useStore.getState().kassirSession) {
+                    router.replace("/"); 
+                }
+            }, 100);
+            return () => clearTimeout(checkAuth);
+        }
         fetchProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [store.kassirSession, router]);

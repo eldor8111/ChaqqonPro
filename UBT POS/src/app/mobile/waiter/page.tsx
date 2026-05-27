@@ -68,8 +68,19 @@ export default function MobileWaiterPage() {
 
     useEffect(() => {
         setMounted(true);
-        if (!store.kassirSession) { router.replace("/"); return; }
-        
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
+        if (!store.kassirSession) { 
+            const checkAuth = setTimeout(() => {
+                if (!useStore.getState().kassirSession) {
+                    router.replace("/"); 
+                }
+            }, 100);
+            return () => clearTimeout(checkAuth);
+        }
+                
         try {
             const sm = localStorage.getItem("mob_waiter_menu");
             if (sm) { const {m, c} = JSON.parse(sm); setMenu(m); setCats(c); }

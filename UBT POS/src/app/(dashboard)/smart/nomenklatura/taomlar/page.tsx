@@ -207,7 +207,8 @@ export default function TaomlarPage() {
                     inStock: formData.inStock ?? true,
                     hasBarcode: formData.hasBarcode ?? false,
                     autoCalculate: formData.autoCalculate ?? true,
-                    modifiers: formData.modifiers || []
+                    modifiers: formData.modifiers || [],
+                    recipes: formData.recipes || []
                 }),
             });
             if (!res.ok) {

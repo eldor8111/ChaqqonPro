@@ -63,7 +63,18 @@ export default function MobileCourierPage() {
 
     useEffect(() => {
         setMounted(true);
-        if (!store.kassirSession) { router.replace("/"); return; }
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
+        if (!store.kassirSession) { 
+            const checkAuth = setTimeout(() => {
+                if (!useStore.getState().kassirSession) {
+                    router.replace("/"); 
+                }
+            }, 100);
+            return () => clearTimeout(checkAuth);
+        }
         fetchOrders();
         const ti = setInterval(fetchOrders, 15000);
         return () => clearInterval(ti);

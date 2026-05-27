@@ -33,6 +33,7 @@ const _ensurePrinterIpColumn = (async () => {
     try { await prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN inStock INTEGER DEFAULT 1`); } catch {}
     try { await prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN hasBarcode INTEGER DEFAULT 0`); } catch {}
     try { await prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN autoCalculate INTEGER DEFAULT 1`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN recipes TEXT`); } catch {}
 })();
 
 
@@ -154,7 +155,7 @@ export async function GET(request: NextRequest) {
                     COALESCE(warehouse, '') as warehouse,
                     CASE WHEN image IS NOT NULL THEN image ELSE NULL END as image,
                     CASE WHEN printerIp IS NOT NULL THEN printerIp ELSE NULL END as printerIp,
-                    isSetMenu, modifiers,
+                    isSetMenu, modifiers, recipes,
                     COALESCE(inStock, 1) as inStock,
                     COALESCE(hasBarcode, 0) as hasBarcode,
                     COALESCE(autoCalculate, 1) as autoCalculate
@@ -208,6 +209,7 @@ export async function GET(request: NextRequest) {
             printerIp: p.printerIp ?? null,
             isSetMenu: Number(p.isSetMenu) !== 0,
             modifiers: (() => { try { return p.modifiers ? JSON.parse(p.modifiers) : []; } catch { return []; } })(),
+            recipes: (() => { try { return p.recipes ? JSON.parse(p.recipes) : []; } catch { return []; } })(),
         }));
 
         // ?all=1 bo'lsa — kirim sahifasi uchun barcha productlarni qaytarish
@@ -231,7 +233,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { id, name, category, sellingPrice, costPrice, type, warehouse, stock, unit, image, printerIp, isSetMenu, modifiers, inStock, hasBarcode, autoCalculate } = body;
+        const { id, name, category, sellingPrice, costPrice, type, warehouse, stock, unit, image, printerIp, isSetMenu, modifiers, recipes, inStock, hasBarcode, autoCalculate } = body;
 
         if (!name) return NextResponse.json({ error: "Nomi kiritilishi shart" }, { status: 400 });
 
@@ -249,6 +251,7 @@ export async function POST(request: NextRequest) {
         const typeVal = (type === "mahsulot" ? "mahsulot" : "taom");
         const warehouseVal = warehouse || null;
         const modifiersVal = modifiers && Array.isArray(modifiers) && modifiers.length > 0 ? JSON.stringify(modifiers) : null;
+        const recipesVal = recipes && Array.isArray(recipes) && recipes.length > 0 ? JSON.stringify(recipes) : null;
 
         await _ensurePrinterIpColumn;
 
@@ -269,16 +272,16 @@ export async function POST(request: NextRequest) {
             }
 
             await prisma.$executeRawUnsafe(
-                `UPDATE Product SET name=?, category=?, sellingPrice=?, costPrice=?, type=?, warehouse=?, stock=?, unit=?, image=?, printerIp=?, isSetMenu=?, modifiers=?, inStock=?, hasBarcode=?, autoCalculate=? WHERE id=? AND tenantId=?`,
-                name, catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, inStockVal, hasBarcodeVal, autoCalculateVal, targetId, tenantId
+                `UPDATE Product SET name=?, category=?, sellingPrice=?, costPrice=?, type=?, warehouse=?, stock=?, unit=?, image=?, printerIp=?, isSetMenu=?, modifiers=?, recipes=?, inStock=?, hasBarcode=?, autoCalculate=? WHERE id=? AND tenantId=?`,
+                name, catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, recipesVal, inStockVal, hasBarcodeVal, autoCalculateVal, targetId, tenantId
             );
             return NextResponse.json({ success: true, action: "updated", id: targetId });
         } else {
             const newId = `prod_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
             await prisma.$executeRawUnsafe(
-                `INSERT INTO Product (id, tenantId, name, category, sellingPrice, costPrice, type, warehouse, stock, minStock, unit, image, printerIp, isSetMenu, modifiers, inStock, hasBarcode, autoCalculate, createdAt)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 10, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
-                newId, tenantId, name, catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, inStockVal, hasBarcodeVal, autoCalculateVal
+                `INSERT INTO Product (id, tenantId, name, category, sellingPrice, costPrice, type, warehouse, stock, minStock, unit, image, printerIp, isSetMenu, modifiers, recipes, inStock, hasBarcode, autoCalculate, createdAt)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 10, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+                newId, tenantId, name, catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, recipesVal, inStockVal, hasBarcodeVal, autoCalculateVal
             );
             return NextResponse.json({ success: true, action: "created", id: newId }, { status: 201 });
         }

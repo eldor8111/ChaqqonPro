@@ -124,18 +124,20 @@ export async function POST(request: NextRequest) {
 
             // 🔴 KALKULYATSIYA — Find product and its recipes, then deduct stock
             try {
-                const product = await prisma.product.findFirst({
-                    where: { tenantId, name: item.name },
-                });
+                const products: any[] = await prisma.$queryRawUnsafe(
+                    `SELECT id, name, stock, unit, recipes, autoCalculate FROM Product WHERE tenantId=? AND name=? LIMIT 1`,
+                    tenantId, item.name
+                );
+                const product = products[0] ?? null;
 
                 if (product) {
                     // Deduct the product's own stock if it's a trackable item (mahsulot)
                     if (product.stock > 0) {
                         const newStock = Math.max(0, product.stock - item.qty);
-                        await prisma.product.update({
-                            where: { id: product.id },
-                            data: { stock: newStock },
-                        });
+                        await prisma.$executeRawUnsafe(
+                            `UPDATE Product SET stock=? WHERE id=? AND tenantId=?`,
+                            newStock, product.id, tenantId
+                        );
 
                         // Log as expenditure
                         await prisma.inventoryExpenditure.create({
@@ -152,6 +154,51 @@ export async function POST(request: NextRequest) {
                                 notes: `Sotuv (${tableLabel || "Kassa"}): ${transaction.id.slice(-6)}`,
                             },
                         });
+                    }
+
+                    // 🟢 RETSEPT KALKULYATSIYASI — Xomashyo zaxirasini kamaytirish
+                    const autoCalc = Number(product.autoCalculate) !== 0;
+                    if (autoCalc && product.recipes) {
+                        let parsedRecipes: { xomashyoId: string; amount: number }[] = [];
+                        try { parsedRecipes = JSON.parse(product.recipes); } catch {}
+
+                        for (const recipe of parsedRecipes) {
+                            if (!recipe.xomashyoId || !recipe.amount) continue;
+                            const totalDeduct = recipe.amount * item.qty;
+                            try {
+                                // Mavjud zaxirani tekshirish
+                                const ingRows: any[] = await prisma.$queryRawUnsafe(
+                                    `SELECT id, stock, unit, name FROM UbtIngredient WHERE id=? AND tenantId=? LIMIT 1`,
+                                    recipe.xomashyoId, tenantId
+                                );
+                                if (ingRows.length > 0) {
+                                    const ing = ingRows[0];
+                                    const newIngStock = Math.max(0, Number(ing.stock) - totalDeduct);
+                                    await prisma.$executeRawUnsafe(
+                                        `UPDATE UbtIngredient SET stock=? WHERE id=? AND tenantId=?`,
+                                        newIngStock, ing.id, tenantId
+                                    );
+
+                                    // Xomashyo ishlatilganligi haqida hisobot (Chiqim)
+                                    await prisma.inventoryExpenditure.create({
+                                        data: {
+                                            tenantId,
+                                            date: new Date(),
+                                            productId: null, // Xomashyo uchun null qo'yamiz (InventoryExpenditure Product ga bog'langan)
+                                            productName: ing.name,
+                                            quantity: totalDeduct,
+                                            unit: ing.unit || "kg",
+                                            reason: "sale",
+                                            fromWarehouse: "Oshxona Ombori", // Odatda taomlar oshxonadan chiqadi
+                                            employee: waiterName || "POS",
+                                            notes: `Retsept bo'yicha: ${product.name} (Sotuv: ${transaction.id.slice(-6)})`,
+                                        },
+                                    });
+                                }
+                            } catch (ingErr) {
+                                console.error("[Retsept] Ingredient stock deduction error:", ingErr);
+                            }
+                        }
                     }
                 }
             } catch (ingredientErr) {
