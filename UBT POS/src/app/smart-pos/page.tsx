@@ -1660,30 +1660,59 @@ export default function UbtPosPage() {
         }
     };
 
+    const prevCountRef = useRef({ dl: 0, tables: 0 });
+
+    const playBeep = useCallback(() => {
+        try {
+            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.2);
+            
+            setTimeout(() => {
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.type = "sine";
+                osc2.frequency.setValueAtTime(1046.50, ctx.currentTime);
+                gain2.gain.setValueAtTime(0.1, ctx.currentTime);
+                osc2.start();
+                osc2.stop(ctx.currentTime + 0.3);
+            }, 250);
+        } catch(e) {}
+    }, []);
+
     const fetchTwAndDlOrders = useCallback(async () => {
         const token = store.kassirSession?.token || store.deviceSession?.token;
         const hdrs: Record<string, string> = { "Content-Type": "application/json" };
         if (token) hdrs["Authorization"] = `Bearer ${token}`;
 
-        // Takeaway orders are managed entirely in local session state.
-        // The DB stores completed Transactions, not pending orders — so we skip
-        // the DB fetch for takeaway to avoid overwriting locally-added pending orders.
-
         try {
             const resDl = await fetch("/api/smart/yetkazish", { headers: hdrs });
             if (resDl.ok) {
                 const data = await resDl.json();
-                // Normalize DB delivery items: DB stores [{name,qty,price}], display expects [{item,qty}]
                 const normalizeItems = (raw: any[]): any[] => raw.map((it: any) =>
                     it?.item ? it : {
                         item: { id: it.name || "", name: it.name || "", price: Number(it.price) || 0, categoryId: "", inStock: true },
                         qty: Number(it.qty ?? it.quantity ?? 1),
                     }
                 );
-                // Faqat faol (yetkazilmagan) orderlarni ko'rsatish — delivered/cancelled skip
                 const activeOrders = Array.isArray(data.orders)
                     ? data.orders.filter((o: any) => o.status !== "delivered" && o.status !== "cancelled")
                     : [];
+
+                if (activeOrders.length > prevCountRef.current.dl) playBeep();
+                prevCountRef.current.dl = activeOrders.length;
+
                 setDlOrders(activeOrders.map((o: any, i: number) => ({
                     id: o.id || i + 1,
                     num: o.num || i + 1,
@@ -1697,15 +1726,44 @@ export default function UbtPosPage() {
                 })));
             }
         } catch {}
-    }, [store.kassirSession, store.deviceSession]);
+    }, [store.kassirSession, store.deviceSession, playBeep]);
+
+    useEffect(() => {
+        const busyTables = store.smartTables.filter(t => t.orderId).length;
+        if (busyTables > prevCountRef.current.tables) playBeep();
+        prevCountRef.current.tables = busyTables;
+    }, [store.smartTables, playBeep]);
 
     useEffect(() => {
         store.fetchSmartTables();
         fetchPrinterStatus();
         fetchTwAndDlOrders();
-        const ti = setInterval(() => { store.fetchSmartTables(); fetchTwAndDlOrders(); }, 60000);
+        
+        // Fast polling for orders (5 seconds)
+        const ti = setInterval(() => { store.fetchSmartTables(); fetchTwAndDlOrders(); }, 5000);
+        
+        // Slow polling for printer status (60 seconds)
         const pi = setInterval(() => fetchPrinterStatus(), 60000);
-        return () => { clearInterval(ti); clearInterval(pi); };
+        
+        // Session validation polling
+        const si = setInterval(async () => {
+            const sess = useStore.getState().kassirSession;
+            if (sess?.id && sess?.sessionToken) {
+                try {
+                    const res = await fetch("/api/auth/staff-check", {
+                        method: "POST",
+                        body: JSON.stringify({ staffId: sess.id, sessionToken: sess.sessionToken })
+                    });
+                    const d = await res.json();
+                    if (d.valid === false) {
+                        useStore.getState().setKassirSession(null);
+                        window.location.href = "/kassa/login?lock=1";
+                    }
+                } catch {}
+            }
+        }, 5000);
+
+        return () => { clearInterval(ti); clearInterval(pi); clearInterval(si); };
     }, [store, fetchTwAndDlOrders]);
 
     // Fullscreen state listener

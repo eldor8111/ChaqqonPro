@@ -65,7 +65,18 @@ export async function POST(request: NextRequest) {
         try { const p = staff.phone ? JSON.parse(staff.phone) : {}; printerIp = p.printerIp || ""; } catch {}
 
         let serviceFeePct = 10;
-        try { const meta = staff.staffMeta ? JSON.parse(staff.staffMeta) : {}; if (meta.serviceFeePct !== undefined) serviceFeePct = meta.serviceFeePct; } catch {}
+        let meta = {};
+        try { meta = staff.staffMeta ? JSON.parse(staff.staffMeta) : {}; if (meta.serviceFeePct !== undefined) serviceFeePct = meta.serviceFeePct; } catch {}
+
+        let sessionToken = undefined;
+        if (staff.role === "Manablog") {
+            sessionToken = require("crypto").randomBytes(16).toString("hex");
+            meta.sessionToken = sessionToken;
+            await prisma.staff.update({
+                where: { id: staff.id },
+                data: { staffMeta: JSON.stringify(meta) }
+            });
+        }
 
         const safeStaff = {
             id: staff.id,
@@ -76,6 +87,7 @@ export async function POST(request: NextRequest) {
             permissions: staff.permissions ? JSON.parse(staff.permissions) : [],
             printerIp,
             serviceFeePct,
+            sessionToken,
         };
 
         return NextResponse.json({
