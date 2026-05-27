@@ -244,9 +244,18 @@ export default function MobileWaiterPage() {
                             <ChevronLeft size={18} />
                         </button>
                     )}
-                    <div>
-                        <h1 className="text-base font-black text-slate-800 leading-tight">{title}</h1>
-                        {sub && <p className="text-[11px] font-semibold text-blue-600 uppercase tracking-widest">{sub}</p>}
+                    <div className="flex items-center gap-2">
+                        <div>
+                            <h1 className="text-base font-black text-slate-800 leading-tight flex items-center gap-2">
+                                {title}
+                                {!onBack && (
+                                    <button onClick={() => window.location.reload()} className="p-1 rounded-full bg-blue-50 text-blue-500 active:scale-95 transition-all">
+                                        <RefreshCw size={14} />
+                                    </button>
+                                )}
+                            </h1>
+                            {sub && <p className="text-[11px] font-semibold text-blue-600 uppercase tracking-widest">{sub}</p>}
+                        </div>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
