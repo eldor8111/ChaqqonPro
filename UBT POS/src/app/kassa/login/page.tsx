@@ -38,6 +38,7 @@ export default function KassirLoginPage() {
     const [pin, setPin] = useState("");
     const [pinError, setPinError] = useState("");
     const [pinLoading, setPinLoading] = useState(false);
+    const [forceConfirm, setForceConfirm] = useState(false);
 
     // Redirect if already logged in
     useEffect(() => {
@@ -98,15 +99,15 @@ export default function KassirLoginPage() {
     };
 
     // Staff PIN submit
-    const handlePinSubmit = async (e?: FormEvent) => {
+    const handlePinSubmit = async (e?: FormEvent, force = false) => {
         if (e) e.preventDefault();
         if (!selectedStaff || !pin.trim()) return;
-        setPinLoading(true); setPinError("");
+        setPinLoading(true); setPinError(""); setForceConfirm(false);
         try {
             const res = await fetch("/api/auth/staff-pin", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ staffId: selectedStaff.id, password: pin }),
+                body: JSON.stringify({ staffId: selectedStaff.id, password: pin, forceLogout: force }),
             });
             const data = await res.json();
             if (data.success && data.staff) {
@@ -116,6 +117,10 @@ export default function KassirLoginPage() {
                 } else {
                     router.push("/smart-pos");
                 }
+            } else if (data.requireForce) {
+                setForceConfirm(true);
+                setPinLoading(false);
+                return;
             } else { setPinError(data.error || "Parol noto'g'ri"); setPin(""); }
         } catch { setPinError("Tarmoq xatosi"); }
         finally { setPinLoading(false); }
@@ -352,12 +357,37 @@ export default function KassirLoginPage() {
                                     <h2 className="text-xl font-black text-white">{selectedStaff.name}</h2>
                                     <p className="text-white/40 text-sm">{selectedStaff.role}</p>
                                 </div>
-                                {pinError && (
+                                {pinError && !forceConfirm && (
                                     <div className="mb-4 px-4 py-2.5 rounded-xl text-center text-sm font-semibold text-red-300"
                                         style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)" }}>
                                         {pinError}
                                     </div>
                                 )}
+                                {forceConfirm ? (
+                                    <div className="flex flex-col gap-4 py-2">
+                                        <div className="px-4 py-4 rounded-2xl text-center"
+                                            style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.35)" }}>
+                                            <div className="text-amber-400 text-3xl mb-2">⚠️</div>
+                                            <p className="text-amber-300 font-bold text-base mb-1">Boshqa kompyuterda ishlayapti!</p>
+                                            <p className="text-white/60 text-sm leading-relaxed">
+                                                Ushbu manablog hozir boshqa kompyuterda ochiq. Rostdan ham undan chiqib ketib, bu yerda kirishni xohlaysizmi?
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => handlePinSubmit(undefined, true)}
+                                            disabled={pinLoading}
+                                            className="w-full py-3.5 rounded-xl font-black text-base tracking-wide transition-all active:scale-[0.97]"
+                                            style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)", color: "#000" }}>
+                                            {pinLoading ? "Kirilmoqda..." : "✓ Ha, undan chiqib, bu yerda kiraman"}
+                                        </button>
+                                        <button
+                                            onClick={() => { setForceConfirm(false); setPin(""); }}
+                                            className="w-full py-3 rounded-xl font-semibold text-sm text-white/50 hover:text-white/80 transition-all"
+                                            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                                            ✗ Yo'q, bekor qilish
+                                        </button>
+                                    </div>
+                                ) : (
                                 <form onSubmit={handlePinSubmit}>
                                     <div className="relative mb-5">
                                         <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
@@ -405,6 +435,7 @@ export default function KassirLoginPage() {
                                         {pinLoading ? <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <>Kirish <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" /></>}
                                     </button>
                                 </form>
+                                )}
                             </div>
                         </div>
                     </div>

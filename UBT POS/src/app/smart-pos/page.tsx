@@ -1729,7 +1729,7 @@ export default function UbtPosPage() {
     }, [store.kassirSession, store.deviceSession, playBeep]);
 
     useEffect(() => {
-        const busyTables = store.smartTables.filter(t => t.orderId).length;
+        const busyTables = store.smartTables.filter(t => t.order).length;
         if (busyTables > prevCountRef.current.tables) playBeep();
         prevCountRef.current.tables = busyTables;
     }, [store.smartTables, playBeep]);

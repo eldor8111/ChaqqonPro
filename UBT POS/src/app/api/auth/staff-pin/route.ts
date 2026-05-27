@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
         }
 
-        const { staffId, password } = await request.json();
+        const { staffId, password, forceLogout } = await request.json();
 
         if (!staffId || !password) {
             return NextResponse.json(
@@ -70,6 +70,13 @@ export async function POST(request: NextRequest) {
 
         let sessionToken = undefined;
         if (staff.role === "Manablog") {
+            if (meta.sessionToken && !forceLogout) {
+                return NextResponse.json({
+                    success: false,
+                    requireForce: true,
+                    error: "Ushbu manablog boshqa kompyuterda ishlayapti. Rostdan ham undan chiqib ketib, bu yerda kirishni xohlaysizmi?"
+                });
+            }
             sessionToken = require("crypto").randomBytes(16).toString("hex");
             meta.sessionToken = sessionToken;
             await prisma.staff.update({

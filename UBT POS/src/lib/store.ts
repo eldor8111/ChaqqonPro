@@ -295,7 +295,7 @@ export interface AppState {
     } | null;
 
     // Kassir / Ofitsiant sessiyasi
-    kassirSession: { id: string; name: string; branch: string; permissions: string[]; shopCode?: string; shopType?: string; token?: string; printerIp?: string; autoPrintReceipt?: boolean; serviceFeePct?: number } | null;
+    kassirSession: { id: string; name: string; branch: string; permissions: string[]; shopCode?: string; shopType?: string; token?: string; printerIp?: string; autoPrintReceipt?: boolean; serviceFeePct?: number; sessionToken?: string } | null;
 
     // Actions
     addTransaction: (tx: Transaction) => void;
