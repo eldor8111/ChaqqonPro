@@ -34,7 +34,7 @@ export default function MobileWaiterPage() {
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
     const [installPrompt, setInstallPrompt] = useState<any>(null);
 
-    const token = store.kassirSession?.token;
+    const token = store.kassirSession?.token || store.deviceSession?.token;
 
     useEffect(() => {
         const handler = (e: any) => { e.preventDefault(); setInstallPrompt(e); };
