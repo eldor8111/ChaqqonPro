@@ -241,7 +241,7 @@ export default function KassirLoginPage() {
         const StaffCard = ({ s }: { s: StaffMember }) => {
             const cfg = ROLE_CFG[s.role] ?? ROLE_CFG["Kassir"];
             return (
-                <button onClick={() => { setSelectedStaff(s); setPin(""); setPinError(""); }}
+                <button onClick={() => { setSelectedStaff(s); setPin(""); setPinError(""); setForceConfirm(false); }}
                     className="group flex flex-col items-center gap-3 p-5 rounded-2xl transition-all duration-200 active:scale-[0.97] hover:scale-[1.04] text-center"
                     style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(8px)" }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = cfg.bg; (e.currentTarget as HTMLElement).style.borderColor = cfg.border; }}
@@ -337,7 +337,7 @@ export default function KassirLoginPage() {
                         <div className="w-full max-w-[380px] mx-4 rounded-3xl overflow-hidden relative"
                             style={{ background: "rgba(10,20,35,0.95)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.12)" }}>
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-                            <button onClick={() => setSelectedStaff(null)}
+                            <button onClick={() => { setSelectedStaff(null); setForceConfirm(false); }}
                                 className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-white/40 hover:text-white/80 transition-all"
                                 style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
                                 <X size={16} />
