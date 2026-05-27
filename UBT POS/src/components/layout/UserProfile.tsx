@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-    ChevronUp, LogOut, Settings, Printer, Trash2, KeyRound, CheckCircle2, AlertCircle, X, Lock, Eye, EyeOff, Check, ShieldAlert, AlertTriangle
+    ChevronUp, LogOut, Settings, Printer, Trash2, KeyRound, CheckCircle2, AlertCircle, X, Lock, Eye, EyeOff, Check, ShieldAlert, AlertTriangle, Download
 } from "lucide-react";
 import { useFrontendStore } from "@/lib/frontend/store";
 import clsx from "clsx";

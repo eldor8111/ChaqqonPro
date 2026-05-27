@@ -1444,19 +1444,16 @@ export default function SettingsPage() {
                             {/* Other apps grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Legacy SMART Agent Card */}
-                                <div className="glass-card p-5 relative overflow-hidden group opacity-80">
-                                    <div className="absolute top-0 right-0 p-3">
-                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-700 text-slate-400">Eski versiya</span>
-                                    </div>
+                                <div className="glass-card p-5 relative overflow-hidden group">
                                     <div className="flex items-start gap-4">
                                         <div className="w-14 h-14 rounded-2xl bg-slate-700 flex items-center justify-center shadow-lg">
                                             <Printer size={28} className="text-slate-400" />
                                         </div>
                                         <div className="flex-1">
-                                            <h3 className="text-base font-bold text-slate-300">SMART Agent (Print Only)</h3>
-                                            <p className="text-xs text-slate-500 font-medium mb-2">v1.0.0 | Windows 10/11</p>
+                                            <h3 className="text-base font-bold text-slate-300">Lokal Printer Agenti (ZIP)</h3>
+                                            <p className="text-xs text-slate-500 font-medium mb-2">v1.0.1 | Windows / Linux / Mac</p>
                                             <p className="text-sm text-slate-500">
-                                                Faqat printer agent — brauzer orqali ishlashni davom ettirmoqchi bo'lsangiz shu dasturni o'rnating.
+                                                To'g'ridan-to'g'ri bulutli (Cloud) tizim orqali lokal tarmoqdagi printerlarga chek chiqarish uchun Node.js yordamchisi.
                                             </p>
                                         </div>
                                     </div>
@@ -1465,11 +1462,11 @@ export default function SettingsPage() {
                                             <Shield size={13} /> Orqa fonda ishlaydi
                                         </span>
                                         <a 
-                                            href="/downloads/SMART-Agent-Setup-1.0.0.exe" 
+                                            href="/downloads/smart-agent.zip" 
                                             download
                                             className="flex items-center gap-2 text-sm font-semibold text-slate-400 border border-slate-600 px-4 py-2 rounded-xl hover:border-slate-500 hover:text-slate-200 transition-all"
                                         >
-                                            <DownloadCloud size={15} /> Yuklab olish
+                                            <DownloadCloud size={15} /> Yuklab olish (.zip)
                                         </a>
                                     </div>
                                 </div>
