@@ -96,7 +96,20 @@ export default function MobileWaiterPage() {
         store.fetchSmartTables();
         fetchMenu();
         const ti = setInterval(() => store.fetchSmartTables(), 15000);
-        return () => clearInterval(ti);
+        
+        const handleFocus = () => store.fetchSmartTables();
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible") store.fetchSmartTables();
+        };
+        
+        window.addEventListener("focus", handleFocus);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        
+        return () => {
+            clearInterval(ti);
+            window.removeEventListener("focus", handleFocus);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [store.kassirSession, router]);
 
