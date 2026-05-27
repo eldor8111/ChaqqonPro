@@ -1039,6 +1039,27 @@ export default function UbtPosPage() {
     const [printerStatus, setPrinterStatus] = useState<{ id: string; name: string; online: boolean }[]>([]);
     const [tab, setTab] = useState<"tables" | "takeaway" | "delivery" | "reservation">("tables");
 
+    // ─── Audio notification (unlock on first touch/click) ─────────────────────
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const audio = new Audio("/notification.mp3");
+        audio.preload = "auto";
+        audio.volume = 1.0;
+        audioRef.current = audio;
+        const unlock = () => {
+            audio.play().then(() => { audio.pause(); audio.currentTime = 0; }).catch(() => {});
+            document.removeEventListener("click", unlock);
+            document.removeEventListener("touchstart", unlock);
+        };
+        document.addEventListener("click", unlock);
+        document.addEventListener("touchstart", unlock);
+        return () => {
+            document.removeEventListener("click", unlock);
+            document.removeEventListener("touchstart", unlock);
+        };
+    }, []);
+
     useEffect(() => {
         const sess = store.kassirSession || store.deviceSession;
         if (sess?.id === "admin") return;
@@ -1664,8 +1685,10 @@ export default function UbtPosPage() {
 
     const playBeep = useCallback(() => {
         try {
-            const audio = new Audio("/notification.mp3");
-            audio.play().catch(() => {});
+            if (audioRef.current) {
+                audioRef.current.currentTime = 0;
+                audioRef.current.play().catch(() => {});
+            }
         } catch (e) {}
     }, []);
 
