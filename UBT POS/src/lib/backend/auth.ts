@@ -54,6 +54,13 @@ export async function createSession(
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + SESSION_EXPIRY_HOURS);
 
+    // Bitta foydalanuvchi faqat bitta qurilmada ishlay olishi uchun avvalgi sessiyalarini o'chiramiz
+    const oldSessions = await prisma.session.findMany({ where: { userId } });
+    for (const old of oldSessions) {
+        cacheDelSession(old.token);
+    }
+    await prisma.session.deleteMany({ where: { userId } });
+
     // Save session to database
     await prisma.session.create({
         data: {
