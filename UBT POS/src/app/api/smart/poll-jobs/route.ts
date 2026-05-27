@@ -5,6 +5,15 @@ import path from "path";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+    return pollJobsLogic([]);
+}
+
+export async function POST(req: Request) {
+    const body = await req.json().catch(() => ({}));
+    return pollJobsLogic(body.printers || []);
+}
+
+async function pollJobsLogic(agentPrinters: string[]) {
     const queueDir = path.join(process.cwd(), ".print_queue");
     if (!fs.existsSync(queueDir)) fs.mkdirSync(queueDir, { recursive: true });
     
@@ -16,26 +25,38 @@ export async function GET() {
         }
 
         const jobs = [];
+        const isFiltering = agentPrinters.length > 0;
         
         for (const file of files) {
-                const filepath = path.join(queueDir, file);
-                const processingPath = filepath + ".processing";
-                
-                try {
-                    // 1. Dastlab fayl nomini o'zgartiramiz. Agar u band bo'lsa (File Lock), xatolik beradi va o'tkazib yuboriladi.
-                    fs.renameSync(filepath, processingPath);
+            const filepath = path.join(queueDir, file);
+            
+            try {
+                // If filtering is enabled, peek inside the job first
+                if (isFiltering) {
+                    const content = fs.readFileSync(filepath, "utf8");
+                    const job = JSON.parse(content);
+                    const isLAN = !!job.printerIp;
+                    const isUSB = !isLAN && agentPrinters.includes(job.printerName);
                     
-                    // 2. O'qiymiz
-                    const content = fs.readFileSync(processingPath, "utf8");
-                    jobs.push({ id: file, ...JSON.parse(content) });
-                    
-                    // 3. To'liq o'chirib yuboramiz
-                    fs.unlinkSync(processingPath);
-                } catch (e) {
-                    // Agar xatolik bo'lsa (Windows ruxsat bermasa), uni jobs'ga qo'shmaymiz
-                    console.error("Print job process error:", e);
+                    if (!isLAN && !isUSB) {
+                        continue; // Not for this agent
+                    }
                 }
+
+                const processingPath = filepath + ".processing";
+                // Lock the file
+                fs.renameSync(filepath, processingPath);
+                
+                // Read and add to jobs
+                const content = fs.readFileSync(processingPath, "utf8");
+                jobs.push({ id: file, ...JSON.parse(content) });
+                
+                // Remove the job completely
+                fs.unlinkSync(processingPath);
+            } catch (e) {
+                // File might be locked or deleted by another agent
             }
+        }
         return NextResponse.json({ jobs });
     } catch (e) {
         return NextResponse.json({ jobs: [] });

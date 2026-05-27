@@ -182,7 +182,12 @@ if (-not $result) { exit 1 }
 
 async function pollJobs() {
     try {
-        const res = await fetch(`${SERVER_URL}/api/smart/poll-jobs`);
+        const printers = await getWindowsPrinters();
+        const res = await fetch(`${SERVER_URL}/api/smart/poll-jobs`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ printers })
+        });
         if (res.ok) {
             const data = await res.json();
             if (data.jobs && data.jobs.length > 0) {
@@ -201,6 +206,16 @@ async function pollJobs() {
     setTimeout(pollJobs, 2500);
 }
 
+function enableStartup() {
+    try {
+        const { execSync } = require('child_process');
+        const exePath = process.execPath;
+        if (exePath.toLowerCase().endsWith('.exe')) {
+            execSync(`reg add HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run /v ChaqqonProAgent /t REG_SZ /d "\\"${exePath}\\"" /f`, {stdio: 'ignore'});
+        }
+    } catch (e) {}
+}
+
 console.log("=========================================");
 console.log("  CHAQQON PRO - LOKAL PRINTER AGENTI    ");
 console.log(`  Server: ${SERVER_URL}`);
@@ -208,6 +223,7 @@ console.log("  USB + LAN (TCP/IP 9100) ishlaydi      ");
 console.log("  Ushbu oyna doim ochiq tursin!          ");
 console.log("=========================================");
 
+enableStartup();
 syncPrinters();
 setInterval(syncPrinters, 30000);
 pollJobs();
