@@ -1039,16 +1039,15 @@ export default function UbtPosPage() {
     const [printerStatus, setPrinterStatus] = useState<{ id: string; name: string; online: boolean }[]>([]);
     const [tab, setTab] = useState<"tables" | "takeaway" | "delivery" | "reservation">("tables");
 
-    // ─── Audio notification (unlock on first touch/click) ─────────────────────
-    const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    // ─── Audio notification unlock ────────────────────────────────────────────────
     useEffect(() => {
         if (typeof window === "undefined") return;
-        const audio = new Audio("/notification.mp3");
-        audio.preload = "auto";
-        audio.volume = 1.0;
-        audioRef.current = audio;
         const unlock = () => {
-            audio.play().then(() => { audio.pause(); audio.currentTime = 0; }).catch(() => {});
+            const audio = document.getElementById("notification-audio") as HTMLAudioElement;
+            if (audio) {
+                audio.play().then(() => { audio.pause(); audio.currentTime = 0; }).catch(() => {});
+            }
             document.removeEventListener("click", unlock);
             document.removeEventListener("touchstart", unlock);
         };
@@ -1685,9 +1684,10 @@ export default function UbtPosPage() {
 
     const playBeep = useCallback(() => {
         try {
-            if (audioRef.current) {
-                audioRef.current.currentTime = 0;
-                audioRef.current.play().catch(() => {});
+            const audioEl = document.getElementById("notification-audio") as HTMLAudioElement;
+            if (audioEl) {
+                audioEl.currentTime = 0;
+                audioEl.play().catch((e) => console.error("Audio block:", e));
             }
         } catch (e) {}
     }, []);
@@ -2195,6 +2195,7 @@ export default function UbtPosPage() {
     return (
     <PosCtx.Provider value={{ lang, dark }}>
         <div className={`h-screen flex flex-col overflow-hidden select-none ${dark ? "dark" : ""} ${th.bg(dark)}`}>
+            <audio id="notification-audio" src="/notification.mp3" preload="auto" />
             {cancelPrompt && (
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                     <div className={`rounded-2xl shadow-2xl p-6 w-[320px] max-w-full text-center animate-fade-in translate-y-0 relative ${dark ? "bg-slate-900 border border-slate-700" : "bg-white"}`}>
