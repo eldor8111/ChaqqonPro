@@ -1040,24 +1040,7 @@ export default function UbtPosPage() {
     const [tab, setTab] = useState<"tables" | "takeaway" | "delivery" | "reservation">("tables");
 
 
-    // ─── Audio notification unlock ────────────────────────────────────────────────
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-        const unlock = () => {
-            const audio = document.getElementById("notification-audio") as HTMLAudioElement;
-            if (audio) {
-                audio.play().then(() => { audio.pause(); audio.currentTime = 0; }).catch(() => {});
-            }
-            document.removeEventListener("click", unlock);
-            document.removeEventListener("touchstart", unlock);
-        };
-        document.addEventListener("click", unlock);
-        document.addEventListener("touchstart", unlock);
-        return () => {
-            document.removeEventListener("click", unlock);
-            document.removeEventListener("touchstart", unlock);
-        };
-    }, []);
+
 
     useEffect(() => {
         const sess = store.kassirSession || store.deviceSession;
@@ -2195,7 +2178,6 @@ export default function UbtPosPage() {
     return (
     <PosCtx.Provider value={{ lang, dark }}>
         <div className={`h-screen flex flex-col overflow-hidden select-none ${dark ? "dark" : ""} ${th.bg(dark)}`}>
-            <audio id="notification-audio" src="/notification.mp3" preload="auto" />
             {cancelPrompt && (
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                     <div className={`rounded-2xl shadow-2xl p-6 w-[320px] max-w-full text-center animate-fade-in translate-y-0 relative ${dark ? "bg-slate-900 border border-slate-700" : "bg-white"}`}>

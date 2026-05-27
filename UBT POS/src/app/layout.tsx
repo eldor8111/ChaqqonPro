@@ -3,6 +3,8 @@ import "./globals.css";
 import { LangProvider } from "@/lib/LangContext";
 import { ThemeProvider } from "@/lib/LangContext";
 import QueryProvider from "./QueryProvider";
+import GlobalAudio from "@/components/GlobalAudio";
+
 
 export const metadata: Metadata = {
     title: "SMART – Restoran va Kafe uchun POS & ERP Tizimi",
@@ -111,6 +113,7 @@ export default function RootLayout({
                 <QueryProvider>
                     <ThemeProvider>
                         <LangProvider>
+                            <GlobalAudio />
                             {children}
                         </LangProvider>
                     </ThemeProvider>
