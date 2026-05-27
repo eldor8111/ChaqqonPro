@@ -1717,7 +1717,7 @@ export default function UbtPosPage() {
         return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
     }, []);
 
-    const logout = () => { store.kassirLogout(); router.replace("/kassa/login?lock=1"); };
+    const logout = () => { store.setKassirSession(null); router.replace("/kassa/login?lock=1"); };
 
     // Load available printers for printer picker
     const loadAvailablePrinters = async () => {
