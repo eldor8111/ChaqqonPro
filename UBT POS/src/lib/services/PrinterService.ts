@@ -364,7 +364,7 @@ function printTcpOnce(ip: string, port: number, data: Buffer): Promise<void> {
             settled = true;
             socket.destroy();
             if (err) {
-                const extendedMsg = `LAN Printer Error (${ip}:${port}) - ${err.message}. (Printer o'chiq, IP xato, yoki tarmoq/firewall bloklagan bo'lishi mumkin)`;
+                const extendedMsg = `LAN Printer Error (${ip}:${port}) - ${err.message}. (Printer o'chiq, IP xato, yoki tarmoq bloklagan)`;
                 reject(new Error(extendedMsg));
             } else {
                 resolve();
@@ -372,12 +372,14 @@ function printTcpOnce(ip: string, port: number, data: Buffer): Promise<void> {
         };
         const timer = setTimeout(() => {
             done(new Error(`Timeout`));
-        }, 5000);
+        }, 8000); // 8 soniyaga uzaytiramiz
         socket.on("error", (err) => done(err));
         socket.connect(port, ip, () => {
             clearTimeout(timer);
-            socket.write(data, () => {
-                setTimeout(() => done(), 200);
+            // Socket.end ham yoziydi, ham streamni oxiriga yetkazadi (FIN)
+            socket.end(data, () => {
+                // Printer to'liq qabul qilishiga imkon berib 500ms dan keyin yopamiz
+                setTimeout(() => done(), 500);
             });
         });
     });

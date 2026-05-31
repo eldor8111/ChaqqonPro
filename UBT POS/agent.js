@@ -62,9 +62,9 @@ function printOverNetwork(ip, data, port = 9100, timeout = 8000) {
         }, timeout);
 
         client.connect(port, ip, () => {
-            client.write(data, (writeErr) => {
+            client.end(data, () => {
                 clearTimeout(timer);
-                setTimeout(() => done(writeErr || null), 200);
+                setTimeout(() => done(null), 500);
             });
         });
 
