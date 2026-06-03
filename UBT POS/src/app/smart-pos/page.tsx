@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, memo, createContext, useContext, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
-    UtensilsCrossed, Package, Bike, Users, Clock,
+    UtensilsCrossed, Package, Bike, Users, Clock, Loader,
     Plus, Minus, Receipt, X, CreditCard, Banknote,
     QrCode, Search, CheckCircle, Check, Maximize2, Minimize2, RefreshCw,
     ShoppingBag, Lock, Phone, MapPin, User, CalendarCheck, Calendar,
@@ -829,6 +829,31 @@ function LiveClock({ className, style }: { className?: string; style?: React.CSS
     const [t, setT] = useState(fmtSec());
     useEffect(() => { const id = setInterval(() => setT(fmtSec()), 1000); return () => clearInterval(id); }, []);
     return <span className={className} style={style}>{t}</span>;
+}
+
+// ─── Live Timer (stol band qilingan paytdan beri o'tgan vaqt) ────────────────────
+function LiveTimerDisplay({ since, className }: { since: string; className?: string }) {
+    const [elapsed, setElapsed] = useState("00:00:00");
+    useEffect(() => {
+        const tick = () => {
+            const diff = Math.max(0, Math.floor((Date.now() - new Date(since).getTime()) / 1000));
+            const h = Math.floor(diff / 3600);
+            const m = Math.floor((diff % 3600) / 60);
+            const s = diff % 60;
+            setElapsed(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);
+        };
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+    }, [since]);
+    return <span className={className}>{elapsed}</span>;
+}
+
+// ─── Vaqtbay to'lov miqdorini hisoblash ─────────────────────────────────────────
+function calcTimeFee(since: string | null, hourlyRate: number): number {
+    if (!since || !hourlyRate) return 0;
+    const minutes = Math.max(0, (Date.now() - new Date(since).getTime()) / 60000);
+    return Math.round((minutes / 60) * hourlyRate);
 }
 
 function ClockWidget({ dark }: { dark: boolean }) {
@@ -1770,6 +1795,29 @@ export default function UbtPosPage() {
         } catch {}
     };
 
+    // ─── Vaqtni boshlash (Soatlik stolni band qilish) ────────────────────────────
+    const [timerStarting, setTimerStarting] = useState(false);
+    const handleStartTimer = async () => {
+        if (!selTable) return;
+        setTimerStarting(true);
+        const token = store.kassirSession?.token || store.deviceSession?.token;
+        const hdrs: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) hdrs["Authorization"] = `Bearer ${token}`;
+        try {
+            await fetch("/api/smart/tables", {
+                method: "PUT", headers: hdrs,
+                body: JSON.stringify({
+                    id: selTable.id,
+                    status: "occupied",
+                    since: new Date().toISOString(),
+                    waiter: store.kassirSession?.name || null,
+                })
+            });
+            await store.fetchSmartTables();
+        } catch {}
+        setTimerStarting(false);
+    };
+
     const handleTablePayDirect = async (method: string, customerId?: string) => {
         if (!selTable) return;
         setTablePayLoading(true);
@@ -1782,7 +1830,12 @@ export default function UbtPosPage() {
         
         const subtotal = activeOrders.reduce((s: number, c: any) => s + c.item.price * c.qty, 0);
         const svcPct = (selTable.serviceFee ?? 0) / 100;
-        const grandTotal = Math.round(subtotal * (1 + svcPct));
+        // Soatlik narx bo'lsa — vaqt hisobini qo'shish; oddiy narx bo'lsa — xizmat foizi
+        const isTimeBased = (selTable as any).extraPriceType === "Soatlik narx";
+        const timeFee = isTimeBased ? calcTimeFee(selTable.since, (selTable as any).extraPriceValue ?? 0) : 0;
+        const grandTotal = isTimeBased
+            ? Math.round(subtotal + timeFee)
+            : Math.round(subtotal * (1 + svcPct));
         
         try {
             const payRes = await fetch("/api/smart/pay", {
@@ -1795,7 +1848,8 @@ export default function UbtPosPage() {
                     total: subtotal,
                     waiterName: store.kassirSession?.name,
                     tableLabel: selTable.name,
-                    serviceFee: svcPct,
+                    serviceFee: isTimeBased ? 0 : svcPct,
+                    extraFeeAmount: isTimeBased && timeFee > 0 ? timeFee : undefined,
                 }),
             });
             if (!payRes.ok) {
@@ -1886,7 +1940,12 @@ export default function UbtPosPage() {
         if (token) hdrs["Authorization"] = `Bearer ${token}`;
         const subtotal = activeShotObj.cart.reduce((s: number, c: any) => s + c.item.price * c.qty, 0);
         const svcPct = (selTable.serviceFee ?? 0) / 100;
-        const grandTotal = Math.round(subtotal * (1 + svcPct));
+        
+        const isTimeBased = (selTable as any).extraPriceType === "Soatlik narx";
+        const timeFee = isTimeBased ? calcTimeFee(selTable.since, (selTable as any).extraPriceValue ?? 0) : 0;
+        const grandTotal = isTimeBased
+            ? Math.round(subtotal + timeFee)
+            : Math.round(subtotal * (1 + svcPct));
 
         try {
             const payRes = await fetch("/api/smart/pay", {
@@ -1899,7 +1958,8 @@ export default function UbtPosPage() {
                     total: subtotal,
                     waiterName: store.kassirSession?.name,
                     tableLabel: `${selTable.name} / ${activeShotObj.label}`,
-                    serviceFee: svcPct,
+                    serviceFee: isTimeBased ? 0 : svcPct,
+                    extraFeeAmount: isTimeBased && timeFee > 0 ? timeFee : undefined,
                 }),
             });
             if (!payRes.ok) {
@@ -2089,7 +2149,12 @@ export default function UbtPosPage() {
         const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
         const subtotal = activeOrders.reduce((s: number, c: any) => s + (c.item?.price ?? 0) * c.qty, 0);
         const svcPct = (selTable.serviceFee ?? 0) / 100;
-        const grandTotal = Math.round(subtotal * (1 + svcPct));
+        
+        const isTimeBased = (selTable as any).extraPriceType === "Soatlik narx";
+        const timeFee = isTimeBased ? calcTimeFee(selTable.since, (selTable as any).extraPriceValue ?? 0) : 0;
+        const grandTotal = isTimeBased
+            ? Math.round(subtotal + timeFee)
+            : Math.round(subtotal * (1 + svcPct));
         const token = store.kassirSession?.token || store.deviceSession?.token;
 
         fetch("/api/smart/print", {
@@ -2592,11 +2657,39 @@ export default function UbtPosPage() {
                                                     </div>
 
                                                     {/* Total Area */}
-                                                    <div className={`mt-2 mb-2 mx-3 p-2.5 rounded-md flex items-center justify-between border ${dark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"}`}>
-                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 z-10">Stol Jami:</span>
-                                                        <span className={`text-[15px] font-black tabular-nums tracking-tighter z-10 ${dark ? "text-emerald-400" : "text-emerald-600"}`}>
-                                                            {fmt((tableOrders[selTable.id] || []).reduce((s: number, c: any) => s + c.item.price * c.qty, 0))} <span className="text-[10px] text-emerald-600/70 uppercase font-semibold tracking-widest ml-0.5">UZS</span>
-                                                        </span>
+                                                    <div className={`mt-2 mb-2 mx-3 flex flex-col gap-2`}>
+                                                        {((selTable as any).extraPriceType === "Soatlik narx") && (
+                                                            <div className={`p-2.5 rounded-md flex items-center justify-between border ${dark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"}`}>
+                                                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 z-10 flex items-center gap-1">
+                                                                    <Clock size={12} /> Vaqt:
+                                                                </span>
+                                                                {selTable.since ? (
+                                                                    <span className={`text-[13px] font-black tracking-tighter z-10 ${dark ? "text-amber-400" : "text-amber-600"}`}>
+                                                                        <LiveTimerDisplay since={selTable.since} />
+                                                                    </span>
+                                                                ) : (
+                                                                    <button 
+                                                                        onClick={handleStartTimer} 
+                                                                        disabled={timerStarting}
+                                                                        className={`px-3 py-1 rounded bg-amber-500 text-white text-xs font-bold shadow-sm hover:bg-amber-600 active:scale-95 transition-all w-24 h-6 flex items-center justify-center`}
+                                                                    >
+                                                                        {timerStarting ? <Loader size={14} className="animate-spin" /> : "Vaqtni boshlash"}
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                        <div className={`p-2.5 rounded-md flex items-center justify-between border ${dark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"}`}>
+                                                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 z-10">Stol Jami:</span>
+                                                            <span className={`text-[15px] font-black tabular-nums tracking-tighter z-10 ${dark ? "text-emerald-400" : "text-emerald-600"}`}>
+                                                                {(() => {
+                                                                    const subtotal = (tableOrders[selTable.id] || []).reduce((s: number, c: any) => s + c.item.price * c.qty, 0);
+                                                                    const isTimeBased = (selTable as any).extraPriceType === "Soatlik narx";
+                                                                    const timeFee = isTimeBased ? calcTimeFee(selTable.since, (selTable as any).extraPriceValue ?? 0) : 0;
+                                                                    return fmt(subtotal + timeFee);
+                                                                })()} 
+                                                                <span className="text-[10px] text-emerald-600/70 uppercase font-semibold tracking-widest ml-0.5">UZS</span>
+                                                            </span>
+                                                        </div>
                                                     </div>
 
                                         {/* Action buttons footer */}

@@ -189,6 +189,8 @@ export interface SmartTable {
     since: string | null;
     waiter?: string;
     serviceFee?: number; // Xizmat to'lovi foizi (0–100)
+    extraPriceType?: string; // "Soatlik narx" | "Qo'shimcha narx" | ...
+    extraPriceValue?: number; // Soatlik summa (so'm)
 }
 
 export interface KDSOrder {
@@ -613,6 +615,8 @@ export const useStore = create<AppState>()(
                                 since: t.since,
                                 waiter: t.waiter || undefined,
                                 serviceFee: t.serviceFee ?? 0,
+                                extraPriceType: t.extraPriceType || "Qo'shimcha narx",
+                                extraPriceValue: t.extraPriceValue ? Number(t.extraPriceValue) : 0,
                             }));
                             set({ smartTables: mapped });
                         }

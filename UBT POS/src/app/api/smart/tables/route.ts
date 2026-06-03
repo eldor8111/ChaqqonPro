@@ -46,12 +46,14 @@ export async function GET(request: NextRequest) {
         const tablesWithFee = tables.map(t => {
             const z = ubtZones.find((zone: any) => zone.name === t.section);
             const fee = z?.serviceFee ? Number(z.serviceFee) : 10;
+            const extraPriceType = z?.extraPriceType || "Qo'shimcha narx";
+            const extraPriceValue = z?.extraPriceValue ? Number(z.extraPriceValue) : 0;
             let tableJson: any = null;
             if (z?.tables && Array.isArray(z.tables)) {
                 tableJson = z.tables.find((tb: any) => tb.name === t.tableNumber) ?? null;
             }
             const isActive = tableJson ? tableJson.isActive !== false : false;
-            return { ...t, serviceFee: fee, isActive };
+            return { ...t, serviceFee: fee, extraPriceType, extraPriceValue, isActive };
         }).filter(t => t.isActive);
 
         tablesWithFee.sort((a, b) => {

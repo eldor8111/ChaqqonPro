@@ -122,6 +122,41 @@ export default function MobileWaiterPage() {
 
     useEffect(() => { if (view === "stats") fetchStats(); }, [view, fetchStats]);
 
+    // ─── Brauzer "ortga" tugmasini ushlab qolish ─────────────────────────────
+    useEffect(() => {
+        const handlePopState = (e: PopStateEvent) => {
+            // Brauzerning tabiiy orqaga ketishini to'xtatamiz
+            // va o'zimiz React holatini boshqaramiz
+            if (view === "menu" || view === "cart") {
+                // Menu yoki cart dan → tables ga qaytish
+                setView("tables");
+                setSelectedTable(null);
+                setCart([]);
+                setExistingCart([]);
+                // Sahifadan chiqib ketmaslik uchun qayta history pushlaymiz
+                window.history.pushState({ waiterDepth: 1 }, "");
+            } else if (view === "tables" && activeZone) {
+                // Zone ichidan → zonalar ro'yxatiga qaytish
+                setActiveZone(null);
+                window.history.pushState({ waiterDepth: 1 }, "");
+            } else {
+                // Asosiy sahifadamiz — sahifadan chiqib ketishiga ruxsat
+                // (lekin login sahifasiga emas, hech qayerga)
+                window.history.pushState({ waiterDepth: 1 }, "");
+            }
+        };
+
+        window.addEventListener("popstate", handlePopState);
+        return () => window.removeEventListener("popstate", handlePopState);
+    }, [view, activeZone]);
+
+    // Sahifaga kirganda bitta tarix yozuvi qo'shamiz
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            window.history.pushState({ waiterDepth: 1 }, "");
+        }
+    }, []);
+
     if (!mounted || !store.kassirSession) return null;
     const sess = store.kassirSession;
     const handleLogout = () => { store.kassirLogout(); router.push("/"); };

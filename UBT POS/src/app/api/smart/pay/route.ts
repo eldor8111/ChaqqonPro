@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         const tenantId = await getAuthTenantId(request);
         if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        const { tableId, items, paymentMethod, total, waiterName, tableLabel, serviceFee, customerId } =
+        const { tableId, items, paymentMethod, total, waiterName, tableLabel, serviceFee, customerId, extraFeeAmount } =
             await request.json();
 
         if (!items || items.length === 0) {
@@ -72,7 +72,9 @@ export async function POST(request: NextRequest) {
         // ──────────────────────────────────────────────────────────────────────
         // PAYMENT — to'lov, stol "free" bo'lsin + Transaction yaratilsin
         // ──────────────────────────────────────────────────────────────────────
-        const grandTotal = Math.round((total || 0) * (1 + (serviceFee ?? 0)));
+        const grandTotal = extraFeeAmount !== undefined && extraFeeAmount !== null
+            ? Math.round((total || 0) + Number(extraFeeAmount))
+            : Math.round((total || 0) * (1 + (serviceFee ?? 0)));
         const methodName = METHOD_MAP[paymentMethod] || paymentMethod;
 
         if (paymentMethod === "qarz" || methodName === "qarz") {
