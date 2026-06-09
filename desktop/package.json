@@ -1,0 +1,100 @@
+{
+  "name": "smart-pos-v2",
+  "version": "2.0.0",
+  "description": "SMART POS V2 — Smart Kassa Dasturi",
+  "author": "Smart POS <info@smart.uz>",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win --x64",
+    "build-portable": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win portable --x64",
+    "build-dir": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win dir --x64"
+  },
+  "build": {
+    "appId": "uz.smart.smart-pos-v2",
+    "productName": "SMART POS V2",
+    "copyright": "Copyright © 2024 Smart",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "requestedExecutionLevel": "asInvoker",
+      "signAndEditExecutable": false,
+      "sign": null,
+      "certificateFile": null
+    },
+    "nsis": {
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Smart POS"
+    },
+    "npmRebuild": false,
+    "files": [
+      "main.js",
+      "server.js",
+      "sync.js",
+      "printer.js",
+      "tray-agent.js",
+      "preload.js",
+      "splash.html",
+      "assets/**"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "extraResources": [
+      {
+        "from": "assets",
+        "to": "assets",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../frontend/prisma/dev.db",
+        "to": "prisma/dev.db"
+      },
+      {
+        "from": "../frontend/.next/standalone",
+        "to": "standalone"
+      },
+      {
+        "from": "../frontend/public",
+        "to": "standalone/public"
+      },
+      {
+        "from": "../frontend/.next/static",
+        "to": "standalone/.next/static"
+      }
+    ],
+    "publish": null
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "electron-store": "^8.1.0",
+    "express": "^5.2.1",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron": "^28.3.3",
+    "electron-builder": "^24.9.1"
+  },
+  "allowScripts": {
+    "electron@28.3.3": true
+  }
+}
