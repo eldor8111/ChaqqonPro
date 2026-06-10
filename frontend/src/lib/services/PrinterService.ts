@@ -18,8 +18,8 @@ const cmd = {
     bold:      (on: boolean) => Buffer.from([ESC, 0x45, on ? 1 : 0]),
     doubleHW:  () => Buffer.from([GS, 0x21, 0x11]),
     normal:    () => Buffer.from([GS, 0x21, 0x00]),
-    // ESC d 10 = 10 satr suring, GS V 66 0 = to'liq kesish (ko'pchilik printerlar qo'llab-quvvatlaydi)
-    cut:       () => Buffer.from([ESC, 0x64, 0x0A, GS, 0x56, 0x42, 0x00]),
+    // ESC J 255 (~32mm absolute feed, line-spacing-independent) + GS V 1 (partial cut)
+    cut:       () => Buffer.from([ESC, 0x4A, 0xFF, GS, 0x56, 0x01]),
 };
 
 /**
@@ -202,7 +202,7 @@ function buildKitchenBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
     const now = job.time || new Date().toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" });
     const headerTitle = job.isCancellation ? "BEKOR QILINDI" : opts.kitchenHeaderText;
     
-    parts.push(cmd.init(), cmd.dark(), cmd.align(1), cmd.bold(true), cmd.doubleHW(), line(toAscii(headerTitle)), cmd.normal(), cmd.bold(false));
+    parts.push(cmd.init(), cmd.align(1), cmd.bold(true), cmd.doubleHW(), line(toAscii(headerTitle)), cmd.normal(), cmd.bold(false));
     if (opts.kitchenShowOrderNo && job.orderNum) parts.push(line(`Zakaz #${job.orderNum}`));
     if (opts.kitchenShowTime) parts.push(line(now));
     if (opts.kitchenShowTable && job.tableName) parts.push(line(`Stol: ${job.tableName}${job.tableZone ? ` (${job.tableZone})` : ""}`));
@@ -240,7 +240,6 @@ function buildClientBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
 
     // ── Header ──────────────────────────────────────────────────
     parts.push(cmd.init());
-    parts.push(cmd.dark());
     parts.push(cmd.align(alignCode(opts.shopNameAlign)));
     parts.push(cmd.bold(opts.shopNameBold));
     parts.push(sizeCmd(opts.shopNameFontSize));
@@ -341,7 +340,7 @@ function buildReportBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
     const dateStr = `${String(now.getDate()).padStart(2,"0")}.${String(now.getMonth()+1).padStart(2,"0")}.${now.getFullYear()}`;
     const shopName   = opts.shopName.toUpperCase();
 
-    parts.push(cmd.init(), cmd.dark(), cmd.align(1), cmd.bold(true), cmd.doubleHW(), line(shopName), cmd.normal(), cmd.bold(false));
+    parts.push(cmd.init(), cmd.align(1), cmd.bold(true), cmd.doubleHW(), line(shopName), cmd.normal(), cmd.bold(false));
     parts.push(line(""), cmd.bold(true), line("KUNLIK HISOBOT"), cmd.bold(false));
     parts.push(line(`Sana: ${dateStr}  Vaqt: ${timeStr}`));
     if (job.waiter) parts.push(line(`Kassir: ${job.waiter}`));
