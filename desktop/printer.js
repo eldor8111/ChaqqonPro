@@ -31,12 +31,8 @@ function probeTCP(ip, port, timeout = 800) {
 
         const timer = setTimeout(() => done(false), timeout);
 
-        socket.connect(port, ip, () => {
-            // DLE EOT n=1 — printer javob bersa topildi
-            socket.write(Buffer.from([0x10, 0x04, 0x01]));
-            const replyTimer = setTimeout(() => done(false), 400);
-            socket.once('data', () => { clearTimeout(replyTimer); done(true); });
-        });
+        // TCP ulanish muvaffaqiyatli bo'lsa — printer mavjud (javob kutish shart emas)
+        socket.connect(port, ip, () => done(true));
 
         socket.on('error', () => done(false));
     });
