@@ -1804,10 +1804,18 @@ export default function UbtPosPage() {
         setShowLanDiscover(true);
         setLanDiscoveredList([]);
         try {
-            const res = await fetch("/api/smart/agent-printers");
+            // Avval to'g'ridan server tomondan scan qilamiz (EXE offline rejimda lokal tarmoqni ko'radi)
+            const res = await fetch("/api/smart/discover-printers", { method: "POST" });
             const data = await res.json();
-            const discovered: { ip: string; port: number; method: string }[] = Array.isArray(data.discovered) ? data.discovered : [];
-            setLanDiscoveredList(discovered.filter(p => p.method === "tcp_scan"));
+            if (Array.isArray(data.printers) && data.printers.length > 0) {
+                setLanDiscoveredList(data.printers);
+            } else {
+                // Fallback: tray-agent cached natijalari
+                const res2 = await fetch("/api/smart/agent-printers");
+                const data2 = await res2.json();
+                const discovered: { ip: string; port: number; method: string }[] = Array.isArray(data2.discovered) ? data2.discovered : [];
+                setLanDiscoveredList(discovered.filter(p => p.method === "tcp_scan"));
+            }
         } catch {}
         setLoadingLanDiscover(false);
     };
