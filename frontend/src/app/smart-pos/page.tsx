@@ -2466,7 +2466,7 @@ export default function UbtPosPage() {
                     <div className="hidden md:flex flex-col items-center mt-auto pb-3 pt-2 w-full">
                         <div className={`w-10 h-px mb-3 ${dark ? "bg-white/10" : "bg-slate-200"}`} />
                         <button
-                            onClick={() => { setShowLanDiscover(true); handleLanDiscover(); }}
+                            onClick={() => router.push("/smart-pos/printers")}
                             title="Printer sozlamalari"
                             className={`relative flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl w-[64px] h-[64px] transition-all duration-300 group ${showLanDiscover ? (dark ? "bg-sky-500/15 text-sky-400" : "bg-sky-50 text-sky-600") : (dark ? "text-slate-400 hover:bg-white/5 hover:text-slate-200" : "text-slate-500 hover:bg-slate-100 hover:text-slate-800")}`}>
                             <Printer size={22} strokeWidth={2} className="transition-transform duration-300 group-hover:scale-110" />

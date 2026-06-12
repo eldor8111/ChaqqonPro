@@ -325,9 +325,58 @@ model SmartPrinter {
   ipAddress   String
   port        Int      @default(9100)
   description String   @default("")
+  role        String   @default("cashier") // cashier | kitchen | bar
+  paperWidth  Int      @default(80) // 58 | 80 mm
+  status      String   @default("unknown") // online | offline | unknown
+  isActive    Boolean  @default(true)
+  isDefault   Boolean  @default(false)
+  lastSeenAt  DateTime?
+  latencyMs   Int?
   createdAt   DateTime @default(now())
+  jobs        PrintJob[]
 
   @@index([tenantId])
+}
+
+model PrintJob {
+  id          String    @id @default(cuid())
+  tenantId    String
+  printerId   String
+  type        String    @default("receipt") // receipt | kitchen | report | test
+  payload     String // JSON: PrinterService.PrintJob formati
+  status      String    @default("pending") // pending | claimed | printing | done | failed | cancelled | expired
+  priority    Int       @default(5) // 1 = eng yuqori
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(5)
+  claimedBy   String?
+  claimedAt   DateTime?
+  printedAt   DateTime?
+  nextAttemptAt DateTime?
+  lastError   String?
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  printer     SmartPrinter @relation(fields: [printerId], references: [id], onDelete: Cascade)
+  logs        PrintLog[]
+
+  @@index([tenantId, status])
+  @@index([printerId, status])
+}
+
+model PrintLog {
+  id         String   @id @default(cuid())
+  jobId      String
+  printerId  String
+  tenantId   String
+  event      String // created | claimed | printing | done | retry | failed | cancelled | expired | requeued
+  detail     String?
+  agentId    String?
+  durationMs Int?
+  createdAt  DateTime @default(now())
+  job        PrintJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([jobId])
 }
 
 model SmartTable {

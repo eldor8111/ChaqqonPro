@@ -1,8 +1,92 @@
 const { printRaw, discoverAllPrinters } = require('./printer');
+const net = require('net');
 
 let pollTimer = null;
 let syncTimer = null;
 let isPolling = false;
+
+// ─── TCP probe (heartbeat uchun) ────────────────────────────────
+function probeTcp(ip, port, timeout = 1500) {
+    return new Promise((resolve) => {
+        const socket = new net.Socket();
+        let settled = false;
+        const finish = (val) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            socket.destroy();
+            resolve(val);
+        };
+        const timer = setTimeout(() => finish(false), timeout);
+        socket.on('error', () => finish(false));
+        socket.connect(port, ip, () => finish(true));
+    });
+}
+
+// ─── Print queue worker tick ────────────────────────────────────
+// Server pending joblarni o'zi chop etadi (EXE: to'g'ridan-to'g'ri TCP;
+// VPS: .print_queue faylga yozadi → pollJobs uni olib lokal chop etadi)
+async function processQueue(serverUrl) {
+    try {
+        const res = await fetch(`${serverUrl}/api/smart/print-queue/process`, {
+            method: 'POST',
+            signal: AbortSignal.timeout(30000),
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.processed && data.processed.length > 0) {
+                for (const r of data.processed) {
+                    console.log(`[QUEUE ${r.ok ? '✅' : '❌'}] Job ${r.id}${r.error ? ' — ' + r.error : ''}`);
+                }
+            }
+        }
+    } catch (e) {
+        const silent = ['TimeoutError', 'AbortError', 'TypeError'];
+        if (!silent.includes(e.name) && e.code !== 'ECONNREFUSED' && e.code !== 'ENOTFOUND') {
+            console.error('[QUEUE ❌]', e.message || String(e));
+        }
+    }
+}
+
+// ─── Heartbeat: saqlangan printerlarni lokal probe qilib serverga yuborish ───
+async function heartbeat(serverUrl) {
+    try {
+        const res = await fetch(`${serverUrl}/api/smart/printer-heartbeat`, {
+            signal: AbortSignal.timeout(10000),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const printers = data.printers || [];
+        if (printers.length === 0) return;
+
+        const results = [];
+        for (const p of printers) {
+            if (!p.ipAddress || p.ipAddress.startsWith('usb://')) continue;
+            const started = Date.now();
+            const ok = await probeTcp(p.ipAddress, p.port || 9100);
+            results.push({
+                id: p.id,
+                status: ok ? 'online' : 'offline',
+                latencyMs: ok ? Date.now() - started : null,
+            });
+        }
+        if (results.length === 0) return;
+
+        await fetch(`${serverUrl}/api/smart/printer-heartbeat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ agentId: 'tray-agent', printers: results }),
+            signal: AbortSignal.timeout(10000),
+        });
+        const online = results.filter(r => r.status === 'online').length;
+        console.log(`[HEARTBEAT] ${online}/${results.length} printer online`);
+    } catch (e) {
+        const silent = ['TimeoutError', 'AbortError', 'TypeError'];
+        if (!silent.includes(e.name) && e.code !== 'ECONNREFUSED' && e.code !== 'ENOTFOUND') {
+            console.error('[HEARTBEAT ❌]', e.message || String(e));
+        }
+    }
+}
 
 // Oxirgi discovery natijasini kesh — har sinxronlashda scan qilmasin
 let _lastDiscovered = null;
@@ -134,12 +218,18 @@ function startPolling(config) {
 
     pollJobs(serverUrl);
     syncPrinters(serverUrl);
+    processQueue(serverUrl);
+    heartbeat(serverUrl);
 
     pollTimer = setInterval(() => {
         pollJobs(serverUrl);
+        processQueue(serverUrl);
     }, pollInterval);
 
-    syncTimer = setInterval(() => syncPrinters(serverUrl), 30_000);
+    syncTimer = setInterval(() => {
+        syncPrinters(serverUrl);
+        heartbeat(serverUrl);
+    }, 30_000);
 }
 
 function stopPolling() {

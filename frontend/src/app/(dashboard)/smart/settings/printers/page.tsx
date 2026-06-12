@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Printer, Plus, Trash2, X, CheckCircle, AlertCircle, Wifi, WifiOff, Loader2, Usb, ScanLine, Network } from "lucide-react";
+import { Printer, Plus, Trash2, X, CheckCircle, AlertCircle, Wifi, WifiOff, Loader2, Usb, ScanLine, Network, ChefHat, Receipt, Wine, RotateCcw, Ban, Clock } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 
 
@@ -12,7 +12,39 @@ interface SmartPrinter {
     port: number;
     description: string;
     createdAt: string;
+    role?: string;
+    status?: string;
+    lastSeenAt?: string | null;
+    latencyMs?: number | null;
+    isDefault?: boolean;
 }
+
+interface PrintJobRow {
+    id: string;
+    type: string;
+    status: string;
+    attempts: number;
+    maxAttempts: number;
+    lastError: string | null;
+    createdAt: string;
+    printer?: { name: string };
+}
+
+const ROLE_META: Record<string, { label: string; icon: typeof Receipt; cls: string }> = {
+    cashier: { label: "Kassa",   icon: Receipt, cls: "bg-sky-500/10 text-sky-600 dark:text-sky-400" },
+    kitchen: { label: "Oshxona", icon: ChefHat, cls: "bg-orange-500/10 text-orange-600 dark:text-orange-400" },
+    bar:     { label: "Bar",     icon: Wine,    cls: "bg-purple-500/10 text-purple-600 dark:text-purple-400" },
+};
+
+const JOB_STATUS_META: Record<string, { label: string; cls: string }> = {
+    pending:   { label: "Navbatda",      cls: "bg-amber-500/10 text-amber-600" },
+    claimed:   { label: "Jarayonda",     cls: "bg-blue-500/10 text-blue-600" },
+    printing:  { label: "Chop etilmoqda", cls: "bg-blue-500/10 text-blue-600" },
+    done:      { label: "Bajarildi",     cls: "bg-emerald-500/10 text-emerald-600" },
+    failed:    { label: "Xato",          cls: "bg-red-500/10 text-red-600" },
+    cancelled: { label: "Bekor",         cls: "bg-slate-500/10 text-slate-500" },
+    expired:   { label: "Muddati o'tdi",  cls: "bg-slate-500/10 text-slate-500" },
+};
 
 type ConnectType = "wifi" | "usb";
 
@@ -32,6 +64,8 @@ export default function PrintersPage() {
     const [lanPrinters, setLanPrinters] = useState<{ ip: string; port: number }[]>([]);
     const [loadingLan, setLoadingLan] = useState(false);
     const [showLanSection, setShowLanSection] = useState(false);
+    const [jobs, setJobs] = useState<PrintJobRow[]>([]);
+    const [probing, setProbing] = useState(false);
 
     const loadPrinters = async () => {
         setLoading(true);
@@ -46,7 +80,54 @@ export default function PrintersPage() {
         }
     };
 
-    useEffect(() => { loadPrinters(); }, []);
+    const loadJobs = async () => {
+        try {
+            const res = await fetch("/api/smart/print-queue?limit=20", { cache: "no-store" });
+            const data = await res.json();
+            setJobs(Array.isArray(data.jobs) ? data.jobs : []);
+        } catch {}
+    };
+
+    // Barcha printerlarni server tomondan TCP probe qilish
+    const probeAll = async () => {
+        setProbing(true);
+        try {
+            await fetch("/api/smart/printer-heartbeat", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+            await loadPrinters();
+        } catch {}
+        setProbing(false);
+    };
+
+    const updatePrinter = async (id: string, patch: Record<string, unknown>) => {
+        try {
+            await fetch("/api/smart/printers", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, ...patch }),
+            });
+            await loadPrinters();
+        } catch {}
+    };
+
+    const jobAction = async (id: string, action: "retry" | "cancel") => {
+        try {
+            await fetch("/api/smart/print-queue", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, action }),
+            });
+            await loadJobs();
+        } catch {}
+    };
+
+    useEffect(() => {
+        loadPrinters();
+        loadJobs();
+        probeAll();
+        const id = setInterval(() => { loadJobs(); }, 15000);
+        return () => clearInterval(id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const loadWindowsPrinters = async () => {
         setLoadingWinPrinters(true);
@@ -71,17 +152,28 @@ export default function PrintersPage() {
         setShowLanSection(true);
         setError("");
         try {
-            const res = await fetch("/api/smart/agent-printers");
+            // 1) Server tomonidan TCP scan (EXE rejimida darhol ishlaydi)
+            const res = await fetch("/api/smart/discover-printers", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
             const data = await res.json();
-            const discovered: { ip: string; port: number; method: string }[] = Array.isArray(data.discovered) ? data.discovered : [];
-            const lan = discovered.filter(p => p.method === "tcp_scan");
+            let lan: { ip: string; port: number }[] = Array.isArray(data.printers) ? data.printers : [];
+
+            // 2) Topilmasa — tray-agent kesh ma'lumotlari (VPS rejimi)
+            if (lan.length === 0) {
+                try {
+                    const res2 = await fetch("/api/smart/agent-printers");
+                    const data2 = await res2.json();
+                    const discovered: { ip: string; port: number; method: string }[] = Array.isArray(data2.discovered) ? data2.discovered : [];
+                    lan = discovered.filter(p => p.method === "tcp_scan");
+                } catch {}
+            }
+
             setLanPrinters(lan);
             if (lan.length === 0) {
-                setError("LAN printer topilmadi. Kassa kompyuterida agent ishlaayotgan bo'lsa, tarmoqdagi printerlar avtomatik topiladi (30 soniyada bir skanerlaydi).");
+                setError("LAN printer topilmadi. Printer yoqilganligini va kassa bilan bitta tarmoqda ekanligini tekshiring.");
             }
         } catch {
             setLanPrinters([]);
-            setError("Agent bilan ulanishda xatolik. Kassa kompyuterida tray-agent ishlaayotganligini tekshiring.");
+            setError("Tarmoqni skanerlashda xatolik yuz berdi.");
         } finally {
             setLoadingLan(false);
         }
@@ -203,6 +295,10 @@ export default function PrintersPage() {
                     <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-widest mt-1">ESC/POS Termik Printerlar</p>
                 </div>
                 <div className="flex items-center gap-2">
+                    <button onClick={probeAll} disabled={probing} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-500/10 text-slate-600 dark:text-slate-300 border border-slate-500/20 hover:bg-slate-500/20 font-bold text-sm transition-colors">
+                        {probing ? <Loader2 size={16} className="animate-spin" /> : <Wifi size={16} />}
+                        <span className="hidden sm:inline">Holat</span>
+                    </button>
                     <button onClick={loadLanPrinters} disabled={loadingLan} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 font-bold text-sm transition-colors">
                         {loadingLan ? <Loader2 size={16} className="animate-spin" /> : <Network size={16} />}
                         <span className="hidden sm:inline">LAN Qidirish</span>
@@ -278,11 +374,26 @@ export default function PrintersPage() {
                                                 {isUsb(p) ? <Usb size={26} /> : <Printer size={26} />}
                                             </div>
                                             <div>
-                                                <div className="flex items-center gap-2 mb-1">
+                                                <div className="flex items-center gap-2 mb-1 flex-wrap">
                                                     <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg leading-none">{p.name}</h3>
                                                     <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${isUsb(p) ? "bg-sky-500/10 text-sky-600 dark:text-sky-400" : "bg-brand/10 text-brand"}`}>
-                                                        {isUsb(p) ? "USB" : "WiFi"}
+                                                        {isUsb(p) ? "USB" : "LAN"}
                                                     </span>
+                                                    {!isUsb(p) && p.status === "online" && (
+                                                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                                            Online{p.latencyMs != null ? ` · ${p.latencyMs}ms` : ""}
+                                                        </span>
+                                                    )}
+                                                    {!isUsb(p) && p.status === "offline" && (
+                                                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">
+                                                            Offline
+                                                        </span>
+                                                    )}
+                                                    {p.isDefault && (
+                                                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-white dark:bg-white dark:text-slate-900">
+                                                            Asosiy
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <p className="text-sm font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                                                     {isUsb(p) ? p.ipAddress.replace("usb://", "") : `${p.ipAddress}:${p.port}`}
@@ -295,7 +406,20 @@ export default function PrintersPage() {
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
+                                    {/* Rol tanlash */}
+                                    <div className="mt-4 flex items-center gap-1.5 flex-wrap">
+                                        {Object.entries(ROLE_META).map(([key, meta]) => (
+                                            <button key={key} onClick={() => updatePrinter(p.id, { role: key })}
+                                                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors ${(p.role || "cashier") === key ? meta.cls : "bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"}`}>
+                                                <meta.icon size={11} /> {meta.label}
+                                            </button>
+                                        ))}
+                                        <button onClick={() => updatePrinter(p.id, { isDefault: !p.isDefault })}
+                                            className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors ${p.isDefault ? "bg-slate-800 text-white dark:bg-white dark:text-slate-900" : "bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"}`}>
+                                            Asosiy
+                                        </button>
+                                    </div>
+                                    <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             {pingStatus[p.id] === "checking" && <span className="flex items-center gap-1.5 text-xs font-semibold text-sky-500 bg-sky-500/10 px-2 py-1 rounded-lg"><Loader2 size={14} className="animate-spin" /> Tekshirilmoqda</span>}
                                             {pingStatus[p.id] === "ok" && <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg"><Wifi size={14} /> Aloqa mavjud</span>}
@@ -309,6 +433,54 @@ export default function PrintersPage() {
                             ))}
                         </div>
                     )}
+
+                    {/* Print navbati */}
+                    <div className="glass-card p-5 mt-8">
+                        <div className="flex items-center gap-2 mb-3">
+                            <Clock className="text-slate-500" size={18} />
+                            <h3 className="font-bold text-slate-700 dark:text-slate-300">Print navbati</h3>
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">{jobs.length}</span>
+                        </div>
+                        {jobs.length === 0 ? (
+                            <p className="text-sm text-slate-400">Navbat bo'sh — oxirgi joblar shu yerda ko'rinadi.</p>
+                        ) : (
+                            <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                                {jobs.map(j => {
+                                    const meta = JOB_STATUS_META[j.status] || JOB_STATUS_META.pending;
+                                    return (
+                                        <div key={j.id} className="py-2.5 flex items-center gap-3">
+                                            <span className={`text-[10px] font-black px-2 py-1 rounded-md shrink-0 ${meta.cls}`}>{meta.label}</span>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">
+                                                    {j.type === "kitchen" ? "Oshxona cheki" : j.type === "test" ? "Test chek" : j.type === "report" ? "Hisobot" : "Mijoz cheki"}
+                                                    <span className="text-slate-400 font-normal"> → {j.printer?.name || "?"}</span>
+                                                </p>
+                                                {j.lastError && <p className="text-xs text-red-500 truncate">{j.lastError}</p>}
+                                                <p className="text-[11px] text-slate-400">
+                                                    {new Date(j.createdAt).toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" })}
+                                                    {j.attempts > 0 && ` · urinish ${j.attempts}/${j.maxAttempts}`}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-1 shrink-0">
+                                                {j.status === "failed" && (
+                                                    <button onClick={() => jobAction(j.id, "retry")} title="Qayta urinish"
+                                                        className="p-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-500 transition-colors">
+                                                        <RotateCcw size={14} />
+                                                    </button>
+                                                )}
+                                                {["pending", "claimed", "failed"].includes(j.status) && (
+                                                    <button onClick={() => jobAction(j.id, "cancel")} title="Bekor qilish"
+                                                        className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-500 transition-colors">
+                                                        <Ban size={14} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Info */}
                     <div className="glass-card bg-amber-500/5 border-amber-500/20 p-5 mt-8">
