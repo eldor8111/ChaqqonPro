@@ -2419,7 +2419,7 @@ export default function UbtPosPage() {
             <div className="flex flex-col sm:flex-row flex-1 overflow-hidden relative pb-[64px] sm:pb-0">
 
                 {/* ── LEFT SIDEBAR / BOTTOM NAV — Premium Modern UI ── */}
-                <aside className={`fixed bottom-0 left-0 right-0 md:relative md:w-[84px] w-full h-[64px] md:h-auto flex flex-row md:flex-col justify-around md:justify-start items-center py-1 md:py-6 z-[100] md:z-20 transition-all duration-300 ${dark ? "bg-slate-950/80 md:bg-slate-950 border-t md:border-t-0 md:border-r border-white/10 backdrop-blur-2xl" : "bg-white/80 md:bg-white border-t md:border-t-0 md:border-r border-slate-200 backdrop-blur-2xl shadow-[0_-10px_30px_rgba(0,0,0,0.03)] md:shadow-none"}`}>
+                <aside className={`fixed bottom-0 left-0 right-0 md:relative md:w-[84px] w-full h-[64px] md:h-full flex flex-row md:flex-col justify-around md:justify-start items-center py-1 md:py-6 z-[100] md:z-20 transition-all duration-300 ${dark ? "bg-slate-950/80 md:bg-slate-950 border-t md:border-t-0 md:border-r border-white/10 backdrop-blur-2xl" : "bg-white/80 md:bg-white border-t md:border-t-0 md:border-r border-slate-200 backdrop-blur-2xl shadow-[0_-10px_30px_rgba(0,0,0,0.03)] md:shadow-none"}`}>
                     {([
                         { id: "tables" as const,   icon: UtensilsCrossed, label: t("tablesLabel", lang),   count: activeCnt, badge: "bg-orange-500" },
                         { id: "takeaway" as const, icon: Package,          label: t("takeawayLabel", lang), count: twOrders.filter(o => o.status === "pending").length, badge: "bg-pink-500" },
