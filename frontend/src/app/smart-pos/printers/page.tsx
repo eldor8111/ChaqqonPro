@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import {
     ArrowLeft, Printer as PrinterIcon, RefreshCw, Wifi, WifiOff, Plus,
     Trash2, ScanLine, CheckCircle2, XCircle, Clock, RotateCcw, Ban,
-    ChefHat, Receipt, Wine, HelpCircle, Usb, Network,
+    ChefHat, Receipt, Wine, HelpCircle, Usb, Network, Pencil, Check, X,
 } from "lucide-react";
 
 type PrinterRow = {
@@ -58,6 +58,11 @@ export default function PosPrintersPage() {
     const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
     const [manualIp, setManualIp] = useState("");
     const [manualName, setManualName] = useState("");
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editName, setEditName] = useState("");
+    const [editIp, setEditIp] = useState("");
+    const [editPort, setEditPort] = useState("");
+    const [saving, setSaving] = useState(false);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const showToast = (msg: string, ok = true) => {
@@ -223,6 +228,33 @@ export default function PosPrintersPage() {
         setTestingId(null);
     };
 
+    const startEdit = (p: PrinterRow) => {
+        setEditingId(p.id);
+        setEditName(p.name);
+        setEditIp(p.ipAddress.startsWith("usb://") ? p.ipAddress : p.ipAddress);
+        setEditPort(String(p.port));
+    };
+
+    const cancelEdit = () => { setEditingId(null); setSaving(false); };
+
+    const saveEdit = async (p: PrinterRow) => {
+        const name = editName.trim();
+        const ip = editIp.trim();
+        const port = Number(editPort) || 9100;
+        if (!name || !ip) return;
+        setSaving(true);
+        try {
+            await fetch("/api/smart/printers", {
+                method: "PATCH", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: p.id, name, ipAddress: ip, port }),
+            });
+            showToast("Saqlandi");
+            setEditingId(null);
+            await loadPrinters();
+        } catch (e) { showToast(String(e), false); }
+        setSaving(false);
+    };
+
     const jobAction = async (id: string, action: "retry" | "cancel") => {
         try {
             await fetch("/api/smart/print-queue", {
@@ -343,13 +375,51 @@ export default function PosPrintersPage() {
                                                     className="px-2.5 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-600 text-xs font-bold transition-colors disabled:opacity-50">
                                                     {testingId === p.id ? <RefreshCw size={12} className="animate-spin" /> : "Test chek"}
                                                 </button>
+                                                <button onClick={() => editingId === p.id ? cancelEdit() : startEdit(p)} title="Tahrirlash"
+                                                    className={`p-1.5 rounded-lg transition-colors ${editingId === p.id ? "bg-sky-100 text-sky-600" : "hover:bg-slate-100 text-slate-400 hover:text-slate-600"}`}>
+                                                    <Pencil size={14} />
+                                                </button>
                                                 <button onClick={() => deletePrinter(p.id, p.name)}
                                                     className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors">
                                                     <Trash2 size={14} />
                                                 </button>
                                             </div>
                                         </div>
+
+                                        {/* Tahrirlash formasi */}
+                                        {editingId === p.id && (
+                                            <div className="mt-2 ml-12 flex items-center gap-2 flex-wrap">
+                                                <input
+                                                    value={editName}
+                                                    onChange={e => setEditName(e.target.value)}
+                                                    placeholder="Printer nomi"
+                                                    className="flex-1 min-w-[120px] px-2.5 py-1.5 rounded-lg border border-sky-300 text-xs outline-none focus:border-sky-500 bg-white"
+                                                />
+                                                <input
+                                                    value={editIp}
+                                                    onChange={e => setEditIp(e.target.value)}
+                                                    placeholder="IP manzil"
+                                                    className="flex-1 min-w-[130px] px-2.5 py-1.5 rounded-lg border border-sky-300 text-xs outline-none focus:border-sky-500 bg-white font-mono"
+                                                />
+                                                <input
+                                                    value={editPort}
+                                                    onChange={e => setEditPort(e.target.value)}
+                                                    placeholder="Port"
+                                                    className="w-16 px-2.5 py-1.5 rounded-lg border border-sky-300 text-xs outline-none focus:border-sky-500 bg-white font-mono"
+                                                />
+                                                <button onClick={() => saveEdit(p)} disabled={saving || !editName.trim() || !editIp.trim()}
+                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-colors disabled:opacity-50">
+                                                    {saving ? <RefreshCw size={11} className="animate-spin" /> : <Check size={11} />} Saqlash
+                                                </button>
+                                                <button onClick={cancelEdit}
+                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-colors">
+                                                    <X size={11} /> Bekor
+                                                </button>
+                                            </div>
+                                        )}
+
                                         {/* Rol tanlash */}
+                                        {editingId !== p.id && (
                                         <div className="mt-2 ml-12 flex items-center gap-1.5">
                                             {Object.entries(ROLE_META).map(([key, meta]) => (
                                                 <button key={key} onClick={() => updatePrinter(p.id, { role: key })}
@@ -362,6 +432,7 @@ export default function PosPrintersPage() {
                                                 Asosiy
                                             </button>
                                         </div>
+                                        )}
                                     </div>
                                 );
                             })}
