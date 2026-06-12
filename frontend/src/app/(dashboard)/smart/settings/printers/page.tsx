@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Printer, Plus, Trash2, X, CheckCircle, AlertCircle, Wifi, WifiOff, Loader2, Usb } from "lucide-react";
+import { Printer, Plus, Trash2, X, CheckCircle, AlertCircle, Wifi, WifiOff, Loader2, Usb, ScanLine, Network } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 
 
@@ -29,6 +29,9 @@ export default function PrintersPage() {
     const [success, setSuccess] = useState("");
     const [winPrinters, setWinPrinters] = useState<string[]>([]);
     const [loadingWinPrinters, setLoadingWinPrinters] = useState(false);
+    const [lanPrinters, setLanPrinters] = useState<{ ip: string; port: number }[]>([]);
+    const [loadingLan, setLoadingLan] = useState(false);
+    const [showLanSection, setShowLanSection] = useState(false);
 
     const loadPrinters = async () => {
         setLoading(true);
@@ -49,7 +52,6 @@ export default function PrintersPage() {
         setLoadingWinPrinters(true);
         setError("");
         try {
-            // Web browser fetch directly goes to VPS. Cloud gets from agent's polling payload.
             const res = await fetch("/api/smart/agent-printers");
             const data = await res.json();
             setWinPrinters(Array.isArray(data.printers) ? data.printers : []);
@@ -61,6 +63,50 @@ export default function PrintersPage() {
             setError("Lokal Agent ishlamayapti ko'rinadi! Iltimos, kassada 'node agent.js' ni yurgizing.");
         } finally {
             setLoadingWinPrinters(false);
+        }
+    };
+
+    const loadLanPrinters = async () => {
+        setLoadingLan(true);
+        setShowLanSection(true);
+        setError("");
+        try {
+            const res = await fetch("/api/smart/agent-printers");
+            const data = await res.json();
+            const discovered: { ip: string; port: number; method: string }[] = Array.isArray(data.discovered) ? data.discovered : [];
+            const lan = discovered.filter(p => p.method === "tcp_scan");
+            setLanPrinters(lan);
+            if (lan.length === 0) {
+                setError("LAN printer topilmadi. Kassa kompyuterida agent ishlaayotgan bo'lsa, tarmoqdagi printerlar avtomatik topiladi (30 soniyada bir skanerlaydi).");
+            }
+        } catch {
+            setLanPrinters([]);
+            setError("Agent bilan ulanishda xatolik. Kassa kompyuterida tray-agent ishlaayotganligini tekshiring.");
+        } finally {
+            setLoadingLan(false);
+        }
+    };
+
+    const handleQuickAddLan = async (ip: string) => {
+        setSaving(true);
+        setError("");
+        try {
+            const res = await fetch("/api/smart/printers", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: `LAN Printer (${ip})`, ipAddress: ip, port: 9100 }),
+            });
+            const data = await res.json();
+            if (!res.ok) { setError(data.error || "Xato"); return; }
+            setSuccess(`${ip} printer qo'shildi!`);
+            setShowLanSection(false);
+            setLanPrinters([]);
+            await loadPrinters();
+            setTimeout(() => setSuccess(""), 3000);
+        } catch (e) {
+            setError(String(e));
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -156,15 +202,53 @@ export default function PrintersPage() {
                     </h1>
                     <p className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-widest mt-1">ESC/POS Termik Printerlar</p>
                 </div>
-                <button onClick={handleOpenModal} className="btn-primary shadow-brand/20 shadow-lg flex items-center gap-2">
-                    <Plus size={18} /> <span className="hidden sm:inline">{t('common.add')} {t('nav.printers') || 'Printer'}</span>
-                </button>
+                <div className="flex items-center gap-2">
+                    <button onClick={loadLanPrinters} disabled={loadingLan} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 font-bold text-sm transition-colors">
+                        {loadingLan ? <Loader2 size={16} className="animate-spin" /> : <Network size={16} />}
+                        <span className="hidden sm:inline">LAN Qidirish</span>
+                    </button>
+                    <button onClick={handleOpenModal} className="btn-primary shadow-brand/20 shadow-lg flex items-center gap-2">
+                        <Plus size={18} /> <span className="hidden sm:inline">{t('common.add')} {t('nav.printers') || 'Printer'}</span>
+                    </button>
+                </div>
             </div>
 
             {/* Success alert */}
             {success && (
                 <div className="m-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-3 text-emerald-600 dark:text-emerald-400 font-semibold animate-in fade-in slide-in-from-top-2 relative z-10 mx-6">
                     <CheckCircle size={18} /> {success}
+                </div>
+            )}
+
+            {/* LAN Discovery results */}
+            {showLanSection && (
+                <div className="mx-4 sm:mx-6 mb-2 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl relative z-10 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                            <Network size={16} className="text-emerald-600 dark:text-emerald-400" />
+                            <span className="font-bold text-sm text-emerald-700 dark:text-emerald-400">
+                                Tarmoqda topilgan LAN Printerlar
+                            </span>
+                            {loadingLan && <Loader2 size={14} className="animate-spin text-emerald-500" />}
+                        </div>
+                        <button onClick={() => { setShowLanSection(false); setLanPrinters([]); setError(""); }} className="w-6 h-6 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white text-sm transition-colors">&times;</button>
+                    </div>
+                    {lanPrinters.length === 0 && !loadingLan ? (
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                            Tarmoqda printer topilmadi. Kassa kompyuterida <strong>tray-agent</strong> ishlaayotganligini tekshiring.
+                        </p>
+                    ) : (
+                        <div className="flex flex-wrap gap-2">
+                            {lanPrinters.map(p => (
+                                <button key={p.ip} onClick={() => handleQuickAddLan(p.ip)} disabled={saving}
+                                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-emerald-500/30 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all text-sm font-bold text-slate-700 dark:text-slate-200 shadow-sm">
+                                    <ScanLine size={14} className="text-emerald-500" />
+                                    {p.ip}:{p.port}
+                                    <Plus size={13} className="text-emerald-500 ml-1" />
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 

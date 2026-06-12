@@ -1063,6 +1063,10 @@ export default function UbtPosPage() {
 
     const [printerStatus, setPrinterStatus] = useState<{ id: string; name: string; online: boolean }[]>([]);
     const [tab, setTab] = useState<"tables" | "takeaway" | "delivery" | "reservation">("tables");
+    const [showLanDiscover, setShowLanDiscover] = useState(false);
+    const [lanDiscoveredList, setLanDiscoveredList] = useState<{ ip: string; port: number }[]>([]);
+    const [loadingLanDiscover, setLoadingLanDiscover] = useState(false);
+    const [lanSaving, setLanSaving] = useState("");
 
 
 
@@ -1793,6 +1797,37 @@ export default function UbtPosPage() {
             const data = await res.json();
             setAvailablePrinters(Array.isArray(data) ? data : []);
         } catch {}
+    };
+
+    const handleLanDiscover = async () => {
+        setLoadingLanDiscover(true);
+        setShowLanDiscover(true);
+        setLanDiscoveredList([]);
+        try {
+            const res = await fetch("/api/smart/agent-printers");
+            const data = await res.json();
+            const discovered: { ip: string; port: number; method: string }[] = Array.isArray(data.discovered) ? data.discovered : [];
+            setLanDiscoveredList(discovered.filter(p => p.method === "tcp_scan"));
+        } catch {}
+        setLoadingLanDiscover(false);
+    };
+
+    const handleLanSavePrinter = async (ip: string, port: number) => {
+        setLanSaving(ip);
+        try {
+            const token = store.kassirSession?.token || store.deviceSession?.token;
+            const hdrs: Record<string, string> = { "Content-Type": "application/json" };
+            if (token) hdrs["Authorization"] = `Bearer ${token}`;
+            await fetch("/api/smart/printers", {
+                method: "POST",
+                headers: hdrs,
+                body: JSON.stringify({ name: `LAN Printer (${ip})`, ipAddress: ip, port }),
+            });
+            await loadAvailablePrinters();
+            setShowLanDiscover(false);
+            setLanDiscoveredList([]);
+        } catch {}
+        setLanSaving("");
     };
 
     // ─── Vaqtni boshlash (Soatlik stolni band qilish) ────────────────────────────
@@ -4072,6 +4107,11 @@ export default function UbtPosPage() {
                     {printerStatus.length === 0 && (
                         <span className="italic text-[10px] opacity-70">Printerlar yuklanmoqda…</span>
                     )}
+                    <span className={`w-px h-3 ${dark ? "bg-white/20" : "bg-slate-300"}`}></span>
+                    <button onClick={handleLanDiscover} title="LAN printerlarni qidirish"
+                        className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold transition-colors ${dark ? "text-emerald-400 hover:bg-emerald-900/30" : "text-emerald-600 hover:bg-emerald-50"}`}>
+                        🔍 Printer qidirish
+                    </button>
                 </div>
                 <div className={`flex items-center gap-3 text-[11px] font-mono ${dark ? "text-slate-400" : "text-slate-500"}`}>
                     <span>v1.0.0</span>
@@ -4079,6 +4119,59 @@ export default function UbtPosPage() {
                     <LiveClock className={`font-black text-sm ${dark ? "text-white" : "text-slate-800"}`} />
                 </div>
             </div>
+
+            {/* LAN Printer Discovery Modal */}
+            {showLanDiscover && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowLanDiscover(false)}>
+                    <div className={`w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border ${dark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"}`} onClick={e => e.stopPropagation()}>
+                        <div className={`p-5 border-b flex items-center justify-between ${dark ? "border-slate-800" : "border-slate-100"}`}>
+                            <div>
+                                <h2 className={`font-black text-base ${dark ? "text-slate-100" : "text-slate-800"}`}>🔍 LAN Printer Qidirish</h2>
+                                <p className={`text-xs mt-0.5 ${dark ? "text-slate-400" : "text-slate-500"}`}>Kabel orqali ulangan tarmoq printerlari</p>
+                            </div>
+                            <button onClick={() => setShowLanDiscover(false)} className={`w-7 h-7 rounded-full flex items-center justify-center text-lg leading-none ${dark ? "bg-slate-800 text-slate-400" : "bg-slate-100 text-slate-500"}`}>&times;</button>
+                        </div>
+                        <div className="p-5">
+                            {loadingLanDiscover ? (
+                                <div className="flex flex-col items-center py-8 gap-3">
+                                    <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
+                                    <p className={`text-sm font-medium ${dark ? "text-slate-400" : "text-slate-500"}`}>Tarmoq skanerlanyapti…</p>
+                                </div>
+                            ) : lanDiscoveredList.length === 0 ? (
+                                <div className={`text-center py-8 ${dark ? "text-slate-500" : "text-slate-400"}`}>
+                                    <div className="text-3xl mb-3">🖨️</div>
+                                    <p className="font-bold text-sm">Printer topilmadi</p>
+                                    <p className="text-xs mt-1">Kassa kompyuterida tray-agent ishlaayotganligini tekshiring</p>
+                                    <button onClick={handleLanDiscover} className="mt-4 px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors">
+                                        Qayta qidirish
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    <p className={`text-xs font-bold mb-3 ${dark ? "text-slate-400" : "text-slate-500"}`}>{lanDiscoveredList.length} ta printer topildi — saqlash uchun bosing:</p>
+                                    {lanDiscoveredList.map(p => (
+                                        <button key={p.ip} onClick={() => handleLanSavePrinter(p.ip, p.port)} disabled={!!lanSaving}
+                                            className={`w-full flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-left ${dark ? "border-slate-800 hover:border-emerald-500/50 hover:bg-emerald-900/20" : "border-slate-100 hover:border-emerald-300 hover:bg-emerald-50"}`}>
+                                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${dark ? "bg-emerald-900/40" : "bg-emerald-100"}`}>
+                                                <span className="text-emerald-500 text-lg">🖨️</span>
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className={`font-black text-sm ${dark ? "text-slate-200" : "text-slate-800"}`}>{p.ip}</p>
+                                                <p className={`text-xs font-mono ${dark ? "text-slate-500" : "text-slate-400"}`}>Port: {p.port}</p>
+                                            </div>
+                                            {lanSaving === p.ip ? (
+                                                <div className="w-5 h-5 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin flex-shrink-0" />
+                                            ) : (
+                                                <span className="text-emerald-500 text-lg flex-shrink-0">+</span>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     </PosCtx.Provider>
     );
