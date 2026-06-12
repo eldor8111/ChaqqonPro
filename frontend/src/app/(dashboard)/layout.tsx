@@ -1,0 +1,124 @@
+"use client";
+
+import Sidebar from "@/components/layout/Sidebar";
+import Header from "@/components/layout/Header";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useFrontendStore } from "@/lib/frontend/store";
+import { AlertTriangle, Lock } from "lucide-react";
+import Link from "next/link";
+
+export default function DashboardLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    const { isAuthenticated, _hasHydrated, subscriptionExpired, user } = useFrontendStore();
+    const router = useRouter();
+    const pathname = usePathname();
+    const redirected = useRef(false);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+    const openMobileSidebar = useCallback(() => setMobileSidebarOpen(true), []);
+    const closeMobileSidebar = useCallback(() => setMobileSidebarOpen(false), []);
+
+    useEffect(() => {
+        if (redirected.current) return;
+        if (_hasHydrated && !isAuthenticated) {
+            redirected.current = true;
+            router.replace("/");
+        }
+    }, [_hasHydrated, isAuthenticated, router]);
+
+    if (!_hasHydrated || !isAuthenticated) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-surface">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-glow animate-pulse bg-white">
+                        <img src="/smart-logo.svg" alt="SMART" className="w-full h-full object-contain" />
+                    </div>
+                    <p className="text-slate-400 text-sm animate-pulse">Yuklanmoqda...</p>
+                </div>
+            </div>
+        );
+    }
+
+    const isBillingPage = pathname?.startsWith("/billing");
+    const isSuspended = user?.tenant?.status === "suspended";
+
+    const settings = user?.tenant?.settings || {};
+    const useWarehouse = settings.useWarehouse ?? true;
+    const useCRM = settings.useCRM ?? false;
+    const useAnalytics = settings.useAnalytics ?? true;
+
+    // Route guard checking
+    const blockedFeatureName = (() => {
+        if (pathname?.startsWith("/smart/ombor") && !useWarehouse) return "Ombor boshqaruvi";
+        if (pathname?.startsWith("/smart/reports") && !useAnalytics) return "Analitika va Hisobotlar";
+        if (pathname?.startsWith("/smart/kontragent") && !useCRM) return "Mijozlar bilan ishlash (CRM)";
+        return null;
+    })();
+
+    return (
+        <div className="flex h-screen overflow-hidden bg-surface">
+            <Sidebar mobileOpen={mobileSidebarOpen} onMobileClose={closeMobileSidebar} onMobileOpen={openMobileSidebar} />
+            <div className="flex flex-col flex-1 min-w-0 min-h-0">
+                {subscriptionExpired && (
+                    <div className="bg-red-500 text-white px-4 py-2 flex items-center justify-center gap-2 text-sm font-medium z-50 rounded-b-xl shadow-md mx-4">
+                        <AlertTriangle size={16} />
+                        <span>
+                            {isSuspended 
+                                ? "Hisobingiz vaqtincha to'xtatilgan!" 
+                                : "Obuna muddati tugagan! Iltimos, to'lov qiling."}
+                        </span>
+                        {!isBillingPage && (
+                            <Link href="/billing" className="underline hover:text-red-100 ml-2 font-bold">
+                                To'lovlar bo'limiga o'tish
+                            </Link>
+                        )}
+                    </div>
+                )}
+                <Header onMobileMenuOpen={openMobileSidebar} />
+                <main className="flex-1 min-w-0 min-h-0 overflow-y-auto p-4 pb-20 md:pb-4 w-full h-full">
+                    {subscriptionExpired && !isBillingPage ? (
+                        <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-surface-card rounded-2xl border border-surface-border animate-fade-in mx-auto max-w-2xl mt-12">
+                            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                                <Lock size={40} className="text-red-500" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-3">Bo'lim bloklangan</h2>
+                            <p className="text-slate-500 mb-8 max-w-md">
+                                {isSuspended 
+                                    ? "Hisobingiz ma'muryat tomonidan vaqtincha to'xtatilganligi sababli, asosiy bo'limlarga kirish cheklangan. Batasil ma'lumotni obuna va to'lovlar bo'limidan olishingiz mumkin." 
+                                    : "Obuna muddati tugagani sababli asosiy bo'limlarga kirish vaqtinchalik cheklangan. Barcha imkoniyatlardan foydalanish uchun obunani uzaytiring."}
+                            </p>
+                            <Link 
+                                href="/billing" 
+                                className="bg-brand-500 text-white px-8 py-3 rounded-xl font-medium hover:bg-brand-600 transition-colors shadow-sm shadow-brand-500/20 w-full sm:w-auto text-lg"
+                            >
+                                Obuna va To'lovlar
+                            </Link>
+                        </div>
+                    ) : blockedFeatureName ? (
+                        <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-surface-card rounded-2xl border border-surface-border animate-fade-in mx-auto max-w-2xl mt-12">
+                            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                                <Lock size={40} className="text-slate-400" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-3">Modul yopiq</h2>
+                            <p className="text-slate-500 mb-8 max-w-md">
+                                Tashkilotingiz sozlamalarida <b>{blockedFeatureName}</b> moduli o'chirib qo'yilgan. Bu moduldan foydalanish uchun ta'rif rejangizni yangilang yoki Super Admin bilan bog'laning.
+                            </p>
+                            <Link 
+                                href="/smart" 
+                                className="bg-brand-500 text-white px-8 py-3 rounded-xl font-medium hover:bg-brand-600 transition-colors shadow-sm shadow-brand-500/20 w-full sm:w-auto text-lg"
+                            >
+                                Asosiy sahifaga qaytish
+                            </Link>
+                        </div>
+                    ) : (
+                        children
+                    )}
+                </main>
+            </div>
+        </div>
+    );
+}

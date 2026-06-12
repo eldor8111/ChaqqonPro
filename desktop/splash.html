@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMART POS YUKLANMOQDA...</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0f172a;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            border-radius: 12px;
+            border: 1px solid #1e293b;
+        }
+
+        .logo-container {
+            width: 120px;
+            height: 120px;
+            border-radius: 25%;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            letter-spacing: 1px;
+        }
+
+        #status-text {
+            color: #94a3b8;
+            font-size: 16px;
+            margin: 0 0 30px 0;
+            transition: color 0.3s;
+        }
+
+        .loader-container {
+            width: 250px;
+            height: 6px;
+            background-color: #1e293b;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .loader-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            border-radius: 10px;
+            width: 0%;
+            animation: load 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        #mode-badge {
+            position: absolute;
+            bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background-color: #1e293b;
+            color: #64748b;
+            transition: background-color 0.4s, color 0.4s;
+        }
+
+        #mode-badge.online  { background-color: #14532d; color: #4ade80; }
+        #mode-badge.offline { background-color: #431407; color: #fb923c; }
+
+        @keyframes load {
+            0%   { width: 0%; }
+            40%  { width: 50%; }
+            80%  { width: 85%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes pulse {
+            0%   { transform: scale(1);    box-shadow: 0 10px 25px rgba(56,189,248,0.2); }
+            50%  { transform: scale(1.05); box-shadow: 0 15px 35px rgba(56,189,248,0.4); }
+            100% { transform: scale(1);    box-shadow: 0 10px 25px rgba(56,189,248,0.2); }
+        }
+    </style>
+</head>
+<body>
+    <img src="assets/icon.png" alt="SMART POS Logo" class="logo-container">
+
+    <h1>SMART POS</h1>
+    <p id="status-text">Kassa tizimi ishga tushirilmoqda...</p>
+
+    <div class="loader-container">
+        <div class="loader-bar"></div>
+    </div>
+
+    <div id="mode-badge">Tizim holati tekshirilmoqda • v2.0.0</div>
+
+    <script>
+        // mode-badge rangini avtomatik yangilash
+        const badge = document.getElementById('mode-badge');
+        const observer = new MutationObserver(() => {
+            const text = badge.textContent || '';
+            badge.classList.remove('online', 'offline');
+            if (text.toLowerCase().includes('online'))  badge.classList.add('online');
+            if (text.toLowerCase().includes('offline')) badge.classList.add('offline');
+        });
+        observer.observe(badge, { childList: true, characterData: true, subtree: true });
+    </script>
+</body>
+</html>

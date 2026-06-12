@@ -1,0 +1,324 @@
+export const dynamic = 'force-dynamic';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/backend/db";
+import { getSession } from "@/lib/backend/auth";
+import { jwtVerify } from "jose";
+import { JWT_SECRET } from "@/lib/backend/jwt";
+
+async function getAuthTenantId(request: NextRequest): Promise<string | null> {
+    // 1. Try cookie session (admin dashboard)
+    try {
+        const cookieSession = await getSession();
+        if (cookieSession?.tenantId) return cookieSession.tenantId;
+    } catch {}
+
+    // 2. Try Bearer token (POS terminal)
+    const authHeader = request.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+        try {
+            const { payload } = await jwtVerify(authHeader.slice(7), JWT_SECRET);
+            if (payload.tenantId) return payload.tenantId as string;
+        } catch {}
+    }
+    return null;
+}
+
+// Module-level: runs once when server starts, never blocks individual requests.
+const _ensurePrinterIpColumn = (async () => {
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN printerIp TEXT`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN isSetMenu INTEGER DEFAULT 0`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN modifiers TEXT`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN type TEXT DEFAULT 'taom'`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN warehouse TEXT`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN inStock INTEGER DEFAULT 1`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN hasBarcode INTEGER DEFAULT 0`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN autoCalculate INTEGER DEFAULT 1`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE Product ADD COLUMN recipes TEXT`); } catch {}
+})();
+
+
+async function isProductInActiveOrder(tenantId: string, productName: string, productId?: string) {
+    // ─── Strategy: Check only KDS orders belonging to OCCUPIED tables ──────────
+    // This avoids stale records from closed orders since table status is always
+    // updated to "free" after payment.
+
+    // Step 1: Find all currently occupied tables
+    const occupiedTables = await prisma.smartTable.findMany({
+        where: { tenantId, status: "occupied" },
+        select: { id: true },
+    });
+
+    if (occupiedTables.length === 0) {
+        // No occupied tables → no active in-house orders → only check delivery
+        const activeDeliveries = await prisma.deliveryOrder.findMany({
+            where: { tenantId, status: { in: ["new", "assigned", "on_the_way"] } },
+            select: { items: true },
+        });
+        for (const d of activeDeliveries) {
+            if (d.items) {
+                try {
+                    const parsed = JSON.parse(d.items);
+                    if (parsed.some((i: any) => i.name === productName || (productId && i.id === productId))) {
+                        return true;
+                    }
+                } catch {}
+            }
+        }
+        return false;
+    }
+
+    const occupiedTableIds = occupiedTables.map(t => t.id);
+
+    // Step 2: Check KDS orders ONLY for occupied tables
+    const activeKdsOrders = await prisma.kDSOrder.findMany({
+        where: {
+            tenantId,
+            tableId: { in: occupiedTableIds },
+            status: { not: "served" },
+        },
+        select: { description: true },
+    });
+
+    for (const kds of activeKdsOrders) {
+        if (kds.description) {
+            try {
+                const parsed = JSON.parse(kds.description);
+                if (Array.isArray(parsed)) {
+                    if (parsed.some((i: any) =>
+                        (i.item?.name === productName) ||
+                        (i.name === productName) ||
+                        (productId && i.item?.id === productId) ||
+                        (productId && i.id === productId)
+                    )) {
+                        return true;
+                    }
+                }
+            } catch {
+                if (kds.description.includes(productName)) return true;
+            }
+        }
+    }
+
+    // Step 3: Check active deliveries
+    const activeDeliveries = await prisma.deliveryOrder.findMany({
+        where: { tenantId, status: { in: ["new", "assigned", "on_the_way"] } },
+        select: { items: true },
+    });
+    for (const d of activeDeliveries) {
+        if (d.items) {
+            try {
+                const parsed = JSON.parse(d.items);
+                if (parsed.some((i: any) => i.name === productName || (productId && i.id === productId))) {
+                    return true;
+                }
+            } catch {}
+        }
+    }
+
+    return false;
+}
+
+
+// GET - fetch menu items for POS (or all products for kirim with ?all=1)
+export async function GET(request: NextRequest) {
+    await _ensurePrinterIpColumn; // resolves instantly after first run
+    try {
+        let tenantId: string | null = await getAuthTenantId(request);
+
+        // POS fallback logic removed to prevent cross-tenant data leaks. If token fails, require login.
+
+        if (!tenantId) {
+            return NextResponse.json({ categories: [], items: [], cancelCode: "" });
+        }
+
+        // ?all=1 => kirim sahifasi uchun: barcha productlarni qaytarish (type filtrsiz)
+        const returnAll = request.nextUrl.searchParams.get("all") === "1";
+
+        let cancelCode = "";
+        let blockSell = false;
+        let paymentMethods: any[] = [];
+        if (!returnAll) {
+            const tObj = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { settings: true } });
+            if (tObj?.settings) {
+                try {
+                    const parsed = JSON.parse(tObj.settings as string);
+                    if (parsed.cancelCode) cancelCode = parsed.cancelCode;
+                    if (parsed.paymentMethods) paymentMethods = parsed.paymentMethods;
+                    if (parsed.blockSell) blockSell = parsed.blockSell;
+                } catch {}
+            }
+        }
+
+        const products2: any[] = await prisma.$queryRawUnsafe(
+            `SELECT id, name, category, sellingPrice, costPrice, stock, unit,
+                    COALESCE(type, 'taom') as type,
+                    COALESCE(warehouse, '') as warehouse,
+                    CASE WHEN image IS NOT NULL THEN image ELSE NULL END as image,
+                    CASE WHEN printerIp IS NOT NULL THEN printerIp ELSE NULL END as printerIp,
+                    isSetMenu, modifiers, recipes,
+                    COALESCE(inStock, 1) as inStock,
+                    COALESCE(hasBarcode, 0) as hasBarcode,
+                    COALESCE(autoCalculate, 1) as autoCalculate
+             FROM Product WHERE tenantId = ? ORDER BY category ASC, name ASC`,
+            tenantId
+        );
+
+        // Fetch explicit categories
+        let explicitCategories: any[] = [];
+        try {
+            explicitCategories = await prisma.$queryRawUnsafe(
+                `SELECT id, name FROM UbtCategory WHERE tenantId=? ORDER BY createdAt ASC`, 
+                tenantId
+            );
+        } catch {
+            // Table might not exist yet if they haven't visited Kategoriya panel
+        }
+
+        const productCategoryNames = Array.from(new Set(products2.map((p: any) => p.category).filter(Boolean)));
+        const stableId = (s: string) => s.split("").reduce((a, c) => ((a * 31 + c.charCodeAt(0)) & 0xfffffff), 5381).toString(36);
+        
+        const categoriesMap = new Map<string, { id: string; name: string }>();
+        
+        // Add explicit
+        explicitCategories.forEach(c => categoriesMap.set(c.name, { id: c.id, name: c.name }));
+        
+        // Add implicit from products (if not already added)
+        productCategoryNames.forEach((name: any) => {
+            if (!categoriesMap.has(name)) {
+                categoriesMap.set(name, { id: stableId(name), name });
+            }
+        });
+
+        const categories = Array.from(categoriesMap.values());
+        const catNameToId = Object.fromEntries(categories.map((c: any) => [c.name, c.id]));
+
+        const items = products2.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            categoryId: catNameToId[p.category] ?? "0",
+            price: Number(p.sellingPrice),
+            cost: Number(p.costPrice),
+            type: p.type || "taom",
+            warehouse: p.warehouse || "",
+            inStock: Number(p.inStock) !== 0,
+            hasBarcode: Number(p.hasBarcode) !== 0,
+            autoCalculate: Number(p.autoCalculate) !== 0,
+            stock: Number(p.stock),
+            unit: p.unit,
+            image: p.image ?? null,
+            printerIp: p.printerIp ?? null,
+            isSetMenu: Number(p.isSetMenu) !== 0,
+            modifiers: (() => { try { return p.modifiers ? JSON.parse(p.modifiers) : []; } catch { return []; } })(),
+            recipes: (() => { try { return p.recipes ? JSON.parse(p.recipes) : []; } catch { return []; } })(),
+        }));
+
+        // ?all=1 bo'lsa — kirim sahifasi uchun barcha productlarni qaytarish
+        if (returnAll) {
+            return NextResponse.json({ categories, items, cancelCode: "", blockSell: false, paymentMethods: [] });
+        }
+
+        return NextResponse.json({ categories, items, cancelCode, blockSell, paymentMethods });
+    } catch (error) {
+        console.error("UBT menu GET error:", error);
+        return NextResponse.json({ categories: [], items: [], error: String(error) });
+    }
+}
+
+// POST - create or update a menu item from admin nomenklatura
+export async function POST(request: NextRequest) {
+    try {
+        const tenantId = await getAuthTenantId(request);
+        if (!tenantId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const body = await request.json();
+        const { id, name, category, sellingPrice, costPrice, type, warehouse, stock, unit, image, printerIp, isSetMenu, modifiers, recipes, inStock, hasBarcode, autoCalculate } = body;
+
+        if (!name) return NextResponse.json({ error: "Nomi kiritilishi shart" }, { status: 400 });
+
+        const catVal = category || "Umumiy";
+        const sellPrice = Number(sellingPrice) || 0;
+        const costPr = Number(costPrice) || 0;
+        const stk = (stock !== undefined && stock !== null && stock !== "") ? Number(stock) : 0;
+        const utStr = unit || "dona";
+        const imgVal = image ?? null;
+        const piVal = printerIp || null;
+        const isSetMenuVal = isSetMenu ? 1 : 0;
+        const inStockVal = (inStock === false || inStock === 0) ? 0 : 1;
+        const hasBarcodeVal = hasBarcode ? 1 : 0;
+        const autoCalculateVal = (autoCalculate === false || autoCalculate === 0) ? 0 : 1;
+        const typeVal = (type === "mahsulot" ? "mahsulot" : "taom");
+        const warehouseVal = warehouse || null;
+        const modifiersVal = modifiers && Array.isArray(modifiers) && modifiers.length > 0 ? JSON.stringify(modifiers) : null;
+        const recipesVal = recipes && Array.isArray(recipes) && recipes.length > 0 ? JSON.stringify(recipes) : null;
+
+        await _ensurePrinterIpColumn;
+
+        // UPSERT by id OR name
+        let targetId = id;
+        if (!targetId) {
+            const existingByName: any[] = await prisma.$queryRawUnsafe(
+                `SELECT id FROM Product WHERE tenantId=? AND name=? LIMIT 1`,
+                tenantId, name
+            );
+            if (existingByName.length > 0) targetId = existingByName[0].id;
+        }
+
+        if (targetId) {
+            const active = await isProductInActiveOrder(tenantId, name, targetId);
+            if (active) {
+                return NextResponse.json({ error: "Ushbu mahsulot ayni paytda faol zakazlar (band stollar yoki yetkazish) ichida mavjud! Mijoz to'lov qilmaguncha uni tahrirlash mumkin emas." }, { status: 400 });
+            }
+
+            await prisma.$executeRawUnsafe(
+                `UPDATE Product SET name=?, category=?, sellingPrice=?, costPrice=?, type=?, warehouse=?, stock=?, unit=?, image=?, printerIp=?, isSetMenu=?, modifiers=?, recipes=?, inStock=?, hasBarcode=?, autoCalculate=? WHERE id=? AND tenantId=?`,
+                name, catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, recipesVal, inStockVal, hasBarcodeVal, autoCalculateVal, targetId, tenantId
+            );
+            return NextResponse.json({ success: true, action: "updated", id: targetId });
+        } else {
+            const newId = `prod_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+            await prisma.$executeRawUnsafe(
+                `INSERT INTO Product (id, tenantId, name, category, sellingPrice, costPrice, type, warehouse, stock, minStock, unit, image, printerIp, isSetMenu, modifiers, recipes, inStock, hasBarcode, autoCalculate, createdAt)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 10, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+                newId, tenantId, name, catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, recipesVal, inStockVal, hasBarcodeVal, autoCalculateVal
+            );
+            return NextResponse.json({ success: true, action: "created", id: newId }, { status: 201 });
+        }
+    } catch (error) {
+        console.error("UBT menu POST error:", error);
+        return NextResponse.json({ error: String(error) }, { status: 500 });
+    }
+}
+
+// DELETE - remove a menu item (by id or by name)
+export async function DELETE(request: NextRequest) {
+    try {
+        const tenantId = await getAuthTenantId(request);
+        if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+        const body = await request.json();
+        const { id, name } = body;
+
+        if (id) {
+            // Delete by id
+            const existing: any[] = await prisma.$queryRawUnsafe(`SELECT name FROM Product WHERE id=? AND tenantId=? LIMIT 1`, id, tenantId);
+            if (existing.length > 0) {
+                const active = await isProductInActiveOrder(tenantId, existing[0].name, id);
+                if (active) return NextResponse.json({ error: "Faol zakazda bo'lgan mahsulotni o'chirish mumkin emas, mijoz oldin to'lov qilishi kerak!" }, { status: 400 });
+            }
+            await prisma.$executeRawUnsafe(`DELETE FROM Product WHERE id=? AND tenantId=?`, id, tenantId);
+        } else if (name) {
+            // Delete by name (for nomenklatura sync)
+            const active = await isProductInActiveOrder(tenantId, name);
+            if (active) return NextResponse.json({ error: "Faol zakazda bo'lgan mahsulotni o'chirish mumkin emas, mijoz oldin to'lov qilishi kerak!" }, { status: 400 });
+            await prisma.$executeRawUnsafe(`DELETE FROM Product WHERE name=? AND tenantId=?`, name, tenantId);
+        } else {
+            return NextResponse.json({ error: "ID yoki nom kiritilmagan" }, { status: 400 });
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        return NextResponse.json({ error: String(error) }, { status: 500 });
+    }
+}
