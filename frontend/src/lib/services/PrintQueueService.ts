@@ -173,10 +173,18 @@ export const PrintQueueService = {
     /** Heartbeat: barcha aktiv printerlarni TCP probe qilib statusini yangilash */
     async probeAll(tenantId: string) {
         const printers = await prisma.smartPrinter.findMany({ where: { tenantId, isActive: true } });
+        // VPS (Linux) lokal tarmoq printeriga yetolmaydi — har probe 1.5s behuda kutadi.
+        // Bunday holatda TCP urinmay faqat agent hisobotiga (lastSeenAt) tayanamiz.
+        const isVps = process.platform !== "win32";
         const results = await Promise.all(printers.map(async (p) => {
-            if (p.ipAddress.startsWith("usb://")) {
-                // USB ni serverdan probe qilib bo'lmaydi — agent xabariga tayanamiz
-                return { id: p.id, status: p.status, latencyMs: p.latencyMs };
+            const isLan = /^(192\.168|10\.|172\.(1[6-9]|2[0-9]|3[0-1]))\./.test(p.ipAddress);
+            if (p.ipAddress.startsWith("usb://") || (isVps && isLan)) {
+                const agentSawRecently = p.lastSeenAt && (Date.now() - new Date(p.lastSeenAt).getTime()) < 90_000;
+                const status = agentSawRecently ? "online" : "offline";
+                if (status !== p.status) {
+                    await prisma.smartPrinter.update({ where: { id: p.id }, data: { status } }).catch(() => {});
+                }
+                return { id: p.id, status, latencyMs: p.latencyMs };
             }
             const started = Date.now();
             const ok = await probeTcp(p.ipAddress, p.port, 1500);

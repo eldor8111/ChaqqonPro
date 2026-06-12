@@ -86,24 +86,22 @@ export default function LockScreensaver({ onUnlock }: { onUnlock: () => void }) 
             onPointerDown={handleTap}
             className="fixed inset-0 z-[3000] overflow-hidden bg-slate-950 select-none cursor-pointer"
         >
-            {/* Animatsiyali fon sharlari */}
-            <div className="ss-orb ss-orb-1" style={{ background: cur.glow }} />
+            {/* Yengil fon sharlari — blur filtri o'rniga radial-gradient (GPU tejamkor) */}
+            <div className="ss-orb ss-orb-1" style={{ background: `radial-gradient(circle, ${cur.glow}38 0%, transparent 70%)` }} />
             <div className="ss-orb ss-orb-2" />
-            <div className="ss-orb ss-orb-3" />
-            {/* Yulduzchalar */}
-            {Array.from({ length: 24 }).map((_, i) => (
+            {/* Yulduzchalar (kam sonli, faqat opacity animatsiya) */}
+            {Array.from({ length: 10 }).map((_, i) => (
                 <div key={i} className="ss-star" style={{
                     left: `${(i * 41) % 100}%`,
                     top: `${(i * 67) % 100}%`,
-                    animationDelay: `${(i % 8) * 0.7}s`,
-                    animationDuration: `${3 + (i % 5)}s`,
+                    animationDelay: `${(i % 5) * 0.9}s`,
                 }} />
             ))}
 
             <div className="relative h-full flex flex-col items-center justify-center px-6 text-center">
                 {/* Soat */}
                 <div className="ss-fade-down mb-10">
-                    <p className="text-white font-black text-6xl md:text-7xl tabular-nums tracking-wider" style={{ textShadow: `0 0 60px ${cur.glow}55` }}>
+                    <p className="text-white font-black text-6xl md:text-7xl tabular-nums tracking-wider">
                         {time}
                     </p>
                     <p className="text-slate-400 text-sm md:text-base font-semibold mt-2 capitalize">{date}</p>
@@ -120,8 +118,8 @@ export default function LockScreensaver({ onUnlock }: { onUnlock: () => void }) 
 
                 {/* Aylanma slayd */}
                 <div key={slide} className="ss-slide-in max-w-xl">
-                    <div className={`w-20 h-20 md:w-24 md:h-24 mx-auto rounded-3xl bg-gradient-to-br ${cur.grad} flex items-center justify-center shadow-2xl ss-float`}
-                        style={{ boxShadow: `0 20px 70px ${cur.glow}66` }}>
+                    <div className={`w-20 h-20 md:w-24 md:h-24 mx-auto rounded-3xl bg-gradient-to-br ${cur.grad} flex items-center justify-center ss-float`}
+                        style={{ boxShadow: `0 12px 40px ${cur.glow}55` }}>
                         <Icon size={42} className="text-white" strokeWidth={2} />
                     </div>
                     <h2 className="text-white font-black text-2xl md:text-4xl mt-6 tracking-tight">{cur.title}</h2>
@@ -137,7 +135,7 @@ export default function LockScreensaver({ onUnlock }: { onUnlock: () => void }) 
 
                 {/* Pastki ko'rsatma */}
                 <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2">
-                    <div className="ss-pulse flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/[0.07] border border-white/10 backdrop-blur-sm">
+                    <div className="ss-pulse flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/10 border border-white/10">
                         <Hand size={16} className="text-sky-300" />
                         <span className="text-slate-300 text-sm font-bold">Davom etish uchun ekranga 2 marta teging</span>
                     </div>
@@ -149,20 +147,18 @@ export default function LockScreensaver({ onUnlock }: { onUnlock: () => void }) 
                 .ss-orb {
                     position: absolute;
                     border-radius: 9999px;
-                    filter: blur(110px);
-                    opacity: 0.22;
+                    will-change: transform;
                     transition: background 1.2s ease;
                 }
-                .ss-orb-1 { width: 520px; height: 520px; top: -160px; left: -120px; animation: ssDrift1 14s ease-in-out infinite; }
-                .ss-orb-2 { width: 440px; height: 440px; bottom: -140px; right: -100px; background: #6366f1; animation: ssDrift2 18s ease-in-out infinite; }
-                .ss-orb-3 { width: 320px; height: 320px; top: 45%; left: 55%; background: #0ea5e9; opacity: 0.14; animation: ssDrift1 22s ease-in-out infinite reverse; }
+                .ss-orb-1 { width: 640px; height: 640px; top: -200px; left: -160px; animation: ssDrift1 18s ease-in-out infinite; }
+                .ss-orb-2 { width: 560px; height: 560px; bottom: -180px; right: -140px; background: radial-gradient(circle, #6366f133 0%, transparent 70%); animation: ssDrift2 24s ease-in-out infinite; }
                 @keyframes ssDrift1 {
-                    0%, 100% { transform: translate(0, 0) scale(1); }
-                    50% { transform: translate(70px, 50px) scale(1.12); }
+                    0%, 100% { transform: translate(0, 0); }
+                    50% { transform: translate(60px, 45px); }
                 }
                 @keyframes ssDrift2 {
-                    0%, 100% { transform: translate(0, 0) scale(1); }
-                    50% { transform: translate(-60px, -45px) scale(1.08); }
+                    0%, 100% { transform: translate(0, 0); }
+                    50% { transform: translate(-50px, -40px); }
                 }
                 .ss-star {
                     position: absolute;
@@ -170,11 +166,11 @@ export default function LockScreensaver({ onUnlock }: { onUnlock: () => void }) 
                     border-radius: 9999px;
                     background: #fff;
                     opacity: 0;
-                    animation: ssTwinkle 4s ease-in-out infinite;
+                    animation: ssTwinkle 4.5s ease-in-out infinite;
                 }
                 @keyframes ssTwinkle {
-                    0%, 100% { opacity: 0; transform: scale(0.6); }
-                    50% { opacity: 0.55; transform: scale(1); }
+                    0%, 100% { opacity: 0; }
+                    50% { opacity: 0.5; }
                 }
                 .ss-fade-down { animation: ssFadeDown 0.8s ease both; }
                 @keyframes ssFadeDown {

@@ -91,7 +91,9 @@ async function heartbeat(serverUrl) {
 // Oxirgi discovery natijasini kesh — har sinxronlashda scan qilmasin
 let _lastDiscovered = null;
 let _lastDiscoveryAt = 0;
-const DISCOVERY_CACHE_MS = 5 * 60_000; // 5 daqiqa
+// 30 daqiqa — to'liq subnet skan og'ir (1000+ IP), kuchsiz POS kompyuterni sekinlashtiradi.
+// Foydalanuvchi "Printer qidirish" bosganda baribir majburiy yangi skan ishlaydi.
+const DISCOVERY_CACHE_MS = 30 * 60_000;
 
 async function syncPrinters(serverUrl, forceDiscover = false) {
     try {
