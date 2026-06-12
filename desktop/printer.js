@@ -39,20 +39,45 @@ function probeTCP(ip, port, timeout = 800) {
 }
 
 /**
- * Lokal tarmoq subnet'ini aniqlash (masalan: "192.168.1")
- * @returns {string|null}
+ * Barcha lokal tarmoq subnetlarini aniqlash (WiFi + Ethernet + ...)
+ * @returns {string[]} masalan: ["192.168.1", "192.168.123"]
  */
-function getLocalSubnet() {
+function getLocalSubnets() {
+    const subnets = new Set();
     const ifaces = os.networkInterfaces();
     for (const name of Object.keys(ifaces)) {
         for (const iface of (ifaces[name] || [])) {
             if (iface.family === 'IPv4' && !iface.internal) {
                 const parts = iface.address.split('.');
-                return `${parts[0]}.${parts[1]}.${parts[2]}`;
+                subnets.add(`${parts[0]}.${parts[1]}.${parts[2]}`);
             }
         }
     }
-    return null;
+    return [...subnets];
+}
+
+/**
+ * ARP jadvalidan ma'lum IP larni olish — OS allaqachon ko'rgan qurilmalar.
+ * Printer boshqa subnetda bo'lsa ham kabel orqali ulangan bo'lsa shu yerda chiqadi.
+ * @returns {Promise<string[]>}
+ */
+async function getArpCandidates() {
+    if (process.platform !== 'win32') return [];
+    try {
+        const raw = execSync('arp -a', { encoding: 'utf8', timeout: 5000, windowsHide: true });
+        const ips = new Set();
+        for (const line of raw.split('\n')) {
+            const m = line.match(/^\s*(\d{1,3}(?:\.\d{1,3}){3})\s+([0-9a-f]{2}(?:-[0-9a-f]{2}){5})/i);
+            if (!m) continue;
+            const ip = m[1];
+            // Broadcast/multicast manzillarni o'tkazib yuborish
+            if (ip.endsWith('.255') || ip.startsWith('224.') || ip.startsWith('239.') || ip === '255.255.255.255') continue;
+            ips.add(ip);
+        }
+        return [...ips];
+    } catch {
+        return [];
+    }
 }
 
 /**
@@ -166,14 +191,34 @@ async function discoverCOMPrinters() {
  * @returns {Promise<Array<{ip, port, method, name}>>}
  */
 async function discoverAllPrinters() {
-    const subnet = getLocalSubnet();
-    console.log(`[DISCOVERY] Qidiruv boshlandi... Subnet: ${subnet || 'aniqlanmadi'}`);
+    // 1) Barcha lokal subnetlar + mashhur printer zavod subnetlari
+    const subnets = getLocalSubnets();
+    const COMMON_PRINTER_SUBNETS = ['192.168.123', '192.168.0', '192.168.1'];
+    for (const c of COMMON_PRINTER_SUBNETS) {
+        if (!subnets.includes(c)) subnets.push(c);
+    }
+    console.log(`[DISCOVERY] Qidiruv boshlandi... Subnetlar: ${subnets.join(', ') || 'aniqlanmadi'}`);
 
-    const [tcpFound, usbFound, comFound] = await Promise.all([
-        subnet ? tcpScanSubnet(subnet, 9100, 800) : Promise.resolve([]),
+    // 2) ARP jadvalidagi ma'lum qurilmalarni to'g'ridan-to'g'ri probe qilish (tez)
+    const arpScan = (async () => {
+        const ips = await getArpCandidates();
+        const results = await Promise.allSettled(ips.map(ip => probeTCP(ip, 9100, 800)));
+        const found = [];
+        results.forEach((r, idx) => {
+            if (r.status === 'fulfilled' && r.value) {
+                found.push({ ip: ips[idx], port: 9100, method: 'tcp_scan', name: null });
+            }
+        });
+        return found;
+    })();
+
+    const [subnetResults, arpFound, usbFound, comFound] = await Promise.all([
+        Promise.all(subnets.map(s => tcpScanSubnet(s, 9100, 800))),
+        arpScan,
         discoverUSBPrinters(),
         discoverCOMPrinters(),
     ]);
+    const tcpFound = [...subnetResults.flat(), ...arpFound];
 
     const all = [...tcpFound, ...usbFound, ...comFound];
 

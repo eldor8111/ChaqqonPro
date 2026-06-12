@@ -60,6 +60,13 @@ export async function POST(request: NextRequest) {
         const port: number = body.port || 9100;
         const subnets = getLocalSubnets();
 
+        // Mashhur printer zavod subnetlari (Xprinter default: 192.168.123.100)
+        if (subnets.length > 0) {
+            for (const c of ["192.168.123", "192.168.0", "192.168.1"]) {
+                if (!subnets.includes(c)) subnets.push(c);
+            }
+        }
+
         if (subnets.length === 0) {
             return NextResponse.json({ printers: [], subnets: [], note: "Tarmoq interfeysi topilmadi" });
         }
