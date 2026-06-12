@@ -13,6 +13,7 @@ import { useStore, SmartTable } from "@/lib/store";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 
 import AttendanceWidget from "@/components/AttendanceWidget";
+import LockScreensaver from "./LockScreensaver";
 
 const fmt = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 const fmtSec = () => new Date().toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -1791,7 +1792,9 @@ export default function UbtPosPage() {
         return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
     }, []);
 
-    const logout = () => { store.setKassirSession(null); router.replace("/kassa/login?lock=1"); };
+    // Qulf: sessiya tozalanadi, reklama ekrani chiqadi; 2 marta tegilganda login sahifasi ochiladi
+    const [showScreensaver, setShowScreensaver] = useState(false);
+    const logout = () => { store.setKassirSession(null); setShowScreensaver(true); };
 
     // Load available printers for printer picker
     const loadAvailablePrinters = async () => {
@@ -2322,6 +2325,9 @@ export default function UbtPosPage() {
     return (
     <PosCtx.Provider value={{ lang, dark }}>
         <div className={`h-screen flex flex-col overflow-hidden select-none ${dark ? "dark" : ""} ${th.bg(dark)}`}>
+            {showScreensaver && (
+                <LockScreensaver onUnlock={() => router.replace("/kassa/login?lock=1")} />
+            )}
             {cancelPrompt && (
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                     <div className={`rounded-2xl shadow-2xl p-6 w-[320px] max-w-full text-center animate-fade-in translate-y-0 relative ${dark ? "bg-slate-900 border border-slate-700" : "bg-white"}`}>
