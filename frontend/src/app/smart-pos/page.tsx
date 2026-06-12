@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
     UtensilsCrossed, Package, Bike, Users, Clock, Loader,
     Plus, Minus, Receipt, X, CreditCard, Banknote,
-    Search, CheckCircle, Check, RefreshCw,
+    Search, CheckCircle, Check, RefreshCw, Printer,
     ShoppingBag, Lock, Phone, MapPin, User, Calendar,
     Sun, ChevronLeft, TrendingUp, BarChart2
 } from "lucide-react";
@@ -1062,6 +1062,7 @@ export default function UbtPosPage() {
     const hasPaymentPerm = ["Kassir", "Administrator", "Menejer", "Manablog"].includes((store.kassirSession as any)?.role) || store.kassirSession?.id === "admin" || !store.kassirSession;
 
     const [printerStatus, setPrinterStatus] = useState<{ id: string; name: string; online: boolean }[]>([]);
+    const [pingStatus, setPingStatus] = useState<Record<string, "ok" | "fail" | "checking">>({});
     const [tab, setTab] = useState<"tables" | "takeaway" | "delivery" | "reservation">("tables");
     const [showLanDiscover, setShowLanDiscover] = useState(false);
     const [lanDiscoveredList, setLanDiscoveredList] = useState<{ ip: string; port: number; method?: string; name?: string }[]>([]);
@@ -2460,6 +2461,18 @@ export default function UbtPosPage() {
                             </button>
                         );
                     })}
+
+                    {/* Printer sozlamalari tugmasi — faqat desktop sidebar (md+) */}
+                    <div className="hidden md:flex flex-col items-center mt-auto pb-3 pt-2 w-full">
+                        <div className={`w-10 h-px mb-3 ${dark ? "bg-white/10" : "bg-slate-200"}`} />
+                        <button
+                            onClick={() => { setShowLanDiscover(true); handleLanDiscover(); }}
+                            title="Printer sozlamalari"
+                            className={`relative flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl w-[64px] h-[64px] transition-all duration-300 group ${showLanDiscover ? (dark ? "bg-sky-500/15 text-sky-400" : "bg-sky-50 text-sky-600") : (dark ? "text-slate-400 hover:bg-white/5 hover:text-slate-200" : "text-slate-500 hover:bg-slate-100 hover:text-slate-800")}`}>
+                            <Printer size={22} strokeWidth={2} className="transition-transform duration-300 group-hover:scale-110" />
+                            <span className="text-[9px] md:text-[10px] uppercase font-bold leading-tight text-center tracking-widest opacity-70">Printer</span>
+                        </button>
+                    </div>
                 </aside>
 
 
@@ -4136,11 +4149,6 @@ export default function UbtPosPage() {
                     {printerStatus.length === 0 && (
                         <span className="italic text-[10px] opacity-70">Printerlar yuklanmoqda…</span>
                     )}
-                    <span className={`w-px h-3 ${dark ? "bg-white/20" : "bg-slate-300"}`}></span>
-                    <button onClick={handleLanDiscover} title="LAN printerlarni qidirish"
-                        className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold transition-colors ${dark ? "text-emerald-400 hover:bg-emerald-900/30" : "text-emerald-600 hover:bg-emerald-50"}`}>
-                        🔍 Printer qidirish
-                    </button>
                 </div>
                 <div className={`flex items-center gap-3 text-[11px] font-mono ${dark ? "text-slate-400" : "text-slate-500"}`}>
                     <span>v1.0.0</span>
@@ -4149,79 +4157,136 @@ export default function UbtPosPage() {
                 </div>
             </div>
 
-            {/* LAN Printer Discovery Modal */}
+            {/* Printer Sozlamalari Modal */}
             {showLanDiscover && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowLanDiscover(false)}>
-                    <div className={`w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border ${dark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"}`} onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => { setShowLanDiscover(false); setLanDiscoveredList([]); }}>
+                    <div className={`w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border ${dark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"}`} onClick={e => e.stopPropagation()}>
+
+                        {/* Header */}
                         <div className={`p-5 border-b flex items-center justify-between ${dark ? "border-slate-800" : "border-slate-100"}`}>
-                            <div>
-                                <h2 className={`font-black text-base ${dark ? "text-slate-100" : "text-slate-800"}`}>🔍 Printer Qidirish</h2>
-                                <p className={`text-xs mt-0.5 ${dark ? "text-slate-400" : "text-slate-500"}`}>LAN · USB · COM</p>
+                            <div className="flex items-center gap-3">
+                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${dark ? "bg-slate-800" : "bg-slate-100"}`}>
+                                    <Printer size={18} className={dark ? "text-slate-300" : "text-slate-600"} />
+                                </div>
+                                <div>
+                                    <h2 className={`font-black text-base ${dark ? "text-slate-100" : "text-slate-800"}`}>Printer Sozlamalari</h2>
+                                    <p className={`text-[11px] ${dark ? "text-slate-500" : "text-slate-400"}`}>LAN · USB · COM printerlar</p>
+                                </div>
                             </div>
-                            <button onClick={() => setShowLanDiscover(false)} className={`w-7 h-7 rounded-full flex items-center justify-center text-lg leading-none ${dark ? "bg-slate-800 text-slate-400" : "bg-slate-100 text-slate-500"}`}>&times;</button>
+                            <button onClick={() => { setShowLanDiscover(false); setLanDiscoveredList([]); }}
+                                className={`w-7 h-7 rounded-full flex items-center justify-center text-lg leading-none ${dark ? "bg-slate-800 text-slate-400 hover:text-white" : "bg-slate-100 text-slate-500 hover:text-slate-800"}`}>&times;</button>
                         </div>
-                        <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
-                            {/* Debug info */}
-                            {lanDebugInfo && (
-                                <p className={`text-[10px] font-mono px-2 py-1 rounded-lg ${dark ? "bg-slate-800 text-slate-400" : "bg-slate-100 text-slate-500"}`}>{lanDebugInfo}</p>
+
+                        <div className="p-5 space-y-5 max-h-[75vh] overflow-y-auto">
+
+                            {/* Qidirish qatori */}
+                            <div className="flex items-center justify-between">
+                                <p className={`text-sm font-bold ${dark ? "text-slate-300" : "text-slate-700"}`}>Topilgan printerlar</p>
+                                <button onClick={handleLanDiscover} disabled={loadingLanDiscover}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${dark ? "bg-slate-800 text-slate-300 hover:bg-slate-700" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+                                    {loadingLanDiscover
+                                        ? <><span className="w-3 h-3 rounded-full border-2 border-current border-t-transparent animate-spin inline-block" /> Qidirilmoqda…</>
+                                        : <><RefreshCw size={12} /> Qidirish</>}
+                                </button>
+                            </div>
+
+                            {/* Debug */}
+                            {lanDebugInfo && !loadingLanDiscover && (
+                                <p className={`text-[10px] font-mono px-2 py-1 rounded-lg ${dark ? "bg-slate-800 text-slate-500" : "bg-slate-100 text-slate-400"}`}>{lanDebugInfo}</p>
                             )}
 
-                            {loadingLanDiscover ? (
-                                <div className="flex flex-col items-center py-8 gap-3">
-                                    <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
-                                    <p className={`text-sm font-medium ${dark ? "text-slate-400" : "text-slate-500"}`}>Skanerlanyapti… (30-60 son)</p>
-                                </div>
-                            ) : lanDiscoveredList.length > 0 ? (
-                                <div className="space-y-2">
+                            {/* Topilgan qurilmalar */}
+                            {lanDiscoveredList.length > 0 && (
+                                <div className={`rounded-2xl border divide-y ${dark ? "border-slate-800 divide-slate-800" : "border-slate-100 divide-slate-100"}`}>
                                     {lanDiscoveredList.map((p, i) => {
-                                        const isUsb = p.method === "usb" || p.method === "com" || p.port === 0;
-                                        const icon = isUsb ? "🔌" : "🖨️";
-                                        const label = p.name || p.ip;
-                                        const sub = isUsb ? (p.method?.toUpperCase() || "USB") : `${p.ip}:${p.port}`;
+                                        const isUsb = p.method === "usb" || p.method === "com";
+                                        const connLabel = p.method === "tcp_scan" ? "LAN" : p.method?.toUpperCase() || "USB";
+                                        const connColor = p.method === "tcp_scan"
+                                            ? "text-emerald-500 bg-emerald-500/10"
+                                            : p.method === "com"
+                                            ? "text-sky-400 bg-sky-500/10"
+                                            : "text-amber-400 bg-amber-500/10";
                                         return (
-                                            <button key={i} onClick={() => handleLanSavePrinter(p.ip, p.port, p.name)} disabled={!!lanSaving}
-                                                className={`w-full flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-left ${dark ? "border-slate-800 hover:border-emerald-500/50 hover:bg-emerald-900/20" : "border-slate-100 hover:border-emerald-300 hover:bg-emerald-50"}`}>
-                                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${dark ? "bg-slate-800" : "bg-slate-100"}`}>
-                                                    <span className="text-lg">{icon}</span>
-                                                </div>
+                                            <div key={i} className={`flex items-center gap-3 px-3 py-2.5 ${dark ? "hover:bg-slate-800/50" : "hover:bg-slate-50"}`}>
+                                                <Printer size={15} className={dark ? "text-slate-400 flex-shrink-0" : "text-slate-400 flex-shrink-0"} />
+                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${connColor}`}>{connLabel}</span>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className={`font-black text-sm truncate ${dark ? "text-slate-200" : "text-slate-800"}`}>{label}</p>
-                                                    <p className={`text-xs font-mono ${dark ? "text-slate-500" : "text-slate-400"}`}>{sub}</p>
+                                                    <p className={`text-sm font-semibold truncate ${dark ? "text-slate-200" : "text-slate-800"}`}>{p.name || p.ip}</p>
+                                                    {p.name && <p className={`text-[11px] font-mono ${dark ? "text-slate-500" : "text-slate-400"}`}>{p.ip}{p.port && !isUsb ? `:${p.port}` : ""}</p>}
                                                 </div>
-                                                {lanSaving === p.ip ? (
-                                                    <div className="w-5 h-5 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin flex-shrink-0" />
-                                                ) : (
-                                                    <span className="text-emerald-500 text-xl flex-shrink-0">+</span>
-                                                )}
-                                            </button>
+                                                <button onClick={() => handleLanSavePrinter(p.ip, p.port, p.name)} disabled={!!lanSaving}
+                                                    className="flex-shrink-0 px-3 py-1.5 rounded-xl bg-sky-500 text-white text-xs font-bold hover:bg-sky-600 transition-colors disabled:opacity-50">
+                                                    {lanSaving === p.ip ? <span className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin inline-block" /> : "Qo'shish"}
+                                                </button>
+                                            </div>
                                         );
                                     })}
                                 </div>
-                            ) : (
-                                <div className={`text-center py-6 ${dark ? "text-slate-500" : "text-slate-400"}`}>
-                                    <div className="text-3xl mb-2">🖨️</div>
-                                    <p className="font-bold text-sm">Avtomatik topilmadi</p>
-                                    <button onClick={handleLanDiscover} className="mt-3 px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold">
-                                        Qayta qidirish
-                                    </button>
-                                </div>
                             )}
 
-                            {/* Qo'lda IP kiritish */}
+                            {/* Saqlangan printerlar */}
+                            <div>
+                                <p className={`text-sm font-bold mb-2 ${dark ? "text-slate-300" : "text-slate-700"}`}>Saqlangan printerlar</p>
+                                {availablePrinters.length === 0 ? (
+                                    <div className={`rounded-2xl border p-6 text-center ${dark ? "border-slate-800" : "border-slate-100"}`}>
+                                        <Printer size={28} className="mx-auto mb-2 opacity-20" />
+                                        <p className={`text-sm ${dark ? "text-slate-600" : "text-slate-400"}`}>Hali printer qo'shilmagan</p>
+                                    </div>
+                                ) : (
+                                    <div className={`rounded-2xl border divide-y ${dark ? "border-slate-800 divide-slate-800" : "border-slate-100 divide-slate-100"}`}>
+                                        {availablePrinters.map(p => {
+                                            const isUsb = p.ipAddress.startsWith("usb://");
+                                            const addr = isUsb ? p.ipAddress.replace("usb://", "") : p.ipAddress;
+                                            const connLabel = isUsb ? "USB" : "LAN";
+                                            const connColor = isUsb ? "text-amber-400 bg-amber-500/10" : "text-emerald-500 bg-emerald-500/10";
+                                            const pingSt = pingStatus[p.id];
+                                            return (
+                                                <div key={p.id} className={`flex items-center gap-3 px-3 py-2.5 ${dark ? "hover:bg-slate-800/50" : "hover:bg-slate-50"}`}>
+                                                    <Printer size={15} className={dark ? "text-slate-400 flex-shrink-0" : "text-slate-400 flex-shrink-0"} />
+                                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${connColor}`}>{connLabel}</span>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className={`text-sm font-semibold truncate ${dark ? "text-slate-200" : "text-slate-800"}`}>{p.name}</p>
+                                                        <p className={`text-[11px] font-mono ${dark ? "text-slate-500" : "text-slate-400"}`}>{addr}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                                                        {pingSt === "checking" && <span className="w-3 h-3 rounded-full border-2 border-sky-400 border-t-transparent animate-spin" />}
+                                                        {pingSt === "ok"       && <span className="w-2 h-2 rounded-full bg-emerald-400" title="Online" />}
+                                                        {pingSt === "fail"     && <span className="w-2 h-2 rounded-full bg-red-400" title="Offline" />}
+                                                        <button onClick={async () => {
+                                                            setPingStatus(s => ({ ...s, [p.id]: "checking" }));
+                                                            try {
+                                                                const token = store.kassirSession?.token || store.deviceSession?.token;
+                                                                const hdrs: Record<string,string> = { "Content-Type": "application/json" };
+                                                                if (token) hdrs["Authorization"] = `Bearer ${token}`;
+                                                                const r = await fetch("/api/smart/print", { method: "POST", headers: hdrs,
+                                                                    body: JSON.stringify({ printerIp: p.ipAddress, port: 9100, tableName: "Test", items: [{ name: "Test chek", qty: 1, price: 0 }], total: 0, time: new Date().toLocaleString("uz-UZ") }) });
+                                                                setPingStatus(s => ({ ...s, [p.id]: r.ok ? "ok" : "fail" }));
+                                                            } catch { setPingStatus(s => ({ ...s, [p.id]: "fail" })); }
+                                                            setTimeout(() => setPingStatus(s => { const c={...s}; delete c[p.id]; return c; }), 4000);
+                                                        }} className={`text-[11px] font-bold px-2 py-1 rounded-lg transition-colors ${dark ? "bg-slate-800 text-slate-400 hover:text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>Test</button>
+                                                        <button onClick={async () => {
+                                                            await fetch("/api/smart/printers", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: p.id }) });
+                                                            loadAvailablePrinters();
+                                                        }} className="text-slate-400 hover:text-red-500 transition-colors text-lg leading-none font-bold">&times;</button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Qo'lda IP */}
                             <div className={`border-t pt-4 ${dark ? "border-slate-800" : "border-slate-100"}`}>
                                 <p className={`text-[10px] font-bold uppercase tracking-wider mb-2 ${dark ? "text-slate-500" : "text-slate-400"}`}>Qo'lda IP kiritish</p>
                                 <div className="flex gap-2">
-                                    <input
-                                        value={lanManualIp}
-                                        onChange={e => setLanManualIp(e.target.value)}
+                                    <input value={lanManualIp} onChange={e => setLanManualIp(e.target.value)}
                                         placeholder="192.168.1.100"
-                                        className={`flex-1 h-10 px-3 rounded-xl border font-mono text-sm outline-none ${dark ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-slate-50 border-slate-200 text-slate-800"}`}
-                                        onKeyDown={e => { if (e.key === "Enter" && lanManualIp.trim()) handleLanSavePrinter(lanManualIp.trim(), 9100); }}
-                                    />
-                                    <button
-                                        onClick={() => { if (lanManualIp.trim()) handleLanSavePrinter(lanManualIp.trim(), 9100); }}
+                                        className={`flex-1 h-10 px-3 rounded-xl border font-mono text-sm outline-none ${dark ? "bg-slate-800 border-slate-700 text-slate-200 placeholder-slate-600" : "bg-slate-50 border-slate-200 text-slate-800"}`}
+                                        onKeyDown={e => { if (e.key === "Enter" && lanManualIp.trim()) handleLanSavePrinter(lanManualIp.trim(), 9100); }} />
+                                    <button onClick={() => { if (lanManualIp.trim()) handleLanSavePrinter(lanManualIp.trim(), 9100); }}
                                         disabled={!lanManualIp.trim() || !!lanSaving}
-                                        className="px-4 h-10 rounded-xl bg-emerald-500 text-white text-sm font-bold disabled:opacity-40">
+                                        className="px-4 h-10 rounded-xl bg-sky-500 text-white text-sm font-bold hover:bg-sky-600 transition-colors disabled:opacity-40">
                                         Qo'sh
                                     </button>
                                 </div>
