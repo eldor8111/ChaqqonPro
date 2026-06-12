@@ -43,3 +43,7 @@ _archive/
 # Large downloads
 frontend/public/downloads/*.exe
 frontend/public/downloads/*.dmg
+
+# VPS only
+UBT POS/
+billing_service/
