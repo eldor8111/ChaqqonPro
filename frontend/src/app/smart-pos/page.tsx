@@ -1064,9 +1064,11 @@ export default function UbtPosPage() {
     const [printerStatus, setPrinterStatus] = useState<{ id: string; name: string; online: boolean }[]>([]);
     const [tab, setTab] = useState<"tables" | "takeaway" | "delivery" | "reservation">("tables");
     const [showLanDiscover, setShowLanDiscover] = useState(false);
-    const [lanDiscoveredList, setLanDiscoveredList] = useState<{ ip: string; port: number }[]>([]);
+    const [lanDiscoveredList, setLanDiscoveredList] = useState<{ ip: string; port: number; method?: string; name?: string }[]>([]);
     const [loadingLanDiscover, setLoadingLanDiscover] = useState(false);
     const [lanSaving, setLanSaving] = useState("");
+    const [lanDebugInfo, setLanDebugInfo] = useState("");
+    const [lanManualIp, setLanManualIp] = useState("");
 
 
 
@@ -1803,42 +1805,56 @@ export default function UbtPosPage() {
         setLoadingLanDiscover(true);
         setShowLanDiscover(true);
         setLanDiscoveredList([]);
+        setLanDebugInfo("");
         try {
-            let printers: { ip: string; port: number; method: string }[] = [];
-
-            // EXE rejimi: IPC orqali to'g'ridan skanerlash (eng tez va ishonchli)
             const ipc = typeof window !== "undefined" ? (window as any).ipcAPI : null;
-            if (ipc?.discoverPrinters) {
-                const found = await ipc.discoverPrinters();
-                printers = Array.isArray(found) ? found.filter((p: any) => p.method === "tcp_scan") : [];
-            }
 
-            // Web/VPS rejimi fallback: server tomondan TCP scan
-            if (printers.length === 0) {
+            if (ipc?.discoverPrinters) {
+                // EXE rejimi: IPC to'g'ridan (USB + LAN + COM hammasi)
+                setLanDebugInfo("IPC orqali skanerlanyapti...");
+                const found = await ipc.discoverPrinters();
+                const all = Array.isArray(found) ? found : [];
+                setLanDiscoveredList(all);
+                setLanDebugInfo(all.length > 0
+                    ? `IPC: ${all.length} ta qurilma topildi`
+                    : "IPC: hech narsa topilmadi");
+            } else {
+                // Web rejimi: server TCP scan
+                setLanDebugInfo("Server-side TCP scan...");
                 const res = await fetch("/api/smart/discover-printers", { method: "POST" });
                 const data = await res.json();
-                if (Array.isArray(data.printers)) printers = data.printers;
+                const all = Array.isArray(data.printers) ? data.printers : [];
+                setLanDiscoveredList(all);
+                const sub = Array.isArray(data.subnets) ? data.subnets.join(", ") : "?";
+                setLanDebugInfo(all.length > 0
+                    ? `Subnet ${sub}: ${all.length} ta topildi`
+                    : `Subnet ${sub}: topilmadi`);
             }
-
-            setLanDiscoveredList(printers);
-        } catch {}
+        } catch (e) {
+            setLanDebugInfo("Xato: " + String(e));
+        }
         setLoadingLanDiscover(false);
     };
 
-    const handleLanSavePrinter = async (ip: string, port: number) => {
-        setLanSaving(ip);
+    const handleLanSavePrinter = async (ip: string, port: number, name?: string) => {
+        const key = ip;
+        setLanSaving(key);
         try {
             const token = store.kassirSession?.token || store.deviceSession?.token;
             const hdrs: Record<string, string> = { "Content-Type": "application/json" };
             if (token) hdrs["Authorization"] = `Bearer ${token}`;
+            const isUsb = port === 0;
+            const ipAddress = isUsb ? `usb://${ip}` : ip;
+            const printerName = name || (isUsb ? `USB: ${ip}` : `LAN: ${ip}`);
             await fetch("/api/smart/printers", {
                 method: "POST",
                 headers: hdrs,
-                body: JSON.stringify({ name: `LAN Printer (${ip})`, ipAddress: ip, port }),
+                body: JSON.stringify({ name: printerName, ipAddress, port: isUsb ? 9100 : port }),
             });
             await loadAvailablePrinters();
             setShowLanDiscover(false);
             setLanDiscoveredList([]);
+            setLanManualIp("");
         } catch {}
         setLanSaving("");
     };
@@ -4139,48 +4155,77 @@ export default function UbtPosPage() {
                     <div className={`w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border ${dark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"}`} onClick={e => e.stopPropagation()}>
                         <div className={`p-5 border-b flex items-center justify-between ${dark ? "border-slate-800" : "border-slate-100"}`}>
                             <div>
-                                <h2 className={`font-black text-base ${dark ? "text-slate-100" : "text-slate-800"}`}>🔍 LAN Printer Qidirish</h2>
-                                <p className={`text-xs mt-0.5 ${dark ? "text-slate-400" : "text-slate-500"}`}>Kabel orqali ulangan tarmoq printerlari</p>
+                                <h2 className={`font-black text-base ${dark ? "text-slate-100" : "text-slate-800"}`}>🔍 Printer Qidirish</h2>
+                                <p className={`text-xs mt-0.5 ${dark ? "text-slate-400" : "text-slate-500"}`}>LAN · USB · COM</p>
                             </div>
                             <button onClick={() => setShowLanDiscover(false)} className={`w-7 h-7 rounded-full flex items-center justify-center text-lg leading-none ${dark ? "bg-slate-800 text-slate-400" : "bg-slate-100 text-slate-500"}`}>&times;</button>
                         </div>
-                        <div className="p-5">
+                        <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+                            {/* Debug info */}
+                            {lanDebugInfo && (
+                                <p className={`text-[10px] font-mono px-2 py-1 rounded-lg ${dark ? "bg-slate-800 text-slate-400" : "bg-slate-100 text-slate-500"}`}>{lanDebugInfo}</p>
+                            )}
+
                             {loadingLanDiscover ? (
                                 <div className="flex flex-col items-center py-8 gap-3">
                                     <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
-                                    <p className={`text-sm font-medium ${dark ? "text-slate-400" : "text-slate-500"}`}>Tarmoq skanerlanyapti…</p>
+                                    <p className={`text-sm font-medium ${dark ? "text-slate-400" : "text-slate-500"}`}>Skanerlanyapti… (30-60 son)</p>
                                 </div>
-                            ) : lanDiscoveredList.length === 0 ? (
-                                <div className={`text-center py-8 ${dark ? "text-slate-500" : "text-slate-400"}`}>
-                                    <div className="text-3xl mb-3">🖨️</div>
-                                    <p className="font-bold text-sm">Printer topilmadi</p>
-                                    <p className="text-xs mt-1">Kassa kompyuterida tray-agent ishlaayotganligini tekshiring</p>
-                                    <button onClick={handleLanDiscover} className="mt-4 px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors">
+                            ) : lanDiscoveredList.length > 0 ? (
+                                <div className="space-y-2">
+                                    {lanDiscoveredList.map((p, i) => {
+                                        const isUsb = p.method === "usb" || p.method === "com" || p.port === 0;
+                                        const icon = isUsb ? "🔌" : "🖨️";
+                                        const label = p.name || p.ip;
+                                        const sub = isUsb ? (p.method?.toUpperCase() || "USB") : `${p.ip}:${p.port}`;
+                                        return (
+                                            <button key={i} onClick={() => handleLanSavePrinter(p.ip, p.port, p.name)} disabled={!!lanSaving}
+                                                className={`w-full flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-left ${dark ? "border-slate-800 hover:border-emerald-500/50 hover:bg-emerald-900/20" : "border-slate-100 hover:border-emerald-300 hover:bg-emerald-50"}`}>
+                                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${dark ? "bg-slate-800" : "bg-slate-100"}`}>
+                                                    <span className="text-lg">{icon}</span>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className={`font-black text-sm truncate ${dark ? "text-slate-200" : "text-slate-800"}`}>{label}</p>
+                                                    <p className={`text-xs font-mono ${dark ? "text-slate-500" : "text-slate-400"}`}>{sub}</p>
+                                                </div>
+                                                {lanSaving === p.ip ? (
+                                                    <div className="w-5 h-5 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin flex-shrink-0" />
+                                                ) : (
+                                                    <span className="text-emerald-500 text-xl flex-shrink-0">+</span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className={`text-center py-6 ${dark ? "text-slate-500" : "text-slate-400"}`}>
+                                    <div className="text-3xl mb-2">🖨️</div>
+                                    <p className="font-bold text-sm">Avtomatik topilmadi</p>
+                                    <button onClick={handleLanDiscover} className="mt-3 px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold">
                                         Qayta qidirish
                                     </button>
                                 </div>
-                            ) : (
-                                <div className="space-y-2">
-                                    <p className={`text-xs font-bold mb-3 ${dark ? "text-slate-400" : "text-slate-500"}`}>{lanDiscoveredList.length} ta printer topildi — saqlash uchun bosing:</p>
-                                    {lanDiscoveredList.map(p => (
-                                        <button key={p.ip} onClick={() => handleLanSavePrinter(p.ip, p.port)} disabled={!!lanSaving}
-                                            className={`w-full flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-left ${dark ? "border-slate-800 hover:border-emerald-500/50 hover:bg-emerald-900/20" : "border-slate-100 hover:border-emerald-300 hover:bg-emerald-50"}`}>
-                                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${dark ? "bg-emerald-900/40" : "bg-emerald-100"}`}>
-                                                <span className="text-emerald-500 text-lg">🖨️</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className={`font-black text-sm ${dark ? "text-slate-200" : "text-slate-800"}`}>{p.ip}</p>
-                                                <p className={`text-xs font-mono ${dark ? "text-slate-500" : "text-slate-400"}`}>Port: {p.port}</p>
-                                            </div>
-                                            {lanSaving === p.ip ? (
-                                                <div className="w-5 h-5 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin flex-shrink-0" />
-                                            ) : (
-                                                <span className="text-emerald-500 text-lg flex-shrink-0">+</span>
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
                             )}
+
+                            {/* Qo'lda IP kiritish */}
+                            <div className={`border-t pt-4 ${dark ? "border-slate-800" : "border-slate-100"}`}>
+                                <p className={`text-[10px] font-bold uppercase tracking-wider mb-2 ${dark ? "text-slate-500" : "text-slate-400"}`}>Qo'lda IP kiritish</p>
+                                <div className="flex gap-2">
+                                    <input
+                                        value={lanManualIp}
+                                        onChange={e => setLanManualIp(e.target.value)}
+                                        placeholder="192.168.1.100"
+                                        className={`flex-1 h-10 px-3 rounded-xl border font-mono text-sm outline-none ${dark ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-slate-50 border-slate-200 text-slate-800"}`}
+                                        onKeyDown={e => { if (e.key === "Enter" && lanManualIp.trim()) handleLanSavePrinter(lanManualIp.trim(), 9100); }}
+                                    />
+                                    <button
+                                        onClick={() => { if (lanManualIp.trim()) handleLanSavePrinter(lanManualIp.trim(), 9100); }}
+                                        disabled={!lanManualIp.trim() || !!lanSaving}
+                                        className="px-4 h-10 rounded-xl bg-emerald-500 text-white text-sm font-bold disabled:opacity-40">
+                                        Qo'sh
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
