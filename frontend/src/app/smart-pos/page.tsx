@@ -2175,36 +2175,37 @@ export default function UbtPosPage() {
             return;
         }
 
-        // 4. Printer IP ni aniqlash
-        let printerIp = overrideIp
+        // 4. Saqlangan printerlar ro'yxati
+        const token = store.kassirSession?.token || store.deviceSession?.token;
+        let printers: any[] = availablePrinters;
+        if (printers.length === 0) {
+            try {
+                const res = await fetch("/api/smart/printers", {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {}
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        printers = data;
+                        setAvailablePrinters(data);
+                    }
+                }
+            } catch {}
+        }
+
+        // 5. Kassa printerini tanlash: session IP mosi → default kassa → kassa → birinchi
+        const sessionIp = overrideIp
             || store.kassirSession?.printerIp
             || store.deviceSession?.printerIp
             || "";
+        const target =
+            (sessionIp ? printers.find((p: any) => p.ipAddress === sessionIp) : undefined)
+            || printers.find((p: any) => p.isDefault && (p.role || "cashier") === "cashier")
+            || printers.find((p: any) => (p.role || "cashier") === "cashier")
+            || printers[0];
 
-        // 5. Printer yo'q → availablePrinters dan birinchisini ishlatish
-        if (!printerIp) {
-            if (availablePrinters.length > 0) {
-                printerIp = availablePrinters[0].ipAddress;
-            } else {
-                // Serverdan yuklashga urinish
-                try {
-                    const token = store.kassirSession?.token || store.deviceSession?.token;
-                    const res = await fetch("/api/smart/printers", {
-                        headers: token ? { Authorization: `Bearer ${token}` } : {}
-                    });
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (Array.isArray(data) && data.length > 0) {
-                            setAvailablePrinters(data);
-                            printerIp = data[0].ipAddress;
-                        }
-                    }
-                } catch {}
-            }
-        }
-
-        // 6. Hali ham printer yo'q → modal ko'rsatish
-        if (!printerIp) {
+        // 6. Printer umuman yo'q → modal ko'rsatish
+        if (!target && !sessionIp) {
             setShowPrinterPick(true);
             return;
         }
@@ -2214,49 +2215,62 @@ export default function UbtPosPage() {
         const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
         const subtotal = activeOrders.reduce((s: number, c: any) => s + (c.item?.price ?? 0) * c.qty, 0);
         const svcPct = (selTable.serviceFee ?? 0) / 100;
-        
+
         const isTimeBased = (selTable as any).extraPriceType === "Soatlik narx";
         const timeFee = isTimeBased ? calcTimeFee(selTable.since, (selTable as any).extraPriceValue ?? 0) : 0;
         const grandTotal = isTimeBased
             ? Math.round(subtotal + timeFee)
             : Math.round(subtotal * (1 + svcPct));
-        const token = store.kassirSession?.token || store.deviceSession?.token;
 
-        fetch("/api/smart/print", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                ...(token ? { Authorization: `Bearer ${token}` } : {})
-            },
-            body: JSON.stringify({
-                printerIp,
-                port: 9100,
-                receiptType: "client",
-                tableName: selTable.name,
-                tableZone: selTable.zone || "",
-                tableType: "Na stol",
-                waiter: store.kassirSession?.name || store.deviceSession?.name || "",
-                time: timeStr,
-                orderNum: Math.floor(Math.random() * 9000) + 1000,
-                servicePercent: (selTable.serviceFee ?? 0),
-                items: activeOrders
-                    .filter((c: any) => c?.item)
-                    .map((c: any) => ({
-                        name: c.item.name,
-                        qty: c.qty,
-                        price: c.item.price,
-                        unit: c.item.unit || "ta",
-                    })),
-                total: grandTotal,
-            }),
-        }).then(async (res) => {
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                console.error("[handlePrintReceipt] Print xatosi:", err);
-            } else {
-                console.log("[handlePrintReceipt ✅] Chek yuborildi →", printerIp);
-            }
-        }).catch(err => console.error("[handlePrintReceipt] Tarmoq xatosi:", err));
+        const receiptPayload = {
+            receiptType: "client",
+            tableName: selTable.name,
+            tableZone: selTable.zone || "",
+            tableType: "Na stol",
+            waiter: store.kassirSession?.name || store.deviceSession?.name || "",
+            time: timeStr,
+            orderNum: Math.floor(Math.random() * 9000) + 1000,
+            servicePercent: (selTable.serviceFee ?? 0),
+            items: activeOrders
+                .filter((c: any) => c?.item)
+                .map((c: any) => ({
+                    name: c.item.name,
+                    qty: c.qty,
+                    price: c.item.price,
+                    unit: c.item.unit || "ta",
+                })),
+            total: grandTotal,
+        };
+        const hdrsPrint: Record<string, string> = {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+        };
+
+        if (target) {
+            // Yangi print-queue: retry/backoff bilan, holati Printer sahifasida ko'rinadi
+            fetch("/api/smart/print-queue", {
+                method: "POST",
+                headers: hdrsPrint,
+                body: JSON.stringify({ printerId: target.id, type: "receipt", priority: 1, payload: receiptPayload }),
+            }).then(async (res) => {
+                if (res.ok) {
+                    // Darhol chop etishga urinish (kutmasdan)
+                    fetch("/api/smart/print-queue/process", { method: "POST", headers: hdrsPrint }).catch(() => {});
+                    console.log("[handlePrintReceipt ✅] Chek navbatga qo'yildi →", target.name);
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    console.error("[handlePrintReceipt] Queue xatosi:", err);
+                    alert("Chek chop etilmadi: " + (err.error || `HTTP ${res.status}`));
+                }
+            }).catch(err => console.error("[handlePrintReceipt] Tarmoq xatosi:", err));
+        } else {
+            // Fallback: session printeri saqlanganlar ro'yxatida yo'q — eski to'g'ridan-to'g'ri yo'l
+            fetch("/api/smart/print", {
+                method: "POST",
+                headers: hdrsPrint,
+                body: JSON.stringify({ printerIp: sessionIp, port: 9100, ...receiptPayload }),
+            }).catch(err => console.error("[handlePrintReceipt] Tarmoq xatosi:", err));
+        }
 
         // 8. Stol statusini "receipt" ga o'tkazish (sariq rang — hisob kutmoqda)
         const hdrs: Record<string, string> = { "Content-Type": "application/json" };

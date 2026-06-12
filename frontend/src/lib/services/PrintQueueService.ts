@@ -181,7 +181,10 @@ export const PrintQueueService = {
             const started = Date.now();
             const ok = await probeTcp(p.ipAddress, p.port, 1500);
             const latency = ok ? Date.now() - started : null;
-            const status = ok ? "online" : "offline";
+            // Server probe yetmasligi mumkin (VPS rejimi) — agent yaqinda (90s) ko'rgan
+            // bo'lsa offline deb belgilamaymiz, agent hisobotiga ishonamiz
+            const agentSawRecently = p.lastSeenAt && (Date.now() - new Date(p.lastSeenAt).getTime()) < 90_000;
+            const status = ok ? "online" : agentSawRecently ? "online" : "offline";
             await prisma.smartPrinter.update({
                 where: { id: p.id },
                 data: { status, latencyMs: latency, ...(ok ? { lastSeenAt: new Date() } : {}) },
