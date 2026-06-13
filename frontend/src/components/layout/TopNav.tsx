@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
     LayoutDashboard, Package, BarChart3, UserCheck, Warehouse,
     DollarSign, Clock, Headset, CreditCard, Building2, ChevronDown,
@@ -12,11 +12,12 @@ import clsx from "clsx";
 import { useFrontendStore } from "@/lib/frontend/store";
 import UserProfile from "./UserProfile";
 
+type SubItem = { href: string; label: string; isI18n?: boolean };
 interface NavItem {
     href: string;
     icon: React.ComponentType<any>;
     key: string;
-    subItems?: { href: string; label: string; isI18n?: boolean }[];
+    subItems?: SubItem[];
 }
 
 const BLOCKED_NAV_ITEMS: NavItem[] = [
@@ -97,10 +98,27 @@ export default function TopNav() {
         }).filter(Boolean) as NavItem[];
     }, [rawNavItems, useWarehouse, useAnalytics, useCRM]);
 
+    // Ochilgan dropdown — position:fixed bilan render qilinadi (scroll konteyneri kesmasin)
+    const [open, setOpen] = useState<{ key: string; items: SubItem[]; left: number; top: number } | null>(null);
+    const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const openMenu = (key: string, items: SubItem[], el: HTMLElement) => {
+        if (closeTimer.current) clearTimeout(closeTimer.current);
+        const r = el.getBoundingClientRect();
+        setOpen({ key, items, left: r.left, top: r.bottom });
+    };
+    const scheduleClose = () => {
+        if (closeTimer.current) clearTimeout(closeTimer.current);
+        closeTimer.current = setTimeout(() => setOpen(null), 160);
+    };
+    const cancelClose = () => { if (closeTimer.current) clearTimeout(closeTimer.current); };
+
     return (
-        // Tepa gorizontal navbar — faqat desktop (mobil drawer Sidebar'da qoladi)
         <nav className="hidden md:flex items-center gap-1 px-4 h-12 bg-surface-card border-b border-surface-border flex-shrink-0 relative z-30">
-            <div className="flex items-center gap-1 flex-1 overflow-x-auto custom-scrollbar">
+            <div
+                className="flex items-center gap-1 flex-1 overflow-x-auto custom-scrollbar"
+                onScroll={() => setOpen(null)}
+            >
                 {navItems.map((item) => {
                     const { href, icon: Icon, key, subItems } = item;
                     const isActive = pathname === href || pathname.startsWith(href + "/");
@@ -109,43 +127,22 @@ export default function TopNav() {
                         // Ota-punktni bosganda birinchi ichki sahifaga o'tadi (ota href ko'pincha sahifasiz)
                         const parentHref = subItems[0]?.href || href;
                         return (
-                            <div key={key} className="relative group flex-shrink-0">
-                                <Link
-                                    href={parentHref}
-                                    className={clsx(
-                                        "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm whitespace-nowrap transition-colors",
-                                        isActive
-                                            ? "text-brand-500 bg-brand-500/10 font-medium"
-                                            : "text-slate-500 hover:text-slate-800 hover:bg-surface-elevated"
-                                    )}
-                                >
-                                    <Icon size={16} className="flex-shrink-0" />
-                                    <span>{t(key)}</span>
-                                    <ChevronDown size={13} className="opacity-60 transition-transform group-hover:rotate-180" />
-                                </Link>
-                                {/* Dropdown (hover bilan ochiladi) */}
-                                <div className="absolute top-full left-0 pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 min-w-[210px]">
-                                    <div className="bg-surface-card border border-surface-border rounded-xl shadow-xl py-1.5">
-                                        {subItems.map((sub) => {
-                                            const isSubActive = pathname === sub.href;
-                                            return (
-                                                <Link
-                                                    key={sub.href}
-                                                    href={sub.href}
-                                                    className={clsx(
-                                                        "block px-4 py-2 text-sm whitespace-nowrap transition-colors",
-                                                        isSubActive
-                                                            ? "text-brand-500 bg-brand-500/10 font-medium"
-                                                            : "text-slate-500 hover:text-slate-800 hover:bg-surface-elevated"
-                                                    )}
-                                                >
-                                                    {sub.isI18n ? t(sub.label) : sub.label}
-                                                </Link>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            </div>
+                            <Link
+                                key={key}
+                                href={parentHref}
+                                onMouseEnter={(e) => openMenu(key, subItems, e.currentTarget)}
+                                onMouseLeave={scheduleClose}
+                                className={clsx(
+                                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm whitespace-nowrap transition-colors flex-shrink-0",
+                                    isActive
+                                        ? "text-brand-500 bg-brand-500/10 font-medium"
+                                        : "text-slate-500 hover:text-slate-800 hover:bg-surface-elevated"
+                                )}
+                            >
+                                <Icon size={16} className="flex-shrink-0" />
+                                <span>{t(key)}</span>
+                                <ChevronDown size={13} className={clsx("opacity-60 transition-transform", open?.key === key && "rotate-180")} />
+                            </Link>
                         );
                     }
 
@@ -153,6 +150,7 @@ export default function TopNav() {
                         <Link
                             key={key}
                             href={href}
+                            onMouseEnter={() => setOpen(null)}
                             className={clsx(
                                 "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm whitespace-nowrap transition-colors flex-shrink-0",
                                 isActive
@@ -171,6 +169,37 @@ export default function TopNav() {
             <div className="flex-shrink-0 pl-2 border-l border-surface-border">
                 <UserProfile placement="topbar" />
             </div>
+
+            {/* Dropdown paneli — position:fixed, barcha kesishlardan tashqarida, eng ustda */}
+            {open && (
+                <div
+                    style={{ position: "fixed", left: open.left, top: open.top, zIndex: 1000 }}
+                    onMouseEnter={cancelClose}
+                    onMouseLeave={scheduleClose}
+                    className="pt-1"
+                >
+                    <div className="bg-surface-card border border-surface-border rounded-xl shadow-2xl py-1.5 min-w-[210px] animate-fade-in">
+                        {open.items.map((sub) => {
+                            const isSubActive = pathname === sub.href;
+                            return (
+                                <Link
+                                    key={sub.href}
+                                    href={sub.href}
+                                    onClick={() => setOpen(null)}
+                                    className={clsx(
+                                        "block px-4 py-2 text-sm whitespace-nowrap transition-colors",
+                                        isSubActive
+                                            ? "text-brand-500 bg-brand-500/10 font-medium"
+                                            : "text-slate-500 hover:text-slate-800 hover:bg-surface-elevated"
+                                    )}
+                                >
+                                    {sub.isI18n ? t(sub.label) : sub.label}
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
         </nav>
     );
 }
