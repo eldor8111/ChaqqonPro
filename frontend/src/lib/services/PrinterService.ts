@@ -596,7 +596,8 @@ class PrintQueue {
     }
 }
 
-const printQueue = new PrintQueue(3);
+// 10 ta bir vaqtda — turli printerlar bir-birini kutmasin (har biri tez ishlaydi)
+const printQueue = new PrintQueue(10);
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 export const PrinterService = {

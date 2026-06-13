@@ -162,45 +162,44 @@ async function pollJobs(serverUrl) {
             if (jobs.length > 0) {
                 console.log(`[POLL] ${jobs.length} ta yangi print job topildi.`);
 
+                // Joblarni printer bo'yicha guruhlash — har printer mustaqil (tez)
+                const byPrinter = {};
                 for (const job of jobs) {
-                    try {
-                        // Server tomondan kelgan maydonlar
-                        const printerName = job.printerName || job.printer || job.name || '';
-                        const base64data  = job.data || job.payload || job.escpos || '';
-
-                        // LAN printer uchun IP va port (server tomondan berilsa)
-                        const printerIp   = job.printerIp   || job.ip   || null;
-                        const printerPort = job.printerPort || job.port || 9100;
-
-                        if (!base64data) {
-                            console.warn(`[POLL] Job tarkibi noto'g'ri: ${JSON.stringify(Object.keys(job))}`);
-                            continue;
-                        }
-
-                        if (!printerName && !printerIp) {
-                            console.warn(`[POLL] printerName yoki printerIp ko'rsatilmagan. Job: ${JSON.stringify(Object.keys(job))}`);
-                            continue;
-                        }
-
-                        // LAN yoki USB — printRaw o'zi aniqlab yuboradi
-                        const result = await printRaw(printerName, base64data, {
-                            printerIp,
-                            printerPort,
-                        });
-
-                        if (result.success) {
-                            const method = result.method === 'lan'
-                                ? `LAN (${printerIp}:${printerPort})`
-                                : `USB/Spooler ("${printerName}")`;
-                            console.log(`[POLL ✅] Chop etildi → ${method}`);
-                        } else {
-                            console.error(`[POLL ❌] Chop etib bo'lmadi:`, result.error);
-                        }
-
-                    } catch (printErr) {
-                        console.error('[POLL PRINT ERROR]', printErr);
+                    const printerName = job.printerName || job.printer || job.name || '';
+                    const base64data  = job.data || job.payload || job.escpos || '';
+                    const printerIp   = job.printerIp   || job.ip   || null;
+                    const printerPort = job.printerPort || job.port || 9100;
+                    if (!base64data || (!printerName && !printerIp)) {
+                        console.warn(`[POLL] Job tarkibi to'liq emas: ${JSON.stringify(Object.keys(job))}`);
+                        continue;
                     }
+                    const key = printerIp ? `${printerIp}:${printerPort}` : `usb:${printerName}`;
+                    (byPrinter[key] = byPrinter[key] || []).push({ printerName, base64data, printerIp, printerPort });
                 }
+
+                // TURLI printerlar PARALLEL chiqadi; bitta printer ichida ketma-ket
+                // (bitta-ulanishli printerlar to'qnashmasligi uchun). Shu sabab nechta
+                // printer bo'lsa ham har biri tez ishlaydi — biri ikkinchisini kutmaydi.
+                await Promise.all(Object.values(byPrinter).map(async (group) => {
+                    for (const j of group) {
+                        try {
+                            const result = await printRaw(j.printerName, j.base64data, {
+                                printerIp: j.printerIp,
+                                printerPort: j.printerPort,
+                            });
+                            if (result.success) {
+                                const method = result.method === 'lan'
+                                    ? `LAN (${j.printerIp}:${j.printerPort})`
+                                    : `USB/Spooler ("${j.printerName}")`;
+                                console.log(`[POLL ✅] Chop etildi → ${method}`);
+                            } else {
+                                console.error(`[POLL ❌] Chop etib bo'lmadi:`, result.error);
+                            }
+                        } catch (printErr) {
+                            console.error('[POLL PRINT ERROR]', printErr);
+                        }
+                    }
+                }));
             }
         }
     } catch (e) {
