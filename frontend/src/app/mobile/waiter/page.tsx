@@ -75,8 +75,8 @@ export default function MobileWaiterPage() {
         if (!store.kassirSession) {
             const checkAuth = setTimeout(() => {
                 if (!useStore.getState().kassirSession) {
-                    // Ofitsiant uchun login ekraniga (admin landing emas)
-                    router.replace("/kassa/login");
+                    // Ofitsiant o'z login-paroli bilan kiradigan portal (qurilma avtorizatsiyasi emas)
+                    router.replace("/login/staff");
                 }
             }, 100);
             return () => clearTimeout(checkAuth);
@@ -168,7 +168,7 @@ export default function MobileWaiterPage() {
         );
     }
     const sess = store.kassirSession;
-    const handleLogout = () => { store.kassirLogout(); router.push("/kassa/login"); };
+    const handleLogout = () => { store.kassirLogout(); router.push("/login/staff"); };
 
     const changeQty = (id: string, name: string, price: number, delta: number) => {
         setCart(prev => {
