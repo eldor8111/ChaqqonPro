@@ -2809,131 +2809,28 @@ export default function UbtPosPage() {
                                                         if (activeOrders.length === 0) return;
                                                         setTableConfirming(true);
                                                         try {
-                                                            // ─── 1. Taomlarni printer IP ga guruhlash ───────────────────
-                                                            const groups: Record<string, typeof activeOrders> = {};
-                                                            const noIpItems: typeof activeOrders = []; // printerIp yo'q taomlar
-                                                            const itemIp: Record<string, string> = {}; // itemKey → biriktirilgan IP
-                                                            const keyOf = (c: any) => `${c.item?.id}-${!!c.isSaboy}-${c.shotId || 1}`;
-                                                            let hasNewItems = false;
-
-                                                            activeOrders.forEach((c: any) => {
-                                                                const unprinted = c.qty - (c.printedQty || 0);
-                                                                if (unprinted > 0) {
-                                                                    hasNewItems = true;
-                                                                    const ip = c.item?.printerIp;
-                                                                    if (ip) {
-                                                                        if (!groups[ip]) groups[ip] = [];
-                                                                        groups[ip].push({ ...c, qty: unprinted });
-                                                                        itemIp[keyOf(c)] = ip;
-                                                                    } else {
-                                                                        noIpItems.push({ ...c, qty: unprinted });
-                                                                    }
-                                                                }
+                                                            // Oshxona chekini SERVER chiqaradi — ishonchli DB holatidan
+                                                            // chiqarilmagan taomlarni hisoblab chop etadi. Frontend holatiga
+                                                            // (local state, printedQty, reload race) UMUMAN bog'liq emas.
+                                                            const token = store.kassirSession?.token || store.deviceSession?.token;
+                                                            const authHdr: Record<string, string> = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+                                                            const r = await fetch("/api/smart/print-kitchen", {
+                                                                method: "POST", headers: authHdr,
+                                                                body: JSON.stringify({ tableId: selTable.id, shotId: activeShot, waiterName: store.kassirSession?.name }),
                                                             });
-
-                                                            // ─── 2. Saqlangan printerlar ro'yxatini yuklash (IP→ID xaritasi uchun) ──
-                                                            let savedPrinters: any[] = availablePrinters;
-                                                            if (savedPrinters.length === 0) {
-                                                                try {
-                                                                    const tkn = store.kassirSession?.token || store.deviceSession?.token;
-                                                                    const pRes = await fetch("/api/smart/printers", {
-                                                                        headers: tkn ? { Authorization: `Bearer ${tkn}` } : {}
-                                                                    });
-                                                                    if (pRes.ok) {
-                                                                        const pData = await pRes.json();
-                                                                        if (Array.isArray(pData) && pData.length > 0) {
-                                                                            savedPrinters = pData;
-                                                                            setAvailablePrinters(pData);
-                                                                        }
-                                                                    }
-                                                                } catch {}
+                                                            const d = await r.json().catch(() => ({}));
+                                                            if (!r.ok || d.success === false) {
+                                                                const msg = (d.failed && d.failed.length) ? d.failed.join("\n") : (d.error || `HTTP ${r.status}`);
+                                                                alert("⚠️ Oshxona cheki chiqmadi:\n\n" + msg + "\n\nPrinter yoniq va ulanganini tekshiring. TASDIQLASH ni qayta bosing.");
                                                             }
-
-                                                            // ─── 2b. printerIp yo'q taomlar → fallback (oshxona roli yoki birinchi printer) ──
-                                                            if (noIpItems.length > 0) {
-                                                                const fallbackPrinter =
-                                                                    savedPrinters.find((p: any) => (p.role || "") === "kitchen") ||
-                                                                    (store.kassirSession?.printerIp ? savedPrinters.find((p: any) => p.ipAddress === store.kassirSession?.printerIp) : undefined) ||
-                                                                    savedPrinters[0];
-                                                                const fallbackIp = fallbackPrinter?.ipAddress || "";
-                                                                if (fallbackIp) {
-                                                                    if (!groups[fallbackIp]) groups[fallbackIp] = [];
-                                                                    groups[fallbackIp].push(...noIpItems);
-                                                                    noIpItems.forEach((c: any) => { itemIp[keyOf(c)] = fallbackIp; });
-                                                                } else {
-                                                                    console.warn("[Tasdiqlash] Printer topilmadi — fallback ham yo'q");
-                                                                }
-                                                            }
-
-                                                            // ─── 3. Har bir printerga kitchen chek — TO'G'RIDAN-TO'G'RI, parallel, darhol ──
-                                                            if (hasNewItems && Object.keys(groups).length > 0) {
-                                                                const now = new Date();
-                                                                const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-                                                                const token = store.kassirSession?.token || store.deviceSession?.token;
-                                                                const authHdr: Record<string, string> = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
-                                                                const orderNum = Math.floor(Math.random() * 9000) + 1000;
-                                                                const okIps = new Set<string>(); // muvaffaqiyatli chiqqan IP lar
-                                                                const failed: string[] = [];     // xatolar (foydalanuvchiga ko'rsatamiz)
-
-                                                                // Barcha printerlarga bir vaqtda yuboramiz — tez chiqadi
-                                                                await Promise.all(Object.entries(groups).map(async ([printerIp, pItems]) => {
-                                                                    const kitchenPayload = {
-                                                                        printerIp, port: 9100,
-                                                                        receiptType: "kitchen",
-                                                                        tableName: selTable.name,
-                                                                        tableZone: selTable.zone || "",
-                                                                        waiter: store.kassirSession?.name || store.deviceSession?.name || "",
-                                                                        time: timeStr,
-                                                                        orderNum,
-                                                                        items: pItems
-                                                                            .filter((c: any) => c?.item)
-                                                                            .map((c: any) => ({
-                                                                                name: c.isSaboy ? `[SABOY] ${c.item.name}` : c.item.name,
-                                                                                qty: c.qty,
-                                                                                price: c.item.price,
-                                                                                unit: c.item.unit || "ta",
-                                                                            })),
-                                                                        total: pItems.reduce((s: number, c: any) => s + (c.item?.price ?? 0) * c.qty, 0),
-                                                                    };
-                                                                    try {
-                                                                        const r = await fetch("/api/smart/print", {
-                                                                            method: "POST", headers: authHdr,
-                                                                            body: JSON.stringify(kitchenPayload),
-                                                                        });
-                                                                        const d = await r.json().catch(() => ({}));
-                                                                        if (r.ok && d.success !== false) {
-                                                                            okIps.add(printerIp);
-                                                                            console.log(`[Tasdiqlash ✅] ${printerIp} → ${selTable.name}`);
-                                                                        } else {
-                                                                            failed.push(`${printerIp}: ${d.error || `HTTP ${r.status}`}`);
-                                                                        }
-                                                                    } catch (e: any) {
-                                                                        failed.push(`${printerIp}: ${e?.message || "tarmoq xatosi"}`);
-                                                                    }
-                                                                }));
-
-                                                                // ─── 4. FAQAT muvaffaqiyatli chiqqan taomlarni "printed" deb belgilash ──
-                                                                //     Xato bo'lganlar printedQty o'zgarmaydi — keyingi TASDIQLASH da qayta chiqadi
-                                                                const updatedOrders = allOrders.map((o: any) => {
-                                                                    if ((o.shotId || 1) !== activeShot) return o;
-                                                                    const ip = itemIp[keyOf(o)];
-                                                                    if (ip && okIps.has(ip)) return { ...o, printedQty: o.qty };
-                                                                    return o;
-                                                                });
-                                                                await fetch("/api/smart/orders-db", {
-                                                                    method: "PUT", headers: authHdr,
-                                                                    body: JSON.stringify({ tableId: selTable.id, items: updatedOrders, waiterName: store.kassirSession?.name })
-                                                                }).catch(() => {});
-                                                                setTableOrders(prev => ({ ...prev, [selTable.id]: updatedOrders }));
-
-                                                                if (failed.length > 0) {
-                                                                    alert("⚠️ Oshxona cheki chiqmadi:\n\n" + failed.join("\n") + "\n\nPrinter yoniq va tarmoqqa ulanganini tekshiring. TASDIQLASH ni qayta bosing.");
-                                                                }
-                                                            }
+                                                        } catch (e: any) {
+                                                            alert("Chek chop etishda xato: " + (e?.message || "tarmoq xatosi"));
+                                                        } finally {
+                                                            setTableConfirming(false);
                                                             setTableConfirmed(true);
                                                             setTimeout(() => setTableConfirmed(false), 3000);
                                                             setSelTable(null);
-                                                        } finally { setTableConfirming(false); }
+                                                        }
                                                     }}
                                                     className={`flex items-center justify-center gap-1 min-h-[36px] rounded transition-all border hover:shadow-sm active:scale-[0.98] ${tableConfirmed ? "bg-emerald-600 border-emerald-700 text-white" : dark ? "bg-blue-600 border-blue-700 text-white hover:bg-blue-500" : "bg-blue-600 border-blue-700 text-white hover:bg-blue-700"}`}>
                                                     <Check size={14} strokeWidth={2.5} />
