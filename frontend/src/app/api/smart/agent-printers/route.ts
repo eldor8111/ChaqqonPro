@@ -19,8 +19,12 @@ export async function GET() {
 export async function POST(request: NextRequest) {
     try {
         const data = await request.json();
-        const filePath = path.join(process.cwd(), ".print_queue", "agent_printers.json");
-        fs.writeFileSync(filePath, JSON.stringify(data));
+        const dir = path.join(process.cwd(), ".print_queue");
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        // Atomik yozish — yarim o'qish bo'lmasligi uchun
+        const tmp = path.join(dir, "agent_printers.json.tmp");
+        fs.writeFileSync(tmp, JSON.stringify(data));
+        fs.renameSync(tmp, path.join(dir, "agent_printers.json"));
         return NextResponse.json({ success: true });
     } catch {
         return NextResponse.json({ success: false });

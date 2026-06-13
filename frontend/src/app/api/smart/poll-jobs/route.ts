@@ -13,9 +13,27 @@ export async function POST(req: Request) {
     return pollJobsLogic(body.printers || []);
 }
 
+/** Osilib qolgan .processing fayllarni tiklash — server/agent print payti qayta ishga
+ * tushgan bo'lsa, chek yo'qolmasin. 30s dan eski bo'lsa qayta .json ga qaytaramiz. */
+function recoverStaleProcessing(queueDir: string): void {
+    try {
+        const now = Date.now();
+        for (const f of fs.readdirSync(queueDir)) {
+            if (!f.endsWith(".processing")) continue;
+            const p = path.join(queueDir, f);
+            try {
+                const age = now - fs.statSync(p).mtimeMs;
+                if (age > 30_000) fs.renameSync(p, p.replace(/\.processing$/, ""));
+            } catch { /* boshqa jarayon olgan */ }
+        }
+    } catch { /* papka yo'q */ }
+}
+
 /** Navbat papkasidan joblarni o'qib, ularni "claim" qiladi (boshqa agent olmasligi uchun) */
 function collectJobs(queueDir: string, agentPrinters: string[]): any[] {
-    const files = fs.readdirSync(queueDir).filter(f => f.endsWith(".json"));
+    recoverStaleProcessing(queueDir);
+    // Faqat print job fayllari — agent_printers.json (printerlar keshi) print job emas
+    const files = fs.readdirSync(queueDir).filter(f => f.endsWith(".json") && f !== "agent_printers.json");
     const jobs: any[] = [];
     const isFiltering = agentPrinters.length > 0;
 
