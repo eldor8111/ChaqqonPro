@@ -2827,35 +2827,31 @@ export default function UbtPosPage() {
                                                                 }
                                                             });
 
-                                                            // ─── 2. printerIp yo'q taomlar → fallback printer ──────────
-                                                            if (noIpItems.length > 0) {
-                                                                let fallbackIp =
-                                                                    store.kassirSession?.printerIp ||
-                                                                    store.deviceSession?.printerIp || "";
-
-                                                                // availablePrinters dan birinchisi
-                                                                if (!fallbackIp && availablePrinters.length > 0) {
-                                                                    fallbackIp = availablePrinters[0].ipAddress;
-                                                                }
-
-                                                                // Hali yo'q — serverdan yukla
-                                                                if (!fallbackIp) {
-                                                                    try {
-                                                                        const tkn = store.kassirSession?.token || store.deviceSession?.token;
-                                                                        const pRes = await fetch("/api/smart/printers", {
-                                                                            headers: tkn ? { Authorization: `Bearer ${tkn}` } : {}
-                                                                        });
-                                                                        if (pRes.ok) {
-                                                                            const pData = await pRes.json();
-                                                                            if (Array.isArray(pData) && pData.length > 0) {
-                                                                                setAvailablePrinters(pData);
-                                                                                fallbackIp = pData[0].ipAddress;
-                                                                            }
+                                                            // ─── 2. Saqlangan printerlar ro'yxatini yuklash (IP→ID xaritasi uchun) ──
+                                                            let savedPrinters: any[] = availablePrinters;
+                                                            if (savedPrinters.length === 0) {
+                                                                try {
+                                                                    const tkn = store.kassirSession?.token || store.deviceSession?.token;
+                                                                    const pRes = await fetch("/api/smart/printers", {
+                                                                        headers: tkn ? { Authorization: `Bearer ${tkn}` } : {}
+                                                                    });
+                                                                    if (pRes.ok) {
+                                                                        const pData = await pRes.json();
+                                                                        if (Array.isArray(pData) && pData.length > 0) {
+                                                                            savedPrinters = pData;
+                                                                            setAvailablePrinters(pData);
                                                                         }
-                                                                    } catch {}
-                                                                }
+                                                                    }
+                                                                } catch {}
+                                                            }
 
-                                                                // Fallback IP topilsa → guruhga qo'shish
+                                                            // ─── 2b. printerIp yo'q taomlar → fallback (oshxona roli yoki birinchi printer) ──
+                                                            if (noIpItems.length > 0) {
+                                                                const fallbackPrinter =
+                                                                    savedPrinters.find((p: any) => (p.role || "") === "kitchen") ||
+                                                                    (store.kassirSession?.printerIp ? savedPrinters.find((p: any) => p.ipAddress === store.kassirSession?.printerIp) : undefined) ||
+                                                                    savedPrinters[0];
+                                                                const fallbackIp = fallbackPrinter?.ipAddress || "";
                                                                 if (fallbackIp) {
                                                                     if (!groups[fallbackIp]) groups[fallbackIp] = [];
                                                                     groups[fallbackIp].push(...noIpItems);
@@ -2864,45 +2860,55 @@ export default function UbtPosPage() {
                                                                 }
                                                             }
 
-                                                            // ─── 3. Har bir printerga kitchen chek yuborish ─────────────
+                                                            // ─── 3. Har bir printerga kitchen chek yuborish (print-queue orqali) ──
                                                             if (hasNewItems && Object.keys(groups).length > 0) {
                                                                 const now = new Date();
                                                                 const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
                                                                 const token = store.kassirSession?.token || store.deviceSession?.token;
-                                                                const authHdr = token ? { Authorization: `Bearer ${token}` } : {} as Record<string, string>;
+                                                                const authHdr: Record<string, string> = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+                                                                let queued = false;
 
                                                                 for (const [printerIp, pItems] of Object.entries(groups)) {
-                                                                    fetch("/api/smart/print", {
-                                                                        method: "POST",
-                                                                        headers: { "Content-Type": "application/json", ...authHdr },
-                                                                        body: JSON.stringify({
-                                                                            printerIp,
-                                                                            port: 9100,
-                                                                            receiptType: "kitchen",
-                                                                            tableName: selTable.name,
-                                                                            tableZone: selTable.zone || "",
-                                                                            waiter: store.kassirSession?.name || store.deviceSession?.name || "",
-                                                                            time: timeStr,
-                                                                            orderNum: Math.floor(Math.random() * 9000) + 1000,
-                                                                            items: pItems
-                                                                                .filter((c: any) => c?.item)
-                                                                                .map((c: any) => ({
-                                                                                    name: c.isSaboy
-                                                                                        ? `[SABOY] ${c.item.name}`
-                                                                                        : c.item.name,
-                                                                                    qty: c.qty,
-                                                                                    price: c.item.price,
-                                                                                    unit: c.item.unit || "ta",
-                                                                                })),
-                                                                            total: pItems.reduce((s: number, c: any) => s + (c.item?.price ?? 0) * c.qty, 0),
-                                                                        }),
-                                                                    })
-                                                                    .then(r => r.ok
-                                                                        ? console.log(`[Tasdiqlash ✅] ${printerIp} → ${selTable.name}`)
-                                                                        : console.warn(`[Tasdiqlash ❌] HTTP ${r.status}`)
-                                                                    )
-                                                                    .catch(e => console.warn(`[Tasdiqlash ❌] ${printerIp}:`, e?.message));
+                                                                    const kitchenPayload = {
+                                                                        receiptType: "kitchen",
+                                                                        tableName: selTable.name,
+                                                                        tableZone: selTable.zone || "",
+                                                                        waiter: store.kassirSession?.name || store.deviceSession?.name || "",
+                                                                        time: timeStr,
+                                                                        orderNum: Math.floor(Math.random() * 9000) + 1000,
+                                                                        items: pItems
+                                                                            .filter((c: any) => c?.item)
+                                                                            .map((c: any) => ({
+                                                                                name: c.isSaboy ? `[SABOY] ${c.item.name}` : c.item.name,
+                                                                                qty: c.qty,
+                                                                                price: c.item.price,
+                                                                                unit: c.item.unit || "ta",
+                                                                            })),
+                                                                        total: pItems.reduce((s: number, c: any) => s + (c.item?.price ?? 0) * c.qty, 0),
+                                                                    };
+
+                                                                    // IP ga mos saqlangan printerni topib, print-queue ga job qo'shamiz
+                                                                    const targetPrinter = savedPrinters.find((p: any) => p.ipAddress === printerIp);
+                                                                    if (targetPrinter) {
+                                                                        try {
+                                                                            const r = await fetch("/api/smart/print-queue", {
+                                                                                method: "POST", headers: authHdr,
+                                                                                body: JSON.stringify({ printerId: targetPrinter.id, type: "kitchen", priority: 1, payload: kitchenPayload }),
+                                                                            });
+                                                                            if (r.ok) { queued = true; console.log(`[Tasdiqlash ✅] navbatga → ${targetPrinter.name} (${printerIp})`); }
+                                                                            else console.warn(`[Tasdiqlash ❌] queue HTTP ${r.status}`);
+                                                                        } catch (e: any) { console.warn(`[Tasdiqlash ❌] ${printerIp}:`, e?.message); }
+                                                                    } else {
+                                                                        // Saqlanmagan IP — eski to'g'ridan-to'g'ri yo'l (zaxira)
+                                                                        fetch("/api/smart/print", {
+                                                                            method: "POST", headers: authHdr,
+                                                                            body: JSON.stringify({ printerIp, port: 9100, ...kitchenPayload }),
+                                                                        }).catch(e => console.warn(`[Tasdiqlash ❌] ${printerIp}:`, e?.message));
+                                                                    }
                                                                 }
+
+                                                                // Darhol chop etishga urinish (EXE rejimida server o'zi chiqaradi)
+                                                                if (queued) fetch("/api/smart/print-queue/process", { method: "POST", headers: authHdr }).catch(() => {});
 
                                                                 // ─── 4. printedQty ni yangilash (qayta bosilmasin) ─────
                                                                 const updatedOrders = allOrders.map((o: any) =>
