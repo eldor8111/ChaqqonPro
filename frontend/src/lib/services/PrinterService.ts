@@ -364,10 +364,12 @@ function buildReportBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
 function printTcpOnce(ip: string, port: number, data: Buffer): Promise<void> {
     return new Promise((resolve, reject) => {
         const socket = new net.Socket();
+        socket.setNoDelay(true); // Nagle o'chiriladi — ma'lumot darhol yuboriladi (kechikishni kamaytiradi)
         let settled = false;
         const done = (err?: Error) => {
             if (settled) return;
             settled = true;
+            clearTimeout(timer);
             socket.destroy();
             if (err) {
                 const extendedMsg = `LAN Printer Error (${ip}:${port}) - ${err.message}. (Printer o'chiq, IP xato, yoki tarmoq bloklagan)`;
@@ -376,16 +378,14 @@ function printTcpOnce(ip: string, port: number, data: Buffer): Promise<void> {
                 resolve();
             }
         };
-        const timer = setTimeout(() => {
-            done(new Error(`Timeout`));
-        }, 8000); // 8 soniyaga uzaytiramiz
+        // Ulanish 5s ichida bo'lmasa xato (tez fikr-mulohaza uchun)
+        const timer = setTimeout(() => done(new Error("Timeout")), 5000);
         socket.on("error", (err) => done(err));
         socket.connect(port, ip, () => {
-            clearTimeout(timer);
-            // Socket.end ham yoziydi, ham streamni oxiriga yetkazadi (FIN)
+            // end() ma'lumotni yozadi va FIN yuboradi; callback flush'dan keyin ishlaydi
             socket.end(data, () => {
-                // Printer to'liq qabul qilishiga imkon berib 500ms dan keyin yopamiz
-                setTimeout(() => done(), 500);
+                // LAN'da ma'lumot bir lahzada yetadi — qisqa kafolat (120ms) bilan yopamiz
+                setTimeout(() => done(), 120);
             });
         });
     });

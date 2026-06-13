@@ -2249,29 +2249,21 @@ export default function UbtPosPage() {
             ...(token ? { Authorization: `Bearer ${token}` } : {})
         };
 
-        if (target) {
-            // Yangi print-queue: retry/backoff bilan, holati Printer sahifasida ko'rinadi
-            fetch("/api/smart/print-queue", {
-                method: "POST",
-                headers: hdrsPrint,
-                body: JSON.stringify({ printerId: target.id, type: "receipt", priority: 1, payload: receiptPayload }),
-            }).then(async (res) => {
-                if (res.ok) {
-                    // Darhol chop etishga urinish (kutmasdan)
-                    fetch("/api/smart/print-queue/process", { method: "POST", headers: hdrsPrint }).catch(() => {});
-                    console.log("[handlePrintReceipt ✅] Chek navbatga qo'yildi →", target.name);
-                } else {
-                    const err = await res.json().catch(() => ({}));
-                    console.error("[handlePrintReceipt] Queue xatosi:", err);
-                    alert("Chek chop etilmadi: " + (err.error || `HTTP ${res.status}`));
-                }
-            }).catch(err => console.error("[handlePrintReceipt] Tarmoq xatosi:", err));
-        } else {
-            // Fallback: session printeri saqlanganlar ro'yxatida yo'q — eski to'g'ridan-to'g'ri yo'l
+        // TO'G'RIDAN-TO'G'RI, darhol chop etish (navbatsiz — tez chiqadi)
+        const printIp = target?.ipAddress || sessionIp;
+        if (printIp) {
             fetch("/api/smart/print", {
                 method: "POST",
                 headers: hdrsPrint,
-                body: JSON.stringify({ printerIp: sessionIp, port: 9100, ...receiptPayload }),
+                body: JSON.stringify({ printerIp: printIp, port: target?.port || 9100, ...receiptPayload }),
+            }).then(async (res) => {
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    console.error("[handlePrintReceipt] Chop xatosi:", err);
+                    alert("Chek chop etilmadi: " + (err.error || `HTTP ${res.status}`));
+                } else {
+                    console.log("[handlePrintReceipt ✅] Chek chiqdi →", printIp);
+                }
             }).catch(err => console.error("[handlePrintReceipt] Tarmoq xatosi:", err));
         }
 
