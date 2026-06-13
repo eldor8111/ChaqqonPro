@@ -218,35 +218,36 @@ function ClearReportsModal({ onClose }: { onClose: () => void }) {
     );
 }
 
-export default function UserProfile({ collapsed }: { collapsed?: boolean }) {
+export default function UserProfile({ collapsed, placement = "sidebar" }: { collapsed?: boolean; placement?: "sidebar" | "topbar" }) {
     const { user, logout } = useFrontendStore();
     const router = useRouter();
     const [showUser, setShowUser] = useState(false);
     const [showChangePw, setShowChangePw] = useState(false);
     const [showClearReports, setShowClearReports] = useState(false);
+    const isTopbar = placement === "topbar";
 
     // Close dropdown when collapsed state changes
     useState(() => { setShowUser(false); });
 
     return (
-        <div className="relative mt-auto border-t border-surface-border px-2 py-4">
+        <div className={clsx("relative", isTopbar ? "" : "mt-auto border-t border-surface-border px-2 py-4")}>
             {showChangePw && <ChangePasswordModal onClose={() => setShowChangePw(false)} />}
             {showClearReports && <ClearReportsModal onClose={() => setShowClearReports(false)} />}
 
             {/* Click away listener overlay */}
             {showUser && (
-                <div 
-                    className="fixed inset-0 z-40" 
-                    onClick={() => setShowUser(false)} 
+                <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowUser(false)}
                 />
             )}
 
             {/* User Dropdown */}
             {showUser && (
-                <div 
+                <div
                     className={clsx(
                         "absolute z-50 glass-card shadow-card py-1 animate-fade-in",
-                        collapsed ? "bottom-0 left-full ml-2 w-52" : "bottom-full mb-2 left-2 right-2"
+                        isTopbar ? "top-full mt-2 right-0 w-56" : collapsed ? "bottom-0 left-full ml-2 w-52" : "bottom-full mb-2 left-2 right-2"
                     )}
                 >
                     <div className="px-4 py-3 border-b border-slate-200 dark:border-surface-border">
@@ -302,22 +303,31 @@ export default function UserProfile({ collapsed }: { collapsed?: boolean }) {
             <button
                 onClick={() => setShowUser(!showUser)}
                 className={clsx(
-                    "flex items-center gap-2 rounded-xl hover:bg-surface-elevated transition-all w-full",
-                    collapsed ? "justify-center p-2" : "px-3 py-2"
+                    "flex items-center gap-2 rounded-xl hover:bg-surface-elevated transition-all",
+                    isTopbar ? "px-2 py-1.5" : "w-full",
+                    !isTopbar && (collapsed ? "justify-center p-2" : "px-3 py-2")
                 )}
             >
                 <div className="w-8 h-8 rounded-full bg-gradient-brand flex-shrink-0 flex items-center justify-center text-white text-sm font-bold shadow-glow">
                     {user?.name ? user.name.charAt(0).toUpperCase() : "A"}
                 </div>
-                {!collapsed && (
+                {isTopbar ? (
+                    <>
+                        <div className="text-left min-w-0 hidden lg:block">
+                            <p className="text-sm font-medium text-slate-800 truncate capitalize max-w-[120px]">{user?.name || "Admin"}</p>
+                            <p className="text-[10px] text-slate-400 truncate">{user?.role || "Administrator"}</p>
+                        </div>
+                        <ChevronUp size={14} className={clsx("text-slate-400 transition-transform", showUser ? "" : "rotate-180")} />
+                    </>
+                ) : !collapsed && (
                     <>
                         <div className="text-left flex-1 min-w-0">
                             <p className="text-sm font-medium text-slate-800 truncate capitalize">{user?.name || "Admin"}</p>
                             <p className="text-[10px] text-slate-400 truncate">{user?.role || "Administrator"}</p>
                         </div>
-                        <ChevronUp 
-                            size={14} 
-                            className={clsx("text-slate-400 transition-transform", showUser && "rotate-180")} 
+                        <ChevronUp
+                            size={14}
+                            className={clsx("text-slate-400 transition-transform", showUser && "rotate-180")}
                         />
                     </>
                 )}

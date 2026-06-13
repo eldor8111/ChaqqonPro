@@ -243,15 +243,8 @@ export default function Sidebar({ mobileOpen = false, onMobileClose, onMobileOpe
 
     return (
         <>
-            {/* Desktop Sidebar */}
-            <aside
-                className={clsx(
-                    "hidden md:flex flex-col h-screen bg-surface-card border-r border-surface-border transition-all duration-300 ease-in-out z-40 flex-shrink-0",
-                    collapsed ? "w-16" : "w-64"
-                )}
-            >
-                {sidebarContent}
-            </aside>
+            {/* Desktop: chap menyu olib tashlandi — endi bo'limlar tepa navbarda (TopNav).
+                Faqat mobil drawer va pastki navigatsiya qoladi. */}
 
             {/* Mobile Drawer Overlay */}
             {mobileOpen && (
