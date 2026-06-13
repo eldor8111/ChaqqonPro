@@ -161,6 +161,7 @@ async function syncPrinters(serverUrl, forceDiscover = false) {
 async function pollJobs(serverUrl) {
     if (isPolling) return;
     isPolling = true;
+    const ackIds = []; // chop etilgan job id'lari — serverga tasdiqlash uchun
 
     try {
         // 20s long-poll: server fayl paydo bo'lishi bilanoq qaytaradi → 30s timeout
@@ -183,11 +184,13 @@ async function pollJobs(serverUrl) {
                     const printerIp   = job.printerIp   || job.ip   || null;
                     const printerPort = job.printerPort || job.port || 9100;
                     if (!base64data || (!printerName && !printerIp)) {
+                        // Tarkibi to'liq emas — baribir ACK qilamiz (qayta yuborilmasin)
+                        if (job.id) ackIds.push(job.id);
                         console.warn(`[POLL] Job tarkibi to'liq emas: ${JSON.stringify(Object.keys(job))}`);
                         continue;
                     }
                     const key = printerIp ? `${printerIp}:${printerPort}` : `usb:${printerName}`;
-                    (byPrinter[key] = byPrinter[key] || []).push({ printerName, base64data, printerIp, printerPort });
+                    (byPrinter[key] = byPrinter[key] || []).push({ id: job.id, printerName, base64data, printerIp, printerPort });
                 }
 
                 // TURLI printerlar PARALLEL chiqadi; bitta printer ichida ketma-ket
@@ -202,18 +205,33 @@ async function pollJobs(serverUrl) {
                                 printerPort: j.printerPort,
                             }));
                             if (result.success) {
+                                // Faqat MUVAFFAQIYATLI chiqqan job ACK qilinadi → server o'chiradi.
+                                // Xato bo'lsa ACK qilmaymiz → 30s dan keyin qayta yuboriladi.
+                                if (j.id) ackIds.push(j.id);
                                 const method = result.method === 'lan'
                                     ? `LAN (${j.printerIp}:${j.printerPort})`
                                     : `USB/Spooler ("${j.printerName}")`;
                                 console.log(`[POLL ✅] Chop etildi → ${method}`);
                             } else {
-                                console.error(`[POLL ❌] Chop etib bo'lmadi:`, result.error);
+                                console.error(`[POLL ❌] Chop etib bo'lmadi (qayta yuboriladi):`, result.error);
                             }
                         } catch (printErr) {
                             console.error('[POLL PRINT ERROR]', printErr);
                         }
                     }
                 }));
+            }
+
+            // Chop etilgan joblarni serverga tasdiqlaymiz (ACK) — server ularni o'chiradi
+            if (ackIds.length > 0) {
+                try {
+                    await fetch(`${serverUrl}/api/smart/poll-jobs`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ack: ackIds }),
+                        signal: AbortSignal.timeout(10000),
+                    });
+                } catch { /* ACK yetib bormasa, job 30s dan keyin qayta yuboriladi (dublikat xavfi kam) */ }
             }
         }
     } catch (e) {

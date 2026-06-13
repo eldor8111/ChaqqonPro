@@ -10,6 +10,17 @@ export async function GET() {
 
 export async function POST(req: Request) {
     const body = await req.json().catch(() => ({}));
+    // ACK: agent chop etgan joblarni tasdiqlaydi → server ularni o'chiradi.
+    // Tasdiqlanmagan joblar .processing da qoladi va 30s dan keyin qayta yuboriladi.
+    if (Array.isArray(body.ack) && body.ack.length > 0) {
+        const queueDir = path.join(process.cwd(), ".print_queue");
+        for (const id of body.ack) {
+            if (typeof id !== "string") continue;
+            const safe = id.replace(/[/\\]/g, ""); // path traversal himoyasi
+            try { fs.unlinkSync(path.join(queueDir, safe + ".processing")); } catch { /* allaqachon o'chgan */ }
+        }
+        return NextResponse.json({ ok: true });
+    }
     return pollJobsLogic(body.printers || []);
 }
 
@@ -48,11 +59,13 @@ function collectJobs(queueDir: string, agentPrinters: string[]): any[] {
                 if (!isLAN && !isUSB) continue; // bu agent uchun emas
             }
             const processingPath = filepath + ".processing";
-            fs.renameSync(filepath, processingPath); // qulflash
+            fs.renameSync(filepath, processingPath); // qulflash (atomik)
             const content = fs.readFileSync(processingPath, "utf8");
+            // O'CHIRMAYMIZ — agent chop etib ACK yuborgandan keyin o'chiriladi.
+            // Agar ACK kelmasa (javob yo'qoldi yoki print xato), 30s dan keyin
+            // recoverStaleProcessing qayta .json ga qaytaradi → chek yo'qolmaydi.
             jobs.push({ id: file, ...JSON.parse(content) });
-            fs.unlinkSync(processingPath);
-        } catch { /* boshqa agent olgan yoki o'chgan */ }
+        } catch { /* boshqa poll olgan yoki o'chgan */ }
     }
     return jobs;
 }
