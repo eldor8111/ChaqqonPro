@@ -150,8 +150,9 @@ async function pollJobs(serverUrl) {
     isPolling = true;
 
     try {
+        // 20s long-poll: server fayl paydo bo'lishi bilanoq qaytaradi → 30s timeout
         const res = await fetch(`${serverUrl}/api/smart/poll-jobs?v=2`, {
-            signal: AbortSignal.timeout(10000),
+            signal: AbortSignal.timeout(30000),
         });
 
         if (res.ok) {
@@ -212,21 +213,36 @@ async function pollJobs(serverUrl) {
     }
 }
 
+// Uzluksiz long-poll tsikli — pollJobs qaytishi bilanoq darhol qayta so'raydi.
+// Shu tariqa doim bitta ochiq long-poll bo'ladi → chek deyarli darhol chiqadi.
+let jobLoopActive = false;
+async function jobLoop(serverUrl) {
+    if (jobLoopActive) return;
+    jobLoopActive = true;
+    while (jobLoopActive) {
+        try {
+            await pollJobs(serverUrl);
+        } catch { /* xatoni jim yutamiz */ }
+        // Tight-loop oldini olish uchun qisqa pauza (xato/bo'sh javobdan keyin)
+        await new Promise(r => setTimeout(r, 150));
+    }
+}
+
 function startPolling(config) {
-    if (pollTimer) stopPolling();
+    if (pollTimer || jobLoopActive) stopPolling();
 
-    const { serverUrl, pollInterval = 10000 } = config;
-    console.log(`[AGENT V2] Polling boshlandi → ${serverUrl} (har ${pollInterval}ms)`);
+    const { serverUrl } = config;
+    console.log(`[AGENT V2] Long-poll boshlandi → ${serverUrl}`);
 
-    pollJobs(serverUrl);
+    jobLoop(serverUrl);          // uzluksiz long-poll (fayl navbati)
     syncPrinters(serverUrl);
     processQueue(serverUrl);
     heartbeat(serverUrl);
 
+    // DB-navbat (print-queue) va heartbeat — alohida intervalda
     pollTimer = setInterval(() => {
-        pollJobs(serverUrl);
         processQueue(serverUrl);
-    }, pollInterval);
+    }, 3000);
 
     syncTimer = setInterval(() => {
         syncPrinters(serverUrl);
@@ -235,6 +251,7 @@ function startPolling(config) {
 }
 
 function stopPolling() {
+    jobLoopActive = false; // long-poll tsiklini to'xtatish
     if (pollTimer) {
         clearInterval(pollTimer);
         pollTimer = null;
