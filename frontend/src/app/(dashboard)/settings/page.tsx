@@ -1175,16 +1175,7 @@ export default function SettingsPage() {
                                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Oshpaz printerida chiqadigan buyurtma chekining ko'rinishini sozlang</p>
                                 </div>
                                 <button
-                                    onClick={() => {
-                                        const currentSettings = (settingsData as any)?.tenant?.settings || {};
-                                        updateSettingsMutation.mutate({
-                                            ...currentSettings,
-                                            kitchenReceiptSettings: {
-                                                ...(receiptDraft.kitchenReceiptSettings || {}),
-                                            }
-                                        });
-                                        alert("Oshxona cheki sozlamalari saqlandi!");
-                                    }}
+                                    onClick={saveReceiptSettings}
                                     disabled={updateSettingsMutation.isPending}
                                     className="btn-primary flex items-center gap-2">
                                     <Printer size={16} /> Saqlash

@@ -149,7 +149,10 @@ async function getReceiptOpts(tenantId?: string): Promise<ReceiptOpts> {
         try { settings = JSON.parse((tenant as { settings?: string }).settings || "{}"); } catch {}
         const r = (settings.receiptSettings ?? {}) as Record<string, any>;
         const h = (settings.smartSettings  ?? {}) as Record<string, any>;
-        const k = (settings.kitchenReceiptSettings ?? {}) as Record<string, any>;
+        // Oshxona (kitchen) sozlamalari admin panelda receiptSettings ICHIDA tekis saqlanadi
+        // (masalan receiptSettings.kitchenShowTable). Eski format bilan moslik uchun
+        // alohida kitchenReceiptSettings ham qo'shiladi, receiptSettings ustun turadi.
+        const k = { ...(settings.kitchenReceiptSettings ?? {}), ...r } as Record<string, any>;
 
         const opts: ReceiptOpts = {
             shopName:       tenant.shopName || "RESTORAN",
