@@ -452,17 +452,20 @@ async function printTcp(ip: string, port: number, data: Buffer): Promise<void> {
         return;
     }
 
-    try {
-        await printTcpOnce(ip, port, data);
-    } catch (firstErr) {
-        console.warn(`[PrinterService] Retry ${ip}:${port} — 2s dan keyin`);
-        await new Promise(r => setTimeout(r, 2000));
+    // Band printer (oldingi chek yoki heartbeat probe) uchun bir necha bor qayta urinamiz
+    const delays = [0, 350, 900, 1800]; // 4 urinish
+    let firstErr: unknown;
+    for (let i = 0; i < delays.length; i++) {
+        if (delays[i]) await new Promise(r => setTimeout(r, delays[i]));
         try {
-            await printTcpOnce(ip, port, data); // ikkinchi urinish
-        } catch {
-            throw firstErr; // birinchi xato xabarini qaytarish
+            await printTcpOnce(ip, port, data);
+            return;
+        } catch (err) {
+            if (i === 0) firstErr = err;
+            console.warn(`[PrinterService] ${ip}:${port} ${i + 1}-urinish muvaffaqiyatsiz`);
         }
     }
+    throw firstErr; // birinchi xato xabarini qaytarish
 }
 
 async function printUsb(printerName: string, data: Buffer): Promise<void> {

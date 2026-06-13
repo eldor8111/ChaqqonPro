@@ -270,14 +270,16 @@ async function getWindowsPrinters() {
  * @param {number} port    - TCP port (odatda 9100)
  * @param {number} timeout - Timeout ms (default: 8000)
  */
-function printOverNetwork(ip, data, port = 9100, timeout = 8000) {
+function printOverNetwork(ip, data, port = 9100, timeout = 6000) {
     return new Promise((resolve, reject) => {
         const client = new net.Socket();
+        client.setNoDelay(true); // Nagle o'chiriladi — darhol yuboriladi
         let settled = false;
 
         const done = (err) => {
             if (settled) return;
             settled = true;
+            clearTimeout(timer);
             client.destroy();
             if (err) reject(err);
             else resolve();
@@ -287,23 +289,13 @@ function printOverNetwork(ip, data, port = 9100, timeout = 8000) {
             done(new Error(`TCP timeout: ${ip}:${port} ga ${timeout}ms ichida ulanib bo'lmadi`));
         }, timeout);
 
+        client.on('error', (err) => done(err));
         client.connect(port, ip, () => {
-            client.write(data, (writeErr) => {
-                clearTimeout(timer);
-                // Ma'lumot yozib bo'lingach, printer tomondan javob kutmaymiz
-                // Kichik kutish — printer bufferini to'ldirish uchun
-                setTimeout(() => done(writeErr || null), 200);
+            // end() = ma'lumotni yozadi va FIN yuboradi; callback flush'dan keyin
+            client.end(data, () => {
+                // LAN'da darhol yetadi — qisqa kafolat bilan yopamiz
+                setTimeout(() => done(null), 150);
             });
-        });
-
-        client.on('error', (err) => {
-            clearTimeout(timer);
-            done(err);
-        });
-
-        client.on('close', () => {
-            clearTimeout(timer);
-            done(null);
         });
     });
 }
@@ -401,17 +393,24 @@ async function printRaw(printerName, base64data, options = {}) {
     const rawBuffer = Buffer.from(base64data, 'base64');
     const { printerIp, printerPort = 9100 } = options;
 
-    // ── LAN (TCP/IP) ulanish ──────────────────────────────────────────────────
+    // ── LAN (TCP/IP) ulanish — band bo'lsa qayta urinadi (chek yo'qolmasin) ──────
     if (printerIp) {
-        try {
-            console.log(`[PRINT LAN] ${printerIp}:${printerPort} ga ulanilmoqda...`);
-            await printOverNetwork(printerIp, rawBuffer, printerPort);
-            console.log(`[PRINT ✅ LAN] ${printerIp}:${printerPort} ga muvaffaqiyatli chop etildi.`);
-            return { success: true, method: 'lan' };
-        } catch (err) {
-            console.error(`[PRINT ❌ LAN] ${printerIp}:${printerPort} → ${String(err)}`);
-            return { success: false, error: String(err), method: 'lan' };
+        const delays = [0, 350, 900, 1800]; // 4 urinish: darhol, 350ms, 900ms, 1800ms
+        let lastErr;
+        for (let i = 0; i < delays.length; i++) {
+            if (delays[i]) await new Promise(r => setTimeout(r, delays[i]));
+            try {
+                await printOverNetwork(printerIp, rawBuffer, printerPort);
+                if (i > 0) console.log(`[PRINT ✅ LAN] ${printerIp}:${printerPort} (${i + 1}-urinishda)`);
+                else console.log(`[PRINT ✅ LAN] ${printerIp}:${printerPort}`);
+                return { success: true, method: 'lan' };
+            } catch (err) {
+                lastErr = err;
+                console.warn(`[PRINT ⚠️ LAN] ${printerIp} ${i + 1}-urinish muvaffaqiyatsiz: ${String(err)}`);
+            }
         }
+        console.error(`[PRINT ❌ LAN] ${printerIp}:${printerPort} → ${String(lastErr)} (barcha urinishlar tugadi)`);
+        return { success: false, error: String(lastErr), method: 'lan' };
     }
 
     // ── USB / Windows Spooler ulanish ─────────────────────────────────────────

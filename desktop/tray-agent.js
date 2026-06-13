@@ -5,6 +5,18 @@ let pollTimer = null;
 let syncTimer = null;
 let isPolling = false;
 
+// ─── Per-printer qulf ───────────────────────────────────────────
+// Arzon LAN printerlar faqat BITTA ulanishni qabul qiladi. Shu sabab
+// bir printerga chek chiqarish va heartbeat probe bir vaqtda bo'lmasligi
+// kerak — aks holda biri rad etiladi. Har printer uchun navbat (mutex).
+const ipLocks = new Map();
+function withIpLock(key, task) {
+    const prev = ipLocks.get(key) || Promise.resolve();
+    const run = prev.catch(() => {}).then(task);
+    ipLocks.set(key, run.catch(() => {}));
+    return run;
+}
+
 // ─── TCP probe (heartbeat uchun) ────────────────────────────────
 function probeTcp(ip, port, timeout = 1500) {
     return new Promise((resolve) => {
@@ -63,7 +75,8 @@ async function heartbeat(serverUrl) {
         for (const p of printers) {
             if (!p.ipAddress || p.ipAddress.startsWith('usb://')) continue;
             const started = Date.now();
-            const ok = await probeTcp(p.ipAddress, p.port || 9100);
+            // Qulf orqali — print bilan to'qnashmasin
+            const ok = await withIpLock(`${p.ipAddress}:${p.port || 9100}`, () => probeTcp(p.ipAddress, p.port || 9100));
             results.push({
                 id: p.id,
                 status: ok ? 'online' : 'offline',
@@ -183,10 +196,11 @@ async function pollJobs(serverUrl) {
                 await Promise.all(Object.values(byPrinter).map(async (group) => {
                     for (const j of group) {
                         try {
-                            const result = await printRaw(j.printerName, j.base64data, {
+                            const lockKey = j.printerIp ? `${j.printerIp}:${j.printerPort}` : `usb:${j.printerName}`;
+                            const result = await withIpLock(lockKey, () => printRaw(j.printerName, j.base64data, {
                                 printerIp: j.printerIp,
                                 printerPort: j.printerPort,
-                            });
+                            }));
                             if (result.success) {
                                 const method = result.method === 'lan'
                                     ? `LAN (${j.printerIp}:${j.printerPort})`
