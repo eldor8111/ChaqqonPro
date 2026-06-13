@@ -106,9 +106,12 @@ export default function TopNav() {
                     const isActive = pathname === href || pathname.startsWith(href + "/");
 
                     if (subItems) {
+                        // Ota-punktni bosganda birinchi ichki sahifaga o'tadi (ota href ko'pincha sahifasiz)
+                        const parentHref = subItems[0]?.href || href;
                         return (
                             <div key={key} className="relative group flex-shrink-0">
-                                <button
+                                <Link
+                                    href={parentHref}
                                     className={clsx(
                                         "flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm whitespace-nowrap transition-colors",
                                         isActive
@@ -119,7 +122,7 @@ export default function TopNav() {
                                     <Icon size={16} className="flex-shrink-0" />
                                     <span>{t(key)}</span>
                                     <ChevronDown size={13} className="opacity-60 transition-transform group-hover:rotate-180" />
-                                </button>
+                                </Link>
                                 {/* Dropdown (hover bilan ochiladi) */}
                                 <div className="absolute top-full left-0 pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 min-w-[210px]">
                                     <div className="bg-surface-card border border-surface-border rounded-xl shadow-xl py-1.5">
