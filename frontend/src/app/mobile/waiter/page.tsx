@@ -72,10 +72,11 @@ export default function MobileWaiterPage() {
 
     useEffect(() => {
         if (!mounted) return;
-        if (!store.kassirSession) { 
+        if (!store.kassirSession) {
             const checkAuth = setTimeout(() => {
                 if (!useStore.getState().kassirSession) {
-                    router.replace("/"); 
+                    // Ofitsiant uchun login ekraniga (admin landing emas)
+                    router.replace("/kassa/login");
                 }
             }, 100);
             return () => clearTimeout(checkAuth);
@@ -157,9 +158,17 @@ export default function MobileWaiterPage() {
         }
     }, []);
 
-    if (!mounted || !store.kassirSession) return null;
+    // Sessiya yo'q yoki hali yuklanmoqda — oppoq ekran o'rniga spinner ko'rsatamiz
+    if (!mounted || !store.kassirSession) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-3">
+                <div className="w-10 h-10 border-[3px] border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+                <p className="text-slate-400 text-xs font-bold tracking-widest uppercase">Yuklanmoqda...</p>
+            </div>
+        );
+    }
     const sess = store.kassirSession;
-    const handleLogout = () => { store.kassirLogout(); router.push("/"); };
+    const handleLogout = () => { store.kassirLogout(); router.push("/kassa/login"); };
 
     const changeQty = (id: string, name: string, price: number, delta: number) => {
         setCart(prev => {
