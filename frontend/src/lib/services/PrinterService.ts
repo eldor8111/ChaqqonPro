@@ -43,6 +43,22 @@ function qrCode(data: string, size = 4): Buffer {
     ]);
 }
 
+/**
+ * Logo rasterini ESC/POS GS v 0 buyrug'iga o'raydi.
+ * @param base64 1-bit packed bitmap (brauzerda canvas orqali tayyorlangan)
+ * @param width  piksel kengligi (8 ga karrali)
+ * @param height piksel balandligi
+ */
+function rasterImage(base64: string, width: number, height: number): Buffer {
+    const data = Buffer.from(base64, "base64");
+    const bytesPerRow = Math.floor(width / 8);
+    if (bytesPerRow <= 0 || height <= 0 || data.length < bytesPerRow * height) return Buffer.alloc(0);
+    const xL = bytesPerRow & 0xFF, xH = (bytesPerRow >> 8) & 0xFF;
+    const yL = height & 0xFF, yH = (height >> 8) & 0xFF;
+    // GS v 0 m xL xH yL yH [d1...dk]  — m=0 (normal)
+    return Buffer.concat([Buffer.from([GS, 0x76, 0x30, 0x00, xL, xH, yL, yH]), data]);
+}
+
 // ─── Text helpers ────────────────────────────────────────────────────────────
 function strLen(s: string): number { return Array.from(s).length; }
 
@@ -114,6 +130,10 @@ interface ReceiptOpts {
     showQr: boolean;
     qrUrl: string;
     showCashierName: boolean;
+    showLogo: boolean;
+    logoRaster: string;
+    logoWidth: number;
+    logoHeight: number;
     kitchenShowTable: boolean;
     kitchenShowWaiter: boolean;
     kitchenShowOrderNo: boolean;
@@ -172,6 +192,10 @@ async function getReceiptOpts(tenantId?: string): Promise<ReceiptOpts> {
             showQr:         r.showBarcode === true || r.showBarcode === "true" || (r.showBarcode as unknown) !== false,
             qrUrl:          (r.qrUrl as string)   || "",
             showCashierName: r.showCashierName !== false, // default true
+            showLogo:       r.showLogo !== false && !!r.logoRaster,
+            logoRaster:     (r.logoRaster as string) || "",
+            logoWidth:      Number(r.logoWidth) || 0,
+            logoHeight:     Number(r.logoHeight) || 0,
             kitchenShowTable: k.kitchenShowTable !== false,
             kitchenShowWaiter: k.kitchenShowWaiter !== false,
             kitchenShowOrderNo: k.kitchenShowOrderNo !== false,
@@ -190,6 +214,7 @@ async function getReceiptOpts(tenantId?: string): Promise<ReceiptOpts> {
             headerText: "XARIDINGIZ UCHUN RAXMAT!", headerFontSize: 13, headerAlign: "center", headerBold: false,
             footerText: "", footerFontSize: 10, footerAlign: "center", footerBold: false,
             servicePercent: 0, showQr: false, qrUrl: "", showCashierName: true,
+            showLogo: false, logoRaster: "", logoWidth: 0, logoHeight: 0,
             kitchenShowTable: true, kitchenShowWaiter: true, kitchenShowOrderNo: true, kitchenShowTime: true,
             kitchenShowNote: true, kitchenShowOrderType: true, kitchenItemFontSize: 16, kitchenHeaderText: "OSHXONA BUYURTMASI"
         };
@@ -243,6 +268,17 @@ function buildClientBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
 
     // ── Header ──────────────────────────────────────────────────
     parts.push(cmd.init());
+
+    // Logo (chek tepasida, markazda) — brauzerda tayyorlangan 1-bit raster
+    if (opts.showLogo && opts.logoRaster && opts.logoWidth && opts.logoHeight) {
+        const logo = rasterImage(opts.logoRaster, opts.logoWidth, opts.logoHeight);
+        if (logo.length > 0) {
+            parts.push(cmd.align(1)); // markaz
+            parts.push(logo);
+            parts.push(line(""));
+        }
+    }
+
     parts.push(cmd.align(alignCode(opts.shopNameAlign)));
     parts.push(cmd.bold(opts.shopNameBold));
     parts.push(sizeCmd(opts.shopNameFontSize));

@@ -18,6 +18,68 @@ import { PhoneInput } from "@/components/ui/PhoneInput";
 const MODULE_PERMS_BASE = ["pos", "inventory", "crm", "reports", "staff", "ai", "wholesale", "ecommerce"];
 const ACTION_PERMS = ["discounts", "refunds", "priceEdit", "stockEdit", "reportExport", "customerEdit", "shiftManage"];
 
+/**
+ * Logoni termal printer (ESC/POS) uchun 1-bit rasterga aylantiradi — brauzerda, canvas orqali.
+ * Natija: kichik hajmli, chop etishga tayyor ma'lumot (sahifa yangilanganda yo'qolmaydi, chekka chiqadi).
+ */
+async function processLogoForReceipt(dataUrl: string): Promise<{ raster: string; width: number; height: number; preview: string }> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            try {
+                const maxW = 384, maxH = 200; // 58/80mm printerlarga mos
+                const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+                let w = Math.max(8, Math.floor((img.width * scale) / 8) * 8); // 8 ga karrali
+                const h = Math.max(1, Math.round(img.height * scale));
+
+                const canvas = document.createElement("canvas");
+                canvas.width = w; canvas.height = h;
+                const ctx = canvas.getContext("2d");
+                if (!ctx) return reject(new Error("canvas yo'q"));
+                ctx.fillStyle = "#fff";
+                ctx.fillRect(0, 0, w, h);
+                ctx.drawImage(img, 0, 0, w, h);
+                const { data } = ctx.getImageData(0, 0, w, h);
+
+                // Kulrang + Floyd–Steinberg dithering
+                const gray = new Float32Array(w * h);
+                for (let i = 0; i < w * h; i++) {
+                    const r = data[i*4], g = data[i*4+1], b = data[i*4+2], a = data[i*4+3];
+                    gray[i] = a < 128 ? 255 : 0.299*r + 0.587*g + 0.114*b; // shaffof = oq
+                }
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        const idx = y*w + x;
+                        const old = gray[idx];
+                        const nv = old < 128 ? 0 : 255;
+                        const err = old - nv;
+                        gray[idx] = nv;
+                        if (x+1 < w) gray[idx+1] += err * 7/16;
+                        if (y+1 < h) {
+                            if (x > 0) gray[idx+w-1] += err * 3/16;
+                            gray[idx+w] += err * 5/16;
+                            if (x+1 < w) gray[idx+w+1] += err * 1/16;
+                        }
+                    }
+                }
+
+                const bytesPerRow = w / 8;
+                const bytes = new Uint8Array(bytesPerRow * h);
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        if (gray[y*w + x] < 128) bytes[y*bytesPerRow + (x >> 3)] |= (0x80 >> (x & 7)); // qora bit
+                    }
+                }
+                let bin = "";
+                for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+                resolve({ raster: btoa(bin), width: w, height: h, preview: canvas.toDataURL("image/png") });
+            } catch (e) { reject(e); }
+        };
+        img.onerror = () => reject(new Error("rasm yuklanmadi"));
+        img.src = dataUrl;
+    });
+}
+
 export default function SettingsPage() {
     const { t } = useLang();
     const { user } = useFrontendStore();
@@ -872,12 +934,19 @@ export default function SettingsPage() {
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
                                                 const reader = new FileReader();
-                                                reader.onload = ev => setReceiptDraft({ ...receiptDraft, logoBase64: ev.target?.result as string, showLogo: true });
+                                                reader.onload = async ev => {
+                                                    try {
+                                                        const p = await processLogoForReceipt(ev.target?.result as string);
+                                                        setReceiptDraft((prev: any) => ({ ...prev, logoBase64: p.preview, logoRaster: p.raster, logoWidth: p.width, logoHeight: p.height, showLogo: true }));
+                                                    } catch {
+                                                        alert("Logoni qayta ishlashda xato. Boshqa rasm tanlang (PNG/JPG).");
+                                                    }
+                                                };
                                                 reader.readAsDataURL(file);
                                             }}
                                         />
                                         {receiptDraft.logoBase64 && (
-                                            <button onClick={() => setReceiptDraft({ ...receiptDraft, logoBase64: null })}
+                                            <button onClick={() => setReceiptDraft({ ...receiptDraft, logoBase64: null, logoRaster: null, logoWidth: 0, logoHeight: 0 })}
                                                 className="w-full py-1.5 rounded-lg text-xs text-red-400 border border-red-500/20 hover:bg-red-500/10 transition-colors">
                                                 Logoni o'chirish
                                             </button>
