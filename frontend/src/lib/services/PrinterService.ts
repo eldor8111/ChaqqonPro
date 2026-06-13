@@ -210,14 +210,17 @@ function buildKitchenBuffer(job: PrintJob, opts: ReceiptOpts): Buffer {
     
     const isItemLarge = opts.kitchenItemFontSize >= 18;
     for (const item of (job.items || [])) {
+        const qtyNum = Math.round(item.qty);
         if (isItemLarge) {
+            // Katta shrift: "3 x Shashlik" — miqdor birinchi, qalin va katta
             parts.push(cmd.doubleHW(), cmd.bold(true));
-            parts.push(line(`${item.qty}x ${toAscii(item.name).substring(0, 16)}`));
-            parts.push(cmd.normal(), cmd.bold(false));
+            parts.push(line(`${qtyNum} x ${toAscii(item.name).substring(0, 14)}`));
+            parts.push(cmd.normal(), cmd.bold(false), line(""));
         } else {
-            const name = toAscii(item.name).substring(0, 20).padEnd(20);
-            const qty  = `${item.qty} ${item.unit || "ta"}`.padStart(8);
-            parts.push(line(`${name}${qty}`));
+            // Oddiy shrift: nom chap, miqdor o'ng ustunda qalin
+            const qtyText = `${qtyNum} ${item.unit || "ta"}`;
+            const name = toAscii(item.name).substring(0, 28);
+            parts.push(cmd.bold(true), line(pad(name, qtyText)), cmd.bold(false));
         }
     }
     parts.push(dashed(), line(""), line(""), cmd.cut());

@@ -58,7 +58,8 @@ export async function GET(request: NextRequest) {
             } catch {}
         }
 
-        // Deduplicate by item.id + saboy + shotId, summing quantities
+        // Deduplicate by item.id + saboy + shotId, summing quantities.
+        // printedQty ham yig'iladi — aks holda incremental (faqat yangi zakaz) chek buziladi.
         const merged: Record<string, any> = {};
         for (const entry of allItems) {
             const id = entry.item?.id || entry.id;
@@ -66,9 +67,14 @@ export async function GET(request: NextRequest) {
             const key = `${id}-${!!entry.isSaboy}-${entry.shotId || 1}`;
             if (merged[key]) {
                 merged[key].qty = (merged[key].qty || 0) + (entry.qty || 1);
+                merged[key].printedQty = (merged[key].printedQty || 0) + (entry.printedQty || 0);
             } else {
-                merged[key] = { ...entry };
+                merged[key] = { ...entry, printedQty: entry.printedQty || 0 };
             }
+        }
+        // printedQty hech qachon qty dan oshmasin (ehtiyot chorasi)
+        for (const m of Object.values(merged)) {
+            if ((m.printedQty || 0) > (m.qty || 0)) m.printedQty = m.qty;
         }
 
         return NextResponse.json({ items: Object.values(merged) });
