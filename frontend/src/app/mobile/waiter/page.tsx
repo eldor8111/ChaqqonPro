@@ -112,7 +112,7 @@ export default function MobileWaiterPage() {
             document.removeEventListener("visibilitychange", handleVisibilityChange);
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [store.kassirSession, router]);
+    }, [mounted, store.kassirSession, router]);
 
     useEffect(() => { if (menu.length > 0) localStorage.setItem("mob_waiter_menu", JSON.stringify({m: menu, c: cats})); }, [menu, cats]);
     useEffect(() => { localStorage.setItem("mob_waiter_cart", JSON.stringify(cart)); }, [cart]);
