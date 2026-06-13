@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     authors: [{ name: "SMART", url: "https://smart.e-code.uz" }],
     creator: "SMART",
     publisher: "SMART",
+    manifest: "/manifest.json", // standart manifest; /mobile/waiter route'i o'zinikiga override qiladi
     metadataBase: new URL("https://smart.e-code.uz"),
     alternates: {
         canonical: "https://smart.e-code.uz",
@@ -70,7 +71,7 @@ export default function RootLayout({
                 <meta name="apple-mobile-web-app-capable" content="yes" />
                 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
                 <meta name="apple-mobile-web-app-title" content="SMART" />
-                <link rel="manifest" href="/manifest.json" />
+                {/* manifest endi metadata orqali beriladi (route bo'yicha override qilinadi) */}
                 <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
