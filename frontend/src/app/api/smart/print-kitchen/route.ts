@@ -130,58 +130,46 @@ export async function POST(request: NextRequest) {
         const tableNameToPrint = (table?.tableNumber || "Stol") + (shot > 1 ? ` · ${shot}-Hisob` : "");
         const orderNum = Math.floor(Math.random() * 9000) + 1000;
 
-        const results = await Promise.all(Object.entries(groups).map(async ([printerIp, pItems]) => {
-            try {
-                const r = await PrinterService.print({
-                    printerIp, port: 9100,
-                    receiptType: "kitchen",
-                    tableName: tableNameToPrint,
-                    waiter: waiterName || auth.waiterName || "",
-                    time: timeStr,
-                    items: pItems,
-                    total: pItems.reduce((s, c) => s + c.price * c.qty, 0),
-                    orderNum,
-                    tenantId: auth.tenantId,
-                });
-                return { printerIp, ok: r.success, error: r.error };
-            } catch (e: any) {
-                return { printerIp, ok: false, error: e?.message || String(e) };
-            }
-        }));
-
-        const anyOk = results.some(r => r.ok);
-        const failed = results.filter(r => !r.ok);
-
-        // 7. Muvaffaqiyatli chiqqan bo'lsa — printedQty ni yangilab, cart yozuvlarini birlashtirish
-        if (anyOk) {
-            for (const m of allItems) {
-                if ((m.shotId || 1) === shot) {
-                    // bu shotda muvaffaqiyatli chiqqan taomlar uchun printedQty = qty
-                    const id = m.item?.id || m.id;
-                    const ip = ipMap.get(id) || fallbackIp;
-                    if (ip && results.find(r => r.printerIp === ip && r.ok)) m.printedQty = m.qty;
-                }
-            }
-            // Barcha cart yozuvlarini o'chirib, bittasiga birlashtiramiz (printedQty bilan)
-            await prisma.kDSOrder.deleteMany({
-                where: { tenantId: auth.tenantId, tableId, priority: "cart", status: { not: "served" } },
-            });
-            await prisma.kDSOrder.create({
-                data: {
-                    tenantId: auth.tenantId,
-                    tableId,
-                    description: JSON.stringify({ waiterName: waiterName || auth.waiterName || "", items: allItems }),
-                    status: "pending",
-                    priority: "cart",
-                },
-            });
+        // 6b. FIRE-AND-FORGET chop etish — javobni KUTMAYMIZ. Shu sabab TASDIQLASH
+        //     darhol javob beradi; printer sekin bo'lsa ham (4x retry, ~20s) tugma qotmaydi.
+        //     Yetkazishni agent ACK/retry bilan fonda ta'minlaydi.
+        for (const [printerIp, pItems] of Object.entries(groups)) {
+            PrinterService.print({
+                printerIp, port: 9100,
+                receiptType: "kitchen",
+                tableName: tableNameToPrint,
+                waiter: waiterName || auth.waiterName || "",
+                time: timeStr,
+                items: pItems,
+                total: pItems.reduce((s, c) => s + c.price * c.qty, 0),
+                orderNum,
+                tenantId: auth.tenantId,
+            }).catch((e: any) => console.warn(`[print-kitchen] ${printerIp}:`, e?.message || e));
         }
 
-        return NextResponse.json({
-            success: anyOk,
-            printed: anyOk ? unprinted.length : 0,
-            failed: failed.map(f => `${f.printerIp}: ${f.error || "xato"}`),
+        // 7. printedQty ni optimistik yangilash (navbatga qo'yildi → chiqarilgan deb belgilaymiz;
+        //    agent ACK/retry bilan yetkazadi). Cart yozuvlarini bittaga birlashtiramiz.
+        for (const m of allItems) {
+            if ((m.shotId || 1) === shot) {
+                const id = m.item?.id || m.id;
+                const ip = ipMap.get(id) || fallbackIp;
+                if (ip && groups[ip]) m.printedQty = m.qty;
+            }
+        }
+        await prisma.kDSOrder.deleteMany({
+            where: { tenantId: auth.tenantId, tableId, priority: "cart", status: { not: "served" } },
         });
+        await prisma.kDSOrder.create({
+            data: {
+                tenantId: auth.tenantId,
+                tableId,
+                description: JSON.stringify({ waiterName: waiterName || auth.waiterName || "", items: allItems }),
+                status: "pending",
+                priority: "cart",
+            },
+        });
+
+        return NextResponse.json({ success: true, printed: unprinted.length });
     } catch (e: any) {
         console.error("[print-kitchen]", e);
         return NextResponse.json({ error: e?.message || "Server xatosi" }, { status: 500 });
