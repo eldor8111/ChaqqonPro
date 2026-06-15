@@ -218,6 +218,38 @@ function stopLocalNextServer() {
     }
 }
 
+// ─── Offline tayyorlik: VPS → lokal pos.db sinxronizatsiyasi ─────────
+// Online paytda ishlaydi: VPS dan menyu/stol/xodim/printerni olib,
+// lokal serverning sync-import ga yozadi. Offline'ga o'tganda tayyor turadi.
+let _syncing = false;
+async function syncReferenceData(remoteUrl) {
+    if (_syncing || !remoteUrl) return;
+    _syncing = true;
+    try {
+        const res = await fetch(`${remoteUrl}/api/smart/sync-export`, { signal: AbortSignal.timeout(15000) });
+        if (!res.ok) { console.warn('[SYNC] export HTTP', res.status); return; }
+        const data = await res.json();
+        if (!data || !data.ok || !data.tenantId) { console.warn('[SYNC] export bo\'sh'); return; }
+
+        const imp = await fetch(`${LOCAL_SERVER_URL}/api/smart/sync-import`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+            signal: AbortSignal.timeout(25000),
+        });
+        if (imp.ok) {
+            const r = await imp.json().catch(() => ({}));
+            console.log('[SYNC ✅] Lokal bazaga yozildi:', JSON.stringify(r.counts || {}));
+        } else {
+            console.warn('[SYNC] import HTTP', imp.status);
+        }
+    } catch (e) {
+        if (e.name !== 'TimeoutError' && e.name !== 'AbortError') console.warn('[SYNC ❌]', e.message || String(e));
+    } finally {
+        _syncing = false;
+    }
+}
+
 // ─── Splash ──────────────────────────────────────────────────────────
 function updateSplash(statusText, badgeText) {
     if (!splashWindow || splashWindow.isDestroyed()) return;
@@ -512,6 +544,15 @@ app.whenReady().then(async () => {
             kioskUrl      = config.kioskUrl;
             updateSplash('Online rejim faollashtirildi', `Online • v${CURRENT_VERSION}`);
             console.log('[STARTUP] Online rejim:', kioskUrl);
+
+            // Lokal serverni FONDA ishga tushiramiz (offline tayyorlik) + VPS→lokal sync.
+            // Kiosk'ni kutdirmaymiz — fonda bo'ladi.
+            startLocalNextServer()
+                .then(() => new Promise(r => setTimeout(r, 3000)))
+                .then(() => syncReferenceData(config.serverUrl))
+                .catch(e => console.error('[STARTUP] fon lokal server/sync xato:', e?.message || e));
+            // Har 5 daqiqada qayta sinxronlash (faqat online bo'lganda)
+            setInterval(() => { if (!isOfflineMode) syncReferenceData(loadConfig().serverUrl); }, 5 * 60 * 1000);
         } else {
             isOfflineMode = true;
             updateSplash('Offline rejim — lokal server yuklanmoqda...', `Offline • v${CURRENT_VERSION}`);
