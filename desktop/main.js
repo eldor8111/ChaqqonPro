@@ -299,9 +299,14 @@ function createMainWindow(kioskUrl) {
     mainWindow.setMenu(null);
     mainWindow.setMenuBarVisibility(false);
 
-    mainWindow.webContents.session.clearCache().then(() => {
+    // Keshni VA service worker keshini tozalaymiz — yangilanish/rebrending darhol ko'rinsin
+    (async () => {
+        try {
+            await mainWindow.webContents.session.clearCache();
+            await mainWindow.webContents.session.clearStorageData({ storages: ['serviceworkers', 'cachestorage'] });
+        } catch (e) { console.warn('[CACHE CLEAR]', e?.message || e); }
         mainWindow.loadURL(kioskUrl).catch(e => console.error('[MAIN] loadURL xato:', e));
-    });
+    })();
 
     let _failRetryTimer = null;
     mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, _validatedURL, isMainFrame) => {

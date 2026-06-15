@@ -43,8 +43,12 @@ function recoverStaleProcessing(queueDir: string): void {
 /** Navbat papkasidan joblarni o'qib, ularni "claim" qiladi (boshqa agent olmasligi uchun) */
 function collectJobs(queueDir: string, agentPrinters: string[]): any[] {
     recoverStaleProcessing(queueDir);
-    // Faqat print job fayllari — agent_printers.json (printerlar keshi) print job emas
-    const files = fs.readdirSync(queueDir).filter(f => f.endsWith(".json") && f !== "agent_printers.json");
+    // Faqat print job fayllari — agent_printers.json (printerlar keshi) print job emas.
+    // NAVBAT BILAN (FIFO): fayl nomi vaqt belgisi bilan boshlanadi, shuning uchun
+    // nom bo'yicha saralash = yaratilish tartibi = chek navbati.
+    const files = fs.readdirSync(queueDir)
+        .filter(f => f.endsWith(".json") && f !== "agent_printers.json")
+        .sort();
     const jobs: any[] = [];
     const isFiltering = agentPrinters.length > 0;
 
@@ -82,7 +86,7 @@ async function pollJobsLogic(agentPrinters: string[]) {
             const jobs = collectJobs(queueDir, agentPrinters);
             if (jobs.length > 0) return NextResponse.json({ jobs });
             if (Date.now() >= deadline) return NextResponse.json({ jobs: [] });
-            await new Promise(r => setTimeout(r, 250));
+            await new Promise(r => setTimeout(r, 100)); // tezroq pickup (~100ms)
         }
     } catch {
         return NextResponse.json({ jobs: [] });

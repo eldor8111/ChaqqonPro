@@ -254,8 +254,8 @@ async function jobLoop(serverUrl) {
         try {
             await pollJobs(serverUrl);
         } catch { /* xatoni jim yutamiz */ }
-        // Tight-loop oldini olish uchun qisqa pauza (xato/bo'sh javobdan keyin)
-        await new Promise(r => setTimeout(r, 150));
+        // Tight-loop oldini olish uchun juda qisqa pauza (tezroq navbat)
+        await new Promise(r => setTimeout(r, 50));
     }
 }
 
