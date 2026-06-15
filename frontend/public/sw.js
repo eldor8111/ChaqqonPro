@@ -1,7 +1,7 @@
-const CACHE_NAME = 'smart-v4';
+const CACHE_NAME = 'eviko-v1';
 const STATIC_ASSETS = [
   '/manifest.json',
-  '/smart-logo-transparent.svg',
+  '/eviko-logo-white.svg',
 ];
 
 // Install: cache static assets

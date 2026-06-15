@@ -13,7 +13,7 @@ type ShopType = "smart";
 
 const UBT_TYPE = {
     value: "smart" as ShopType,
-    label: "SMART",
+    label: "EVIKO",
     icon: UtensilsCrossed,
     color: "text-blue-600",
     activeColor: "bg-blue-600",
@@ -48,7 +48,7 @@ function OfertaModal({ onAccept, onClose }: { onAccept: () => void; onClose?: ()
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                     <div>
                         <h2 className="text-base font-bold text-slate-900">Foydalanish Shartlari (Oferta)</h2>
-                        <p className="text-xs text-slate-500 mt-0.5">SMART tizimidan foydalanish uchun quyidagi shartlarni o&#39;qing</p>
+                        <p className="text-xs text-slate-500 mt-0.5">EVIKO tizimidan foydalanish uchun quyidagi shartlarni o&#39;qing</p>
                     </div>
                     {onClose && (
                         <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
@@ -64,13 +64,13 @@ function OfertaModal({ onAccept, onClose }: { onAccept: () => void; onClose?: ()
                     className="flex-1 overflow-y-auto px-6 py-4 text-sm text-slate-700 space-y-4 leading-relaxed"
                 >
                     <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-800 font-medium">
-                        Ushbu oferta SMART dasturiy ta&#39;minotidan foydalanuvchi bilan tuzilgan ommaviy shartnoma hisoblanadi.
+                        Ushbu oferta EVIKO dasturiy ta&#39;minotidan foydalanuvchi bilan tuzilgan ommaviy shartnoma hisoblanadi.
                         Tizimga kirib, siz quyidagi barcha shartlarga rozilik bildirasiz.
                     </div>
 
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">1. Umumiy qoidalar</h3>
-                        <p>SMART — bu &quot;e-code technology&quot; tomonidan ishlab chiqilgan savdo, ombor va moliyaviy hisobotlarni boshqarish uchun mo&#39;ljallangan bulut asosidagi dasturiy tizimdir. Ushbu oferta foydalanuvchi (Administrator, Kassir yoki boshqa rol egasi) bilan &quot;e-code technology&quot; o&#39;rtasidagi huquqiy munosabatlarni tartibga soladi.</p>
+                        <p>EVIKO — bu &quot;e-code technology&quot; tomonidan ishlab chiqilgan savdo, ombor va moliyaviy hisobotlarni boshqarish uchun mo&#39;ljallangan bulut asosidagi dasturiy tizimdir. Ushbu oferta foydalanuvchi (Administrator, Kassir yoki boshqa rol egasi) bilan &quot;e-code technology&quot; o&#39;rtasidagi huquqiy munosabatlarni tartibga soladi.</p>
                     </section>
 
                     <section>
@@ -83,7 +83,7 @@ function OfertaModal({ onAccept, onClose }: { onAccept: () => void; onClose?: ()
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">3. Ma&#39;lumotlarni muhofaza qilish</h3>
                         <p>3.1. Tizimga kiritilgan barcha ma&#39;lumotlar (mahsulotlar, mijozlar, tranzaksiyalar) faqat tizim egasiga tegishli bo&#39;lib, uchinchi shaxslarga berilmaydi.<br />
-                            3.2. "SMART" serverlarida saqlangan ma&#39;lumotlar shifrlangan holda saqlanadi.<br />
+                            3.2. "EVIKO" serverlarida saqlangan ma&#39;lumotlar shifrlangan holda saqlanadi.<br />
                             3.3. Ma&#39;lumotlar faqat O&#39;zbekiston Respublikasi qonunchiligiga asosan so&#39;rov bo&#39;lsa, tegishli organlarga taqdim etilishi mumkin.</p>
                     </section>
 
@@ -104,7 +104,7 @@ function OfertaModal({ onAccept, onClose }: { onAccept: () => void; onClose?: ()
 
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">6. To&#39;lov va tariflar</h3>
-                        <p>6.1. SMART tizimidan foydalanish obuna asosida amalga oshiriladi.<br />
+                        <p>6.1. EVIKO tizimidan foydalanish obuna asosida amalga oshiriladi.<br />
                             6.2. Tariflar alohida shartnomada yoki tizim boshqaruv panelida ko&#39;rsatiladi.<br />
                             6.3. To&#39;lov muddati o&#39;tganda tizimga kirish cheklanishi mumkin.<br />
                             6.4. Hisob-faktura oyning 1-kuniga qadar taqdim etiladi.</p>
@@ -112,7 +112,7 @@ function OfertaModal({ onAccept, onClose }: { onAccept: () => void; onClose?: ()
 
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">7. Mas&#39;uliyat chegarasi</h3>
-                        <p>7.1. "SMART" foydalanuvchi tomonidan noto&#39;g&#39;ri kiritilgan ma&#39;lumotlar uchun mas&#39;uliyat olmaydi.<br />
+                        <p>7.1. "EVIKO" foydalanuvchi tomonidan noto&#39;g&#39;ri kiritilgan ma&#39;lumotlar uchun mas&#39;uliyat olmaydi.<br />
                             7.2. Internet uzilib qolishi yoki kuch ta&#39;minotidagi uzilishlar sababli yuzaga kelgan yo&#39;qotishlar uchun mas&#39;uliyat yuklatilmaydi.<br />
                             7.3. Tizim texnik xizmatlari vaqtida (maintenance) ma&#39;lumotlarga kirish muvaqqat cheklanishi mumkin.</p>
                     </section>
@@ -127,7 +127,7 @@ function OfertaModal({ onAccept, onClose }: { onAccept: () => void; onClose?: ()
                     <section>
                         <h3 className="font-bold text-slate-900 mb-1">9. Shartnomani bekor qilish</h3>
                         <p>9.1. Foydalanuvchi istalgan vaqtda tizimdan chiqish va ma&#39;lumotlarini o&#39;chirish talebini yuborishi mumkin.<br />
-                            9.2. &quot;SMART&quot; oferta shartlari buzilganda foydalanuvchi hisobini bloklash huquqini saqlaydi.<br />
+                            9.2. &quot;EVIKO&quot; oferta shartlari buzilganda foydalanuvchi hisobini bloklash huquqini saqlaydi.<br />
                             9.3. Obuna bekor qilinganda ma&#39;lumotlar 30 kun davomida arxivda saqlanadi.<br />
                             9.4. Shartnoma bir tomonlama bekor qilinganda tizim uchun qilingan xarajatlar qaytarib berilmaydi.</p>
                     </section>
@@ -136,9 +136,9 @@ function OfertaModal({ onAccept, onClose }: { onAccept: () => void; onClose?: ()
                         <h3 className="font-bold text-slate-900 mb-1">10. Yakuniy qoidalar</h3>
                         <p>10.1. Ushbu oferta O&#39;zbekiston Respublikasi qonunchiligiga asosida tuzilgan.<br />
                             10.2. Nizolar da&#39;vo tartibida hal etiladi.<br />
-                            10.3. "SMART" oferta shartlarini oldindan xabardor qilgan holda o&#39;zgartirish huquqini saqlaydi.<br />
+                            10.3. "EVIKO" oferta shartlarini oldindan xabardor qilgan holda o&#39;zgartirish huquqini saqlaydi.<br />
                             10.4. Oferta ro&#39;yxatdan o&#39;tilgan kundan boshlab kuchga kiradi.</p>
-                        <p className="mt-2 text-xs text-slate-400">So&#39;nggi yangilanish: 2025-yil, 1-mart. "SMART" &copy; 2025.</p>
+                        <p className="mt-2 text-xs text-slate-400">So&#39;nggi yangilanish: 2025-yil, 1-mart. "EVIKO" &copy; 2025.</p>
                     </section>
                 </div>
 
@@ -184,7 +184,7 @@ function FeaturesModal({ onClose }: { onClose: () => void }) {
                     {/* Header */}
                     <div className="h-14 bg-white rounded-xl flex items-center px-6 justify-between shrink-0 mb-4 shadow-sm border border-slate-200">
                         <div className="flex items-center gap-4">
-                            <div className="text-blue-600 font-black text-xl tracking-tighter">SMART<span className="text-slate-800">POS</span></div>
+                            <div className="text-blue-600 font-black text-xl tracking-tighter">EVIKO<span className="text-slate-800"> POS</span></div>
                             <div className="h-6 w-px bg-slate-200"></div>
                             <div className="text-slate-500 font-medium text-sm">Asosiy Kassa</div>
                         </div>
@@ -561,7 +561,7 @@ function FeaturesModal({ onClose }: { onClose: () => void }) {
                             <Layers className="text-white" size={24} />
                         </div>
                         <div>
-                            <h2 className="text-xl font-black text-slate-900 tracking-tight mb-0.5">SMART Tizim Imkoniyatlari</h2>
+                            <h2 className="text-xl font-black text-slate-900 tracking-tight mb-0.5">EVIKO Tizim Imkoniyatlari</h2>
                             <p className="text-slate-500 text-xs font-medium">Barcha jarayonlarni bitta dastur orqali boshqaring</p>
                         </div>
                     </div>
@@ -856,7 +856,7 @@ function LoginForm() {
                     {/* Logo */}
                     <div className="flex items-center gap-3 relative z-10">
                         <div className="h-12 bg-white rounded-xl shadow-xl px-4 py-2 flex items-center justify-center">
-                            <img src="/smart-logo.svg" alt="SMART" className="h-full w-auto object-contain" />
+                            <img src="/eviko-logo.svg" alt="EVIKO" className="h-full w-auto object-contain" />
                         </div>
                         <div>
                             <p className="text-white/80 text-[11px] font-bold tracking-widest uppercase leading-none mt-1">Enterprise Point of Sale</p>
@@ -916,7 +916,7 @@ function LoginForm() {
                         {/* Mobile logo */}
                         <div className="flex justify-center mb-6 lg:hidden">
                             <div className="bg-white rounded-xl shadow-lg px-4 py-2">
-                                <img src="/smart-logo.svg" alt="SMART" className="h-8 w-auto object-contain" />
+                                <img src="/eviko-logo.svg" alt="EVIKO" className="h-8 w-auto object-contain" />
                             </div>
                         </div>
 
@@ -929,7 +929,7 @@ function LoginForm() {
                             <div className="p-5">
                                 {/* Header */}
                                 <div className="mb-6 text-center">
-                                    <img src="/smart-logo.svg" alt="SMART" className="h-8 w-auto mx-auto mb-4 drop-shadow-sm" />
+                                    <img src="/eviko-logo.svg" alt="EVIKO" className="h-8 w-auto mx-auto mb-4 drop-shadow-sm" />
                                     <h1 className="text-lg font-bold text-slate-900" style={{ letterSpacing: "-0.01em" }}>
                                         Xush kelibsiz
                                     </h1>
@@ -948,7 +948,7 @@ function LoginForm() {
                                         <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-600 text-white">
                                             <UtensilsCrossed size={14} />
                                         </div>
-                                        <span className="text-sm font-bold text-blue-700">SMART — Restoran / Mehmonxona / Kafe</span>
+                                        <span className="text-sm font-bold text-blue-700">EVIKO — Restoran / Mehmonxona / Kafe</span>
                                     </div>
                                 </div>
 
@@ -1148,7 +1148,7 @@ function LoginForm() {
 
                         {/* Footer */}
                         <p className="text-center text-slate-400 text-[11px] mt-4">
-                            &copy; {new Date().getFullYear()} SMART. Barcha huquqlar himoyalangan.
+                            &copy; {new Date().getFullYear()} EVIKO. Barcha huquqlar himoyalangan.
                         </p>
                     </div>
                 </div>

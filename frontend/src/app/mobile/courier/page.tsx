@@ -203,7 +203,7 @@ export default function MobileCourierPage() {
             <header className="bg-white shadow-sm px-4 pt-4 pb-0 sticky top-0 z-10">
                 <div className="flex items-center justify-between mb-3">
                     <div>
-                        <h1 className="text-lg font-black text-slate-800 leading-tight">SMART Mobile</h1>
+                        <h1 className="text-lg font-black text-slate-800 leading-tight">EVIKO Mobile</h1>
                         <p className="text-xs font-semibold text-red-600 uppercase tracking-widest">{store.kassirSession.name} · Kuryer</p>
                     </div>
                     <div className="flex items-center gap-2">

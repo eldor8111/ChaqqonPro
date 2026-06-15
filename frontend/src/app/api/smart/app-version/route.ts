@@ -9,7 +9,7 @@ const DOWNLOAD_BASE = process.env.NEXT_PUBLIC_APP_URL || "https://smart.uz";
 export async function GET() {
     return NextResponse.json({
         version: CURRENT_VERSION,
-        downloadUrl: `${DOWNLOAD_BASE}/downloads/SMART-POS-V2-Setup-${CURRENT_VERSION}.exe`,
+        downloadUrl: `${DOWNLOAD_BASE}/downloads/EVIKO-POS-Setup.exe`,
         releaseNotes: [
             "Oq ekran (crash) himoyasi qo'shildi",
             "Keshni tozalash funksiyasi qo'shildi",

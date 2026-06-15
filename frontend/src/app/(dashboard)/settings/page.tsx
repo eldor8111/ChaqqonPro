@@ -251,7 +251,7 @@ export default function SettingsPage() {
         }
         // Update draft with dbIds
         setUbtDraft({ ...ubtDraft, zones });
-        alert("SMART sozlamalari saqlandi! Stollar POS terminalda ko'rinadi.");
+        alert("EVIKO sozlamalari saqlandi! Stollar POS terminalda ko'rinadi.");
     }
 
     const PERM_LABELS: Record<string, string> = {
@@ -278,7 +278,7 @@ export default function SettingsPage() {
                             { key: "general", label: "Umumiy sozlamalar", icon: Settings },
                             { key: "branches", label: t("settings.branches"), icon: Building2 },
                             { key: "receipt", label: "Chek sozlamalari", icon: Printer },
-                            ...(shopType === "smart" ? [{ key: "smart", label: "SMART sozlamalari", icon: UtensilsCrossed }] : []),
+                            ...(shopType === "smart" ? [{ key: "smart", label: "EVIKO sozlamalari", icon: UtensilsCrossed }] : []),
                             { key: "audit", label: t("settings.auditLog") || "Audit Jurnali", icon: ClipboardList },
                             { key: "downloads", label: "Dasturlar (Magazin)", icon: DownloadCloud },
                         ].map(tab => (
@@ -1429,7 +1429,7 @@ export default function SettingsPage() {
                                 </p>
                             </div>
 
-                            {/* SMART POS Desktop — Featured */}
+                            {/* EVIKO POS Desktop — Featured */}
                             <div className="relative glass-card p-6 overflow-hidden border border-brand/30 shadow-xl shadow-brand/5">
                                 {/* Glow effect */}
                                 <div className="absolute inset-0 bg-gradient-to-br from-brand/10 via-transparent to-purple-500/5 pointer-events-none" />
@@ -1448,7 +1448,7 @@ export default function SettingsPage() {
                                     {/* Info */}
                                     <div className="flex-1">
                                         <div className="flex items-center gap-3 flex-wrap mb-2">
-                                            <h3 className="text-xl font-bold text-white">SMART POS Desktop V2</h3>
+                                            <h3 className="text-xl font-bold text-white">EVIKO POS Desktop V2</h3>
                                             <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-brand text-white uppercase tracking-wider">Tavsiya etiladi ⭐</span>
                                             <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">v2.0.0</span>
                                         </div>
@@ -1473,7 +1473,7 @@ export default function SettingsPage() {
                                     {/* Download Button */}
                                     <div className="flex flex-col items-center gap-2 flex-shrink-0">
                                         <a
-                                            href="/downloads/SMART-POS-V2-Setup-2.0.0.exe"
+                                            href="/downloads/EVIKO-POS-Setup.exe"
                                             download
                                             className="btn-primary flex items-center gap-2.5 px-6 py-3 text-base font-semibold shadow-xl shadow-brand/30 hover:scale-105 transition-all whitespace-nowrap"
                                         >
@@ -1503,7 +1503,7 @@ export default function SettingsPage() {
 
                             {/* Other apps grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Legacy SMART Agent Card */}
+                                {/* Legacy EVIKO Agent Card */}
                                 <div className="glass-card p-5 relative overflow-hidden group">
                                     <div className="flex items-start gap-4">
                                         <div className="w-14 h-14 rounded-2xl bg-slate-700 flex items-center justify-center shadow-lg">
@@ -1548,7 +1548,7 @@ export default function SettingsPage() {
                     {/* UBT Settings */}
                     {activeTab === "smart" && (
                         <div className="space-y-4">
-                            <h2 className="section-title">SMART Sozlamalari</h2>
+                            <h2 className="section-title">EVIKO Sozlamalari</h2>
 
                             <div className="glass-card p-5 space-y-4">
                                 <div className="space-y-4">

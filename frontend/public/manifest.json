@@ -1,7 +1,7 @@
 {
-  "name": "SMART – Admin Panel",
-  "short_name": "SMART",
-  "description": "Restoran, kafe va mehmonxonalar uchun professional POS va ERP tizimi – SMART",
+  "name": "EVIKO – Admin Panel",
+  "short_name": "EVIKO",
+  "description": "Restoran, kafe va mehmonxonalar uchun professional POS va ERP tizimi – EVIKO",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
@@ -9,7 +9,7 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "uz",
-  "id": "SMART POS-admin",
+  "id": "EVIKO POS-admin",
   "categories": ["business", "productivity", "finance"],
   "prefer_related_applications": false,
   "icons": [

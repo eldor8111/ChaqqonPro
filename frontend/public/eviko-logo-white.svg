@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 130" fill="none">
+  <!-- Cloche (serving dome) icon -->
+  <g fill="#ffffff">
+    <circle cx="52" cy="20" r="6.5"/>
+    <rect x="49" y="24" width="6" height="9" rx="3"/>
+    <path d="M16 72 A36 34 0 0 1 88 72 Z"/>
+    <rect x="8" y="74" width="88" height="10" rx="5"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="116" y="70" font-family="'Segoe UI', Arial, Helvetica, sans-serif" font-weight="800" font-size="66" fill="#ffffff" letter-spacing="3">EVIKO</text>
+  <text x="119" y="100" font-family="'Segoe UI', Arial, Helvetica, sans-serif" font-weight="700" font-size="19" fill="#ffffff" letter-spacing="7" opacity="0.9">POS SYSTEM</text>
+</svg>

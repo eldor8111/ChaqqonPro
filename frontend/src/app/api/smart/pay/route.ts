@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
                 method: methodName,
                 status: "completed",
                 kassirName: waiterName || null,
-                notes: tableLabel ? `SMART - ${tableLabel}` : "SMART",
+                notes: tableLabel ? `EVIKO - ${tableLabel}` : "EVIKO",
                 customerId: customerId || null,
             },
         });

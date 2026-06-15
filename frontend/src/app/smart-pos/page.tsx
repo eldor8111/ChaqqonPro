@@ -1613,8 +1613,9 @@ export default function UbtPosPage() {
                     } else if (notes.includes("Olib ketish: ")) {
                         receiptNumber = notes.split("Olib ketish: ")[1] || "N/A";
                         tableLabel = "Olib ketish";
-                    } else if (notes.startsWith("SMART - ")) {
-                        tableLabel = notes.replace("SMART - ", "");
+                    } else if (notes.startsWith("EVIKO - ") || notes.startsWith("SMART - ")) {
+                        // EVIKO (yangi) va SMART (eski ma'lumot) — ikkalasi ham qo'llab-quvvatlanadi
+                        tableLabel = notes.replace(/^(EVIKO|SMART) - /, "");
                     }
 
                     return {
@@ -2377,7 +2378,7 @@ export default function UbtPosPage() {
                 {/* Brand */}
                 <div className="flex items-center shrink-0 mr-4 border-r border-slate-300/20 pr-5">
                     <span className="font-black text-[24px] tracking-tight">
-                        <span className={dark ? "text-white" : "text-slate-800"}>SMART</span><span className={dark ? "text-sky-400" : "text-blue-500"}>POS</span>
+                        <span className={dark ? "text-white" : "text-slate-800"}>EVIKO</span><span className={dark ? "text-sky-400" : "text-blue-500"}> POS</span>
                     </span>
                 </div>
 

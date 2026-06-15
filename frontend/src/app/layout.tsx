@@ -7,42 +7,42 @@ import GlobalAudio from "@/components/GlobalAudio";
 
 
 export const metadata: Metadata = {
-    title: "SMART – Restoran va Kafe uchun POS & ERP Tizimi",
-    description: "SMART — O'zbekistondagi restoran, kafe va mehmonxonalar uchun eng qulay POS va ERP tizimi. Buyurtma boshqaruvi, ombor, moliya va xodimlar hisobi bir joyda.",
+    title: "EVIKO – Restoran va Kafe uchun POS & ERP Tizimi",
+    description: "EVIKO — O'zbekistondagi restoran, kafe va mehmonxonalar uchun eng qulay POS va ERP tizimi. Buyurtma boshqaruvi, ombor, moliya va xodimlar hisobi bir joyda.",
     keywords: [
         "POS tizimi", "ERP tizimi", "restoran dasturi", "kafe boshqaruvi",
-        "savdo tizimi", "SMART", "O'zbekiston POS", "ombor boshqaruvi",
+        "savdo tizimi", "EVIKO", "O'zbekiston POS", "ombor boshqaruvi",
         "moliya hisobi", "buyurtma tizimi", "restaurant software", "uzbekistan pos",
     ],
-    authors: [{ name: "SMART", url: "https://smart.e-code.uz" }],
-    creator: "SMART",
-    publisher: "SMART",
+    authors: [{ name: "EVIKO", url: "https://smart.e-code.uz" }],
+    creator: "EVIKO",
+    publisher: "EVIKO",
     manifest: "/manifest.json", // standart manifest; /mobile/waiter route'i o'zinikiga override qiladi
     metadataBase: new URL("https://smart.e-code.uz"),
     alternates: {
         canonical: "https://smart.e-code.uz",
     },
     openGraph: {
-        title: "SMART – Restoran va Kafe uchun POS & ERP Tizimi",
+        title: "EVIKO – Restoran va Kafe uchun POS & ERP Tizimi",
         description: "O'zbekistondagi restoran, kafe va mehmonxonalar uchun eng qulay POS va ERP tizimi. Buyurtma boshqaruvi, ombor, moliya va xodimlar hisobi bir joyda.",
         url: "https://smart.e-code.uz",
-        siteName: "SMART",
+        siteName: "EVIKO",
         locale: "uz_UZ",
         type: "website",
         images: [
             {
-                url: "/smart-logo.svg",
+                url: "/eviko-logo.svg",
                 width: 1200,
                 height: 630,
-                alt: "SMART – POS & ERP Tizimi",
+                alt: "EVIKO – POS & ERP Tizimi",
             },
         ],
     },
     twitter: {
         card: "summary_large_image",
-        title: "SMART – Restoran va Kafe uchun POS & ERP Tizimi",
+        title: "EVIKO – Restoran va Kafe uchun POS & ERP Tizimi",
         description: "O'zbekistondagi restoran, kafe va mehmonxonalar uchun eng qulay POS va ERP tizimi.",
-        images: ["/smart-logo.svg"],
+        images: ["/eviko-logo.svg"],
     },
     robots: {
         index: true,
@@ -70,7 +70,7 @@ export default function RootLayout({
                 <meta name="mobile-web-app-capable" content="yes" />
                 <meta name="apple-mobile-web-app-capable" content="yes" />
                 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-                <meta name="apple-mobile-web-app-title" content="SMART" />
+                <meta name="apple-mobile-web-app-title" content="EVIKO" />
                 {/* manifest endi metadata orqali beriladi (route bo'yicha override qilinadi) */}
                 <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -85,7 +85,7 @@ export default function RootLayout({
                         __html: JSON.stringify({
                             "@context": "https://schema.org",
                             "@type": "SoftwareApplication",
-                            "name": "SMART",
+                            "name": "EVIKO",
                             "description": "O'zbekistondagi restoran, kafe va mehmonxonalar uchun POS va ERP tizimi",
                             "url": "https://smart.e-code.uz",
                             "applicationCategory": "BusinessApplication",
@@ -98,7 +98,7 @@ export default function RootLayout({
                             },
                             "provider": {
                                 "@type": "Organization",
-                                "name": "SMART",
+                                "name": "EVIKO",
                                 "url": "https://smart.e-code.uz"
                             }
                         })

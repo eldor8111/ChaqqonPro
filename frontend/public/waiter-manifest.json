@@ -1,7 +1,7 @@
 {
-  "name": "SMART Ofitsiant",
+  "name": "EVIKO Ofitsiant",
   "short_name": "Ofitsiant",
-  "description": "SMART — ofitsiantlar uchun mobil buyurtma ilovasi. Stollar, menyu va shaxsiy otchot.",
+  "description": "EVIKO — ofitsiantlar uchun mobil buyurtma ilovasi. Stollar, menyu va shaxsiy otchot.",
   "start_url": "/mobile/waiter",
   "display": "standalone",
   "background_color": "#0f172a",
@@ -9,7 +9,7 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "uz",
-  "id": "smart-ofitsiant",
+  "id": "eviko-ofitsiant",
   "categories": ["business", "food"],
   "prefer_related_applications": false,
   "icons": [

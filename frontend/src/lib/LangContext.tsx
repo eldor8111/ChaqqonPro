@@ -47,7 +47,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
         },
         nav: {
             dashboard: "Bosh sahifa", pos: "Kassa", inventory: "Ombor", crm: "CRM",
-            reports: "Hisobotlar", staff: "Xodimlar", ai: "AI Moduli", ubt: "SMART",
+            reports: "Hisobotlar", staff: "Xodimlar", ai: "AI Moduli", ubt: "EVIKO",
             pharmacy: "Dorixona", wholesale: "Ulgurji", ecommerce: "E-Tijorat", settings: "Sozlamalar",
             users: "Foydalanuvchilar", users_kassir: "Kassir", users_ofitsiant: "Ofitsiant",
             users_kuryer: "Kuryer", users_manablog: "Monoblok", users_povar: "Oshpaz",
@@ -68,7 +68,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
         },
         auth: {
             login: "Kirish", logout: "Chiqish", username: "Foydalanuvchi nomi", password: "Parol",
-            forgotPassword: "Parolni unutdingizmi?", welcome: "SMART ga xush kelibsiz",
+            forgotPassword: "Parolni unutdingizmi?", welcome: "EVIKO ga xush kelibsiz",
             loginSubtitle: "Tizimga kirish uchun ma'lumotlaringizni kiriting"
         },
         pos: {
@@ -119,7 +119,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             permModules: "Modullar", permActions: "Amallar",
             permPos: "Kassa (POS)", permInventory: "Ombor", permCrm: "CRM",
             permReports: "Hisobotlar", permStaff: "Xodimlar", permAi: "AI Moduli",
-            permSmart: "SMART", permPharmacy: "Dorixona", permWholesale: "Ulgurji", permEcommerce: "E-Tijorat",
+            permSmart: "EVIKO", permPharmacy: "Dorixona", permWholesale: "Ulgurji", permEcommerce: "E-Tijorat",
             permDiscounts: "Chegirma berish", permRefunds: "Qaytarish", permPriceEdit: "Narx o'zgartirish",
             permStockEdit: "Zaxira tahrirlash", permReportExport: "Hisobot eksport", permCustomerEdit: "Mijoz tahrirlash", permShiftManage: "Smena boshqarish",
             noPermissions: "Ruxsatlar yo'q", permissionsUpdated: "Ruxsatlar saqlandi",
@@ -134,7 +134,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             aiRecommendationMenu: "AI Tavsiya", critical: "Kritik", attention: "Diqqat", normal: "Normal"
         },
         ubt: {
-            title: "SMART Moduli", subTitle: "Restoran va mehmonxona boshqaruvi", addReservation: "Bron qo'shish",
+            title: "EVIKO Moduli", subTitle: "Restoran va mehmonxona boshqaruvi", addReservation: "Bron qo'shish",
             occupiedTables: "Band stollar", freeTables: "Bo'sh stollar", reservedTables: "Bron qilingan", newOrders: "Yangi buyurtmalar",
             tableMap: "Stol xaritasi", kds: "Oshxona (KDS)", occupied: "Band", free: "Bo'sh", reserved: "Bron",
             new: "Yangi", preparing: "Tayyorlanmoqda", ready: "Tayyor",
@@ -193,7 +193,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
         },
         nav: {
             dashboard: "Главная", pos: "Касса", inventory: "Склад", crm: "CRM",
-            reports: "Отчёты", staff: "Сотрудники", ai: "ИИ Модуль", ubt: "SMART",
+            reports: "Отчёты", staff: "Сотрудники", ai: "ИИ Модуль", ubt: "EVIKO",
             pharmacy: "Аптека", wholesale: "Оптовая торговля", ecommerce: "Э-коммерция", settings: "Настройки",
             users: "Пользователи", users_kassir: "Кассир", users_ofitsiant: "Официант",
             users_kuryer: "Курьер", users_manablog: "Моноблок", users_povar: "Повар",
@@ -214,7 +214,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
         },
         auth: {
             login: "Войти", logout: "Выйти", username: "Имя пользователя", password: "Пароль",
-            forgotPassword: "Забыли пароль?", welcome: "Добро пожаловать в SMART",
+            forgotPassword: "Забыли пароль?", welcome: "Добро пожаловать в EVIKO",
             loginSubtitle: "Введите данные для входа в систему"
         },
         pos: {
@@ -265,7 +265,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             permModules: "Модули", permActions: "Действия",
             permPos: "Касса (POS)", permInventory: "Склад", permCrm: "CRM",
             permReports: "Отчёты", permStaff: "Сотрудники", permAi: "ИИ Модуль",
-            permSmart: "SMART", permPharmacy: "Аптека", permWholesale: "Оптовая", permEcommerce: "Э-коммерция",
+            permSmart: "EVIKO", permPharmacy: "Аптека", permWholesale: "Оптовая", permEcommerce: "Э-коммерция",
             permDiscounts: "Скидки", permRefunds: "Возвраты", permPriceEdit: "Изменение цен",
             permStockEdit: "Редакт. склада", permReportExport: "Экспорт отчётов", permCustomerEdit: "Ред. клиентов", permShiftManage: "Управление сменой",
             noPermissions: "Нет разрешений", permissionsUpdated: "Разрешения сохранены",
@@ -280,7 +280,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             aiRecommendationMenu: "ИИ Рекомендация", critical: "Критично", attention: "Внимание", normal: "Нормально"
         },
         ubt: {
-            title: "SMART Модуль", subTitle: "Управление ресторанами и гостиницами", addReservation: "Добавить бронь",
+            title: "EVIKO Модуль", subTitle: "Управление ресторанами и гостиницами", addReservation: "Добавить бронь",
             occupiedTables: "Занятые столы", freeTables: "Свободные столы", reservedTables: "Забронированные столы", newOrders: "Новые заказы",
             tableMap: "Схема залов", kds: "Кухня (KDS)", occupied: "Занят", free: "Свободен", reserved: "Резерв",
             new: "Новый", preparing: "Готовится", ready: "Готов",
@@ -339,7 +339,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
         },
         nav: {
             dashboard: "Dashboard", pos: "Point of Sale", inventory: "Inventory", products: "Products", crm: "CRM",
-            reports: "Reports", staff: "Staff", ai: "AI Module", ubt: "SMART",
+            reports: "Reports", staff: "Staff", ai: "AI Module", ubt: "EVIKO",
             pharmacy: "Pharmacy", wholesale: "Wholesale", ecommerce: "E-Commerce", settings: "Settings",
             ombor: "Warehouse", ombor_qoldiqlar: "Stock Balances", ombor_kirim: "Inbound",
             ombor_chiqim: "Outbound", ombor_kochirish: "Transfer", ombor_inventarizatsiya: "Inventory Check",
@@ -357,7 +357,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
         },
         auth: {
             login: "Login", logout: "Logout", username: "Username", password: "Password",
-            forgotPassword: "Forgot password?", welcome: "Welcome to SMART",
+            forgotPassword: "Forgot password?", welcome: "Welcome to EVIKO",
             loginSubtitle: "Enter your credentials to access the system"
         },
         pos: {
@@ -408,7 +408,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             permModules: "Modules", permActions: "Actions",
             permPos: "POS (Cashier)", permInventory: "Inventory", permCrm: "CRM",
             permReports: "Reports", permStaff: "Staff", permAi: "AI Module",
-            permSmart: "SMART", permPharmacy: "Pharmacy", permWholesale: "Wholesale", permEcommerce: "E-Commerce",
+            permSmart: "EVIKO", permPharmacy: "Pharmacy", permWholesale: "Wholesale", permEcommerce: "E-Commerce",
             permDiscounts: "Apply Discounts", permRefunds: "Process Refunds", permPriceEdit: "Edit Prices",
             permStockEdit: "Edit Stock", permReportExport: "Export Reports", permCustomerEdit: "Edit Customers", permShiftManage: "Manage Shifts",
             noPermissions: "No permissions", permissionsUpdated: "Permissions saved",
@@ -423,7 +423,7 @@ const translations: Record<Language, Record<string, Record<string, string>>> = {
             aiRecommendationMenu: "AI Recommendation", critical: "Critical", attention: "Warning", normal: "Normal"
         },
         ubt: {
-            title: "SMART Module", subTitle: "Restaurant and Hotel Management", addReservation: "Add Reservation",
+            title: "EVIKO Module", subTitle: "Restaurant and Hotel Management", addReservation: "Add Reservation",
             occupiedTables: "Occupied Tables", freeTables: "Free Tables", reservedTables: "Reserved Tables", newOrders: "New Orders",
             tableMap: "Table Map", kds: "Kitchen (KDS)", occupied: "Occupied", free: "Free", reserved: "Reserved",
             new: "New", preparing: "Preparing", ready: "Ready",

@@ -45,6 +45,7 @@ export async function GET(_request: NextRequest) {
                     status: "completed",
                     createdAt: { gte: todayStart, lte: todayEnd },
                     OR: [
+                        { notes: { contains: "EVIKO" } },
                         { notes: { contains: "SMART" } },
                         { notes: { contains: "Olib ketish" } }
                     ],

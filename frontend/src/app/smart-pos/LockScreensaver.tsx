@@ -110,8 +110,8 @@ export default function LockScreensaver({ onUnlock }: { onUnlock: () => void }) 
                 {/* Logo */}
                 <div className="mb-12 ss-fade-down" style={{ animationDelay: "0.15s" }}>
                     <span className="font-black text-4xl md:text-5xl tracking-tight">
-                        <span className="text-white">SMART</span>
-                        <span className="ss-shine bg-gradient-to-r from-sky-400 via-cyan-300 to-sky-400 bg-clip-text text-transparent">POS</span>
+                        <span className="text-white">EVIKO</span>
+                        <span className="ss-shine bg-gradient-to-r from-sky-400 via-cyan-300 to-sky-400 bg-clip-text text-transparent"> POS</span>
                     </span>
                     <p className="text-slate-500 text-xs font-bold tracking-[0.35em] uppercase mt-1">Restoran boshqaruv tizimi</p>
                 </div>
@@ -139,7 +139,7 @@ export default function LockScreensaver({ onUnlock }: { onUnlock: () => void }) 
                         <Hand size={16} className="text-sky-300" />
                         <span className="text-slate-300 text-sm font-bold">Davom etish uchun ekranga 2 marta teging</span>
                     </div>
-                    <p className="text-slate-600 text-[11px] font-semibold mt-1">SMARTPOS · chaqqonpro.e-code.uz</p>
+                    <p className="text-slate-600 text-[11px] font-semibold mt-1">EVIKO POS · chaqqonpro.e-code.uz</p>
                 </div>
             </div>
 

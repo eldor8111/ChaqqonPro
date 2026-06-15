@@ -99,7 +99,7 @@ async function checkForUpdates(serverUrl) {
             console.log(`[UPDATE] Yangi versiya: ${latest}`);
             if (Notification.isSupported()) {
                 new Notification({
-                    title: 'SMART POS V2 — Yangilanish mavjud!',
+                    title: 'EVIKO POS — Yangilanish mavjud!',
                     body:  `v${latest} versiyasi chiqdi. Yuklab olish uchun bosing.`,
                 }).show();
             }
@@ -351,8 +351,8 @@ function createMainWindow(kioskUrl) {
 function buildTrayMenuTemplate() {
     const cfg = loadConfig();
     const modeLabel = isOfflineMode
-        ? `SMART POS v${CURRENT_VERSION} • OFFLINE`
-        : `SMART POS v${CURRENT_VERSION} • Online`;
+        ? `EVIKO POS v${CURRENT_VERSION} • OFFLINE`
+        : `EVIKO POS v${CURRENT_VERSION} • Online`;
 
     const template = [
         { label: modeLabel, enabled: false },
@@ -423,7 +423,7 @@ function buildTrayMenuTemplate() {
 function rebuildTrayMenu() {
     if (!tray) return;
     tray.setContextMenu(Menu.buildFromTemplate(buildTrayMenuTemplate()));
-    tray.setToolTip(isOfflineMode ? 'SMART POS V2 — OFFLINE' : 'SMART POS V2 Online');
+    tray.setToolTip(isOfflineMode ? 'EVIKO POS — OFFLINE' : 'EVIKO POS Online');
 }
 
 function createTray() {
@@ -557,7 +557,7 @@ app.whenReady().then(async () => {
                 clearInterval(reconnectChecker);
                 if (Notification.isSupported()) {
                     new Notification({
-                        title: 'SMART POS — Internet qaytdi!',
+                        title: 'EVIKO POS — Internet qaytdi!',
                         body:  'Online rejimga o\'tish uchun dasturni qayta ishga tushiring.',
                     }).show();
                 }

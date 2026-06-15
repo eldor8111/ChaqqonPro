@@ -445,7 +445,7 @@ export default function SuperAdminPage() {
                 <div className="mb-8 mt-2 px-2">
                     <div className="flex items-center mb-1">
                         <span className="font-black text-2xl tracking-tight text-slate-800">
-                            SMART<span className="text-blue-600">POS</span>
+                            EVIKO<span className="text-blue-600"> POS</span>
                         </span>
                     </div>
                     <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Super Admin Portal</p>
@@ -539,7 +539,7 @@ export default function SuperAdminPage() {
                                  activeTab === "tariffs" ? "Tariflar boshqaruvi" :
                                  activeTab === "settings" ? "Sozlamalar" : ""}
                             </h1>
-                            <p className="text-xs sm:text-sm text-slate-500 hidden sm:block">SMART platformasi umumlashgan boshqaruvi</p>
+                            <p className="text-xs sm:text-sm text-slate-500 hidden sm:block">EVIKO platformasi umumlashgan boshqaruvi</p>
                         </div>
                     </div>
                     {activeTab === "tenants" && canCreateTenants && (

@@ -83,7 +83,7 @@ export default function StaffLoginPage() {
                 <div className="w-16 h-16 rounded-2xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
                     <Smartphone size={28} className="text-blue-400" />
                 </div>
-                <h1 className="text-2xl font-black text-white tracking-tight">SMART POS</h1>
+                <h1 className="text-2xl font-black text-white tracking-tight">EVIKO POS</h1>
                 <p className="text-sm text-blue-300/80 font-medium mt-1">Xodim kirish portali</p>
             </div>
 

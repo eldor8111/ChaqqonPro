@@ -62,7 +62,7 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
                 <div className="absolute left-1/2 -translate-x-1/2 pointer-events-none">
                     <div className="animate-fade-in flex items-center gap-2">
                         <span className="font-black text-[22px] md:text-[26px] tracking-wider text-slate-800 uppercase">
-                            SMART<span className="text-blue-600">POS</span>
+                            EVIKO<span className="text-blue-600"> POS</span>
                         </span>
                     </div>
                 </div>

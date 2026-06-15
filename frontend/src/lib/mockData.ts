@@ -1,4 +1,4 @@
-// Mock data for all SMART modules
+// Mock data for all EVIKO modules
 
 export const mockBranches = [
     { id: "1", name: "Asosiy Filial", city: "Toshkent", manager: "Admin", status: "active" },
