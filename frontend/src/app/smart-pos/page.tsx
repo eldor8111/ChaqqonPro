@@ -89,34 +89,57 @@ const th = {
     label:     (d: boolean) => d ? "text-slate-200" : "text-slate-800 font-bold",
 };
 
-// ─── Kitchen Auto-Print Shared Function ─────────────────────────────────────────
+// ─── Kitchen Auto-Print Shared Function ──────────────────────────────────────────────────
 const printKitchenReceipt = async (items: {item:any; qty:number}[], tableName: string, authToken?: string) => {
     try {
-        const printerGroups: Record<string, typeof items> = {};
+        const printerGroups: Record<string, { items: typeof items; port: number }> = {};
         items.forEach(c => {
             const ip = (c.item as any).printerIp;
+            const port = (c.item as any).printerPort || 9100;
             if (ip) {
-                if (!printerGroups[ip]) printerGroups[ip] = [];
-                printerGroups[ip].push(c);
+                if (!printerGroups[ip]) printerGroups[ip] = { items: [], port };
+                printerGroups[ip].items.push(c);
             }
         });
         const now = new Date();
-        const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-        // Build headers with auth token
+        const timeStr = String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
         const hdrs: Record<string, string> = { "Content-Type": "application/json" };
-        if (authToken) hdrs["Authorization"] = `Bearer ${authToken}`;
-        for (const [printerIp, pItems] of Object.entries(printerGroups)) {
-            fetch("/api/smart/print", {
-                method: "POST", headers: hdrs,
-                body: JSON.stringify({
-                    printerIp, port: 9100, receiptType: "kitchen", tableName, time: timeStr,
-                    items: pItems.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
-                    total: pItems.reduce((s, c) => s + c.item.price * c.qty, 0),
-                }),
-            }).catch(e => console.warn("[Kitchen Print]", printerIp, e));
+        if (authToken) hdrs["Authorization"] = "Bearer " + authToken;
+
+        if (Object.keys(printerGroups).length > 0) {
+            for (const [printerIp, group] of Object.entries(printerGroups)) {
+                fetch("/api/smart/print", {
+                    method: "POST", headers: hdrs,
+                    body: JSON.stringify({
+                        printerIp, port: group.port, receiptType: "kitchen", tableName, time: timeStr,
+                        items: group.items.filter((c: any) => c && c.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
+                        total: group.items.reduce((s, c) => s + c.item.price * c.qty, 0),
+                    }),
+                }).catch((e: any) => console.warn("[Kitchen Print]", printerIp, e));
+            }
+        } else {
+            // FALLBACK: item.printerIp yoq - bazadan oshxona printerini qidirish
+            const res = await fetch("/api/smart/printers").catch(() => null);
+            if (res && res.ok) {
+                const data = await res.json().catch(() => []);
+                const kp = Array.isArray(data)
+                    ? (data.find((p: any) => p.role === "kitchen") || data.find((p: any) => p.role === "bar"))
+                    : null;
+                if (kp && kp.ipAddress) {
+                    fetch("/api/smart/print", {
+                        method: "POST", headers: hdrs,
+                        body: JSON.stringify({
+                            printerIp: kp.ipAddress, port: kp.port || 9100,
+                            receiptType: "kitchen", tableName, time: timeStr,
+                            items: items.filter((c: any) => c && c.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
+                            total: items.reduce((s, c) => s + c.item.price * c.qty, 0),
+                        }),
+                    }).catch((e: any) => console.warn("[Kitchen Fallback]", kp.ipAddress, e));
+                }
+            }
         }
     } catch {}
-};
+}
 
 
 // ─── Pay Modal ─────────────────────────────────────────────────────────────────
@@ -300,6 +323,10 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
     const [showPay, setShowPay] = useState(false);
     const [loading, setLoading] = useState(false);
     const [confirmed, setConfirmed] = useState(false);
+    // — Printer IP preload (komponent ochilishida bir marta yuklanadi)
+    const [_preloadedPrinterIp, _setPreloadedPrinterIp] = useState<string | null>(kassirPrinterIp || null);
+    const [_preloadedPrinterPort, _setPreloadedPrinterPort] = useState<number>(9100);
+    const [printError, setPrintError] = useState<string | null>(null);
     const catMap = useMemo(() => Object.fromEntries(cats.map(k => [k.id, k.name])), [cats]);
     const catList = useMemo(() => ["Barchasi", ...cats.map(k => k.name)], [cats]);
     const filtered = useMemo(() => {
@@ -323,6 +350,20 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
             // Internet yo'q — eski keshdan davom etamiz, menyu o'chib ketmaydi
             if (_menuCache) { setMenu(_menuCache.items); setCats_(_menuCache.cats); }
         });
+        // — Printer IP ni ham parallel preload qilamiz (to'lovda kutish bo'lmasin)
+        if (!kassirPrinterIp) {
+            fetch("/api/smart/printers").then(r => r.ok ? r.json() : null).then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    const p = data.find((p: any) => p.isDefault && (p.role || "cashier") === "cashier")
+                           || data.find((p: any) => (p.role || "cashier") === "cashier")
+                           || data[0];
+                    if (p?.ipAddress) {
+                        _setPreloadedPrinterIp(p.ipAddress);
+                        _setPreloadedPrinterPort(p.port || 9100);
+                    }
+                }
+            }).catch(() => {});
+        }
     }, []);
     const [qtyPop, setQtyPop] = useState<{ item: MenuItem; qty: string } | null>(null);
     const [modPop, setModPop] = useState<{ item: MenuItem; selected: Record<string, { id: string, name: string }[]> } | null>(null);
@@ -457,51 +498,71 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
     // To'lov — final payment, clears cart + prints customer receipt
     const handlePay = async (method: string, customerId?: string) => {
         setLoading(true);
+        setPrintError(null);
 
-        await onPay(cart, method, customerId);
+        // — To'lov va printer IP bir vaqtda parallel bajariladi
+        const [, printerData] = await Promise.all([
+            onPay(cart, method, customerId),
+            // Agar preloaded IP bo'lmasa, hozir yuklash (parallel, kutish yo'q)
+            (!_preloadedPrinterIp && !kassirPrinterIp)
+                ? fetch("/api/smart/printers").then(r => r.ok ? r.json() : null).catch(() => null)
+                : Promise.resolve(null),
+        ]);
 
-        // 🖨️ MIJOZ CHEKI — kassa printeriga (default kassa → kassa roli → birinchi)
-        let finalIp = kassirPrinterIp;
-        let finalPort = 9100;
-        if (!finalIp) {
-            try {
-                const res = await fetch("/api/smart/printers");
-                if (res.ok) {
-                    const data = await res.json();
-                    if (Array.isArray(data) && data.length > 0) {
-                        const t = data.find((p: any) => p.isDefault && (p.role || "cashier") === "cashier")
-                            || data.find((p: any) => (p.role || "cashier") === "cashier")
-                            || data[0];
-                        finalIp = t.ipAddress;
-                        finalPort = t.port || 9100;
-                    }
-                }
-            } catch {}
+        // — Printer IP aniqlash: props > preload > hozir yuklanganidan
+        let finalIp = kassirPrinterIp || _preloadedPrinterIp;
+        let finalPort = _preloadedPrinterPort;
+        if (!finalIp && Array.isArray(printerData) && printerData.length > 0) {
+            const p = printerData.find((p: any) => p.isDefault && (p.role || "cashier") === "cashier")
+                   || printerData.find((p: any) => (p.role || "cashier") === "cashier")
+                   || printerData[0];
+            finalIp = p?.ipAddress;
+            finalPort = p?.port || 9100;
         }
 
+        // — Auth token: bir nechta cookie nomini tekshirish
+        const getAuthToken = () => {
+            const cookieNames = ["kassir_token", "pos_token", "token", "auth_token", "next-auth.session-token"];
+            for (const name of cookieNames) {
+                const found = document.cookie.split(";").find(c => c.trim().startsWith(name + "="));
+                if (found) return decodeURIComponent(found.split("=").slice(1).join("="));
+            }
+            return "";
+        };
+
+        // — Mijoz cheki chiqarish
         if (finalIp && autoPrintReceipt !== false) {
             const now = new Date();
             const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            // get auth token from session cookies
-            const tokenCookie = document.cookie.split(";").find(c => c.trim().startsWith("kassir_token="));
-            const sessionToken = tokenCookie ? tokenCookie.split("=")[1] : "";
+            const sessionToken = getAuthToken();
             const printHeaders: Record<string, string> = { "Content-Type": "application/json" };
             if (sessionToken) printHeaders["Authorization"] = `Bearer ${sessionToken}`;
-            fetch("/api/smart/print", {
-                method: "POST",
-                headers: printHeaders,
-                body: JSON.stringify({
-                    printerIp: finalIp,
-                    port: finalPort,
-                    receiptType: "client",
-                    tableName,
-                    time: timeStr,
-                    paymentMethod: method,
-                    items: cart.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
-                    total: cart.reduce((s, c) => s + c.item.price * c.qty, 0),
-                    servicePercent: servicePct
-                }),
-            }).catch(e => console.warn("[CustomReceipt]", e));
+
+            try {
+                const printRes = await fetch("/api/smart/print", {
+                    method: "POST",
+                    headers: printHeaders,
+                    body: JSON.stringify({
+                        printerIp: finalIp,
+                        port: finalPort,
+                        receiptType: "client",
+                        tableName,
+                        time: timeStr,
+                        paymentMethod: method,
+                        items: cart.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
+                        total: cart.reduce((s, c) => s + c.item.price * c.qty, 0),
+                        servicePercent: servicePct
+                    }),
+                });
+                if (!printRes.ok || !(await printRes.json().then((d: any) => d.success).catch(() => false))) {
+                    setPrintError(`⚠️ Chek chiqmadi (${finalIp}). Printer online ekanligini tekshiring.`);
+                }
+            } catch (e) {
+                setPrintError(`⚠️ Chek chiqmadi: ${e instanceof Error ? e.message : String(e)}`);
+                console.warn("[CustomReceipt]", e);
+            }
+        } else if (!finalIp) {
+            setPrintError("⚠️ Printer topilmadi. Admin panelda kassa printerini sozlang.");
         }
 
         setCart([]);
@@ -619,6 +680,16 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
                 </div>
             )}
             {showPay && <PayModal total={total} onPay={handlePay} onClose={() => setShowPay(false)} loading={loading} servicePct={servicePct} />}
+
+            {/* Print xato xabari — chek chiqmasa ekranda ko'rinadi */}
+            {printError && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl border border-amber-400/30 bg-amber-950/95 text-amber-200 text-sm font-bold max-w-sm w-[90vw] animate-slide-up"
+                    style={{ backdropFilter: 'blur(8px)' }}>
+                    <span className="text-lg shrink-0">⚠️</span>
+                    <span className="flex-1">{printError}</span>
+                    <button onClick={() => setPrintError(null)} className="shrink-0 text-amber-400 hover:text-white transition-colors text-lg leading-none">✕</button>
+                </div>
+            )}
 
             {/* Weight/Qty Popup */}
             {qtyPop && (

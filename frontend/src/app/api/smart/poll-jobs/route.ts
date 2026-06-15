@@ -81,12 +81,12 @@ async function pollJobsLogic(agentPrinters: string[]) {
     try {
         // UZLUKSIZ LONG-POLL: fayl paydo bo'lishi bilanoq (250ms ichida) qaytaramiz.
         // Bu chekni deyarli darhol chiqaradi (oldingi 2s+ kutish o'rniga).
-        const deadline = Date.now() + 20_000; // 20s long-poll oynasi
+        const deadline = Date.now() + 25_000; // 25s long-poll oynasi (uzunroq = kamroq qayta ulanish)
         while (true) {
             const jobs = collectJobs(queueDir, agentPrinters);
             if (jobs.length > 0) return NextResponse.json({ jobs });
             if (Date.now() >= deadline) return NextResponse.json({ jobs: [] });
-            await new Promise(r => setTimeout(r, 100)); // tezroq pickup (~100ms)
+            await new Promise(r => setTimeout(r, 50)); // tezlashtirildi: 50ms (oldin 100ms)
         }
     } catch {
         return NextResponse.json({ jobs: [] });

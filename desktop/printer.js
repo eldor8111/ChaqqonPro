@@ -286,15 +286,15 @@ function printOverNetwork(ip, data, port = 9100, timeout = 6000) {
         };
 
         const timer = setTimeout(() => {
-            done(new Error(`TCP timeout: ${ip}:${port} ga ${timeout}ms ichida ulanib bo'lmadi`));
-        }, timeout);
+            done(new Error(`TCP timeout: ${ip}:${port} ga 2500ms ichida ulanib bo'lmadi`));
+        }, 2500); // Tezlashtirildi: 2.5s (oldin 6s)
 
         client.on('error', (err) => done(err));
         client.connect(port, ip, () => {
             // end() = ma'lumotni yozadi va FIN yuboradi; callback flush'dan keyin
             client.end(data, () => {
-                // LAN'da darhol yetadi — qisqa kafolat bilan yopamiz
-                setTimeout(() => done(null), 150);
+                // LAN'da darhol yetadi — qisqa kafolat (30ms) bilan yopamiz
+                setTimeout(() => done(null), 30); // Tezlashtirildi (oldin 150ms)
             });
         });
     });
@@ -395,7 +395,7 @@ async function printRaw(printerName, base64data, options = {}) {
 
     // ── LAN (TCP/IP) ulanish — band bo'lsa qayta urinadi (chek yo'qolmasin) ──────
     if (printerIp) {
-        const delays = [0, 350, 900, 1800]; // 4 urinish: darhol, 350ms, 900ms, 1800ms
+        const delays = [0, 100, 300]; // 3 urinish: darhol, 100ms, 300ms — tezlashtirildi (oldin [0,350,900,1800])
         let lastErr;
         for (let i = 0; i < delays.length; i++) {
             if (delays[i]) await new Promise(r => setTimeout(r, delays[i]));

@@ -255,7 +255,7 @@ async function jobLoop(serverUrl) {
             await pollJobs(serverUrl);
         } catch { /* xatoni jim yutamiz */ }
         // Tight-loop oldini olish uchun juda qisqa pauza (tezroq navbat)
-        await new Promise(r => setTimeout(r, 50));
+        await new Promise(r => setTimeout(r, 0)); // Darhol qayta so'rov — event loop ga imkon berish uchun 0ms
     }
 }
 
@@ -273,12 +273,12 @@ function startPolling(config) {
     // DB-navbat (print-queue) va heartbeat — alohida intervalda
     pollTimer = setInterval(() => {
         processQueue(serverUrl);
-    }, 3000);
+    }, 1000); // 1s: navbat tezroq ko'riladi (oldin 3s)
 
     syncTimer = setInterval(() => {
         syncPrinters(serverUrl);
         heartbeat(serverUrl);
-    }, 30_000);
+    }, 60_000); // 60s: heartbeat kamroq, resurs tejaydi (oldin 30s)
 }
 
 function stopPolling() {

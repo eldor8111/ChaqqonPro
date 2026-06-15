@@ -414,14 +414,14 @@ function printTcpOnce(ip: string, port: number, data: Buffer): Promise<void> {
                 resolve();
             }
         };
-        // Ulanish 5s ichida bo'lmasa xato (tez fikr-mulohaza uchun)
-        const timer = setTimeout(() => done(new Error("Timeout")), 5000);
+        // Ulanish 2.5s ichida bo'lmasa xato (tez fikr-mulohaza uchun)
+        const timer = setTimeout(() => done(new Error("Timeout")), 2500);
         socket.on("error", (err) => done(err));
         socket.connect(port, ip, () => {
             // end() ma'lumotni yozadi va FIN yuboradi; callback flush'dan keyin ishlaydi
             socket.end(data, () => {
-                // LAN'da ma'lumot bir lahzada yetadi — qisqa kafolat (120ms) bilan yopamiz
-                setTimeout(() => done(), 120);
+                // LAN'da ma'lumot bir lahzada yetadi — qisqa kafolat (30ms) bilan yopamiz
+                setTimeout(() => done(), 30);
             });
         });
     });
@@ -458,7 +458,7 @@ async function printTcp(ip: string, port: number, data: Buffer): Promise<void> {
     }
 
     // Band printer (oldingi chek yoki heartbeat probe) uchun bir necha bor qayta urinamiz
-    const delays = [0, 350, 900, 1800]; // 4 urinish
+    const delays = [0, 100, 300]; // 3 urinish: darhol, 100ms, 300ms — tezlashtirildi (oldin [0,350,900,1800])
     let firstErr: unknown;
     for (let i = 0; i < delays.length; i++) {
         if (delays[i]) await new Promise(r => setTimeout(r, delays[i]));
@@ -481,8 +481,8 @@ async function printUsb(printerName: string, data: Buffer): Promise<void> {
     const os              = await import("os");
     const execFileAsync   = promisify(execFile);
 
-    // ESC/POS binary faylni vaqtincha saqlash
-    const tmpFile = join(process.cwd(), `tmp_print_${Date.now()}.bin`);
+    // ESC/POS binary faylni vaqtincha saqlash (os.tmpdir — ruxsat muammosi kamayadi)
+    const tmpFile = join(os.tmpdir(), `tmp_print_${Date.now()}.bin`);
     await writeFile(tmpFile, data);
 
     try {
