@@ -139,45 +139,54 @@ export default function KassirLoginPage() {
     const BG = (
         <div className="absolute inset-0 z-0 overflow-hidden">
             <style>{`
-                @keyframes evikoAuroraA { 0%,100%{transform:translate(-12%,-8%) scale(1)} 50%{transform:translate(8%,6%) scale(1.15)} }
-                @keyframes evikoAuroraB { 0%,100%{transform:translate(10%,8%) scale(1.05)} 50%{transform:translate(-8%,-6%) scale(1.18)} }
-                @keyframes evikoAuroraC { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-6%,10%) scale(1.12)} }
+                @keyframes evikoGlowA { 0%,100%{transform:translate(-8%,-6%) scale(1)} 50%{transform:translate(6%,4%) scale(1.18)} }
+                @keyframes evikoGlowB { 0%,100%{transform:translate(8%,6%) scale(1.06)} 50%{transform:translate(-6%,-4%) scale(1.2)} }
+                @keyframes evikoFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
             `}</style>
 
-            {/* Jonli to'yingan baza gradient (yorqin, rang-barang) */}
+            {/* Brend ko'k baza gradient — rasm tonlariga mos (chuqurlik) */}
             <div className="absolute inset-0" style={{
-                background: "linear-gradient(135deg, #fb923c 0%, #f97316 20%, #ec4899 48%, #8b5cf6 74%, #6366f1 100%)"
+                background: "radial-gradient(ellipse 120% 100% at 70% 30%, #16264f 0%, #0c1530 45%, #070d20 100%)"
             }} />
 
-            {/* Aurora nur dog'lari (yorug'lik beradi) */}
-            <div className="absolute top-[-15%] left-[-10%] w-[720px] h-[720px] rounded-full pointer-events-none" style={{
-                background: "radial-gradient(circle, rgba(255,205,90,0.85) 0%, transparent 60%)",
-                filter: "blur(60px)", mixBlendMode: "screen", animation: "evikoAuroraA 18s ease-in-out infinite"
-            }} />
-            <div className="absolute bottom-[-20%] right-[-10%] w-[780px] h-[780px] rounded-full pointer-events-none" style={{
-                background: "radial-gradient(circle, rgba(96,165,250,0.75) 0%, transparent 60%)",
-                filter: "blur(70px)", mixBlendMode: "screen", animation: "evikoAuroraB 22s ease-in-out infinite"
-            }} />
-            <div className="absolute top-[28%] right-[12%] w-[540px] h-[540px] rounded-full pointer-events-none" style={{
-                background: "radial-gradient(circle, rgba(244,114,182,0.7) 0%, transparent 60%)",
-                filter: "blur(60px)", mixBlendMode: "screen", animation: "evikoAuroraC 20s ease-in-out infinite"
-            }} />
-
-            {/* Nozik texnik to'r — "tizim" hissi (markazда, chekka so'nadi) */}
+            {/* EVIKO POS brend rasmi — atmosfera qatlami sifatida singdirilgan
+                (chetlari eriydi, yengil blur, brend gradientga qo'shilib ketadi) */}
             <div className="absolute inset-0" style={{
-                backgroundImage: "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
-                backgroundSize: "60px 60px", opacity: 0.08,
-                WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 45%, #000 30%, transparent 80%)",
-                maskImage: "radial-gradient(ellipse 90% 80% at 50% 45%, #000 30%, transparent 80%)"
+                backgroundImage: "url('/eviko-bg.png')",
+                backgroundSize: "cover",
+                backgroundPosition: "center right",
+                backgroundRepeat: "no-repeat",
+                opacity: 0.55,
+                filter: "blur(1.5px) saturate(115%)",
+                WebkitMaskImage: "radial-gradient(ellipse 95% 95% at 62% 50%, #000 25%, transparent 82%)",
+                maskImage: "radial-gradient(ellipse 95% 95% at 62% 50%, #000 25%, transparent 82%)",
             }} />
 
-            {/* Yengil markaziy skrim — oq matn o'qilishi uchun (QORONG'I EMAS) */}
-            <div className="absolute inset-0 pointer-events-none" style={{
-                background: "radial-gradient(ellipse 72% 72% at 50% 45%, rgba(30,12,55,0.30) 0%, transparent 72%)"
+            {/* Jonli glow dog'lari — tizim "tirik" ko'rinishi uchun (brend ko'k/cyan) */}
+            <div className="absolute top-[-12%] left-[-8%] w-[680px] h-[680px] rounded-full pointer-events-none" style={{
+                background: "radial-gradient(circle, rgba(59,130,246,0.45) 0%, transparent 62%)",
+                filter: "blur(70px)", mixBlendMode: "screen", animation: "evikoGlowA 20s ease-in-out infinite"
             }} />
-            {/* Yumshoq chekka ramka */}
+            <div className="absolute bottom-[-18%] right-[-6%] w-[720px] h-[720px] rounded-full pointer-events-none" style={{
+                background: "radial-gradient(circle, rgba(34,211,238,0.32) 0%, transparent 62%)",
+                filter: "blur(80px)", mixBlendMode: "screen", animation: "evikoGlowB 24s ease-in-out infinite"
+            }} />
+
+            {/* Nozik texnik to'r — "tizim" hissi (markazda zich, chekka so'nadi) */}
+            <div className="absolute inset-0" style={{
+                backgroundImage: "linear-gradient(rgba(120,170,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(120,170,255,0.5) 1px, transparent 1px)",
+                backgroundSize: "54px 54px", opacity: 0.07,
+                WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 45%, #000 25%, transparent 78%)",
+                maskImage: "radial-gradient(ellipse 90% 80% at 50% 45%, #000 25%, transparent 78%)"
+            }} />
+
+            {/* Markaziy skrim — kartochka va oq matn o'qilishi uchun */}
             <div className="absolute inset-0 pointer-events-none" style={{
-                background: "radial-gradient(ellipse 100% 100% at 50% 50%, transparent 58%, rgba(40,18,70,0.38) 100%)"
+                background: "radial-gradient(ellipse 66% 72% at 50% 48%, rgba(6,11,28,0.62) 0%, rgba(6,11,28,0.25) 55%, transparent 82%)"
+            }} />
+            {/* Yumshoq chekka vinetka — fokus markazga */}
+            <div className="absolute inset-0 pointer-events-none" style={{
+                background: "radial-gradient(ellipse 110% 110% at 50% 50%, transparent 52%, rgba(3,7,20,0.6) 100%)"
             }} />
         </div>
     );
