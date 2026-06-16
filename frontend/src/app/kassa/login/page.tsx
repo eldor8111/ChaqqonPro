@@ -133,31 +133,51 @@ export default function KassirLoginPage() {
     };
 
     // ─── BACKGROUND ───────────────────────────────────────────────────────────
+    // Yorqin, rang-barang "aurora" foni — jonli gradient (amber→pushti→binafsha→ko'k)
+    // + harakatlanuvchi nur dog'lari. Oq matn/logo saqlanadi: markazда juda yengil
+    // (qorong'i EMAS) skrim oq matn o'qilishini ta'minlaydi. Tashqi rasm yo'q.
     const BG = (
         <div className="absolute inset-0 z-0 overflow-hidden">
-            {/* Real Samarkand aerial photo */}
-            <img
-                src="/samarkand-bg.png"
-                alt="Samarkand"
-                className="absolute inset-0 w-full h-full object-cover object-center"
-                style={{ transform: "scale(1.04)" }}
-            />
-            {/* Dark overlay for readability */}
+            <style>{`
+                @keyframes evikoAuroraA { 0%,100%{transform:translate(-12%,-8%) scale(1)} 50%{transform:translate(8%,6%) scale(1.15)} }
+                @keyframes evikoAuroraB { 0%,100%{transform:translate(10%,8%) scale(1.05)} 50%{transform:translate(-8%,-6%) scale(1.18)} }
+                @keyframes evikoAuroraC { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-6%,10%) scale(1.12)} }
+            `}</style>
+
+            {/* Jonli to'yingan baza gradient (yorqin, rang-barang) */}
             <div className="absolute inset-0" style={{
-                background: "linear-gradient(180deg, rgba(5,10,20,0.55) 0%, rgba(10,15,30,0.35) 50%, rgba(5,10,20,0.7) 100%)"
+                background: "linear-gradient(135deg, #fb923c 0%, #f97316 20%, #ec4899 48%, #8b5cf6 74%, #6366f1 100%)"
             }} />
-            {/* Warm amber glow from bottom */}
-            <div className="absolute bottom-0 inset-x-0 h-64 pointer-events-none" style={{
-                background: "linear-gradient(to top, rgba(20,10,5,0.6) 0%, transparent 100%)"
+
+            {/* Aurora nur dog'lari (yorug'lik beradi) */}
+            <div className="absolute top-[-15%] left-[-10%] w-[720px] h-[720px] rounded-full pointer-events-none" style={{
+                background: "radial-gradient(circle, rgba(255,205,90,0.85) 0%, transparent 60%)",
+                filter: "blur(60px)", mixBlendMode: "screen", animation: "evikoAuroraA 18s ease-in-out infinite"
             }} />
-            {/* Subtle top vignette */}
-            <div className="absolute top-0 inset-x-0 h-32 pointer-events-none" style={{
-                background: "linear-gradient(to bottom, rgba(0,5,20,0.5) 0%, transparent 100%)"
+            <div className="absolute bottom-[-20%] right-[-10%] w-[780px] h-[780px] rounded-full pointer-events-none" style={{
+                background: "radial-gradient(circle, rgba(96,165,250,0.75) 0%, transparent 60%)",
+                filter: "blur(70px)", mixBlendMode: "screen", animation: "evikoAuroraB 22s ease-in-out infinite"
             }} />
-            {/* Golden glow accent */}
-            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full pointer-events-none" style={{
-                background: "radial-gradient(ellipse, rgba(245,158,11,0.08) 0%, transparent 70%)",
-                filter: "blur(40px)"
+            <div className="absolute top-[28%] right-[12%] w-[540px] h-[540px] rounded-full pointer-events-none" style={{
+                background: "radial-gradient(circle, rgba(244,114,182,0.7) 0%, transparent 60%)",
+                filter: "blur(60px)", mixBlendMode: "screen", animation: "evikoAuroraC 20s ease-in-out infinite"
+            }} />
+
+            {/* Nozik texnik to'r — "tizim" hissi (markazда, chekka so'nadi) */}
+            <div className="absolute inset-0" style={{
+                backgroundImage: "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
+                backgroundSize: "60px 60px", opacity: 0.08,
+                WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 45%, #000 30%, transparent 80%)",
+                maskImage: "radial-gradient(ellipse 90% 80% at 50% 45%, #000 30%, transparent 80%)"
+            }} />
+
+            {/* Yengil markaziy skrim — oq matn o'qilishi uchun (QORONG'I EMAS) */}
+            <div className="absolute inset-0 pointer-events-none" style={{
+                background: "radial-gradient(ellipse 72% 72% at 50% 45%, rgba(30,12,55,0.30) 0%, transparent 72%)"
+            }} />
+            {/* Yumshoq chekka ramka */}
+            <div className="absolute inset-0 pointer-events-none" style={{
+                background: "radial-gradient(ellipse 100% 100% at 50% 50%, transparent 58%, rgba(40,18,70,0.38) 100%)"
             }} />
         </div>
     );

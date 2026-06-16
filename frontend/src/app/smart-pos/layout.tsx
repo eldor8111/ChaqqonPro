@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useStore } from "@/lib/store";
-import MinimizeButton from "./MinimizeButton";
 
 export default function UbtPosLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -73,5 +72,5 @@ export default function UbtPosLayout({ children }: { children: React.ReactNode }
         );
     }
 
-    return <>{children}<MinimizeButton /></>;
+    return <>{children}</>;
 }

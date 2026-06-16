@@ -14,6 +14,7 @@ import { PhoneInput } from "@/components/ui/PhoneInput";
 
 import AttendanceWidget from "@/components/AttendanceWidget";
 import LockScreensaver from "./LockScreensaver";
+import MinimizeButton from "./MinimizeButton";
 
 const fmt = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 const fmtSec = () => new Date().toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
@@ -2488,6 +2489,7 @@ export default function UbtPosPage() {
                     </button>
 
                     <button onClick={() => window.location.reload()} className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${dark ? "bg-slate-700 text-white hover:bg-slate-600" : "bg-slate-200 text-slate-800 hover:bg-slate-300"}`} title="Tizimni yangilash"><RefreshCw size={15} /></button>
+                    <MinimizeButton dark={dark} />
                     <button onClick={logout} className="w-8 h-8 rounded-full flex items-center justify-center text-white" style={{ background: "#0ea5e9" }}><Lock size={15} /></button>
                     <div className="relative group z-50">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm cursor-pointer border ${dark ? "bg-gray-600 text-gray-200 border-gray-500" : "bg-gray-200 text-gray-700 border-gray-300"}`}>
