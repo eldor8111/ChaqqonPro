@@ -36,7 +36,7 @@ export function cacheInvalidatePrefix(prefix: string): void {
 
 // ─── Tayyor TTL konstantalari ────────────────────────────────────────────────
 export const TTL = {
-    RECEIPT_SETTINGS: 60_000,      // 60 soniya
+    RECEIPT_SETTINGS: 10 * 60_000, // 10 daqiqa (o'zgarganda invalidateReceiptCache tozalaydi → uzun kesh xavfsiz, har chekda DB so'rovini yo'qotadi)
     MENU:             5 * 60_000,  // 5 daqiqa
     TENANT:           2 * 60_000,  // 2 daqiqa
     PRINTERS:         30_000,      // 30 soniya

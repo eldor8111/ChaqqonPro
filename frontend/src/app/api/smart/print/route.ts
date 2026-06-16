@@ -14,6 +14,14 @@ export async function POST(req: NextRequest) {
     // Auth tekshiruvi — faqat autentifikatsiya qilingan foydalanuvchilar
     let authorized = false;
     let tenantIdFromToken: string | undefined = undefined;
+
+    // LOKAL SERVER ISHONCHI: EXE ichidagi lokal Next.js server (127.0.0.1, faqat shu
+    // mashinada ochiq) bu env bilan ishga tushadi. Bu rejimda chek Electron IPC bridge
+    // orqali keladi (VPS round-trip yo'q → tez). VPS bu env'ni HECH QACHON o'rnatmaydi,
+    // shuning uchun bulut tomonida auth o'zgarishsiz qoladi.
+    if (process.env.LOCAL_PRINT_TRUST === "1") {
+        authorized = true;
+    }
     try {
         const session = await getSession();
         if (session?.tenantId || session?.role === "SUPER_ADMIN") {

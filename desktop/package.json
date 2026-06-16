@@ -1,7 +1,7 @@
 {
-  "name": "smart-pos-v2",
+  "name": "eviko-pos",
   "version": "2.0.0",
-  "description": "EVIKO POS — Smart Kassa Dasturi (Online + Offline)",
+  "description": "EVIKO POS — Kassa Dasturi (Online + Offline)",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -9,7 +9,7 @@
     "build-installer": "electron-builder --win nsis --x64"
   },
   "build": {
-    "appId": "uz.smart.smart-pos-v2",
+    "appId": "uz.eviko.pos",
     "productName": "EVIKO POS",
     "copyright": "Copyright © 2024 Smart",
     "win": {

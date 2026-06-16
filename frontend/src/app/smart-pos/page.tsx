@@ -89,6 +89,39 @@ const th = {
     label:     (d: boolean) => d ? "text-slate-200" : "text-slate-800 font-bold",
 };
 
+// ─── Print yuborish: Electron'da LOKAL serverga, aks holda HTTP ───────────────────────────
+// Online rejimda POS UI VPS'dan yuklanadi, lekin EXE ichida lokal Next.js server (127.0.0.1)
+// fonda ishlab turadi va printer bilan bitta LAN'da. `ipcAPI.localPrint` bridge mavjud bo'lsa
+// chekni o'sha lokal serverga yuboramiz → u to'g'ridan-to'g'ri TCP bilan printerga chiqaradi,
+// bulutga umuman chiqmaydi (VPS round-trip yo'q → chek deyarli darhol chiqadi).
+// Bridge yo'q yoki lokal server hali tayyor emas bo'lsa — odatdagi /api/smart/print ga fallback.
+async function sendPrintJob(
+    payload: Record<string, unknown>,
+    headers: Record<string, string>,
+): Promise<{ ok: boolean; error?: string }> {
+    const bridge = (typeof window !== "undefined")
+        ? ((window as any).ipcAPI?.localPrint as ((job: unknown) => Promise<any>) | undefined)
+        : undefined;
+    if (bridge) {
+        try {
+            const r = await bridge(payload);
+            if (r && r.success) return { ok: true };
+            // fallback:true → lokal server tayyor emas/ulanib bo'lmadi → HTTP'ga o'tamiz.
+            // Aks holda (haqiqiy printer xatosi) qayta urinmaymiz — dublikat chek bo'lmasin.
+            if (!r || !r.fallback) return { ok: false, error: r?.error };
+        } catch {
+            /* bridge ishlamadi → pastdagi HTTP fallback */
+        }
+    }
+    try {
+        const res = await fetch("/api/smart/print", { method: "POST", headers, body: JSON.stringify(payload) });
+        const ok = res.ok && await res.json().then((d: any) => d?.success).catch(() => false);
+        return { ok, error: ok ? undefined : "print failed" };
+    } catch (e) {
+        return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    }
+}
+
 // ─── Kitchen Auto-Print Shared Function ──────────────────────────────────────────────────
 const printKitchenReceipt = async (items: {item:any; qty:number}[], tableName: string, authToken?: string) => {
     try {
@@ -108,14 +141,11 @@ const printKitchenReceipt = async (items: {item:any; qty:number}[], tableName: s
 
         if (Object.keys(printerGroups).length > 0) {
             for (const [printerIp, group] of Object.entries(printerGroups)) {
-                fetch("/api/smart/print", {
-                    method: "POST", headers: hdrs,
-                    body: JSON.stringify({
-                        printerIp, port: group.port, receiptType: "kitchen", tableName, time: timeStr,
-                        items: group.items.filter((c: any) => c && c.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
-                        total: group.items.reduce((s, c) => s + c.item.price * c.qty, 0),
-                    }),
-                }).catch((e: any) => console.warn("[Kitchen Print]", printerIp, e));
+                sendPrintJob({
+                    printerIp, port: group.port, receiptType: "kitchen", tableName, time: timeStr,
+                    items: group.items.filter((c: any) => c && c.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
+                    total: group.items.reduce((s, c) => s + c.item.price * c.qty, 0),
+                }, hdrs).catch((e: any) => console.warn("[Kitchen Print]", printerIp, e));
             }
         } else {
             // FALLBACK: item.printerIp yoq - bazadan oshxona printerini qidirish
@@ -126,15 +156,12 @@ const printKitchenReceipt = async (items: {item:any; qty:number}[], tableName: s
                     ? (data.find((p: any) => p.role === "kitchen") || data.find((p: any) => p.role === "bar"))
                     : null;
                 if (kp && kp.ipAddress) {
-                    fetch("/api/smart/print", {
-                        method: "POST", headers: hdrs,
-                        body: JSON.stringify({
-                            printerIp: kp.ipAddress, port: kp.port || 9100,
-                            receiptType: "kitchen", tableName, time: timeStr,
-                            items: items.filter((c: any) => c && c.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
-                            total: items.reduce((s, c) => s + c.item.price * c.qty, 0),
-                        }),
-                    }).catch((e: any) => console.warn("[Kitchen Fallback]", kp.ipAddress, e));
+                    sendPrintJob({
+                        printerIp: kp.ipAddress, port: kp.port || 9100,
+                        receiptType: "kitchen", tableName, time: timeStr,
+                        items: items.filter((c: any) => c && c.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
+                        total: items.reduce((s, c) => s + c.item.price * c.qty, 0),
+                    }, hdrs).catch((e: any) => console.warn("[Kitchen Fallback]", kp.ipAddress, e));
                 }
             }
         }
@@ -539,22 +566,18 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
             if (sessionToken) printHeaders["Authorization"] = `Bearer ${sessionToken}`;
 
             try {
-                const printRes = await fetch("/api/smart/print", {
-                    method: "POST",
-                    headers: printHeaders,
-                    body: JSON.stringify({
-                        printerIp: finalIp,
-                        port: finalPort,
-                        receiptType: "client",
-                        tableName,
-                        time: timeStr,
-                        paymentMethod: method,
-                        items: cart.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
-                        total: cart.reduce((s, c) => s + c.item.price * c.qty, 0),
-                        servicePercent: servicePct
-                    }),
-                });
-                if (!printRes.ok || !(await printRes.json().then((d: any) => d.success).catch(() => false))) {
+                const printRes = await sendPrintJob({
+                    printerIp: finalIp,
+                    port: finalPort,
+                    receiptType: "client",
+                    tableName,
+                    time: timeStr,
+                    paymentMethod: method,
+                    items: cart.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })),
+                    total: cart.reduce((s, c) => s + c.item.price * c.qty, 0),
+                    servicePercent: servicePct
+                }, printHeaders);
+                if (!printRes.ok) {
                     setPrintError(`⚠️ Chek chiqmadi (${finalIp}). Printer online ekanligini tekshiring.`);
                 }
             } catch (e) {
@@ -2886,14 +2909,24 @@ export default function UbtPosPage() {
                                                             // (local state, printedQty, reload race) UMUMAN bog'liq emas.
                                                             const token = store.kassirSession?.token || store.deviceSession?.token;
                                                             const authHdr: Record<string, string> = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+                                                            // Monoblok (Electron) bo'lsa: server DB hisobini saqlaydi-yu chekni BIZ lokal
+                                                            // serverdan DARHOL chiqaramiz (VPS→agent round-trip yo'q). Planshetda bridge yo'q →
+                                                            // clientPrint=false → server avvalgidek agent orqali chop etadi.
+                                                            const hasBridge = typeof window !== "undefined" && !!(window as any).ipcAPI?.localPrint;
                                                             const r = await fetch("/api/smart/print-kitchen", {
                                                                 method: "POST", headers: authHdr,
-                                                                body: JSON.stringify({ tableId: selTable.id, shotId: activeShot, waiterName: store.kassirSession?.name }),
+                                                                body: JSON.stringify({ tableId: selTable.id, shotId: activeShot, waiterName: store.kassirSession?.name, clientPrint: hasBridge }),
                                                             });
                                                             const d = await r.json().catch(() => ({}));
                                                             if (!r.ok || d.success === false) {
                                                                 const msg = (d.failed && d.failed.length) ? d.failed.join("\n") : (d.error || `HTTP ${r.status}`);
                                                                 alert("⚠️ Oshxona cheki chiqmadi:\n\n" + msg + "\n\nPrinter yoniq va ulanganini tekshiring. TASDIQLASH ni qayta bosing.");
+                                                            } else if (hasBridge && Array.isArray(d.jobs)) {
+                                                                // Lokal (bridge) orqali darhol; bridge tushsa sendPrintJob VPS'ga fallback qiladi
+                                                                for (const job of d.jobs) {
+                                                                    const pr = await sendPrintJob(job, authHdr);
+                                                                    if (!pr.ok) alert(`⚠️ Oshxona cheki chiqmadi (${job.printerIp}). Printer yoniq ekanligini tekshiring.`);
+                                                                }
                                                             }
                                                         } catch (e: any) {
                                                             alert("Chek chop etishda xato: " + (e?.message || "tarmoq xatosi"));

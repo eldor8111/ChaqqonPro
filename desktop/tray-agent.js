@@ -3,7 +3,6 @@ const net = require('net');
 
 let pollTimer = null;
 let syncTimer = null;
-let isPolling = false;
 
 // ─── Per-printer qulf ───────────────────────────────────────────
 // Arzon LAN printerlar faqat BITTA ulanishni qabul qiladi. Shu sabab
@@ -74,9 +73,17 @@ async function heartbeat(serverUrl) {
         const results = [];
         for (const p of printers) {
             if (!p.ipAddress || p.ipAddress.startsWith('usb://')) continue;
+            const key = `${p.ipAddress}:${p.port || 9100}`;
+            // PRINT USTUN: navbatda job bor yoki print bo'layotgan printerni PROBE QILMAYMIZ.
+            // Arzon printer yagona TCP slotga ega — probe uni band qilsa chek kechikadi.
+            // Print bo'layotgani = printer tirik, shuning uchun "online" deb hisoblaymiz.
+            if (activeWorkers.has(key) || (printQueues.get(key)?.length > 0)) {
+                results.push({ id: p.id, status: 'online', latencyMs: null });
+                continue;
+            }
             const started = Date.now();
             // Qulf orqali — print bilan to'qnashmasin
-            const ok = await withIpLock(`${p.ipAddress}:${p.port || 9100}`, () => probeTcp(p.ipAddress, p.port || 9100));
+            const ok = await withIpLock(key, () => probeTcp(p.ipAddress, p.port || 9100));
             results.push({
                 id: p.id,
                 status: ok ? 'online' : 'offline',
@@ -158,104 +165,148 @@ async function syncPrinters(serverUrl, forceDiscover = false) {
     }
 }
 
-async function pollJobs(serverUrl) {
-    if (isPolling) return;
-    isPolling = true;
-    const ackIds = []; // chop etilgan job id'lari — serverga tasdiqlash uchun
+// ══════════════════════════════════════════════════════════════════
+//  PRINT'NI POLLING'DAN AJRATISH — eng katta kechikish sababini bartaraf
+//
+//  Eski muammo: agent bitta ipda HAM poll qilardi HAM print qilardi.
+//  Print tugamaguncha (sekin/band printer + retry → soniyalar) yangi
+//  long-poll OCHILMASdi → ikkinchi chek kutib qolardi yoki yo'qolardi.
+//
+//  Yangi arxitektura:
+//   • jobLoop — DOIM ochiq long-poll. Job'ni OLADI, per-printer navbatga
+//     soladi va DARHOL qayta poll ochadi. Print'ni KUTMAYDI.
+//   • drainPrinter — har printer uchun MUSTAQIL worker. Bittasi sekin
+//     bo'lsa boshqasi ta'sirlanmaydi; bir printer ichida ketma-ket
+//     (yagona-ulanishli arzon printerlar to'qnashmasin).
+//   • Dublikat himoyasi: enqueuedIds (navbatdagi) + printedIds (yaqinda
+//     chop etilgan — ACK yo'qolib qayta kelsa qayta chop etmaymiz).
+// ══════════════════════════════════════════════════════════════════
+const printQueues = new Map();    // key → [job, ...]
+const activeWorkers = new Set();  // key → worker hozir ishlayaptimi
+const enqueuedIds = new Set();    // navbatdagi/print bo'layotgan job id'lar
+const printedIds = new Map();     // yaqinda chop etilgan id → vaqt (dublikat oldini olish)
+let pendingAck = [];              // serverga tasdiqlash kutayotgan id'lar
+let jobLoopActive = false;
 
+function printerKeyOf(job) {
+    return job.printerIp ? `${job.printerIp}:${job.printerPort || 9100}` : `usb:${job.printerName || ''}`;
+}
+
+// Eski printed id'larni tozalash — xotira cheksiz o'smasin
+function purgePrintedIds() {
+    const cutoff = Date.now() - 120_000;
+    for (const [id, t] of printedIds) if (t < cutoff) printedIds.delete(id);
+}
+
+// Chop etilgan id'larni serverga tasdiqlash (fire-and-forget — poll'ni bloklamaydi)
+async function flushAck(serverUrl) {
+    if (pendingAck.length === 0) return;
+    const ids = pendingAck;
+    pendingAck = [];
     try {
-        // 20s long-poll: server fayl paydo bo'lishi bilanoq qaytaradi → 30s timeout
-        const res = await fetch(`${serverUrl}/api/smart/poll-jobs?v=2`, {
-            signal: AbortSignal.timeout(30000),
+        await fetch(`${serverUrl}/api/smart/poll-jobs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ack: ids }),
+            signal: AbortSignal.timeout(10000),
         });
-
-        if (res.ok) {
-            const responseData = await res.json();
-            const jobs = responseData.jobs || [];
-
-            if (jobs.length > 0) {
-                console.log(`[POLL] ${jobs.length} ta yangi print job topildi.`);
-
-                // Joblarni printer bo'yicha guruhlash — har printer mustaqil (tez)
-                const byPrinter = {};
-                for (const job of jobs) {
-                    const printerName = job.printerName || job.printer || job.name || '';
-                    const base64data  = job.data || job.payload || job.escpos || '';
-                    const printerIp   = job.printerIp   || job.ip   || null;
-                    const printerPort = job.printerPort || job.port || 9100;
-                    if (!base64data || (!printerName && !printerIp)) {
-                        // Tarkibi to'liq emas — baribir ACK qilamiz (qayta yuborilmasin)
-                        if (job.id) ackIds.push(job.id);
-                        console.warn(`[POLL] Job tarkibi to'liq emas: ${JSON.stringify(Object.keys(job))}`);
-                        continue;
-                    }
-                    const key = printerIp ? `${printerIp}:${printerPort}` : `usb:${printerName}`;
-                    (byPrinter[key] = byPrinter[key] || []).push({ id: job.id, printerName, base64data, printerIp, printerPort });
-                }
-
-                // TURLI printerlar PARALLEL chiqadi; bitta printer ichida ketma-ket
-                // (bitta-ulanishli printerlar to'qnashmasligi uchun). Shu sabab nechta
-                // printer bo'lsa ham har biri tez ishlaydi — biri ikkinchisini kutmaydi.
-                await Promise.all(Object.values(byPrinter).map(async (group) => {
-                    for (const j of group) {
-                        try {
-                            const lockKey = j.printerIp ? `${j.printerIp}:${j.printerPort}` : `usb:${j.printerName}`;
-                            const result = await withIpLock(lockKey, () => printRaw(j.printerName, j.base64data, {
-                                printerIp: j.printerIp,
-                                printerPort: j.printerPort,
-                            }));
-                            if (result.success) {
-                                // Faqat MUVAFFAQIYATLI chiqqan job ACK qilinadi → server o'chiradi.
-                                // Xato bo'lsa ACK qilmaymiz → 30s dan keyin qayta yuboriladi.
-                                if (j.id) ackIds.push(j.id);
-                                const method = result.method === 'lan'
-                                    ? `LAN (${j.printerIp}:${j.printerPort})`
-                                    : `USB/Spooler ("${j.printerName}")`;
-                                console.log(`[POLL ✅] Chop etildi → ${method}`);
-                            } else {
-                                console.error(`[POLL ❌] Chop etib bo'lmadi (qayta yuboriladi):`, result.error);
-                            }
-                        } catch (printErr) {
-                            console.error('[POLL PRINT ERROR]', printErr);
-                        }
-                    }
-                }));
-            }
-
-            // Chop etilgan joblarni serverga tasdiqlaymiz (ACK) — server ularni o'chiradi
-            if (ackIds.length > 0) {
-                try {
-                    await fetch(`${serverUrl}/api/smart/poll-jobs`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ack: ackIds }),
-                        signal: AbortSignal.timeout(10000),
-                    });
-                } catch { /* ACK yetib bormasa, job 30s dan keyin qayta yuboriladi (dublikat xavfi kam) */ }
-            }
-        }
-    } catch (e) {
-        const silent = ['TimeoutError','AbortError','TypeError'];
-        if (!silent.includes(e.name) && e.code !== 'ECONNREFUSED' && e.code !== 'ENOTFOUND') {
-            console.error('[POLL ❌]', e.message || String(e));
-        }
-    } finally {
-        isPolling = false;
+    } catch {
+        // ACK yetib bormasa — server 30s dan keyin qayta yuboradi; printedIds dublikatni to'sadi
     }
 }
 
-// Uzluksiz long-poll tsikli — pollJobs qaytishi bilanoq darhol qayta so'raydi.
-// Shu tariqa doim bitta ochiq long-poll bo'ladi → chek deyarli darhol chiqadi.
-let jobLoopActive = false;
+// Bitta printer navbatini ketma-ket bo'shatuvchi worker
+async function drainPrinter(serverUrl, key) {
+    if (activeWorkers.has(key)) return; // shu printer uchun worker allaqachon ishlayapti
+    activeWorkers.add(key);
+    try {
+        const queue = printQueues.get(key);
+        while (queue && queue.length > 0) {
+            const j = queue.shift();
+            try {
+                const result = await withIpLock(key, () => printRaw(j.printerName, j.base64data, {
+                    printerIp: j.printerIp,
+                    printerPort: j.printerPort,
+                }));
+                if (result.success) {
+                    // Faqat MUVAFFAQIYATLI chiqqan job ACK qilinadi
+                    if (j.id) { pendingAck.push(j.id); printedIds.set(j.id, Date.now()); }
+                    const method = result.method === 'lan' ? `LAN (${key})` : `USB ("${j.printerName}")`;
+                    console.log(`[PRINT ✅] ${method}`);
+                } else {
+                    // ACK qilmaymiz → server 30s dan keyin qayta yuboradi (printer vaqtincha o'chiq bo'lishi mumkin)
+                    console.error(`[PRINT ❌] ${key} (qayta yuboriladi):`, result.error);
+                }
+            } catch (printErr) {
+                console.error('[PRINT ERROR]', printErr);
+            } finally {
+                if (j.id) enqueuedIds.delete(j.id);
+            }
+            flushAck(serverUrl); // fonda tasdiqlaymiz — keyingi printni kutdirmaymiz
+        }
+    } finally {
+        activeWorkers.delete(key);
+        // Worker tugagan onda navbatga yangi job tushgan bo'lsa — qayta ishga tushiramiz (race himoyasi)
+        const q = printQueues.get(key);
+        if (q && q.length > 0) drainPrinter(serverUrl, key);
+    }
+}
+
+// Bitta long-poll: job'larni oladi va navbatga soladi (print'ni KUTMAYDI)
+async function pollOnce(serverUrl) {
+    const res = await fetch(`${serverUrl}/api/smart/poll-jobs?v=2`, {
+        signal: AbortSignal.timeout(30000),
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const jobs = data.jobs || [];
+    if (jobs.length === 0) return;
+
+    console.log(`[POLL] ${jobs.length} ta yangi print job → navbatga`);
+    for (const job of jobs) {
+        const id = job.id;
+        // Allaqachon chop etilgan (ACK yo'qolib qayta kelgan) → faqat qayta ACK, qayta print yo'q
+        if (id && printedIds.has(id)) { pendingAck.push(id); continue; }
+        // Allaqachon navbatda/print bo'layapti → o'tkazib yuborish
+        if (id && enqueuedIds.has(id)) continue;
+
+        const printerName = job.printerName || job.printer || job.name || '';
+        const base64data  = job.data || job.payload || job.escpos || '';
+        const printerIp   = job.printerIp || job.ip || null;
+        const printerPort = job.printerPort || job.port || 9100;
+        if (!base64data || (!printerName && !printerIp)) {
+            // Buzuq job — qayta yuborilmasin uchun ACK qilamiz
+            if (id) pendingAck.push(id);
+            console.warn(`[POLL] Job tarkibi to'liq emas: ${JSON.stringify(Object.keys(job))}`);
+            continue;
+        }
+        const j = { id, printerName, base64data, printerIp, printerPort };
+        const key = printerKeyOf(j);
+        if (!printQueues.has(key)) printQueues.set(key, []);
+        printQueues.get(key).push(j);
+        if (id) enqueuedIds.add(id);
+        drainPrinter(serverUrl, key); // MUSTAQIL print — natijani kutmaymiz
+    }
+    flushAck(serverUrl);
+}
+
+// Uzluksiz long-poll tsikli — pollOnce qaytishi bilanoq darhol qayta so'raydi.
+// Print alohida worker'larda — shuning uchun doim BITTA ochiq long-poll bo'ladi
+// va yangi chek HECH QACHON print tufayli kutib qolmaydi.
 async function jobLoop(serverUrl) {
     if (jobLoopActive) return;
     jobLoopActive = true;
     while (jobLoopActive) {
         try {
-            await pollJobs(serverUrl);
-        } catch { /* xatoni jim yutamiz */ }
-        // Tight-loop oldini olish uchun juda qisqa pauza (tezroq navbat)
-        await new Promise(r => setTimeout(r, 0)); // Darhol qayta so'rov — event loop ga imkon berish uchun 0ms
+            await pollOnce(serverUrl);
+        } catch (e) {
+            const silent = ['TimeoutError', 'AbortError', 'TypeError'];
+            if (!silent.includes(e.name) && e.code !== 'ECONNREFUSED' && e.code !== 'ENOTFOUND') {
+                console.error('[POLL ❌]', e.message || String(e));
+            }
+        }
+        purgePrintedIds();
+        await new Promise(r => setTimeout(r, 0)); // darhol qayta poll (event loop ga imkon)
     }
 }
 
@@ -263,9 +314,9 @@ function startPolling(config) {
     if (pollTimer || jobLoopActive) stopPolling();
 
     const { serverUrl } = config;
-    console.log(`[AGENT V2] Long-poll boshlandi → ${serverUrl}`);
+    console.log(`[AGENT V3] Long-poll (print'dan ajratilgan) boshlandi → ${serverUrl}`);
 
-    jobLoop(serverUrl);          // uzluksiz long-poll (fayl navbati)
+    jobLoop(serverUrl);          // uzluksiz long-poll (fayl navbati) — print mustaqil worker'larda
     syncPrinters(serverUrl);
     processQueue(serverUrl);
     heartbeat(serverUrl);
@@ -273,16 +324,20 @@ function startPolling(config) {
     // DB-navbat (print-queue) va heartbeat — alohida intervalda
     pollTimer = setInterval(() => {
         processQueue(serverUrl);
-    }, 1000); // 1s: navbat tezroq ko'riladi (oldin 3s)
+    }, 1000); // 1s: navbat tezroq ko'riladi
 
     syncTimer = setInterval(() => {
         syncPrinters(serverUrl);
         heartbeat(serverUrl);
-    }, 60_000); // 60s: heartbeat kamroq, resurs tejaydi (oldin 30s)
+    }, 60_000); // 60s: heartbeat kamroq, resurs tejaydi
 }
 
 function stopPolling() {
     jobLoopActive = false; // long-poll tsiklini to'xtatish
+    printQueues.clear();
+    activeWorkers.clear();
+    enqueuedIds.clear();
+    pendingAck = [];
     if (pollTimer) {
         clearInterval(pollTimer);
         pollTimer = null;
@@ -291,7 +346,7 @@ function stopPolling() {
         clearInterval(syncTimer);
         syncTimer = null;
     }
-    console.log('[AGENT V2] Polling to\'xtatildi.');
+    console.log('[AGENT V3] Polling to\'xtatildi.');
 }
 
 module.exports = { startPolling, stopPolling, syncPrinters };

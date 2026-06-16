@@ -37,9 +37,12 @@ export async function POST(request: NextRequest) {
         const auth = await resolveAuth(request);
         if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        const { tableId, shotId, waiterName } = await request.json();
+        const { tableId, shotId, waiterName, clientPrint } = await request.json();
         if (!tableId) return NextResponse.json({ error: "tableId kerak" }, { status: 400 });
         const shot = Number(shotId) || 1;
+        // clientPrint=true → server O'ZI chop ETMAYDI, chek topshiriqlarini qaytaradi.
+        // Monoblok (EXE) ularni lokal server orqali DARHOL chiqaradi (VPS→agent round-trip yo'q).
+        // Planshet/brauzer bu flagni yubormaydi → server avvalgidek agent orqali chop etadi.
 
         // 1. Stolning barcha "cart" KDSOrder yozuvlarini o'qib, taomlarni birlashtirish
         const kdsOrders = await prisma.kDSOrder.findMany({
@@ -130,21 +133,24 @@ export async function POST(request: NextRequest) {
         const tableNameToPrint = (table?.tableNumber || "Stol") + (shot > 1 ? ` · ${shot}-Hisob` : "");
         const orderNum = Math.floor(Math.random() * 9000) + 1000;
 
-        // 6b. FIRE-AND-FORGET chop etish — javobni KUTMAYMIZ. Shu sabab TASDIQLASH
-        //     darhol javob beradi; printer sekin bo'lsa ham (4x retry, ~20s) tugma qotmaydi.
-        //     Yetkazishni agent ACK/retry bilan fonda ta'minlaydi.
-        for (const [printerIp, pItems] of Object.entries(groups)) {
-            PrinterService.print({
-                printerIp, port: 9100,
-                receiptType: "kitchen",
-                tableName: tableNameToPrint,
-                waiter: waiterName || auth.waiterName || "",
-                time: timeStr,
-                items: pItems,
-                total: pItems.reduce((s, c) => s + c.price * c.qty, 0),
-                orderNum,
-                tenantId: auth.tenantId,
-            }).catch((e: any) => console.warn(`[print-kitchen] ${printerIp}:`, e?.message || e));
+        // 6b. Chek topshiriqlarini yig'amiz. clientPrint bo'lsa — mijozga qaytaramiz
+        //     (monoblok lokal server orqali darhol chiqaradi). Aks holda SERVER o'zi
+        //     FIRE-AND-FORGET chop etadi (javobni kutmaymiz — tugma qotmaydi; agent ACK/retry fonda).
+        const builtJobs = Object.entries(groups).map(([printerIp, pItems]) => ({
+            printerIp, port: 9100,
+            receiptType: "kitchen" as const,
+            tableName: tableNameToPrint,
+            waiter: waiterName || auth.waiterName || "",
+            time: timeStr,
+            items: pItems,
+            total: pItems.reduce((s, c) => s + c.price * c.qty, 0),
+            orderNum,
+            tenantId: auth.tenantId,
+        }));
+        if (!clientPrint) {
+            for (const job of builtJobs) {
+                PrinterService.print(job).catch((e: any) => console.warn(`[print-kitchen] ${job.printerIp}:`, e?.message || e));
+            }
         }
 
         // 7. printedQty ni optimistik yangilash (navbatga qo'yildi → chiqarilgan deb belgilaymiz;
@@ -169,7 +175,7 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        return NextResponse.json({ success: true, printed: unprinted.length });
+        return NextResponse.json({ success: true, printed: unprinted.length, jobs: clientPrint ? builtJobs : undefined });
     } catch (e: any) {
         console.error("[print-kitchen]", e);
         return NextResponse.json({ error: e?.message || "Server xatosi" }, { status: 500 });

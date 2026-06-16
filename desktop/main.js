@@ -177,6 +177,10 @@ async function startLocalNextServer() {
         NODE_ENV:                'production',
         JWT_SECRET:              jwtSecret,
         NEXT_TELEMETRY_DISABLED: '1',
+        // Lokal server (127.0.0.1, faqat shu mashinada) print so'rovini auth'siz qabul qiladi.
+        // Chek Electron IPC bridge orqali keladi → VPS round-trip yo'q (tez chek). VPS bu env'ni
+        // o'rnatmaydi, shuning uchun bulutda auth o'zgarishsiz qoladi.
+        LOCAL_PRINT_TRUST:       '1',
     };
 
     return new Promise((resolve) => {
@@ -186,7 +190,7 @@ async function startLocalNextServer() {
             env:         serverEnv,
             cwd:         nextjsDir,
             stdio:       'pipe',
-            serviceName: 'smart-pos-nextjs',
+            serviceName: 'eviko-pos-nextjs',
         });
 
         const onReady = () => resolve(LOCAL_SERVER_URL);
@@ -488,6 +492,36 @@ ipcMain.handle('get-version',      ()        => CURRENT_VERSION);
 ipcMain.handle('get-agent-status', ()        => 'running');
 ipcMain.handle('get-mode',         ()        => isOfflineMode ? 'offline' : 'online');
 
+// ─── Lokal print bridge ──────────────────────────────────────────────
+// Renderer (POS UI) chekni shu yerga yuboradi. Biz uni EXE ichidagi lokal Next.js
+// serverга (127.0.0.1) POST qilamiz → u Windows'da to'g'ridan-to'g'ri TCP bilan
+// LAN printerga chiqaradi. Bu bulutga (VPS) chiqmaydi → chek deyarli darhol chiqadi.
+// Lokal server tayyor bo'lmasa { fallback:true } qaytaramiz → renderer VPS'ga o'tadi.
+ipcMain.handle('local-print', async (_event, job) => {
+    if (!nextProcess) return { success: false, fallback: true, error: 'local server ishlamayapti' };
+    try {
+        const res = await fetch(`${LOCAL_SERVER_URL}/api/smart/print`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(job),
+            signal: AbortSignal.timeout(8000),
+        });
+        if (!res.ok) {
+            // 503 → server hali ko'tarilyapti, VPS'ga fallback. Boshqa xatolarда (printer
+            // o'chiq va h.k.) fallback QILMAYMIZ — VPS ham xuddi shu printerga ura olmaydi,
+            // ortiqcha urinish dublikat chek xavfini tug'diradi.
+            if (res.status === 503) return { success: false, fallback: true, error: 'local server tayyor emas' };
+            const d = await res.json().catch(() => ({}));
+            return { success: false, error: d.error || `HTTP ${res.status}` };
+        }
+        const d = await res.json().catch(() => ({}));
+        return { success: !!d.success, error: d.error };
+    } catch (e) {
+        // Ulanib bo'lmadi (server hali ko'tarilmagan) → VPS'ga fallback
+        return { success: false, fallback: true, error: e?.message || String(e) };
+    }
+});
+
 ipcMain.handle('save-config', (event, cfg) => {
     saveConfig(cfg);
     setAutoStart(cfg.autoStart);
@@ -521,7 +555,7 @@ ipcMain.on('reload-app', () => {
 
 // ─── App Ready ───────────────────────────────────────────────────────
 app.whenReady().then(async () => {
-    app.setAppUserModelId('uz.smart.smart-pos-v2');
+    app.setAppUserModelId('uz.eviko.pos');
     const config = loadConfig();
     setAutoStart(config.autoStart);
     createTray();

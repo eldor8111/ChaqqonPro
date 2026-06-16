@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
             tenantId: payload.tenantId,
         })
             .setProtectedHeader({ alg: "HS256" })
-            .setExpirationTime("24h")
+            .setExpirationTime("7d") // login bilan mos (DB sessiya 7 kun)
             .setIssuedAt()
             .sign(secret);
 

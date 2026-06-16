@@ -60,12 +60,12 @@ export async function createSession(
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + SESSION_EXPIRY_HOURS);
 
-    // Bitta foydalanuvchi faqat bitta qurilmada ishlay olishi uchun avvalgi sessiyalarini o'chiramiz
-    const oldSessions = await prisma.session.findMany({ where: { userId } });
-    for (const old of oldSessions) {
-        cacheDelSession(old.token);
-    }
-    await prisma.session.deleteMany({ where: { userId } });
+    // KO'P QURILMA: bir akkaunt bir nechta monoblok/ERP/planshetda bir vaqtda ishlaydi.
+    // Avvalgi (faol) sessiyalarni O'CHIRMAYMIZ — aks holda yangi kirish boshqa qurilmalarni
+    // tizimdan chiqarib yuborardi. Faqat MUDDATI O'TGAN sessiyalarni tozalaymiz (jadval shishmasin).
+    const staleSessions = await prisma.session.findMany({ where: { userId, expiresAt: { lt: new Date() } } });
+    for (const old of staleSessions) cacheDelSession(old.token);
+    await prisma.session.deleteMany({ where: { userId, expiresAt: { lt: new Date() } } });
 
     // Save session to database
     await prisma.session.create({

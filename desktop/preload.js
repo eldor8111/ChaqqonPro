@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('ipcAPI', {
     getVersion:      ()      => ipcRenderer.invoke('get-version'),
     getAgentStatus:  ()      => ipcRenderer.invoke('get-agent-status'),
     getMode:         ()      => ipcRenderer.invoke('get-mode'),   // 'online' | 'offline'
+    localPrint:      (job)   => ipcRenderer.invoke('local-print', job),  // chekni lokal serverga (tez, bulutsiz)
     quitApp:         ()      => ipcRenderer.send('quit-app'),
     minimizeApp:     ()      => ipcRenderer.send('minimize-app'),
     toggleFullscreen:()      => ipcRenderer.send('toggle-fullscreen'),

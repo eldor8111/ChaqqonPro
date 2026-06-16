@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
             shopCode: authenticatedTenant.shopCode,
         })
             .setProtectedHeader({ alg: "HS256" })
-            .setExpirationTime("24h")
+            .setExpirationTime("7d") // DB sessiya cookie (7 kun) bilan mos — Bearer token erta o'lmaydi
             .sign(getJwtSecret());
 
         let tenantSettings: Record<string, unknown> = {};
