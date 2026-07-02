@@ -99,12 +99,15 @@ export default function SettingsPage() {
     const auditLog: any[] = (auditLogData as any)?.auditLog || [];
 
     const { data: taxData } = useQuery({
-        queryKey: ["taxSetting"],
+        queryKey: ["taxSetting", user?.tenant?.id],
         queryFn: () => fetch("/api/settings/tax").then(r => r.json()),
+        enabled: !!user?.tenant?.id,
     });
+
     const { data: settingsData, refetch: refetchSettings } = useQuery({
-        queryKey: ["settings"],
+        queryKey: ["settings", user?.tenant?.id],
         queryFn: () => api.settings.get(),
+        enabled: !!user?.tenant?.id,
     });
     const branches = (settingsData as any)?.tenant?.settings?.branches || [];
     const shopSettings = (settingsData as any)?.tenant || null;
@@ -158,13 +161,16 @@ export default function SettingsPage() {
 
     // Sync receiptDraft once settings loads (use useEffect to avoid render-phase state mutations)
     useEffect(() => {
-        if (settingsData && !receiptDraft) {
-            const draft = { ...receiptSettings };
-            // Agar customShopName saqlanmagan bo'lsa, tenant shopName ni avtomatik to'ldirish
-            if (!draft.customShopName && shopSettings?.shopName) {
-                draft.customShopName = shopSettings.shopName;
+        if (settingsData) {
+            const currentTenantId = (settingsData as any)?.tenant?.id;
+            if (!receiptDraft || (receiptDraft as any)._tenantId !== currentTenantId) {
+                const draft = { ...receiptSettings, _tenantId: currentTenantId };
+                // Agar customShopName saqlanmagan bo'lsa, tenant shopName ni avtomatik to'ldirish
+                if (!draft.customShopName && shopSettings?.shopName) {
+                    draft.customShopName = shopSettings.shopName;
+                }
+                setReceiptDraft(draft);
             }
-            setReceiptDraft(draft);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [settingsData]);
@@ -177,8 +183,11 @@ export default function SettingsPage() {
         tablesCount: 20
     };
     useEffect(() => {
-        if (settingsData && !ubtDraft) {
-            setUbtDraft(smartSettings);
+        if (settingsData) {
+            const currentTenantId = (settingsData as any)?.tenant?.id;
+            if (!ubtDraft || (ubtDraft as any)._tenantId !== currentTenantId) {
+                setUbtDraft({ ...smartSettings, _tenantId: currentTenantId });
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [settingsData]);
@@ -217,15 +226,11 @@ export default function SettingsPage() {
         if (!ubtDraft) return;
         const currentSettings = (settingsData as any)?.tenant?.settings || {};
         
-        // Save settings to tenant
-        updateSettingsMutation.mutate({
-            ...currentSettings,
-            smartSettings: ubtDraft
-        });
+        // Deep copy zones to safely mutate them with DB IDs
+        const zonesToSave = JSON.parse(JSON.stringify(ubtDraft.zones || []));
 
-        // Also persist each zone's tables to DB as real SmartTable records
-        const zones: any[] = ubtDraft?.zones || [];
-        for (const zone of zones) {
+        // Persist each zone's tables to DB as real SmartTable records FIRST
+        for (const zone of zonesToSave) {
             const tables: any[] = zone.tables || [];
             for (const table of tables) {
                 // Only create if it looks like a frontend-generated ID (not a real UUID)
@@ -249,8 +254,17 @@ export default function SettingsPage() {
                 }
             }
         }
+        
+        const finalDraft = { ...ubtDraft, zones: zonesToSave };
+
+        // Save settings to tenant with the newly generated dbIds
+        updateSettingsMutation.mutate({
+            ...currentSettings,
+            smartSettings: finalDraft
+        });
+
         // Update draft with dbIds
-        setUbtDraft({ ...ubtDraft, zones });
+        setUbtDraft(finalDraft);
         alert("EVIKO sozlamalari saqlandi! Stollar POS terminalda ko'rinadi.");
     }
 
@@ -1479,7 +1493,7 @@ export default function SettingsPage() {
                                         >
                                             <DownloadCloud size={20} /> Yuklab olish
                                         </a>
-                                        <p className="text-[10px] text-slate-500 text-center">Windows 10/11 · x64 · ~76 MB</p>
+                                        <p className="text-[10px] text-slate-500 text-center">Windows 10/11 · x64 · ~102 MB</p>
                                     </div>
                                 </div>
 
@@ -1784,9 +1798,20 @@ export default function SettingsPage() {
                                         branchId: zoneForm.branchId,
                                         serviceFee: Number(zoneForm.serviceFee) || 0,
                                         extraPriceType: zoneForm.extraPriceType,
-                                        tables: []
+                                        tables: [] as any[]
                                     };
-                                    const updatedZones = [...(ubtDraft?.zones || []), newZone];
+                                    let updatedZones = [...(ubtDraft?.zones || [])];
+                                    if (zoneForm.id) {
+                                        const idx = updatedZones.findIndex(z => z.id === zoneForm.id);
+                                        if (idx !== -1) {
+                                            newZone.tables = updatedZones[idx].tables || [];
+                                            updatedZones[idx] = newZone;
+                                        } else {
+                                            updatedZones.push(newZone);
+                                        }
+                                    } else {
+                                        updatedZones.push(newZone);
+                                    }
                                     const updatedDraft = { ...ubtDraft, zones: updatedZones };
                                     setUbtDraft(updatedDraft);
                                     
@@ -1798,7 +1823,7 @@ export default function SettingsPage() {
                                 }}
                                 className="px-6 py-2 bg-[#007bff] text-white rounded-md text-[13px] font-bold hover:bg-[#0069d9] transition shadow-sm whitespace-nowrap h-[38px] flex items-center"
                             >
-                                Qo'shish
+                                Qo'shish / Saqlash
                             </button>
                         </div>
                     </div>

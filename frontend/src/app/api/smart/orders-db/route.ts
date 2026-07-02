@@ -225,7 +225,7 @@ export async function POST(request: NextRequest) {
                         }));
                         const total = printItems.reduce((s, c) => s + c.price * c.qty, 0);
 
-                        await PrinterServiceModule.PrinterService.print({
+                        PrinterServiceModule.PrinterService.print({
                             printerIp,
                             port: 9100,
                             receiptType: "kitchen",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import useSWR from "swr";
 import { useRouter } from "next/navigation";
 import {
@@ -123,10 +123,10 @@ function TableActionModal({ table, onClose, onFree, onOccupy }: {
     table: SmartTable; onClose: () => void; onFree: () => void; onOccupy: () => void;
 }) {
     const statusCfg: Record<string, { label: string; color: string }> = {
-        free:     { label: "Bo'sh",  color: "bg-slate-500/30 text-slate-300" },
-        occupied: { label: "Band",   color: "bg-emerald-500/20 text-emerald-400" },
-        reserved: { label: "Bron",   color: "bg-amber-500/20 text-amber-400" },
-        receipt:  { label: "Hisob",  color: "bg-blue-500/20 text-blue-400" },
+        free: { label: "Bo'sh", color: "bg-slate-500/30 text-slate-300" },
+        occupied: { label: "Band", color: "bg-emerald-500/20 text-emerald-400" },
+        reserved: { label: "Bron", color: "bg-amber-500/20 text-amber-400" },
+        receipt: { label: "Hisob", color: "bg-blue-500/20 text-blue-400" },
     };
     const cfg = statusCfg[table.status] ?? statusCfg.free;
     return (
@@ -187,8 +187,8 @@ function TableActionModal({ table, onClose, onFree, onOccupy }: {
 
 // ─── Hourly Chart ─────────────────────────────────────────────────────────────
 function HourlyChart({ data }: { data: { hour: string; amount: number }[] }) {
-    const total   = data.reduce((s, d) => s + d.amount, 0);
-    const peak    = data.reduce((max, d) => d.amount > max.amount ? d : max, { hour: "--", amount: 0 });
+    const total = data.reduce((s, d) => s + d.amount, 0);
+    const peak = data.reduce((max, d) => d.amount > max.amount ? d : max, { hour: "--", amount: 0 });
     const nonZero = data.filter(d => d.amount > 0);
     const avgHour = nonZero.length > 0 ? Math.round(nonZero.reduce((s, d) => s + d.amount, 0) / nonZero.length) : 0;
 
@@ -231,8 +231,8 @@ function HourlyChart({ data }: { data: { hour: string; amount: number }[] }) {
             {/* KPI strip */}
             <div className="grid grid-cols-3 gap-0 mx-5 mb-4 rounded-xl overflow-hidden" style={{ border: "1px solid rgba(59,130,246,0.15)" }}>
                 {[
-                    { label: "Jami tushum",  value: `${Math.round(total / 1000)}K so'm`, color: "#6366f1" },
-                    { label: "Eng yuqori",   value: `${Math.round(peak.amount / 1000)}K`, color: "#d97706" },
+                    { label: "Jami tushum", value: `${Math.round(total / 1000)}K so'm`, color: "#6366f1" },
+                    { label: "Eng yuqori", value: `${Math.round(peak.amount / 1000)}K`, color: "#d97706" },
                     { label: "O'rtacha/soat", value: `${Math.round(avgHour / 1000)}K`, color: "#059669" },
                 ].map((kpi, i) => (
                     <div key={i} className={`px-3 py-2.5 text-center ${i < 2 ? "border-r border-blue-200/50" : ""}`}
@@ -248,18 +248,18 @@ function HourlyChart({ data }: { data: { hour: string; amount: number }[] }) {
                 <AreaChart data={data} margin={{ top: 5, right: 16, bottom: 0, left: -10 }}>
                     <defs>
                         <linearGradient id="gradMain" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%"  stopColor="#6366f1" stopOpacity={0.5} />
+                            <stop offset="0%" stopColor="#6366f1" stopOpacity={0.5} />
                             <stop offset="60%" stopColor="#6366f1" stopOpacity={0.1} />
                             <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="gradStroke" x1="0" y1="0" x2="1" y2="0">
-                            <stop offset="0%"  stopColor="#818cf8" />
+                            <stop offset="0%" stopColor="#818cf8" />
                             <stop offset="50%" stopColor="#a78bfa" />
                             <stop offset="100%" stopColor="#6366f1" />
                         </linearGradient>
                         <filter id="glow">
-                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                            <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
                         </filter>
                     </defs>
                     <CartesianGrid vertical={false} strokeDasharray="2 6" stroke="rgba(59,130,246,0.12)" />
@@ -296,10 +296,10 @@ function HourlyChart({ data }: { data: { hour: string; amount: number }[] }) {
 
 // ─── Table Card ───────────────────────────────────────────────────────────────
 const TABLE_STATUS: Record<string, { border: string; glow: string; badge: string; label: string; emoji: string }> = {
-    free:     { border: "border-slate-600",   glow: "",                                                badge: "bg-slate-700 text-slate-300",     label: "Bo'sh",  emoji: "🪑" },
-    occupied: { border: "border-emerald-500", glow: "shadow-[0_0_20px_rgba(16,185,129,0.2)]",         badge: "bg-emerald-500/20 text-emerald-400", label: "Band",  emoji: "🍽️" },
-    reserved: { border: "border-amber-500",   glow: "shadow-[0_0_20px_rgba(245,158,11,0.2)]",         badge: "bg-amber-500/20 text-amber-400",   label: "Bron",   emoji: "📅" },
-    receipt:  { border: "border-blue-500",    glow: "shadow-[0_0_20px_rgba(59,130,246,0.2)]",         badge: "bg-blue-500/20 text-blue-400",     label: "Hisob",  emoji: "🧾" },
+    free: { border: "border-slate-600", glow: "", badge: "bg-slate-700 text-slate-300", label: "Bo'sh", emoji: "🪑" },
+    occupied: { border: "border-emerald-500", glow: "shadow-[0_0_20px_rgba(16,185,129,0.2)]", badge: "bg-emerald-500/20 text-emerald-400", label: "Band", emoji: "🍽️" },
+    reserved: { border: "border-amber-500", glow: "shadow-[0_0_20px_rgba(245,158,11,0.2)]", badge: "bg-amber-500/20 text-amber-400", label: "Bron", emoji: "📅" },
+    receipt: { border: "border-blue-500", glow: "shadow-[0_0_20px_rgba(59,130,246,0.2)]", badge: "bg-blue-500/20 text-blue-400", label: "Hisob", emoji: "🧾" },
 };
 function SmartTableCard({ table, onClick }: { table: SmartTable; onClick: () => void }) {
     const cfg = TABLE_STATUS[table.status] ?? TABLE_STATUS.free;
@@ -332,7 +332,7 @@ function SmartTableCard({ table, onClick }: { table: SmartTable; onClick: () => 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 const EMPTY_STATS: UbtStats = {
     today: { revenue: 0, count: 0, byMethod: {} },
-    hourly: Array.from({ length: 24 }, (_, h) => ({ hour: `${String(h).padStart(2,"0")}:00`, amount: 0 })),
+    hourly: Array.from({ length: 24 }, (_, h) => ({ hour: `${String(h).padStart(2, "0")}:00`, amount: 0 })),
     tables: { total: 0, occupied: 0, reserved: 0, free: 0 },
     pendingDeliveries: 0,
     finance: { totalIncome: 0, totalExpense: 0, netProfit: 0 },
@@ -352,7 +352,8 @@ function AktSverkaModal({ data, onClose }: { data: any, onClose: () => void }) {
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 print:p-0 print:bg-white print:block">
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm print:hidden" onClick={onClose} />
             <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col print:shadow-none print:w-full print:border-none print:rounded-none">
-                <style dangerouslySetInnerHTML={{ __html: `
+                <style dangerouslySetInnerHTML={{
+                    __html: `
                     @media print {
                         body * { visibility: hidden; }
                         #akt-sverka-receipt, #akt-sverka-receipt * { visibility: visible; }
@@ -461,16 +462,16 @@ function DebtDetailsModal({ type, onClose, data, loading, onRefresh, onSverkaGen
     const isOurDebt = type === "bizningQarz";
     const headerColor = isOurDebt ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400";
     const headerTitle = isOurDebt ? "Bizning Qarzlarimiz (Chiqim tarixi)" : "Qarzdorlar (Mijozlar qarzi tarixi)";
-    
+
     // Action handler
     const handlePay = async (id: string, fullAmount: number, currentPaid: number, title: string) => {
         const remaining = fullAmount - currentPaid;
         const inputStr = window.prompt(`Qarzni kiriting (Qolgan qarz: ${fmt(remaining)} so'm):\n\n(${title})`, remaining.toString());
         if (!inputStr) return;
-        
+
         const amountToPay = parseInt(inputStr.replace(/\D/g, ""), 10);
         if (isNaN(amountToPay) || amountToPay <= 0) return alert("Noto'g'ri summa kiritildi");
-        
+
         const isFullPayment = amountToPay >= remaining;
 
         setPaying(id);
@@ -506,7 +507,7 @@ function DebtDetailsModal({ type, onClose, data, loading, onRefresh, onSverkaGen
             <div className="relative bg-white dark:bg-slate-900 rounded-3xl w-full max-w-5xl border border-slate-200 dark:border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.5)] flex flex-col max-h-[85vh] overflow-hidden">
                 <div className="px-6 py-5 flex items-center justify-between border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02]">
                     <h2 className={`text-lg font-black uppercase tracking-widest flex items-center gap-2.5 ${headerColor}`}>
-                        {isOurDebt ? <TrendingDown size={18} /> : <Users size={18} />} 
+                        {isOurDebt ? <TrendingDown size={18} /> : <Users size={18} />}
                         {headerTitle}
                     </h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">
@@ -538,50 +539,50 @@ function DebtDetailsModal({ type, onClose, data, loading, onRefresh, onSverkaGen
                                         const relatedPayments = (isOurDebt ? data.bizningQarz?.uzilgan : data.qarzdorlar?.payments)?.filter((p: any) => p.description && p.description.includes(trxRef)) || [];
                                         const alreadyPaid = relatedPayments.reduce((acc: number, p: any) => acc + p.amount, 0);
                                         const remainingAmount = t.amount - alreadyPaid;
-                                        
+
                                         if (remainingAmount <= 0) return null; // Safe guard, fully paid UI hide
 
                                         return (
-                                        <div key={t.id} className="p-4 rounded-2xl bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 hover:border-blue-400 dark:hover:bg-slate-100 transition-colors group shadow-sm dark:shadow-none relative">
-                                            {alreadyPaid > 0 && (
-                                                <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg rounded-tr-xl">
-                                                    Qisman to'langan
+                                            <div key={t.id} className="p-4 rounded-2xl bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 hover:border-blue-400 dark:hover:bg-slate-100 transition-colors group shadow-sm dark:shadow-none relative">
+                                                {alreadyPaid > 0 && (
+                                                    <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg rounded-tr-xl">
+                                                        Qisman to'langan
+                                                    </div>
+                                                )}
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div>
+                                                        <p className="text-base font-black text-slate-900 dark:text-slate-800 group-hover:text-blue-600 dark:group-hover:text-white transition-colors">
+                                                            {tName}
+                                                        </p>
+                                                        <p className="text-xs font-medium text-slate-500 flex items-center gap-1.5 mt-1">
+                                                            <Clock size={12} /> {new Date(t.createdAt || t.date).toLocaleString("uz-UZ")}
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className={`font-black text-lg ${isOurDebt ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                                                            {isOurDebt ? "+" : "-"} {fmt(remainingAmount)} <span className="text-xs font-bold">so'm</span>
+                                                        </p>
+                                                        {alreadyPaid > 0 && (
+                                                            <p className="text-[10px] text-slate-400 line-through mt-0.5">{fmt(t.amount)} so'm</p>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            )}
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div>
-                                                    <p className="text-base font-black text-slate-900 dark:text-slate-800 group-hover:text-blue-600 dark:group-hover:text-white transition-colors">
-                                                        {tName}
-                                                    </p>
-                                                    <p className="text-xs font-medium text-slate-500 flex items-center gap-1.5 mt-1">
-                                                        <Clock size={12} /> {new Date(t.createdAt || t.date).toLocaleString("uz-UZ")}
-                                                    </p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className={`font-black text-lg ${isOurDebt ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
-                                                        {isOurDebt ? "+" : "-"} {fmt(remainingAmount)} <span className="text-xs font-bold">so'm</span>
-                                                    </p>
-                                                    {alreadyPaid > 0 && (
-                                                        <p className="text-[10px] text-slate-400 line-through mt-0.5">{fmt(t.amount)} so'm</p>
-                                                    )}
+                                                <div className="flex items-center justify-between mt-4 gap-2">
+                                                    <p className="text-[10px] text-slate-400 dark:text-slate-600 font-mono tracking-wider flex items-center gap-1"><FileText size={10} /> ID: {t.id.slice(-8)}</p>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => setPreviewSverka({ isPreview: true, customerName: tName, date: new Date().toLocaleString("uz-UZ"), currentDebt: remainingAmount, isOurDebt })}
+                                                            className="px-3 py-1.5 rounded-lg text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center gap-1.5">
+                                                            <Printer size={12} /> Akt Sverka
+                                                        </button>
+                                                        <button onClick={() => handlePay(t.id, t.amount, alreadyPaid, tName)} disabled={paying === t.id}
+                                                            className="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2">
+                                                            {paying === t.id ? <div className="w-3 h-3 rounded-full border-2 border-white/30 border-t-white animate-spin" /> : <CheckCircle size={13} />}
+                                                            To’lov qilish
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center justify-between mt-4 gap-2">
-                                                <p className="text-[10px] text-slate-400 dark:text-slate-600 font-mono tracking-wider flex items-center gap-1"><FileText size={10}/> ID: {t.id.slice(-8)}</p>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => setPreviewSverka({ isPreview: true, customerName: tName, date: new Date().toLocaleString("uz-UZ"), currentDebt: remainingAmount, isOurDebt })}
-                                                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center gap-1.5">
-                                                        <Printer size={12}/> Akt Sverka
-                                                    </button>
-                                                    <button onClick={() => handlePay(t.id, t.amount, alreadyPaid, tName)} disabled={paying === t.id}
-                                                        className="px-4 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2">
-                                                        {paying === t.id ? <div className="w-3 h-3 rounded-full border-2 border-white/30 border-t-white animate-spin"/> : <CheckCircle size={13}/>}
-                                                        To’lov qilish
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
                                         );
                                     })}
                                     {previewSverka && <AktSverkaModal data={previewSverka} onClose={() => setPreviewSverka(null)} />}
@@ -640,9 +641,9 @@ function StatsOverviewChart({ finance, tables, byMethod }: {
 }) {
     const { t } = useLang();
     const financeRows = [
-        { label: "Pul kirimi",  value: finance.totalIncome,  color: "#10b981" },
+        { label: "Pul kirimi", value: finance.totalIncome, color: "#10b981" },
         { label: "Pul chiqimi", value: finance.totalExpense, color: "#f43f5e" },
-        { label: "Sof foyda",   value: Math.max(finance.netProfit, 0), color: "#3b82f6" },
+        { label: "Sof foyda", value: Math.max(finance.netProfit, 0), color: "#3b82f6" },
     ];
     const maxFin = Math.max(...financeRows.map(r => r.value), 1);
 
@@ -653,15 +654,15 @@ function StatsOverviewChart({ finance, tables, byMethod }: {
     const methodColors = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#f43f5e"];
 
     const tableRows = [
-        { label: "Bo'sh", value: tables.free,     color: "#64748b", bg: "rgba(100,116,139,0.12)" },
-        { label: "Band",  value: tables.occupied, color: "#10b981", bg: "rgba(16,185,129,0.12)"  },
-        { label: "Bron",  value: tables.reserved, color: "#f59e0b", bg: "rgba(245,158,11,0.12)"  },
+        { label: "Bo'sh", value: tables.free, color: "#64748b", bg: "rgba(100,116,139,0.12)" },
+        { label: "Band", value: tables.occupied, color: "#10b981", bg: "rgba(16,185,129,0.12)" },
+        { label: "Bron", value: tables.reserved, color: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
     ];
 
     const financeChartData = [
-        { name: "Kirim",  value: finance.totalIncome  },
+        { name: "Kirim", value: finance.totalIncome },
         { name: "Chiqim", value: finance.totalExpense },
-        { name: "Foyda",  value: Math.max(finance.netProfit, 0) },
+        { name: "Foyda", value: Math.max(finance.netProfit, 0) },
     ];
 
     return (
@@ -716,7 +717,7 @@ function StatsOverviewChart({ finance, tables, byMethod }: {
                                 />
                                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                                     {financeChartData.map((_, i) => (
-                                        <Cell key={i} fill={["#10b981","#f43f5e","#3b82f6"][i]} />
+                                        <Cell key={i} fill={["#10b981", "#f43f5e", "#3b82f6"][i]} />
                                     ))}
                                 </Bar>
                             </BarChart>
@@ -777,10 +778,10 @@ function TimeframeSelector({ value, onChange }: { value: string, onChange: (v: s
     const [open, setOpen] = useState(false);
     const options = [
         { id: "today", label: "Bugun" },
-        { id: "week",  label: "So'nggi 7 kun" },
+        { id: "week", label: "So'nggi 7 kun" },
         { id: "month", label: "Shu oy" },
-        { id: "year",  label: "Shu yil" },
-        { id: "all",   label: "Barchasi" },
+        { id: "year", label: "Shu yil" },
+        { id: "all", label: "Barchasi" },
     ];
     return (
         <div className="relative">
@@ -790,14 +791,14 @@ function TimeframeSelector({ value, onChange }: { value: string, onChange: (v: s
             </button>
             {open && (
                 <>
-                <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-                <div className="absolute right-0 top-full mt-2 w-40 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                    {options.map(opt => (
-                        <button key={opt.id} onClick={() => { onChange(opt.id); setOpen(false); }} className={`w-full text-left px-4 py-2 text-xs font-bold transition-colors ${value === opt.id ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`}>
-                            {opt.label}
-                        </button>
-                    ))}
-                </div>
+                    <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+                    <div className="absolute right-0 top-full mt-2 w-40 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                        {options.map(opt => (
+                            <button key={opt.id} onClick={() => { onChange(opt.id); setOpen(false); }} className={`w-full text-left px-4 py-2 text-xs font-bold transition-colors ${value === opt.id ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`}>
+                                {opt.label}
+                            </button>
+                        ))}
+                    </div>
                 </>
             )}
         </div>
@@ -806,17 +807,39 @@ function TimeframeSelector({ value, onChange }: { value: string, onChange: (v: s
 
 export default function UbtPage() {
     const { t } = useLang();
-    const staff       = useStore((s) => s.staff);
+    const staff = useStore((s) => s.staff);
     const smartTables = useStore((s) => s.smartTables);
-    const router      = useRouter();
+    const router = useRouter();
 
     const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-    const [selTable, setSelTable]     = useState<SmartTable | null>(null);
+    const [selTable, setSelTable] = useState<SmartTable | null>(null);
     const [showReservation, setShowReservation] = useState(false);
     const [dateFilter, setDateFilter] = useState<{ timeframe: string; range: DateRange }>({
         timeframe: "today",
         range: null
     });
+
+    // ── Period selector state ─────────────────────────────────────────────────
+    type Period = "hourly" | "daily" | "monthly" | "yearly" | "custom";
+    const [period, setPeriod] = useState<Period>("daily");
+    const [showCalendar, setShowCalendar] = useState(false);
+    const [customFrom, setCustomFrom] = useState("");
+    const [customTo, setCustomTo] = useState("");
+
+    const periodLabels: Record<Period, string> = {
+        hourly: "Soatlik",
+        daily: "Kunlik",
+        monthly: "Oylik",
+        yearly: "Yillik",
+        custom: "Kalendar",
+    };
+    const periodIcons: Record<Period, React.ReactNode> = {
+        hourly: <Clock size={12} />,
+        daily: <Calendar size={12} />,
+        monthly: <Calendar size={12} />,
+        yearly: <TrendingUp size={12} />,
+        custom: <Calendar size={12} />,
+    };
 
     const dishQuery = dateFilter.range
         ? `/api/smart/reports-data?from=${dateFilter.range.from}&to=${dateFilter.range.to}`
@@ -836,13 +859,20 @@ export default function UbtPage() {
         return res.json();
     };
 
+    // Build stats URL based on selected period
+    const statsUrl = (() => {
+        if (period === "custom" && customFrom && customTo)
+            return `/api/smart/stats?period=custom&from=${customFrom}&to=${customTo}`;
+        return `/api/smart/stats?period=${period}`;
+    })();
+
     const { data: swrStats, isLoading: swrLoading, mutate } = useSWR(
-        "/api/smart/stats",
+        statsUrl,
         fetcher,
         {
-            refreshInterval: 15_000,          // 15 sekund — real-time
-            revalidateOnFocus: true,           // Tabga qaytilganda yangilaydi
-            revalidateOnReconnect: true,       // Internet qaytganda yangilaydi
+            refreshInterval: period === "hourly" ? 15_000 : period === "daily" ? 30_000 : 60_000,
+            revalidateOnFocus: true,
+            revalidateOnReconnect: true,
             dedupingInterval: 5_000,
             onSuccess: () => setLastRefresh(new Date()),
         }
@@ -867,7 +897,7 @@ export default function UbtPage() {
     const [debtModalType, setDebtModalType] = useState<"qarzdorlar" | "bizningQarz" | null>(null);
     const [debtData, setDebtData] = useState<any>(null);
     const [debtLoading, setDebtLoading] = useState(false);
-    
+
     // Akt Sverka
     const [sverkaData, setSverkaData] = useState<any>(null);
 
@@ -895,241 +925,295 @@ export default function UbtPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const totalStaff  = staff.length;
+    const totalStaff = staff.length;
     const activeTables = stats.tables.occupied + stats.tables.reserved;
     const totalRevenue = stats.today.revenue;
 
     return (
         <div className="animate-fade-in">
-        <div className="rounded-2xl p-5 space-y-5" style={{ background: "linear-gradient(160deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)" }}>
+            <div className="rounded-2xl p-5 space-y-5" style={{ background: "linear-gradient(160deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)" }}>
 
-            {/* HEADER */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-black text-slate-800">{t('ubt.title')}</h1>
-                    <p className="text-sm text-slate-500 font-medium mt-0.5">{t('ubt.subTitle')}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    {lastRefresh && (
-                        <span className="text-xs text-slate-500 font-medium">
-                            {lastRefresh.toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-                        </span>
-                    )}
-                    <button onClick={() => { mutate(); store.fetchSmartTables(); }}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 transition-colors hover:bg-slate-200"
-                        style={{ background: "rgba(15,23,42,0.05)", border: "1px solid rgba(15,23,42,0.1)" }}>
-                        <RefreshCw size={13} /> {t('common.refresh') || "Yangilash"}
-                    </button>
-                </div>
-            </div>
-
-            {loading && (
-                <div className="flex items-center justify-center py-8">
-                    <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-                </div>
-            )}
-
-            {!loading && (
-            <div className="space-y-4">
-                {/* Main Content Grid */}
-                <div className="grid grid-cols-12 gap-5">
-                    
-                    {/* Left Column: Finance & Payment Types (4 width) */}
-                    <div className="col-span-12 lg:col-span-4 space-y-5">
-                        
-                        {/* Bugungi savdo */}
-                        <StatCard label="Bugungi savdo" value={`${fmt(totalRevenue)} so'm`} icon={ShoppingBag}
-                            gradient="bg-gradient-to-br from-blue-600 to-blue-800"
-                            sub={`${stats.today.count} ta tranzaksiya`} />
-                        
-                        {/* Premium Finance Summary */}
-                        <div className="rounded-3xl p-6 relative overflow-hidden shadow-sm" 
-                             style={{ background: "rgba(59,130,246,0.05)", border: "1px solid rgba(59,130,246,0.2)" }}>
-                            <div className="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/10 blur-[40px] rounded-full pointer-events-none" />
-                            <p className="text-xs font-bold text-blue-600 mb-1.5 flex items-center gap-1.5"><DollarSign size={14}/>{t('reports.netProfit')}</p>
-                            <p className="text-4xl font-black text-slate-800 tracking-tight">
-                                {fmt(stats.finance.netProfit)} <span className="text-base text-blue-600 font-bold">so'm</span>
-                            </p>
-                            
-                            <div className="flex items-center justify-between gap-4 mt-6 pt-5 border-t border-blue-500/20">
-                                <div>
-                                    <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-600 mb-1 flex items-center gap-1"><TrendingUp size={12}/>{t('dashboard.totalRevenue')}</p>
-                                    <p className="text-sm font-bold text-slate-800">{fmt(stats.finance.totalIncome)}</p>
-                                </div>
-                                <div className="w-px h-8 bg-blue-500/30" />
-                                <div>
-                                    <p className="text-[10px] uppercase tracking-widest font-bold text-red-500 mb-1 flex items-center gap-1"><TrendingDown size={12}/>{t('reports.totalExpense')}</p>
-                                    <p className="text-sm font-bold text-slate-800">- {fmt(stats.finance.totalExpense)}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Dynamic Payment Breakdown */}
-                        <div className="rounded-3xl overflow-hidden shadow-sm bg-white border border-slate-200">
-                            <div className="px-5 py-4 border-b border-slate-100 bg-slate-50">
-                                <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                                    <Wallet size={15} className="text-slate-400" /> Tushumlar (To'lov turlari)
-                                </p>
-                            </div>
-                            <table className="w-full text-sm">
-                                <tbody>
-                                    {Object.entries(stats.today.byMethod).sort((a: any, b: any) => b[1].total - a[1].total).map(([methodName, mData]: [string, any], i) => {
-                                        const amt = mData.total;
-                                        const pct = totalRevenue > 0 ? Math.round((amt / totalRevenue) * 100) : 0;
-                                        const colors = ["text-emerald-500", "text-blue-500", "text-sky-500", "text-amber-500", "text-rose-500", "text-cyan-500"];
-                                        const color = colors[i % colors.length];
-                                        return (
-                                            <tr key={methodName} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
-                                                <td className="px-5 py-3.5">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`w-2 h-2 rounded-full bg-current ${color} shadow-[0_0_10px_currentColor]`} />
-                                                        <span className="text-slate-700 text-xs font-bold">{methodName}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-5 py-3.5 text-right text-slate-500 font-bold text-[11px] w-16">{amt > 0 ? `${pct}%` : "—"}</td>
-                                                <td className="px-5 py-3.5 text-right font-bold text-slate-800 text-xs">{fmt(amt)}</td>
-                                            </tr>
-                                        );
-                                    })}
-                                    {Object.keys(stats.today.byMethod).length === 0 && (
-                                        <tr><td colSpan={3} className="px-5 py-8 text-center text-slate-500 text-xs font-medium">Ma'lumot yo'q</td></tr>
-                                    )}
-                                    <tr className="bg-slate-50 border-t border-slate-100">
-                                        <td className="px-5 py-4 font-bold text-slate-700 text-xs">Jami tushum</td>
-                                        <td className="px-5 py-4" />
-                                        <td className="px-5 py-4 text-right font-black text-amber-500 text-sm">{fmt(totalRevenue)} so'm</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                {/* HEADER */}
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <h1 className="text-2xl font-black text-slate-800">{t('ubt.title')}</h1>
+                        <p className="text-sm text-slate-500 font-medium mt-0.5">{t('ubt.subTitle')}</p>
                     </div>
 
-                    {/* Right Column: Hourly Chart Hero (8 width) */}
-                    <div className="col-span-12 lg:col-span-8 flex flex-col gap-5">
-                        <HourlyChart data={stats.hourly} />
-
-
-
-
-                        {/* Debt Trackers (Moved to right column) */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 hide-scroll">
-                            <div onClick={() => openDebtModal("qarzdorlar")}
-                                className="rounded-3xl p-5 relative overflow-hidden flex flex-col justify-center transition-all hover:scale-[1.03] shadow-sm cursor-pointer group"
-                                style={{ background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.2)" }}>
-                                <div className="absolute right-0 bottom-0 w-32 h-32 bg-emerald-500/10 blur-[30px] rounded-full pointer-events-none group-hover:bg-emerald-500/20 transition-colors" />
-                                <div className="absolute right-4 top-4 bg-emerald-500/10 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Search size={14} className="text-emerald-500"/>
-                                </div>
-                                <p className="text-[11px] font-bold text-emerald-600 mb-1 flex items-center gap-1.5 uppercase tracking-widest"><Users size={12}/> Qarzdorlar (Bizga qarz)</p>
-                                <p className="text-2xl font-black text-slate-800">{fmt(stats.debt.qarzdorlar)} <span className="text-emerald-500 text-sm font-bold tracking-normal">so'm</span></p>
-                            </div>
-                            <div onClick={() => openDebtModal("bizningQarz")}
-                                className="rounded-3xl p-5 relative overflow-hidden flex flex-col justify-center transition-all hover:scale-[1.03] shadow-sm cursor-pointer group"
-                                style={{ background: "rgba(244,63,94,0.05)", border: "1px solid rgba(244,63,94,0.2)" }}>
-                                <div className="absolute right-0 bottom-0 w-32 h-32 bg-rose-500/10 blur-[30px] rounded-full pointer-events-none group-hover:bg-rose-500/20 transition-colors" />
-                                <div className="absolute right-4 top-4 bg-rose-500/10 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Search size={14} className="text-rose-500"/>
-                                </div>
-                                <p className="text-[11px] font-bold text-rose-600 mb-1 flex items-center gap-1.5 uppercase tracking-widest"><TrendingDown size={12}/> Bizning qarzimiz</p>
-                                <p className="text-2xl font-black text-slate-800">{fmt(stats.debt.bizningQarz)} <span className="text-rose-500 text-sm font-bold tracking-normal">so'm</span></p>
-                            </div>
+                    {/* ── Period Selector ── */}
+                    <div className="flex flex-col items-end gap-2">
+                        <div className="flex items-center gap-1 p-1 rounded-2xl"
+                            style={{ background: "rgba(15,23,42,0.06)", border: "1px solid rgba(15,23,42,0.1)" }}>
+                            {(["hourly", "daily", "monthly", "yearly", "custom"] as Period[]).map((p) => (
+                                <button
+                                    key={p}
+                                    onClick={() => {
+                                        setPeriod(p);
+                                        if (p === "custom") setShowCalendar(true);
+                                        else { setShowCalendar(false); mutate(); }
+                                    }}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 ${period === p
+                                            ? "bg-blue-600 text-white shadow-md shadow-blue-500/30 scale-105"
+                                            : "text-slate-500 hover:text-slate-700 hover:bg-white/60"
+                                        }`}
+                                >
+                                    {periodIcons[p]}
+                                    {periodLabels[p]}
+                                </button>
+                            ))}
                         </div>
-                    </div>
-                </div>
 
-                {/* Top Dishes Chart */}
-                <div className="rounded-2xl p-5 shadow-sm bg-white border border-slate-200">
-                    <div className="flex items-center justify-between mb-4">
+                        {/* Refresh time + manual refresh */}
                         <div className="flex items-center gap-2">
-                            <UtensilsCrossed size={15} className="text-slate-400" />
-                            <h2 className="text-sm font-bold text-slate-800">Taomlar reytingi (Eng ko'p sotilganlar)</h2>
+                            {lastRefresh && (
+                                <span className="text-[11px] text-slate-400 font-medium">
+                                    Yangilandi: {lastRefresh.toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                                </span>
+                            )}
+                            <button onClick={() => { mutate(); store.fetchSmartTables(); }}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                title="Yangilash">
+                                <RefreshCw size={13} />
+                            </button>
                         </div>
-                        <DateRangePicker value={dateFilter} onChange={setDateFilter} />
+
+                        {/* Calendar / Custom range picker */}
+                        {showCalendar && period === "custom" && (
+                            <div className="absolute right-5 mt-16 z-50 rounded-2xl shadow-2xl p-4 flex flex-col gap-3"
+                                style={{ background: "#fff", border: "1px solid rgba(15,23,42,0.12)", minWidth: 260 }}>
+                                <p className="text-xs font-bold text-slate-600 mb-1">📅 Davr tanlash</p>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-[11px] text-slate-500 font-semibold">Boshlanish</label>
+                                    <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+                                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:border-blue-400" />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-[11px] text-slate-500 font-semibold">Tugash</label>
+                                    <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+                                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none focus:border-blue-400" />
+                                </div>
+                                <div className="flex gap-2 mt-1">
+                                    <button onClick={() => { setShowCalendar(false); mutate(); }}
+                                        className="flex-1 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors">
+                                        ✓ Qo&apos;llash
+                                    </button>
+                                    <button onClick={() => { setShowCalendar(false); setPeriod("daily"); }}
+                                        className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-colors">
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    {DISH_DATA.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-12 text-slate-500">
-                            <UtensilsCrossed size={32} className="mb-2 opacity-50" />
-                            <p className="text-sm">Ma'lumot topilmadi</p>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col gap-4 mt-5 w-full">
-                            {DISH_DATA.map((dish: any, i: number) => {
-                                const maxRev = DISH_DATA[0]?.revenue || 1;
-                                const pct = Math.max((dish.revenue / maxRev) * 100, 2);
-                                return (
-                                    <div key={dish.name} className="relative flex items-center p-4 rounded-[24px] overflow-hidden group transition-all duration-300 transform hover:-translate-y-1 bg-white border border-slate-100 shadow-sm hover:shadow-md">
-                                        {/* Progress Bar Background */}
-                                        <div className="absolute top-0 left-0 bottom-0 bg-blue-50 z-0 transition-all duration-1000" style={{ width: `${pct}%` }}></div>
-                                        
-                                        {/* Rank Badge */}
-                                        <div className="relative z-10 w-12 flex-shrink-0 flex justify-center">
-                                            {i === 0 ? (
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 text-amber-700 flex items-center justify-center text-lg font-black shadow-sm border border-amber-300">1</div>
-                                            ) : i === 1 ? (
-                                                <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-lg font-black shadow-sm border border-slate-200">2</div>
-                                            ) : i === 2 ? (
-                                                <div className="w-10 h-10 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center text-lg font-black shadow-sm border border-orange-200">3</div>
-                                            ) : (
-                                                <div className="w-9 h-9 text-slate-500 flex items-center justify-center text-base font-bold bg-slate-50 rounded-full border border-slate-200">{i + 1}</div>
-                                            )}
-                                        </div>
+                </div>
 
-                                        {/* Image */}
-                                        <div className="relative z-10 w-16 h-16 rounded-2xl overflow-hidden ml-5 bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-sm">
-                                            {dish.image && dish.image !== "" ? (
-                                                <img src={dish.image} alt={dish.name} className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-2 transition-transform duration-700" />
-                                            ) : (
-                                                <UtensilsCrossed size={24} className="text-slate-400 group-hover:text-blue-500 transition-colors" />
-                                            )}
-                                        </div>
+                {loading && (
+                    <div className="flex items-center justify-center py-8">
+                        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                    </div>
+                )}
 
-                                        {/* Name & Stats */}
-                                        <div className="relative z-10 flex-1 ml-4 sm:ml-6 flex md:items-center justify-between flex-col md:flex-row gap-2 md:gap-0">
-                                            <div>
-                                                <h3 className="text-slate-800 text-sm sm:text-base lg:text-lg font-extrabold truncate max-w-[150px] sm:max-w-[280px] tracking-wide">{dish.name}</h3>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[11px] font-bold border border-blue-100">{dish.qty} ta</span>
-                                                    <span className="text-slate-500 text-xs font-bold">sotildi</span>
-                                                </div>
-                                            </div>
-                                            <div className="text-left md:text-right">
-                                                <p className="text-emerald-600 text-base sm:text-lg lg:text-xl font-black tracking-tighter">
-                                                    {formatCurrency(dish.revenue)}
-                                                </p>
-                                                <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-wider">Jami tushum</p>
-                                            </div>
+                {!loading && (
+                    <div className="space-y-4">
+                        {/* Main Content Grid */}
+                        <div className="grid grid-cols-12 gap-5">
+
+                            {/* Left Column: Finance & Payment Types (4 width) */}
+                            <div className="col-span-12 lg:col-span-4 space-y-5">
+
+                                {/* Bugungi savdo */}
+                                <StatCard label="Bugungi savdo" value={`${fmt(totalRevenue)} so'm`} icon={ShoppingBag}
+                                    gradient="bg-gradient-to-br from-blue-600 to-blue-800"
+                                    sub={`${stats.today.count} ta tranzaksiya`} />
+
+                                {/* Premium Finance Summary */}
+                                <div className="rounded-3xl p-6 relative overflow-hidden shadow-sm"
+                                    style={{ background: "rgba(59,130,246,0.05)", border: "1px solid rgba(59,130,246,0.2)" }}>
+                                    <div className="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/10 blur-[40px] rounded-full pointer-events-none" />
+                                    <p className="text-xs font-bold text-blue-600 mb-1.5 flex items-center gap-1.5"><DollarSign size={14} />{t('reports.netProfit')}</p>
+                                    <p className="text-4xl font-black text-slate-800 tracking-tight">
+                                        {fmt(stats.finance.netProfit)} <span className="text-base text-blue-600 font-bold">so'm</span>
+                                    </p>
+
+                                    <div className="flex items-center justify-between gap-4 mt-6 pt-5 border-t border-blue-500/20">
+                                        <div>
+                                            <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-600 mb-1 flex items-center gap-1"><TrendingUp size={12} />{t('dashboard.totalRevenue')}</p>
+                                            <p className="text-sm font-bold text-slate-800">{fmt(stats.finance.totalIncome)}</p>
+                                        </div>
+                                        <div className="w-px h-8 bg-blue-500/30" />
+                                        <div>
+                                            <p className="text-[10px] uppercase tracking-widest font-bold text-red-500 mb-1 flex items-center gap-1"><TrendingDown size={12} />{t('reports.totalExpense')}</p>
+                                            <p className="text-sm font-bold text-slate-800">- {fmt(stats.finance.totalExpense)}</p>
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-            </div>
-            )}
-            
-            {/* Modal portal rendering */}
-            {debtModalType && (
-                <DebtDetailsModal 
-                    type={debtModalType} 
-                    onClose={() => setDebtModalType(null)} 
-                    data={debtData} 
-                    loading={debtLoading}
-                    onSverkaGenerated={(data: any) => setSverkaData(data)}
-                    onRefresh={() => {
-                        openDebtModal(debtModalType);
-                        setTimeout(() => store.fetchSmartTables(), 300);
-                    }} 
-                />
-            )}
+                                </div>
 
-            {sverkaData && (
-                <AktSverkaModal 
-                    data={sverkaData} 
-                    onClose={() => setSverkaData(null)} 
-                />
-            )}
-        </div>
+                                {/* Dynamic Payment Breakdown */}
+                                <div className="rounded-3xl overflow-hidden shadow-sm bg-white border border-slate-200">
+                                    <div className="px-5 py-4 border-b border-slate-100 bg-slate-50">
+                                        <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                            <Wallet size={15} className="text-slate-400" /> Tushumlar (To'lov turlari)
+                                        </p>
+                                    </div>
+                                    <table className="w-full text-sm">
+                                        <tbody>
+                                            {Object.entries(stats.today.byMethod).sort((a: any, b: any) => b[1].total - a[1].total).map(([methodName, mData]: [string, any], i) => {
+                                                const amt = mData.total;
+                                                const pct = totalRevenue > 0 ? Math.round((amt / totalRevenue) * 100) : 0;
+                                                const colors = ["text-emerald-500", "text-blue-500", "text-sky-500", "text-amber-500", "text-rose-500", "text-cyan-500"];
+                                                const color = colors[i % colors.length];
+                                                return (
+                                                    <tr key={methodName} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                                                        <td className="px-5 py-3.5">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`w-2 h-2 rounded-full bg-current ${color} shadow-[0_0_10px_currentColor]`} />
+                                                                <span className="text-slate-700 text-xs font-bold">{methodName}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-5 py-3.5 text-right text-slate-500 font-bold text-[11px] w-16">{amt > 0 ? `${pct}%` : "—"}</td>
+                                                        <td className="px-5 py-3.5 text-right font-bold text-slate-800 text-xs">{fmt(amt)}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                            {Object.keys(stats.today.byMethod).length === 0 && (
+                                                <tr><td colSpan={3} className="px-5 py-8 text-center text-slate-500 text-xs font-medium">Ma'lumot yo'q</td></tr>
+                                            )}
+                                            <tr className="bg-slate-50 border-t border-slate-100">
+                                                <td className="px-5 py-4 font-bold text-slate-700 text-xs">Jami tushum</td>
+                                                <td className="px-5 py-4" />
+                                                <td className="px-5 py-4 text-right font-black text-amber-500 text-sm">{fmt(totalRevenue)} so'm</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* Right Column: Hourly Chart Hero (8 width) */}
+                            <div className="col-span-12 lg:col-span-8 flex flex-col gap-5">
+                                <HourlyChart data={stats.hourly} />
+
+
+
+
+                                {/* Debt Trackers (Moved to right column) */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 hide-scroll">
+                                    <div onClick={() => openDebtModal("qarzdorlar")}
+                                        className="rounded-3xl p-5 relative overflow-hidden flex flex-col justify-center transition-all hover:scale-[1.03] shadow-sm cursor-pointer group"
+                                        style={{ background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.2)" }}>
+                                        <div className="absolute right-0 bottom-0 w-32 h-32 bg-emerald-500/10 blur-[30px] rounded-full pointer-events-none group-hover:bg-emerald-500/20 transition-colors" />
+                                        <div className="absolute right-4 top-4 bg-emerald-500/10 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Search size={14} className="text-emerald-500" />
+                                        </div>
+                                        <p className="text-[11px] font-bold text-emerald-600 mb-1 flex items-center gap-1.5 uppercase tracking-widest"><Users size={12} /> Qarzdorlar (Bizga qarz)</p>
+                                        <p className="text-2xl font-black text-slate-800">{fmt(stats.debt.qarzdorlar)} <span className="text-emerald-500 text-sm font-bold tracking-normal">so'm</span></p>
+                                    </div>
+                                    <div onClick={() => openDebtModal("bizningQarz")}
+                                        className="rounded-3xl p-5 relative overflow-hidden flex flex-col justify-center transition-all hover:scale-[1.03] shadow-sm cursor-pointer group"
+                                        style={{ background: "rgba(244,63,94,0.05)", border: "1px solid rgba(244,63,94,0.2)" }}>
+                                        <div className="absolute right-0 bottom-0 w-32 h-32 bg-rose-500/10 blur-[30px] rounded-full pointer-events-none group-hover:bg-rose-500/20 transition-colors" />
+                                        <div className="absolute right-4 top-4 bg-rose-500/10 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Search size={14} className="text-rose-500" />
+                                        </div>
+                                        <p className="text-[11px] font-bold text-rose-600 mb-1 flex items-center gap-1.5 uppercase tracking-widest"><TrendingDown size={12} /> Bizning qarzimiz</p>
+                                        <p className="text-2xl font-black text-slate-800">{fmt(stats.debt.bizningQarz)} <span className="text-rose-500 text-sm font-bold tracking-normal">so'm</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Top Dishes Chart */}
+                        <div className="rounded-2xl p-5 shadow-sm bg-white border border-slate-200">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <UtensilsCrossed size={15} className="text-slate-400" />
+                                    <h2 className="text-sm font-bold text-slate-800">Taomlar reytingi (Eng ko'p sotilganlar)</h2>
+                                </div>
+                                <DateRangePicker value={dateFilter} onChange={setDateFilter} />
+                            </div>
+                            {DISH_DATA.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+                                    <UtensilsCrossed size={32} className="mb-2 opacity-50" />
+                                    <p className="text-sm">Ma'lumot topilmadi</p>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-4 mt-5 w-full">
+                                    {DISH_DATA.map((dish: any, i: number) => {
+                                        const maxRev = DISH_DATA[0]?.revenue || 1;
+                                        const pct = Math.max((dish.revenue / maxRev) * 100, 2);
+                                        return (
+                                            <div key={dish.name} className="relative flex items-center p-4 rounded-[24px] overflow-hidden group transition-all duration-300 transform hover:-translate-y-1 bg-white border border-slate-100 shadow-sm hover:shadow-md">
+                                                {/* Progress Bar Background */}
+                                                <div className="absolute top-0 left-0 bottom-0 bg-blue-50 z-0 transition-all duration-1000" style={{ width: `${pct}%` }}></div>
+
+                                                {/* Rank Badge */}
+                                                <div className="relative z-10 w-12 flex-shrink-0 flex justify-center">
+                                                    {i === 0 ? (
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 text-amber-700 flex items-center justify-center text-lg font-black shadow-sm border border-amber-300">1</div>
+                                                    ) : i === 1 ? (
+                                                        <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-lg font-black shadow-sm border border-slate-200">2</div>
+                                                    ) : i === 2 ? (
+                                                        <div className="w-10 h-10 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center text-lg font-black shadow-sm border border-orange-200">3</div>
+                                                    ) : (
+                                                        <div className="w-9 h-9 text-slate-500 flex items-center justify-center text-base font-bold bg-slate-50 rounded-full border border-slate-200">{i + 1}</div>
+                                                    )}
+                                                </div>
+
+                                                {/* Image */}
+                                                <div className="relative z-10 w-16 h-16 rounded-2xl overflow-hidden ml-5 bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                                    {dish.image && dish.image !== "" ? (
+                                                        <img src={dish.image} alt={dish.name} className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-2 transition-transform duration-700" />
+                                                    ) : (
+                                                        <UtensilsCrossed size={24} className="text-slate-400 group-hover:text-blue-500 transition-colors" />
+                                                    )}
+                                                </div>
+
+                                                {/* Name & Stats */}
+                                                <div className="relative z-10 flex-1 ml-4 sm:ml-6 flex md:items-center justify-between flex-col md:flex-row gap-2 md:gap-0">
+                                                    <div>
+                                                        <h3 className="text-slate-800 text-sm sm:text-base lg:text-lg font-extrabold truncate max-w-[150px] sm:max-w-[280px] tracking-wide">{dish.name}</h3>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[11px] font-bold border border-blue-100">{dish.qty} ta</span>
+                                                            <span className="text-slate-500 text-xs font-bold">sotildi</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-left md:text-right">
+                                                        <p className="text-emerald-600 text-base sm:text-lg lg:text-xl font-black tracking-tighter">
+                                                            {formatCurrency(dish.revenue)}
+                                                        </p>
+                                                        <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-wider">Jami tushum</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Modal portal rendering */}
+                {debtModalType && (
+                    <DebtDetailsModal
+                        type={debtModalType}
+                        onClose={() => setDebtModalType(null)}
+                        data={debtData}
+                        loading={debtLoading}
+                        onSverkaGenerated={(data: any) => setSverkaData(data)}
+                        onRefresh={() => {
+                            openDebtModal(debtModalType);
+                            setTimeout(() => store.fetchSmartTables(), 300);
+                        }}
+                    />
+                )}
+
+                {sverkaData && (
+                    <AktSverkaModal
+                        data={sverkaData}
+                        onClose={() => setSverkaData(null)}
+                    />
+                )}
+            </div>
         </div>
     );
 }
