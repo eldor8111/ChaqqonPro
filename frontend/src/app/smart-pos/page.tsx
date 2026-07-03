@@ -4069,9 +4069,9 @@ export default function UbtPosPage() {
                                         </div>
                                     </div>
                                     <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/30">
-                                        <div className="text-xs font-bold text-sky-600 dark:text-sky-400">XIZMAT HAQQI DOLYASI ({(store.kassirSession as any)?.serviceFeePct ?? 10}%)</div>
+                                        <div className="text-xs font-bold text-sky-600 dark:text-sky-400">XIZMAT HAQQI DOLYASI ({(store.kassirSession as any)?.serviceFeePct ?? 0}%)</div>
                                         <div className="text-3xl font-black text-sky-700 dark:text-sky-300">
-                                            {fmt(waiterStats.today.total - (waiterStats.today.total / (1 + (((store.kassirSession as any)?.serviceFeePct ?? 10) / 100))))} UZS
+                                            {fmt(waiterStats.today.total - (waiterStats.today.total / (1 + (((store.kassirSession as any)?.serviceFeePct ?? 0) / 100))))} UZS
                                         </div>
                                         <div className="grid grid-cols-2 gap-2 mt-2">
                                             <div className="bg-sky-500/20 rounded p-1 text-center text-xs font-bold text-sky-700 dark:text-sky-300">
@@ -4126,10 +4126,10 @@ export default function UbtPosPage() {
                                         </div>
                                     </div>
                                     <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/30">
-                                        <div className="text-xs font-bold text-sky-600 dark:text-sky-400">XIZMAT HAQQI ({(store.kassirSession as any)?.serviceFeePct ?? 10}%)</div>
+                                        <div className="text-xs font-bold text-sky-600 dark:text-sky-400">XIZMAT HAQQI ({(store.kassirSession as any)?.serviceFeePct ?? 0}%)</div>
                                         <div className="text-3xl font-black text-sky-700 dark:text-sky-300">
                                             {fmt(reportData.filter((t:any) => t.waiter === waiterName).reduce((s:any, t:any) => {
-                                                const feePct = ((store.kassirSession as any)?.serviceFeePct ?? 10) / 100;
+                                                const feePct = ((store.kassirSession as any)?.serviceFeePct ?? 0) / 100;
                                                 return s + (t.totalAmount - (t.totalAmount / (1 + feePct)));
                                             }, 0))} UZS
                                         </div>

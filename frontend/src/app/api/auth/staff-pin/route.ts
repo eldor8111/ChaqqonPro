@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         let printerIp = "";
         try { const p = staff.phone ? JSON.parse(staff.phone) : {}; printerIp = p.printerIp || ""; } catch {}
 
-        let serviceFeePct = 10;
+        let serviceFeePct = 0;
         let meta: any = {};
         try { meta = staff.staffMeta ? JSON.parse(staff.staffMeta) : {}; if (meta.serviceFeePct !== undefined) serviceFeePct = meta.serviceFeePct; } catch {}
 

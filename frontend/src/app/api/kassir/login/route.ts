@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
             } catch { /* printer yo'q — muammo emas */ }
         }
 
-        let serviceFeePct = 10;
+        let serviceFeePct = 0;
         try {
             const meta = authenticatedStaff.staffMeta ? JSON.parse(authenticatedStaff.staffMeta) : {};
             if (meta.serviceFeePct !== undefined) serviceFeePct = meta.serviceFeePct;

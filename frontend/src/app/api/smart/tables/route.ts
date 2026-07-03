@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         
         const tablesWithFee = tables.map(t => {
             const z = ubtZones.find((zone: any) => zone.name === t.section);
-            const fee = z?.serviceFee !== undefined ? Number(z.serviceFee) : 10;
+            const fee = z?.serviceFee !== undefined ? Number(z.serviceFee) : 0;
             const extraPriceType = z?.extraPriceType || "Qo'shimcha narx";
             const extraPriceValue = z?.extraPriceValue ? Number(z.extraPriceValue) : 0;
             let tableJson: any = null;
