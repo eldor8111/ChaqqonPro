@@ -16,16 +16,14 @@ const POS_BACKGROUNDS = [
     { id: "c1", value: "#0f172a", name: "To'q ko'k", type: "color" },
     { id: "c2", value: "#1c1917", name: "To'q jigarrang", type: "color" },
     { id: "c3", value: "#000000", name: "Qora", type: "color" },
-    { id: "i1", value: "https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=1920&auto=format&fit=crop", name: "Restoran 1", type: "image" },
-    { id: "i2", value: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1920&auto=format&fit=crop", name: "Restoran 2", type: "image" },
-    { id: "i3", value: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1920&auto=format&fit=crop", name: "Oshxona", type: "image" },
-    { id: "i4", value: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1920&auto=format&fit=crop", name: "Taom", type: "image" },
-    { id: "i5", value: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop", name: "Abstrakt 1", type: "image" },
-    { id: "i6", value: "https://images.unsplash.com/photo-1600565193334-c7746241b714?q=80&w=1920&auto=format&fit=crop", name: "Abstrakt 2", type: "image" },
-    { id: "i7", value: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1920&auto=format&fit=crop", name: "Arxitektura", type: "image" },
-    { id: "i8", value: "https://images.unsplash.com/photo-1505934333218-8fe9d9c878ee?q=80&w=1920&auto=format&fit=crop", name: "Kafe 1", type: "image" },
-    { id: "i9", value: "https://images.unsplash.com/photo-1525610553991-2bede1a236e2?q=80&w=1920&auto=format&fit=crop", name: "Kafe 2", type: "image" },
-    { id: "i10", value: "https://images.unsplash.com/photo-1495474472200-cce190af1d03?q=80&w=1920&auto=format&fit=crop", name: "Kofe", type: "image" },
+    { id: "i1", value: "/samarkand-bg.png", name: "Samarqand", type: "image" },
+    { id: "i2", value: "/eviko-bg.png", name: "EVIKO", type: "image" },
+    { id: "g1", value: "linear-gradient(to right, #4facfe 0%, #00f2fe 100%)", name: "Moviy", type: "gradient" },
+    { id: "g2", value: "linear-gradient(120deg, #f6d365 0%, #fda085 100%)", name: "Quyosh", type: "gradient" },
+    { id: "g3", value: "linear-gradient(to top, #30cfd0 0%, #330867 100%)", name: "Tungi osmon", type: "gradient" },
+    { id: "g4", value: "linear-gradient(to right, #434343 0%, black 100%)", name: "Qorong'u metall", type: "gradient" },
+    { id: "g5", value: "radial-gradient(circle at 10% 20%, rgb(0, 52, 89) 0%, rgb(0, 168, 232) 90%)", name: "Chuqur okean", type: "gradient" },
+    { id: "g6", value: "radial-gradient(circle at 50% 50%, rgb(255, 195, 113) 0%, rgb(255, 95, 109) 100%)", name: "Shaftoli", type: "gradient" }
 ];
 import { useStore, SmartTable } from "@/lib/store";
 import { PhoneInput } from "@/components/ui/PhoneInput";
@@ -2560,9 +2558,11 @@ export default function UbtPosPage() {
             className={`h-screen flex flex-col overflow-hidden select-none ${dark ? "dark" : ""} ${!posBg ? th.bg(dark) : (dark ? "text-slate-200" : "text-slate-800")}`}
             style={
                 posBg 
-                ? (posBg.startsWith("http") || posBg.startsWith("/") || posBg.startsWith("data:"))
-                    ? { backgroundImage: `url(${posBg})`, backgroundSize: "cover", backgroundPosition: "center" }
-                    : { backgroundColor: posBg, backgroundImage: "none" }
+                ? (posBg.includes("gradient"))
+                    ? { backgroundImage: posBg }
+                    : (posBg.startsWith("http") || posBg.startsWith("/") || posBg.startsWith("data:"))
+                        ? { backgroundImage: `url(${posBg})`, backgroundSize: "cover", backgroundPosition: "center" }
+                        : { backgroundColor: posBg, backgroundImage: "none" }
                 : {}
             }
         >
@@ -2760,7 +2760,11 @@ export default function UbtPosPage() {
                                                 onClick={() => changePosBg(bg.value)}
                                                 className={`relative w-full aspect-square rounded-lg overflow-hidden border-2 transition-all hover:scale-105 active:scale-95 ${posBg === bg.value ? "border-amber-400 shadow-md" : "border-transparent"}`}
                                                 title={bg.name}
-                                                style={bg.type === "color" && bg.value ? { backgroundColor: bg.value } : {}}
+                                                style={
+                                                    bg.type === "color" && bg.value ? { backgroundColor: bg.value } 
+                                                    : bg.type === "gradient" ? { backgroundImage: bg.value }
+                                                    : {}
+                                                }
                                             >
                                                 {bg.type === "color" && !bg.value && (
                                                     <div className={`w-full h-full flex items-center justify-center ${dark ? "bg-slate-900" : "bg-slate-100"}`}>
