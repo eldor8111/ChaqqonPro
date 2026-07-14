@@ -195,7 +195,7 @@ function PayModal({ total, onPay, onClose, loading, servicePct = 0 }: { total: n
 
     useEffect(() => {
         if (method === "qarz") {
-            const token = store.kassirSession?.token || store.deviceSession?.token;
+            const token = useStore.getState().kassirSession?.token || useStore.getState().deviceSession?.token;
             const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
             fetch("/api/customers", { headers }).then(r => r.json()).then(d => setCustomers(d.customers || [])).catch(() => {});
         }
@@ -205,8 +205,11 @@ function PayModal({ total, onPay, onClose, loading, servicePct = 0 }: { total: n
         if (!newCustName) return;
         setLoadingCust(true);
         try {
+            const token = useStore.getState().kassirSession?.token || useStore.getState().deviceSession?.token;
+            const headers: HeadersInit = { "Content-Type": "application/json" };
+            if (token) headers["Authorization"] = `Bearer ${token}`;
             const r = await fetch("/api/customers", {
-                method: "POST", headers: {"Content-Type": "application/json"},
+                method: "POST", headers,
                 body: JSON.stringify({ name: newCustName, phone: newCustPhone })
             });
             const d = await r.json();
