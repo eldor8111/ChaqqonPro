@@ -5,11 +5,26 @@ import { prisma } from "@/lib/backend/db";
 
 export async function GET(_request: NextRequest) {
     try {
-        const session = await getSession();
-        if (!session?.tenantId) {
+        let tenantId = null;
+        try {
+            const session = await getSession();
+            if (session?.tenantId) tenantId = session.tenantId;
+        } catch {}
+
+        if (!tenantId) {
+            const authHeader = _request.headers.get("Authorization");
+            if (authHeader?.startsWith("Bearer ")) {
+                try {
+                    const { jwtVerify } = require("jose");
+                    const { payload } = await jwtVerify(authHeader.slice(7), new TextEncoder().encode(process.env.JWT_SECRET || "fallback"));
+                    if (payload.tenantId) tenantId = payload.tenantId as string;
+                } catch {}
+            }
+        }
+
+        if (!tenantId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
-        const tenantId = session.tenantId;
 
         const customers = await prisma.customer.findMany({
             where: { tenantId },

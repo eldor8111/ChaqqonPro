@@ -195,7 +195,9 @@ function PayModal({ total, onPay, onClose, loading, servicePct = 0 }: { total: n
 
     useEffect(() => {
         if (method === "qarz") {
-            fetch("/api/customers").then(r => r.json()).then(d => setCustomers(d.customers || [])).catch(() => {});
+            const token = store.kassirSession?.token || store.deviceSession?.token;
+            const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
+            fetch("/api/customers", { headers }).then(r => r.json()).then(d => setCustomers(d.customers || [])).catch(() => {});
         }
     }, [method]);
 
@@ -369,7 +371,11 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
         }
         // Eski kesh bo'lsa ham darhol ko'rsatamiz (oflayn holatda menyu yo'qolmasin)
         if (_menuCache) { setMenu(_menuCache.items); setCats_(_menuCache.cats); }
-        fetch("/api/smart/menu").then(r => r.json()).then(d => {
+        
+        const token = useStore.getState().kassirSession?.token || useStore.getState().deviceSession?.token;
+        const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
+
+        fetch("/api/smart/menu", { headers }).then(r => r.json()).then(d => {
             const items = d.items ?? []; const cats = d.categories ?? [];
             // Himoya: agar API bo'sh massiv qaytarsa (auth xatosi, server restart),
             // mavjud keshdan foydalanib turish — taomlar o'chib ketmasin
@@ -400,7 +406,10 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
     // ─── Fon polling: har 30 soniyada menu yangilanadi (admin paneldan qo'shilgan taomlar avtomatik ko'rinadi) ─────
     useEffect(() => {
         const fetchMenu = () => {
-            fetch("/api/smart/menu").then(r => r.json()).then(d => {
+            const token = useStore.getState().kassirSession?.token || useStore.getState().deviceSession?.token;
+            const headers: HeadersInit = token ? { "Authorization": `Bearer ${token}` } : {};
+
+            fetch("/api/smart/menu", { headers }).then(r => r.json()).then(d => {
                 const items = d.items ?? []; const cats = d.categories ?? [];
                 // Himoya: agar API bo'sh massiv qaytarsa (token muddati tugagan, server restart)
                 // — mavjud taomlarni O'CHIRMAYDI, balki eski ma'lumotni saqlab qoladi
