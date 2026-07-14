@@ -600,7 +600,7 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
                 <div className="relative">
                     <Search size={18} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${dark ? 'text-slate-500' : 'text-slate-400'}`} />
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t("search", lang)}
-                        className={`w-full pl-10 pr-4 py-3 rounded-2xl text-sm font-medium transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${th.input(dark)}`} />
+                        className={`w-full pl-10 pr-4 py-3 rounded-full text-sm font-medium transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500/30 ${dark ? "bg-slate-800/50 border-slate-700/50 shadow-inner" : "bg-slate-50 border-slate-200/60 shadow-inner"} ${th.input(dark)}`} />
                 </div>
             </div>
             <div className="flex gap-2.5 px-4 pb-3 overflow-x-auto custom-scrollbar flex-shrink-0">
@@ -608,8 +608,8 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
                     const isActive = cat === c;
                     return (
                         <button key={c} onClick={() => setCat(c)}
-                            className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm
-                                ${isActive ? "bg-blue-600 text-white shadow-blue-200" : (dark ? "bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-500" : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300")}`}>
+                            className={`flex-shrink-0 px-5 py-2.5 rounded-full text-[13px] font-bold transition-all
+                                ${isActive ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/30 border-transparent" : (dark ? "bg-slate-800/80 text-slate-300 border border-slate-700 hover:border-slate-500 hover:bg-slate-700" : "bg-white text-slate-600 border border-slate-200/80 hover:border-slate-300 hover:bg-slate-50 shadow-sm")}`}>
                             {c === "Barchasi" ? t("all", lang) : c}
                         </button>
                     );
@@ -636,13 +636,13 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
 
                             return (
                                 <button key={item.id} onClick={() => addItem(item)}
-                                    className={`relative flex flex-col p-3 rounded-2xl text-center items-center justify-between transition-all active:scale-[0.97] border group
-                                        ${dark ? "bg-slate-800 border-slate-700 hover:border-blue-500 shadow-sm" : "bg-white border-slate-200 hover:border-blue-400 shadow-sm hover:shadow-md"}
-                                        ${inCart ? (dark ? "border-blue-500 ring-1 ring-blue-500 bg-blue-900/20" : "border-blue-500 ring-1 ring-blue-500 bg-blue-50/50") : ""}
+                                    className={`relative flex flex-col p-2.5 rounded-3xl text-center items-center justify-between transition-all duration-300 active:scale-[0.97] border group overflow-hidden
+                                        ${dark ? "bg-slate-800/80 border-slate-700 hover:border-blue-500 shadow-sm hover:shadow-md" : "bg-white border-slate-100 hover:border-blue-400 shadow-sm hover:shadow-lg"}
+                                        ${inCart ? (dark ? "border-blue-500 ring-2 ring-blue-500/50 bg-blue-900/20" : "border-blue-500 ring-2 ring-blue-500/50 bg-blue-50/50") : ""}
                                         ${dimmed ? "opacity-50 grayscale" : ""}`}>
                                     
                                     {/* Image area — responsive, fills card top */}
-                                    <div className="w-full aspect-[4/3] rounded-xl overflow-hidden shrink-0 relative mb-2.5 group-hover:scale-[1.02] transition-transform duration-300 shadow-sm">
+                                    <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shrink-0 relative mb-3 group-hover:scale-[1.03] transition-transform duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
                                         {item.image ? (
                                             <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                                         ) : (
@@ -653,17 +653,19 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
                                     </div>
                                     
                                     {/* Text area */}
-                                    <div className="w-full min-w-0">
-                                        <p className={`font-bold text-xs leading-snug line-clamp-2 mb-1 ${dark ? "text-slate-200" : "text-slate-800"}`}>{item.name}</p>
-                                        <p className={`text-xs font-black ${dark ? "text-blue-400" : "text-blue-600"}`}>
-                                            {fmt(item.price)}
-                                            {isWt && <span className="text-[9px] text-slate-400 ml-1 font-bold uppercase">/{item.unit}</span>}
-                                        </p>
+                                    <div className="w-full min-w-0 pb-1">
+                                        <p className={`font-bold text-[13px] leading-tight line-clamp-2 mb-2 ${dark ? "text-slate-200" : "text-slate-700"}`}>{item.name}</p>
+                                        <div className={`inline-block px-2.5 py-1 rounded-lg ${dark ? "bg-slate-900/50" : "bg-slate-50"} border ${dark ? "border-slate-700/50" : "border-slate-100"}`}>
+                                            <p className={`text-[13px] font-black tracking-tight ${dark ? "text-blue-400" : "text-blue-600"}`}>
+                                                {fmt(item.price)}
+                                                {isWt && <span className={`text-[9px] ml-1 font-bold uppercase ${dark ? "text-slate-500" : "text-slate-400"}`}>/{item.unit}</span>}
+                                            </p>
+                                        </div>
                                     </div>
 
                                     {/* Qty badge */}
                                     {inCart && (
-                                        <div className="absolute top-2 right-2 min-w-[22px] h-5 rounded-md bg-blue-600 text-white text-[11px] font-black flex items-center justify-center px-1.5 shadow-md">
+                                        <div className={`absolute top-2 right-2 min-w-[22px] h-6 rounded-full text-white text-[11px] font-black flex items-center justify-center px-2 shadow-lg ${dark ? "bg-blue-500 shadow-blue-900/40" : "bg-blue-600 shadow-blue-500/30"}`}>
                                             {inCart.qty}×
                                         </div>
                                     )}
@@ -1467,9 +1469,7 @@ export default function UbtPosPage() {
     const [transferPwError, setTransferPwError] = useState("");
     const [transferStep, setTransferStep] = useState<"auth" | "pick">("auth");
     
-    // ─── Tayyorlash vaqti (Preparation Time) state ─────────────────────────────
-    const [showPrepTimeModal, setShowPrepTimeModal] = useState(false);
-    const [prepTimeInput, setPrepTimeInput] = useState("");
+    // ─── Tayyorlash vaqti (Preparation Time) state (REMOVED) ─────────────────────────────
 
     useEffect(() => {
         if (!selTable) setIsSaboyMode(false);
@@ -2767,23 +2767,23 @@ export default function UbtPosPage() {
 
 
                                     {/* RIGHT: Receipt + action buttons */}
-                                    <div className={`w-full lg:w-[340px] h-auto lg:h-full shrink-0 flex flex-col lg:border-l z-20 transition-all duration-300 ${dark ? "bg-[#0a101d] border-white/5" : "bg-sky-50 border-sky-100"}`}>
+                                    <div className={`w-full lg:w-[340px] h-auto lg:h-full shrink-0 flex flex-col lg:border-l z-20 transition-all duration-300 ${dark ? "bg-[#080f1c] border-white/[0.06]" : "bg-white border-slate-100"}`}>
 
-                                        {/* Table info */}
-                                        <div className={`px-3 py-2 border-b shrink-0 flex items-center justify-between ${dark ? "border-white/5" : "border-slate-200"}`}>
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-8 h-8 rounded flex items-center justify-center shrink-0 border bg-sky-600 border-sky-700 text-white">
-                                                    <Receipt size={14} />
+                                        {/* Table info header — premium minimal */}
+                                        <div className={`px-4 py-3 border-b shrink-0 flex items-center justify-between ${dark ? "border-white/[0.06]" : "border-slate-100"}`}>
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${dark ? "bg-sky-500/15 text-sky-400" : "bg-sky-50 text-sky-600"}`}>
+                                                    <Receipt size={16} strokeWidth={2} />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className={`font-black text-sm leading-none tracking-tight ${dark ? "text-slate-100" : "text-slate-800"}`}>{selTable.name}</p>
-                                                    <p className={`text-[9px] mt-0.5 font-bold uppercase tracking-widest ${dark ? "text-slate-400" : "text-slate-500"}`}>{selTable.zone}</p>
+                                                    <p className={`font-black text-[15px] leading-none tracking-tight ${dark ? "text-white" : "text-slate-900"}`}>{selTable.name}</p>
+                                                    <p className={`text-[10px] mt-0.5 font-semibold tracking-widest uppercase ${dark ? "text-slate-500" : "text-slate-400"}`}>{selTable.zone}</p>
                                                 </div>
                                             </div>
                                             {selTable.amount > 0 && (
-                                                <div className="flex flex-col items-end">
-                                                    <span className={`text-[9px] font-bold uppercase tracking-widest leading-none mb-0.5 ${dark ? "text-emerald-500/80" : "text-emerald-600/80"}`}>Stol Jami</span>
-                                                    <span className={`text-xs font-black tracking-tight ${dark ? "text-emerald-400" : "text-emerald-600"}`}>{fmt(selTable.amount)}</span>
+                                                <div className={`flex flex-col items-end px-2.5 py-1.5 rounded-xl ${dark ? "bg-emerald-900/20" : "bg-emerald-50"}`}>
+                                                    <span className={`text-[9px] font-bold uppercase tracking-widest leading-none mb-0.5 ${dark ? "text-emerald-500" : "text-emerald-600"}`}>Jami</span>
+                                                    <span className={`text-sm font-black tracking-tight ${dark ? "text-emerald-400" : "text-emerald-600"}`}>{fmt(selTable.amount)}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -2831,83 +2831,83 @@ export default function UbtPosPage() {
                                                     );
                                                 }
                                                 return (
-                                                    <div className="px-3 pt-4 pb-2">
-                                                        <p className={`text-[10px] font-black uppercase tracking-widest text-center mb-3 opacity-60 ${dark ? "text-slate-400" : "text-slate-500"}`}>— Buyurtma Tarkibi —</p>
-                                                        <div className={`flex flex-col border ${dark ? "bg-slate-900 border-slate-700" : "bg-[#fdfbf7] border-slate-200 shadow-sm"}`}>
-                                                            {activeOrders.map((c: any, i: number) => c?.item && (
-                                                                <div key={i} className={`flex flex-col px-3 py-2.5 border-b border-dashed last:border-0 ${dark ? "border-slate-700 hover:bg-slate-800" : "border-slate-300 hover:bg-slate-100"}`}>
-                                                                    <div className="flex justify-between items-start mb-1.5">
-                                                                        <p className={`text-[13px] font-bold leading-snug flex-1 pr-2 ${dark ? "text-slate-200" : "text-slate-800"}`}>
-                                                                            {c.isSaboy && <span className="mr-1 text-amber-500 font-bold">📦</span>}
-                                                                            {c.item.name}
-                                                                        </p>
-                                                                        <p className={`text-[13px] font-black shrink-0 ${dark ? "text-emerald-400" : "text-emerald-700"}`}>{fmt(c.item.price * c.qty)}</p>
-                                                                    </div>
-                                                                    <div className="flex items-center justify-between mt-1">
-                                                                        <p className={`text-[11px] font-semibold tracking-wide ${dark ? "text-slate-400" : "text-slate-500"}`}>
-                                                                            {c.qty} {c.item.unit || "ta"} × {fmt(c.item.price)}
-                                                                        </p>
-                                                                        <div className="flex items-center gap-1.5">
-                                                                            <button onClick={() => handleUpdateTableItem(c, isWeightUnit(c.item?.unit) ? -0.1 : -1)} className={`w-7 h-7 rounded flex items-center justify-center transition-colors shadow-sm ${dark ? "bg-slate-800 text-red-400 hover:bg-slate-700 border border-slate-700" : "bg-white text-red-500 hover:bg-red-50 border border-slate-200"}`}>
-                                                                                <Minus size={14} strokeWidth={3} />
-                                                                            </button>
-                                                                            <button onClick={() => handleUpdateTableItem(c, isWeightUnit(c.item?.unit) ? 0.1 : 1)} className={`w-7 h-7 rounded flex items-center justify-center transition-colors shadow-sm ${dark ? "bg-slate-800 text-sky-400 hover:bg-slate-700 border border-slate-700" : "bg-white text-sky-600 hover:bg-sky-50 border border-slate-200"}`}>
-                                                                                <Plus size={14} strokeWidth={3} />
-                                                                            </button>
-                                                                        </div>
-                                                                    </div>
+                                                    <div className="px-3 pt-3 pb-2 space-y-1">
+                                                        {activeOrders.map((c: any, i: number) => c?.item && (
+                                                            <div key={i} className={`flex items-center gap-2 px-3 py-2.5 rounded-2xl transition-colors group ${dark ? "hover:bg-white/[0.04]" : "hover:bg-slate-50"}`}>
+                                                                {/* Item name & meta */}
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className={`text-[13px] font-bold leading-tight truncate ${dark ? "text-slate-200" : "text-slate-800"}`}>
+                                                                        {c.isSaboy && <span className="mr-1 text-amber-500">📦</span>}
+                                                                        {c.item.name}
+                                                                    </p>
+                                                                    <p className={`text-[11px] font-medium mt-0.5 ${dark ? "text-slate-500" : "text-slate-400"}`}>
+                                                                        {c.qty} {c.item.unit || "ta"} × {fmt(c.item.price)}
+                                                                    </p>
                                                                 </div>
-                                                            ))}
-                                                        </div>
+                                                                {/* Controls */}
+                                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <button onClick={() => handleUpdateTableItem(c, isWeightUnit(c.item?.unit) ? -0.1 : -1)} className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${dark ? "bg-slate-700 text-red-400 hover:bg-red-900/40" : "bg-red-50 text-red-500 hover:bg-red-100"}`}>
+                                                                        <Minus size={11} strokeWidth={3} />
+                                                                    </button>
+                                                                    <button onClick={() => handleUpdateTableItem(c, isWeightUnit(c.item?.unit) ? 0.1 : 1)} className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${dark ? "bg-slate-700 text-sky-400 hover:bg-sky-900/40" : "bg-sky-50 text-sky-500 hover:bg-sky-100"}`}>
+                                                                        <Plus size={11} strokeWidth={3} />
+                                                                    </button>
+                                                                </div>
+                                                                {/* Price */}
+                                                                <p className={`text-[13px] font-black shrink-0 tabular-nums ${dark ? "text-emerald-400" : "text-emerald-700"}`}>{fmt(c.item.price * c.qty)}</p>
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 );
                                             })()}
                                                     </div>
 
                                                     {/* Total Area */}
-                                                    <div className={`mt-2 mb-2 mx-3 flex flex-col gap-2`}>
+                                                    <div className="px-3 py-3">
                                                         {((selTable as any).extraPriceType === "Soatlik narx") && (
-                                                            <div className={`p-2.5 rounded-md flex items-center justify-between border ${dark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"}`}>
-                                                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 z-10 flex items-center gap-1">
+                                                            <div className={`flex items-center justify-between px-3 py-2.5 mb-2 rounded-2xl border ${dark ? "bg-amber-950/30 border-amber-900/40" : "bg-amber-50 border-amber-100"}`}>
+                                                                <span className={`text-[11px] font-bold flex items-center gap-1.5 ${dark ? "text-amber-400" : "text-amber-700"}`}>
                                                                     <Clock size={12} /> Vaqt:
                                                                 </span>
                                                                 {selTable.since ? (
-                                                                    <span className={`text-[13px] font-black tracking-tighter z-10 ${dark ? "text-amber-400" : "text-amber-600"}`}>
+                                                                    <span className={`text-[14px] font-black tabular-nums ${dark ? "text-amber-300" : "text-amber-700"}`}>
                                                                         <LiveTimerDisplay since={selTable.since} />
                                                                     </span>
                                                                 ) : (
-                                                                    <button 
-                                                                        onClick={handleStartTimer} 
+                                                                    <button
+                                                                        onClick={handleStartTimer}
                                                                         disabled={timerStarting}
-                                                                        className={`px-3 py-1 rounded bg-amber-500 text-white text-xs font-bold shadow-sm hover:bg-amber-600 active:scale-95 transition-all w-24 h-6 flex items-center justify-center`}
+                                                                        className="px-3 py-1.5 rounded-xl bg-amber-500 text-white text-xs font-bold hover:bg-amber-600 active:scale-95 transition-all flex items-center justify-center gap-1"
                                                                     >
-                                                                        {timerStarting ? <Loader size={14} className="animate-spin" /> : "Vaqtni boshlash"}
+                                                                        {timerStarting ? <Loader size={13} className="animate-spin" /> : "Boshlash"}
                                                                     </button>
                                                                 )}
                                                             </div>
                                                         )}
-                                                        <div className={`p-2.5 rounded-md flex items-center justify-between border ${dark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"}`}>
-                                                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 z-10">Stol Jami:</span>
-                                                            <span className={`text-[15px] font-black tabular-nums tracking-tighter z-10 ${dark ? "text-emerald-400" : "text-emerald-600"}`}>
+                                                        <div className={`flex items-center justify-between px-3 py-3 rounded-2xl ${dark ? "bg-emerald-950/30 border border-emerald-900/30" : "bg-emerald-50 border border-emerald-100"}`}>
+                                                            <span className={`text-[11px] font-bold uppercase tracking-wider ${dark ? "text-emerald-500" : "text-emerald-700"}`}>Stol Jami:</span>
+                                                            <span className={`text-[18px] font-black tabular-nums ${dark ? "text-emerald-300" : "text-emerald-700"}`}>
                                                                 {(() => {
                                                                     const subtotal = (tableOrders[selTable.id] || []).reduce((s: number, c: any) => s + c.item.price * c.qty, 0);
                                                                     const isTimeBased = (selTable as any).extraPriceType === "Soatlik narx";
                                                                     const timeFee = isTimeBased ? calcTimeFee(selTable.since, (selTable as any).extraPriceValue ?? 0) : 0;
                                                                     return fmt(subtotal + timeFee);
-                                                                })()} 
-                                                                <span className="text-[10px] text-emerald-600/70 uppercase font-semibold tracking-widest ml-0.5">UZS</span>
+                                                                })()}
+                                                                <span className={`text-[10px] font-semibold ml-1 ${dark ? "text-emerald-600" : "text-emerald-500"}`}>UZS</span>
                                                             </span>
                                                         </div>
                                                     </div>
 
-                                        {/* Action buttons footer */}
-                                        <div className={`shrink-0 border-t p-4 flex flex-col gap-3 ${dark ? "border-white/5 bg-[#0F172A]" : "border-slate-200 bg-white"}`}>
-                                            <div className="grid grid-cols-3 gap-2 text-center">
+                                        {/* Action buttons footer — clean premium hierarchy */}
+                                        <div className={`shrink-0 border-t px-3 pt-3 pb-4 flex flex-col gap-2.5 ${dark ? "border-white/[0.06] bg-[#080f1c]" : "border-slate-100 bg-white"}`}>
+
+                                            {/* Row 1: CHEK (secondary) + TASDIQLASH (primary) */}
+                                            <div className="grid grid-cols-2 gap-2">
                                                 <button
                                                     onClick={async () => { await loadAvailablePrinters(); await handlePrintReceipt(); }}
-                                                    className={`flex items-center justify-center gap-1 min-h-[36px] rounded transition-all border hover:shadow-sm active:scale-[0.98] ${dark ? "bg-white/5 border-transparent hover:bg-white/10" : "bg-white border-slate-200 hover:bg-slate-50"}`}>
-                                                    <Receipt size={14} className={dark ? "text-slate-300" : "text-slate-600"} strokeWidth={2.5} />
-                                                    <p className={`text-[9px] uppercase font-bold tracking-widest leading-none ${dark ? "text-slate-400" : "text-slate-500"}`}>Chek</p>
+                                                    className={`flex items-center justify-center gap-2 h-11 rounded-2xl transition-all active:scale-[0.97] border font-bold text-[11px] uppercase tracking-wide ${dark ? "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"}`}>
+                                                    <Receipt size={15} strokeWidth={2} />
+                                                    Chek
                                                 </button>
 
                                                 <button
@@ -2919,14 +2919,8 @@ export default function UbtPosPage() {
                                                         if (activeOrders.length === 0) return;
                                                         setTableConfirming(true);
                                                         try {
-                                                            // Oshxona chekini SERVER chiqaradi — ishonchli DB holatidan
-                                                            // chiqarilmagan taomlarni hisoblab chop etadi. Frontend holatiga
-                                                            // (local state, printedQty, reload race) UMUMAN bog'liq emas.
                                                             const token = store.kassirSession?.token || store.deviceSession?.token;
                                                             const authHdr: Record<string, string> = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
-                                                            // Monoblok (Electron) bo'lsa: server DB hisobini saqlaydi-yu chekni BIZ lokal
-                                                            // serverdan DARHOL chiqaramiz (VPS→agent round-trip yo'q). Planshetda bridge yo'q →
-                                                            // clientPrint=false → server avvalgidek agent orqali chop etadi.
                                                             const hasBridge = typeof window !== "undefined" && !!(window as any).ipcAPI?.localPrint;
                                                             const r = await fetch("/api/smart/print-kitchen", {
                                                                 method: "POST", headers: authHdr,
@@ -2935,12 +2929,11 @@ export default function UbtPosPage() {
                                                             const d = await r.json().catch(() => ({}));
                                                             if (!r.ok || d.success === false) {
                                                                 const msg = (d.failed && d.failed.length) ? d.failed.join("\n") : (d.error || `HTTP ${r.status}`);
-                                                                alert("⚠️ Oshxona cheki chiqmadi:\n\n" + msg + "\n\nPrinter yoniq va ulanganini tekshiring. TASDIQLASH ni qayta bosing.");
+                                                                alert("⚠️ Oshxona cheki chiqmadi:\n\n" + msg + "\n\nPrinter yoniq va ulanganini tekshiring.");
                                                             } else if (hasBridge && Array.isArray(d.jobs)) {
-                                                                // Lokal (bridge) orqali darhol; bridge tushsa sendPrintJob VPS'ga fallback qiladi
                                                                 for (const job of d.jobs) {
                                                                     const pr = await sendPrintJob(job, authHdr);
-                                                                    if (!pr.ok) alert(`⚠️ Oshxona cheki chiqmadi (${job.printerIp}). Printer yoniq ekanligini tekshiring.`);
+                                                                    if (!pr.ok) alert(`⚠️ Oshxona cheki chiqmadi (${job.printerIp}).`);
                                                                 }
                                                             }
                                                         } catch (e: any) {
@@ -2952,32 +2945,33 @@ export default function UbtPosPage() {
                                                             setSelTable(null);
                                                         }
                                                     }}
-                                                    className={`flex items-center justify-center gap-1 min-h-[36px] rounded transition-all border hover:shadow-sm active:scale-[0.98] ${tableConfirmed ? "bg-emerald-600 border-emerald-700 text-white" : dark ? "bg-blue-600 border-blue-700 text-white hover:bg-blue-500" : "bg-blue-600 border-blue-700 text-white hover:bg-blue-700"}`}>
-                                                    <Check size={14} strokeWidth={2.5} />
-                                                    <p className="text-[9px] uppercase font-bold tracking-widest leading-none text-white">{tableConfirmed ? "Yuborildi" : "Tasdiqlash"}</p>
-                                                </button>
-
-                                                <button onClick={() => { setPrepTimeInput(""); setShowPrepTimeModal(true); }} className={`flex items-center justify-center gap-1 min-h-[36px] rounded transition-all border hover:shadow-sm active:scale-[0.98] ${dark ? "bg-white/5 border-transparent hover:bg-white/10" : "bg-slate-50 border-slate-200 hover:bg-slate-100"}`}>
-                                                    <Clock size={14} className={dark ? "text-amber-400" : "text-amber-600"} strokeWidth={2.5} />
-                                                    <p className={`text-[9px] uppercase font-black tracking-widest leading-none ${dark ? "text-amber-500" : "text-amber-700"}`}>
-                                                        {selTable.since ? (selTable.since.includes("T") || selTable.since.includes("-") ? new Date(selTable.since).toLocaleTimeString("uz-UZ",{hour:"2-digit",minute:"2-digit"}) : selTable.since) : "Vaqt"}
-                                                    </p>
+                                                    className={`flex items-center justify-center gap-2 h-11 rounded-2xl transition-all active:scale-[0.97] border font-bold text-[11px] uppercase tracking-wide ${
+                                                        tableConfirmed
+                                                            ? "bg-emerald-500 border-emerald-600 text-white shadow-md shadow-emerald-500/30"
+                                                            : dark
+                                                                ? "bg-indigo-600 border-indigo-700 text-white hover:bg-indigo-500"
+                                                                : "bg-indigo-600 border-indigo-700 text-white hover:bg-indigo-700"
+                                                    }`}>
+                                                    {tableConfirming ? <Loader size={15} className="animate-spin" /> : <Check size={15} strokeWidth={2.5} />}
+                                                    {tableConfirmed ? "Yuborildi" : "Tasdiqlash"}
                                                 </button>
                                             </div>
 
-                                            <div className="grid grid-cols-2 gap-1.5 mt-2">
-                                                <div className={`flex items-center justify-between px-2 py-1.5 rounded border transition-all ${isSaboyMode ? "bg-amber-500 text-white border-amber-600 shadow-sm shadow-amber-500/30" : (dark ? "bg-white/5 border-white/10 text-slate-300" : "bg-white border-slate-200 text-slate-600")}`}>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Package size={14} className={isSaboyMode ? "text-white" : (dark ? "text-slate-400" : "text-slate-500")} />
-                                                        <span className={`text-[10px] font-bold ${isSaboyMode ? "text-white" : ""}`}>SABOY</span>
-                                                    </div>
-                                                    <label className="relative inline-flex items-center cursor-pointer scale-75 origin-right">
-                                                        <input type="checkbox" className="sr-only peer" checked={isSaboyMode} onChange={e => setIsSaboyMode(e.target.checked)} />
-                                                        <div className={`w-9 h-5 outline-none rounded-full peer peer-checked:after:translate-x-[16px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all ${isSaboyMode ? 'bg-amber-400' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
-                                                    </label>
-                                                </div>
+                                            {/* Row 2: SABOY toggle + ALMASHTIRISH */}
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <button
+                                                    onClick={() => setIsSaboyMode(v => !v)}
+                                                    className={`flex items-center justify-center gap-2 h-10 rounded-2xl transition-all active:scale-[0.97] border font-bold text-[11px] uppercase tracking-wide ${
+                                                        isSaboyMode
+                                                            ? "bg-amber-500 border-amber-600 text-white shadow-sm shadow-amber-500/30"
+                                                            : dark
+                                                                ? "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10"
+                                                                : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
+                                                    }`}>
+                                                    <Package size={14} strokeWidth={2} />
+                                                    Saboy {isSaboyMode && "✓"}
+                                                </button>
 
-                                                {/* Stol Almashtirish tugmasi */}
                                                 <button
                                                     onClick={() => {
                                                         setTransferPwInput("");
@@ -2985,22 +2979,21 @@ export default function UbtPosPage() {
                                                         setTransferStep("auth");
                                                         setShowTransferModal(true);
                                                     }}
-                                                    className={`w-full rounded font-bold text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 transition-all border active:scale-[0.99] ${
+                                                    className={`flex items-center justify-center gap-2 h-10 rounded-2xl transition-all active:scale-[0.97] border font-bold text-[11px] uppercase tracking-wide ${
                                                         dark
-                                                            ? "bg-indigo-900/40 text-indigo-300 border-indigo-800/60 hover:bg-indigo-800/60"
-                                                            : "bg-indigo-50 text-indigo-700 border-indigo-100 hover:bg-indigo-100"
-                                                    }`}
-                                                >
-                                                    ↔ ALMASHTIRISH
+                                                            ? "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10"
+                                                            : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
+                                                    }`}>
+                                                    <span className="text-sm">⇔</span> Almash.
                                                 </button>
                                             </div>
 
+                                            {/* Row 3: KASSAGA TO'LOV — dominant CTA */}
                                             {hasPaymentPerm && (
                                                 <button
                                                     onClick={() => setShowTablePay(true)}
-                                                    className="w-full mt-2 py-2.5 rounded font-bold text-xs uppercase tracking-wider text-white flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 transition-all border border-transparent shadow-sm active:scale-[0.99]"
-                                                    >
-                                                    <CreditCard size={16} /> Kassaga To'lov
+                                                    className="w-full h-13 py-3.5 rounded-2xl font-black text-sm uppercase tracking-wider text-white flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 transition-all shadow-lg shadow-emerald-500/25 active:scale-[0.98] border border-emerald-600/50">
+                                                    <CreditCard size={17} strokeWidth={2} /> Kassaga To‘lov
                                                 </button>
                                             )}
 
@@ -3147,104 +3140,6 @@ export default function UbtPosPage() {
                                                     loading={tablePayLoading}
                                                     servicePct={selTable.serviceFee ?? 0}
                                                 />
-                                            )}
-
-                                            {/* ─── Tayyorlash Vaqti Modal ─── */}
-                                            {showPrepTimeModal && (
-                                                <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowPrepTimeModal(false)}>
-                                                    <div className={`w-full max-w-sm rounded-2xl shadow-2xl border overflow-hidden ${dark ? "bg-[#0F172A] border-white/10" : "bg-white border-slate-100"}`} onClick={e => e.stopPropagation()}>
-                                                        {/* Modal header */}
-                                                        <div className="bg-amber-500 px-5 py-4 flex items-center justify-between">
-                                                            <div>
-                                                                <p className="text-white font-black text-base leading-none flex items-center gap-2">⏱️ Tayyorlash Vaqti</p>
-                                                                <p className="text-amber-100 text-xs mt-1 font-semibold">{selTable?.name} — {activeShot}-Chek</p>
-                                                            </div>
-                                                            <button onClick={() => setShowPrepTimeModal(false)} className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors"><X size={16} /></button>
-                                                        </div>
-
-                                                        <div className="p-5 space-y-4">
-                                                            <p className={`text-xs font-semibold ${dark ? "text-slate-400" : "text-slate-500"}`}>
-                                                                Mijoz zakazini qachon tayyor qilishini belgilang. Belgilangan vaqtdan <strong className="text-amber-500">10 daqiqa oldin</strong> oshxonaga avtomatik chek yuboriladi.
-                                                            </p>
-
-                                                            {/* Quick presets */}
-                                                            <div>
-                                                                <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${dark ? "text-slate-500" : "text-slate-400"}`}>Tez tanlash</p>
-                                                                <div className="grid grid-cols-4 gap-2">
-                                                                    {[15, 30, 45, 60].map(min => {
-                                                                        const t = new Date(Date.now() + min * 60000);
-                                                                        const tStr = `${String(t.getHours()).padStart(2,"0")}:${String(t.getMinutes()).padStart(2,"0")}`;
-                                                                        return (
-                                                                            <button key={min} onClick={() => setPrepTimeInput(tStr)}
-                                                                                className={`py-2.5 rounded-xl border-2 text-center transition-all ${prepTimeInput === tStr ? "border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : (dark ? "border-slate-700 text-slate-300 hover:border-amber-500/50" : "border-slate-200 text-slate-600 hover:border-amber-300")}`}>
-                                                                                <p className="text-sm font-black">{min}</p>
-                                                                                <p className="text-[9px] font-semibold text-slate-400">daqiqa</p>
-                                                                            </button>
-                                                                        );
-                                                                    })}
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Manual time input */}
-                                                            <div>
-                                                                <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${dark ? "text-slate-500" : "text-slate-400"}`}>Aniq vaqt kiriting</p>
-                                                                <input
-                                                                    type="time"
-                                                                    value={prepTimeInput}
-                                                                    onChange={e => setPrepTimeInput(e.target.value)}
-                                                                    className={`w-full border-2 rounded-xl px-4 py-3 text-2xl font-bold text-center focus:outline-none transition-colors ${dark ? "bg-slate-800 border-slate-700 text-slate-100 focus:border-amber-500" : "border-slate-200 text-slate-800 focus:border-amber-400"}`}
-                                                                />
-                                                            </div>
-
-                                                            {prepTimeInput && (
-                                                                <div className={`p-3 rounded-xl border text-center ${dark ? "bg-amber-900/20 border-amber-800/50" : "bg-amber-50 border-amber-200"}`}>
-                                                                    <p className={`text-xs font-semibold ${dark ? "text-amber-400" : "text-amber-700"}`}>
-                                                                        🍳 Oshxonaga chek <strong>{(() => { const [h,m] = prepTimeInput.split(":").map(Number); const d = new Date(); d.setHours(h, m-10, 0, 0); if(d < new Date()) d.setDate(d.getDate()+1); return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; })()}</strong> da yuboriladi
-                                                                    </p>
-                                                                    <p className={`text-[10px] mt-0.5 ${dark ? "text-amber-500/70" : "text-amber-600/70"}`}>Tayyor bo'lish vaqti: <strong>{prepTimeInput}</strong></p>
-                                                                </div>
-                                                            )}
-
-                                                            <div className="flex gap-2">
-                                                                <button onClick={() => setShowPrepTimeModal(false)}
-                                                                    className={`flex-1 py-3 rounded-xl font-bold text-sm border transition-all ${dark ? "border-white/10 text-slate-400 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-50"}`}>
-                                                                    Bekor qilish
-                                                                </button>
-                                                                <button
-                                                                    disabled={!prepTimeInput}
-                                                                    onClick={() => {
-                                                                        if (!prepTimeInput || !selTable) return;
-                                                                        const [h, m] = prepTimeInput.split(":").map(Number);
-                                                                        const fireAt = new Date();
-                                                                        fireAt.setHours(h, m - 10, 0, 0);
-                                                                        if (fireAt < new Date()) fireAt.setDate(fireAt.getDate() + 1);
-                                                                        const msUntil = fireAt.getTime() - Date.now();
-                                                                        const allOrders = tableOrders[selTable.id] || [];
-                                                                        const ordersToSend = allOrders.filter((c: any) => (c.shotId || 1) === activeShot);
-                                                                        const capturedTable = { ...selTable };
-                                                                        const capturedActiveShot = activeShot;
-                                                                        setTimeout(() => {
-                                                                            const now2 = new Date();
-                                                                            const timeStr2 = `${String(now2.getHours()).padStart(2,"0")}:${String(now2.getMinutes()).padStart(2,"0")}`;
-                                                                            const groups: Record<string, any[]> = {};
-                                                                            ordersToSend.forEach((c: any) => {
-                                                                                const ip = c.item?.printerIp;
-                                                                                if (ip) { if (!groups[ip]) groups[ip] = []; groups[ip].push(c); }
-                                                                            });
-                                                                            for (const [printerIp, items] of Object.entries(groups)) {
-                                                                                fetch("/api/smart/print", { method: "POST", headers: { "Content-Type": "application/json", ...(store.kassirSession?.token || store.deviceSession?.token ? { "Authorization": `Bearer ${store.kassirSession?.token || store.deviceSession?.token}` } : {}) }, body: JSON.stringify({ printerIp, port: 9100, receiptType: "kitchen", tableName: capturedTable.name, time: timeStr2, prepTime: prepTimeInput, items: items.filter((c: any) => c?.item).map((c: any) => ({ name: c.item.name, qty: c.qty, price: c.item.price, unit: c.item.unit })), total: items.reduce((s: number, c: any) => s + c.item.price * c.qty, 0) }) }).catch(() => {});
-                                                                            }
-                                                                        }, Math.max(0, msUntil));
-                                                                        alert(`✅ Chek ${fireAt.toLocaleTimeString("uz-UZ",{hour:"2-digit",minute:"2-digit"})} da oshxonaga avtomatik yuboriladi!\n(Tayyor bo'lish vaqti: ${prepTimeInput})`);
-                                                                        setShowPrepTimeModal(false);
-                                                                    }}
-                                                                    className={`flex-1 py-3 rounded-xl font-bold text-sm text-white transition-all ${!prepTimeInput ? "bg-slate-300 cursor-not-allowed" : "bg-amber-500 hover:bg-amber-600"}`}>
-                                                                    ⏱️ Belgilash
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                             )}
 
                                             {/* Printer Tanlash Modal */}
