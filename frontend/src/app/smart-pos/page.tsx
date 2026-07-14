@@ -330,7 +330,7 @@ const isWeightUnit = (unit?: string) => {
 // ─── Menu cache (module-level, survives tab switches, 30-min TTL) ────────────────
 let _menuCache: { items: MenuItem[]; cats: MenuCategory[]; cancelCode?: string; paymentMethods?: any[]; blockSell?: boolean } | null = null;
 let _menuCacheAt = 0;
-const MENU_CACHE_TTL = 30 * 60 * 1000; // 30 daqiqa — oflayn bo'lsa eski menyu ko'rinadi
+const MENU_CACHE_TTL = 30 * 1000; // 30 soniya — admin panelidan yangi taomlar tezda ko'rinadi
 
 // ─── Menu Panel ─────────────────────────────────────────────────────────────────
 function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instantAdd, servicePct = 0, tableName = "Buyurtma" }: {
@@ -392,6 +392,20 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
                 }
             }).catch(() => {});
         }
+    }, []);
+
+    // ─── Fon polling: har 30 soniyada menu yangilanadi (admin paneldan qo'shilgan taomlar avtomatik ko'rinadi) ─────
+    useEffect(() => {
+        const fetchMenu = () => {
+            fetch("/api/smart/menu").then(r => r.json()).then(d => {
+                const items = d.items ?? []; const cats = d.categories ?? [];
+                _menuCache = { items, cats, cancelCode: d.cancelCode || "", paymentMethods: d.paymentMethods || [], blockSell: !!d.blockSell };
+                _menuCacheAt = Date.now();
+                setMenu(items); setCats_(cats);
+            }).catch(() => {});
+        };
+        const interval = setInterval(fetchMenu, 30 * 1000); // har 30 soniyada
+        return () => clearInterval(interval);
     }, []);
     const [qtyPop, setQtyPop] = useState<{ item: MenuItem; qty: string } | null>(null);
     const [modPop, setModPop] = useState<{ item: MenuItem; selected: Record<string, { id: string, name: string }[]> } | null>(null);
