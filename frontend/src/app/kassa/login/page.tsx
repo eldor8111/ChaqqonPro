@@ -4,6 +4,7 @@ import { useState, FormEvent, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, UtensilsCrossed, User, Loader2, LogOut, ArrowRight, X, CreditCard, ChevronLeft } from "lucide-react";
 import { useStore } from "@/lib/store";
+import LockScreensaver from "@/app/smart-pos/LockScreensaver";
 
 interface StaffMember {
     id: string;
@@ -476,45 +477,14 @@ export default function KassirLoginPage() {
     // ─── DEVICE LOGGED IN — WELCOME SCREEN ────────────────────────────────────
     return (
         <div className="h-screen flex flex-col items-center justify-center relative overflow-hidden">
-            {BG}
-            <div className="relative z-10 flex flex-col items-center gap-8 animate-fade-in">
-                {/* Logo */}
-                <div className="text-center">
-                    <img src="/eviko-logo-white.svg" alt="EVIKO" className="w-[500px] max-w-[90vw] mx-auto drop-shadow-2xl" />
-                    <p className="text-white/60 font-medium mt-2 text-lg tracking-widest uppercase">{deviceSession.branch}</p>
-                    <p className="text-white/25 text-sm mt-1">{new Date().toLocaleDateString("uz-UZ", { weekday: "long", day: "numeric", month: "long" })}</p>
-                </div>
-
-                {/* Main button - liquid glass */}
-                <button onClick={openStaffList}
-                    className="group relative overflow-hidden px-16 py-5 rounded-full font-black text-xl text-white transition-all duration-300 active:scale-[0.96] hover:scale-[1.04]"
-                    style={{
-                        background: "linear-gradient(135deg, rgba(245,158,11,0.85) 0%, rgba(234,88,12,0.8) 100%)",
-                        backdropFilter: "blur(16px)",
-                        border: "1px solid rgba(255,255,255,0.35)",
-                        boxShadow: "0 12px 48px rgba(245,158,11,0.4), 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.4)",
-                        letterSpacing: "0.08em"
-                    }}
-                >
-                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-12 pointer-events-none" />
-                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-                    <span className="relative z-10 flex items-center gap-3">
-                        TIZIMGA KIRISH
-                        <ArrowRight size={22} className="group-hover:translate-x-1.5 transition-transform duration-300" />
-                    </span>
-                </button>
-
-                {/* Logout small button */}
-                <button onClick={() => setDeviceSession(null)}
-                    className="flex items-center gap-2 text-white/30 hover:text-white/60 transition-colors text-sm font-medium mt-2">
-                    <LogOut size={15} /> Apparatdan chiqish
-                </button>
-            </div>
-
-            {/* Time display */}
-            <div className="absolute bottom-8 right-8 text-white/20 font-mono text-2xl font-bold z-10">
-                {new Date().toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" })}
-            </div>
+            <LockScreensaver onUnlock={openStaffList} />
+            <button onClick={() => setDeviceSession(null)}
+                className="absolute top-6 right-6 z-[3001] flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 text-white/40 hover:text-white/80 hover:bg-white/10 transition-all border border-white/10 text-xs font-bold uppercase tracking-widest backdrop-blur-md shadow-lg"
+                title="Apparatdan chiqish"
+            >
+                <LogOut size={15} /> Chiqish
+            </button>
         </div>
     );
 }
+

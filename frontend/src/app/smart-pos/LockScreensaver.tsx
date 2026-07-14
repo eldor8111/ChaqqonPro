@@ -6,8 +6,17 @@
  */
 import { useEffect, useRef, useState } from "react";
 import {
-    UtensilsCrossed, Zap, BarChart3, Boxes, ShieldCheck, Printer, Hand,
+    UtensilsCrossed, Zap, BarChart3, Boxes, ShieldCheck, Printer, Hand, Image as ImageIcon, X
 } from "lucide-react";
+
+const BG_IMAGES = [
+    { id: "default", url: "", name: "Qop-qora" },
+    { id: "bg1", url: "https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=1920&auto=format&fit=crop", name: "Restoran 1" },
+    { id: "bg2", url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1920&auto=format&fit=crop", name: "Restoran 2" },
+    { id: "bg3", url: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1920&auto=format&fit=crop", name: "Oshxona" },
+    { id: "bg4", url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1920&auto=format&fit=crop", name: "Taom" },
+    { id: "bg5", url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop", name: "Abstrakt" },
+];
 
 const SLIDES = [
     {
@@ -58,6 +67,19 @@ export default function LockScreensaver({ onUnlock }: { onUnlock: () => void }) 
     const [slide, setSlide] = useState(0);
     const [now, setNow] = useState(() => new Date());
     const lastTapRef = useRef(0);
+    const [bgImage, setBgImage] = useState("");
+    const [showBgMenu, setShowBgMenu] = useState(false);
+
+    useEffect(() => {
+        const saved = localStorage.getItem("eviko_screensaver_bg");
+        if (saved) setBgImage(saved);
+    }, []);
+
+    const changeBg = (url: string) => {
+        setBgImage(url);
+        localStorage.setItem("eviko_screensaver_bg", url);
+        setShowBgMenu(false);
+    };
 
     useEffect(() => {
         const t = setInterval(() => setNow(new Date()), 1000);
@@ -83,9 +105,17 @@ export default function LockScreensaver({ onUnlock }: { onUnlock: () => void }) 
 
     return (
         <div
-            onPointerDown={handleTap}
-            className="fixed inset-0 z-[3000] overflow-hidden bg-slate-950 select-none cursor-pointer"
+            className="fixed inset-0 z-[3000] overflow-hidden bg-slate-950 select-none"
         >
+            {bgImage && (
+                <>
+                    <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000" style={{ backgroundImage: `url(${bgImage})` }} />
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[4px]" />
+                </>
+            )}
+
+            <div className="absolute inset-0 cursor-pointer" onPointerDown={handleTap} />
+
             {/* Yengil fon sharlari — blur filtri o'rniga radial-gradient (GPU tejamkor) */}
             <div className="ss-orb ss-orb-1" style={{ background: `radial-gradient(circle, ${cur.glow}38 0%, transparent 70%)` }} />
             <div className="ss-orb ss-orb-2" />
@@ -135,11 +165,44 @@ export default function LockScreensaver({ onUnlock }: { onUnlock: () => void }) 
 
                 {/* Pastki ko'rsatma */}
                 <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2">
-                    <div className="ss-pulse flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/10 border border-white/10">
+                    <div className="ss-pulse flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/10 border border-white/10 pointer-events-none">
                         <Hand size={16} className="text-sky-300" />
                         <span className="text-slate-300 text-sm font-bold">Davom etish uchun ekranga 2 marta teging</span>
                     </div>
                     <p className="text-slate-600 text-[11px] font-semibold mt-1">EVIKO POS · chaqqonpro.e-code.uz</p>
+                </div>
+
+                {/* Orqa fon tanlash tugmasi */}
+                <div className="absolute bottom-6 left-6 z-50 flex flex-col items-start">
+                    {showBgMenu && (
+                        <div className="mb-3 p-3 rounded-2xl bg-slate-900/90 border border-slate-700 backdrop-blur-xl shadow-2xl animate-fade-in flex flex-wrap gap-3 max-w-[280px]">
+                            {BG_IMAGES.map((bg) => (
+                                <button
+                                    key={bg.id}
+                                    onClick={(e) => { e.stopPropagation(); changeBg(bg.url); }}
+                                    className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all hover:scale-105 active:scale-95 ${bgImage === bg.url ? "border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.5)]" : "border-slate-700 hover:border-slate-500"}`}
+                                >
+                                    {bg.url ? (
+                                        <img src={bg.url} className="w-full h-full object-cover" alt={bg.name} />
+                                    ) : (
+                                        <div className="w-full h-full bg-slate-950 flex items-center justify-center">
+                                            <span className="text-xs font-semibold text-slate-500">Qora</span>
+                                        </div>
+                                    )}
+                                </button>
+                            ))}
+                            <button onClick={(e) => { e.stopPropagation(); setShowBgMenu(false); }} className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-slate-800 border border-slate-600 text-slate-400 hover:text-white flex items-center justify-center transition-colors shadow-lg">
+                                <X size={14} />
+                            </button>
+                        </div>
+                    )}
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setShowBgMenu(!showBgMenu); }}
+                        className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white/70 hover:text-white transition-all backdrop-blur-md active:scale-95"
+                        title="Orqa fonni o'zgartirish"
+                    >
+                        <ImageIcon size={20} />
+                    </button>
                 </div>
             </div>
 
