@@ -110,7 +110,7 @@ export default function LockScreensaver({ onUnlock }: { onUnlock: () => void }) 
             {bgImage && (
                 <>
                     <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000" style={{ backgroundImage: `url(${bgImage})` }} />
-                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[4px]" />
+                    <div className="absolute inset-0 bg-slate-950/50" />
                 </>
             )}
 
