@@ -2,7 +2,7 @@
 
 import { useState, FormEvent, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, UtensilsCrossed, User, Loader2, LogOut, ArrowRight, X, CreditCard, ChevronLeft } from "lucide-react";
+import { Lock, UtensilsCrossed, User, Loader2, LogOut, ArrowRight, X, CreditCard, ChevronLeft, ImageIcon } from "lucide-react";
 import { useStore } from "@/lib/store";
 import LockScreensaver from "@/app/smart-pos/LockScreensaver";
 

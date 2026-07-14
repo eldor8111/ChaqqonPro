@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
+import { jwtVerify } from "jose";
 import { getSession } from "@/lib/backend/auth";
 import { prisma } from "@/lib/backend/db";
 
@@ -15,7 +16,6 @@ export async function GET(_request: NextRequest) {
             const authHeader = _request.headers.get("Authorization");
             if (authHeader?.startsWith("Bearer ")) {
                 try {
-                    const { jwtVerify } = require("jose");
                     const { payload } = await jwtVerify(authHeader.slice(7), new TextEncoder().encode(process.env.JWT_SECRET || "fallback"));
                     if (payload.tenantId) tenantId = payload.tenantId as string;
                 } catch {}
