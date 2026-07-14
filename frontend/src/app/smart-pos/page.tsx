@@ -2583,58 +2583,7 @@ export default function UbtPosPage() {
                     <ClockWidget dark={dark} />
                 </div>
 
-                {/* Right controls */}
-                <div className="flex items-center gap-2 shrink-0">
-                    <button onClick={toggleLang} className={`px-2.5 py-1 rounded-full text-xs font-black border-2 transition-all ${lang === "uz" ? "bg-sky-500 text-white border-sky-500" : "bg-purple-600 text-white border-purple-600"}`}>
-                        {lang === "uz" ? "OʻZ" : "RU"}
-                    </button>
 
-                    <button onClick={() => window.location.reload()} className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${dark ? "bg-slate-700 text-white hover:bg-slate-600" : "bg-slate-200 text-slate-800 hover:bg-slate-300"}`} title="Tizimni yangilash"><RefreshCw size={15} /></button>
-                    <MinimizeButton dark={dark} />
-                    <button onClick={logout} className="w-8 h-8 rounded-full flex items-center justify-center text-white" style={{ background: "#0ea5e9" }}><Lock size={15} /></button>
-                    <div className="relative group z-50">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm cursor-pointer border ${dark ? "bg-gray-600 text-gray-200 border-gray-500" : "bg-gray-200 text-gray-700 border-gray-300"}`}>
-                            {waiterName.charAt(0)}
-                        </div>
-                        {/* Wrapper for continuous hover hit-area (fixes the empty gap closing issue) */}
-                        <div className="absolute top-full right-0 pt-2 w-80 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all origin-top-right transform scale-95 group-hover:scale-100 z-[110]">
-                            <div className={`rounded-xl shadow-2xl border overflow-hidden ${dark ? "bg-gray-800 border-gray-700 shadow-black/50" : "bg-white border-gray-200 shadow-gray-200/50"}`}>
-                                <div className="p-3">
-                                    {/* Attendance Widget */}
-                                    <div className="mb-3">
-                                        <AttendanceWidget
-                                            token={store.kassirSession?.token || null}
-                                            staffId={store.kassirSession?.id}
-                                            staffName={waiterName}
-                                            lang={lang}
-                                            dark={dark}
-                                        />
-                                    </div>
-
-                                    {/* Menu Items */}
-                                    <div className={`pt-3 border-t ${dark ? "border-gray-700" : "border-gray-200"}`}>
-                                        {(((store.kassirSession as any)?.role === "Kassir" || store.kassirSession?.permissions?.includes("Kassir")) || store.kassirSession?.id === "admin") && (
-                                            <button onClick={handleOpenOtchot} className={`w-full text-left px-4 py-3 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${dark ? "text-gray-200 hover:bg-gray-700" : "text-gray-700 hover:bg-gray-100"}`}>
-                                                <span>📊</span> KUNLIK OTCHOT
-                                            </button>
-                                        )}
-                                        {(((store.kassirSession as any)?.role === "Ofitsiant" || store.kassirSession?.permissions?.includes("Ofitsiant")) || store.kassirSession?.id === "admin") && (
-                                            <button onClick={handleOpenZakaz} className={`w-full text-left px-4 py-3 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${dark ? "text-gray-200 hover:bg-gray-700" : "text-gray-700 hover:bg-gray-100"}`}>
-                                                <span>🍽️</span> MENING ZAKAZLARIM
-                                            </button>
-                                        )}
-                                        <button onClick={() => router.push("/smart-pos/printers")} className={`w-full text-left px-4 py-3 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${dark ? "text-gray-200 hover:bg-gray-700" : "text-gray-700 hover:bg-gray-100"}`}>
-                                            <span>🖨️</span> PRINTER SOZLAMALARI
-                                        </button>
-                                        <button onClick={() => router.push("/smart-pos/support")} className={`w-full text-left px-4 py-3 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${dark ? "text-gray-200 hover:bg-gray-700" : "text-gray-700 hover:bg-gray-100"}`}>
-                                            <span>🎧</span> TEX YORDAM
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </header>
 
             {/* ── BODY ────────────────────────────────────────────────────── */}
@@ -2684,7 +2633,71 @@ export default function UbtPosPage() {
                         );
                     })}
 
+                    {/* ── BOTTOM CONTROLS — sidebar past qismi ── */}
+                    <div className="hidden md:flex flex-col items-center mt-auto pb-4 pt-2 w-full gap-2">
+                        <div className={`w-10 h-px mb-1 ${dark ? "bg-white/10" : "bg-slate-200"}`} />
 
+                        {/* Profile avatar with dropdown — opens upward */}
+                        <div className="relative group z-[120]">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm cursor-pointer border-2 transition-all ${dark ? "bg-gray-600 text-gray-200 border-gray-500 hover:border-sky-400" : "bg-gray-200 text-gray-700 border-gray-300 hover:border-sky-400"}`}>
+                                {waiterName.charAt(0)}
+                            </div>
+                            {/* Dropdown opens UPWARD */}
+                            <div className="absolute bottom-full left-full ml-2 mb-0 w-72 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all origin-bottom-left transform scale-95 group-hover:scale-100 z-[130]">
+                                <div className={`rounded-xl shadow-2xl border overflow-hidden ${dark ? "bg-gray-800 border-gray-700 shadow-black/50" : "bg-white border-gray-200 shadow-gray-200/50"}`}>
+                                    <div className="p-3">
+                                        {/* Attendance Widget */}
+                                        <div className="mb-3">
+                                            <AttendanceWidget
+                                                token={store.kassirSession?.token || null}
+                                                staffId={store.kassirSession?.id}
+                                                staffName={waiterName}
+                                                lang={lang}
+                                                dark={dark}
+                                            />
+                                        </div>
+                                        {/* Menu Items */}
+                                        <div className={`pt-3 border-t ${dark ? "border-gray-700" : "border-gray-200"}`}>
+                                            {(((store.kassirSession as any)?.role === "Kassir" || store.kassirSession?.permissions?.includes("Kassir")) || store.kassirSession?.id === "admin") && (
+                                                <button onClick={handleOpenOtchot} className={`w-full text-left px-3 py-2.5 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${dark ? "text-gray-200 hover:bg-gray-700" : "text-gray-700 hover:bg-gray-100"}`}>
+                                                    <span>📊</span> KUNLIK OTCHOT
+                                                </button>
+                                            )}
+                                            {(((store.kassirSession as any)?.role === "Ofitsiant" || store.kassirSession?.permissions?.includes("Ofitsiant")) || store.kassirSession?.id === "admin") && (
+                                                <button onClick={handleOpenZakaz} className={`w-full text-left px-3 py-2.5 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${dark ? "text-gray-200 hover:bg-gray-700" : "text-gray-700 hover:bg-gray-100"}`}>
+                                                    <span>🍽️</span> MENING ZAKAZLARIM
+                                                </button>
+                                            )}
+                                            <button onClick={() => router.push("/smart-pos/printers")} className={`w-full text-left px-3 py-2.5 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${dark ? "text-gray-200 hover:bg-gray-700" : "text-gray-700 hover:bg-gray-100"}`}>
+                                                <span>🖨️</span> PRINTER SOZLAMALARI
+                                            </button>
+                                            <button onClick={() => router.push("/smart-pos/support")} className={`w-full text-left px-3 py-2.5 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${dark ? "text-gray-200 hover:bg-gray-700" : "text-gray-700 hover:bg-gray-100"}`}>
+                                                <span>🎧</span> TEX YORDAM
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Lang toggle */}
+                        <button onClick={toggleLang} className={`px-2 py-1 rounded-full text-[10px] font-black border-2 transition-all ${lang === "uz" ? "bg-sky-500 text-white border-sky-500" : "bg-purple-600 text-white border-purple-600"}`}>
+                            {lang === "uz" ? "OʻZ" : "RU"}
+                        </button>
+
+                        {/* Refresh */}
+                        <button onClick={() => window.location.reload()} className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${dark ? "bg-slate-700 text-white hover:bg-slate-600" : "bg-slate-200 text-slate-800 hover:bg-slate-300"}`} title="Yangilash">
+                            <RefreshCw size={15} />
+                        </button>
+
+                        {/* Minimize */}
+                        <MinimizeButton dark={dark} />
+
+                        {/* Lock / Logout */}
+                        <button onClick={logout} className="w-9 h-9 rounded-full flex items-center justify-center text-white" style={{ background: "#0ea5e9" }} title="Blokirovka">
+                            <Lock size={15} />
+                        </button>
+                    </div>
                 </aside>
 
 
