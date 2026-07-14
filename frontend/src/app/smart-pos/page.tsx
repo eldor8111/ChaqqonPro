@@ -2623,6 +2623,9 @@ export default function UbtPosPage() {
                                                 <span>🍽️</span> MENING ZAKAZLARIM
                                             </button>
                                         )}
+                                        <button onClick={() => router.push("/smart-pos/printers")} className={`w-full text-left px-4 py-3 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${dark ? "text-gray-200 hover:bg-gray-700" : "text-gray-700 hover:bg-gray-100"}`}>
+                                            <span>🖨️</span> PRINTER SOZLAMALARI
+                                        </button>
                                         <button onClick={() => router.push("/smart-pos/support")} className={`w-full text-left px-4 py-3 text-sm font-bold rounded-lg transition-colors flex items-center gap-2 ${dark ? "text-gray-200 hover:bg-gray-700" : "text-gray-700 hover:bg-gray-100"}`}>
                                             <span>🎧</span> TEX YORDAM
                                         </button>
@@ -2681,17 +2684,7 @@ export default function UbtPosPage() {
                         );
                     })}
 
-                    {/* Printer sozlamalari tugmasi — faqat desktop sidebar (md+) */}
-                    <div className="hidden md:flex flex-col items-center mt-auto pb-3 pt-2 w-full">
-                        <div className={`w-10 h-px mb-3 ${dark ? "bg-white/10" : "bg-slate-200"}`} />
-                        <button
-                            onClick={() => router.push("/smart-pos/printers")}
-                            title="Printer sozlamalari"
-                            className={`relative flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl w-[64px] h-[64px] transition-all duration-300 group ${showLanDiscover ? (dark ? "bg-sky-500/15 text-sky-400" : "bg-sky-50 text-sky-600") : (dark ? "text-slate-400 hover:bg-white/5 hover:text-slate-200" : "text-slate-500 hover:bg-slate-100 hover:text-slate-800")}`}>
-                            <Printer size={22} strokeWidth={2} className="transition-transform duration-300 group-hover:scale-110" />
-                            <span className="text-[9px] md:text-[10px] uppercase font-bold leading-tight text-center tracking-widest opacity-70">Printer</span>
-                        </button>
-                    </div>
+
                 </aside>
 
 
