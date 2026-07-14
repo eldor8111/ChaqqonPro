@@ -21,6 +21,15 @@ const ROLE_CFG: Record<string, { color: string; bg: string; border: string }> = 
     "Oshpaz":    { color: "text-orange-300", bg: "rgba(251,146,60,0.2)",  border: "rgba(251,146,60,0.5)" },
 };
 
+const BG_IMAGES = [
+    { id: "default", url: "", name: "Qop-qora" },
+    { id: "bg1", url: "https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=1920&auto=format&fit=crop", name: "Restoran 1" },
+    { id: "bg2", url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1920&auto=format&fit=crop", name: "Restoran 2" },
+    { id: "bg3", url: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1920&auto=format&fit=crop", name: "Oshxona" },
+    { id: "bg4", url: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1920&auto=format&fit=crop", name: "Taom" },
+    { id: "bg5", url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop", name: "Abstrakt" },
+];
+
 export default function KassirLoginPage() {
     const router = useRouter();
     const { deviceSession, setDeviceSession, kassirSession, setKassirSession } = useStore();
@@ -41,6 +50,13 @@ export default function KassirLoginPage() {
     const [pinLoading, setPinLoading] = useState(false);
     const [forceConfirm, setForceConfirm] = useState(false);
     const [customBg, setCustomBg] = useState("");
+    const [showBgMenu, setShowBgMenu] = useState(false);
+
+    const changeBg = (url: string) => {
+        setCustomBg(url);
+        localStorage.setItem("eviko_screensaver_bg", url);
+        setShowBgMenu(false);
+    };
 
     // Redirect if already logged in
     useEffect(() => {
@@ -144,7 +160,7 @@ export default function KassirLoginPage() {
     const BG = customBg ? (
         <div className="absolute inset-0 z-0 overflow-hidden bg-slate-950">
             <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000" style={{ backgroundImage: `url(${customBg})` }} />
-            <div className="absolute inset-0 bg-slate-950/50" />
+            <div className="absolute inset-0 bg-slate-950/40" />
             <div className="absolute inset-0 pointer-events-none" style={{
                 background: "radial-gradient(ellipse 110% 110% at 50% 50%, transparent 52%, rgba(3,7,20,0.6) 100%)"
             }} />
@@ -162,15 +178,14 @@ export default function KassirLoginPage() {
                 background: "radial-gradient(ellipse 120% 100% at 70% 30%, #16264f 0%, #0c1530 45%, #070d20 100%)"
             }} />
 
-            {/* EVIKO POS brend rasmi — atmosfera qatlami sifatida singdirilgan
-                (chetlari eriydi, yengil blur, brend gradientga qo'shilib ketadi) */}
+            {/* EVIKO POS brend rasmi — atmosfera qatlami sifatida singdirilgan */}
             <div className="absolute inset-0" style={{
                 backgroundImage: "url('/eviko-bg.png')",
                 backgroundSize: "cover",
                 backgroundPosition: "center right",
                 backgroundRepeat: "no-repeat",
-                opacity: 0.55,
-                filter: "blur(1.5px) saturate(115%)",
+                opacity: 0.85,
+                filter: "saturate(110%)",
                 WebkitMaskImage: "radial-gradient(ellipse 95% 95% at 62% 50%, #000 25%, transparent 82%)",
                 maskImage: "radial-gradient(ellipse 95% 95% at 62% 50%, #000 25%, transparent 82%)",
             }} />
@@ -201,6 +216,41 @@ export default function KassirLoginPage() {
             <div className="absolute inset-0 pointer-events-none" style={{
                 background: "radial-gradient(ellipse 110% 110% at 50% 50%, transparent 52%, rgba(3,7,20,0.6) 100%)"
             }} />
+        </div>
+    );
+
+    // ─── BACKGROUND PICKER UI ──────────────────────────────────────────────────
+    const BgPicker = () => (
+        <div className="absolute bottom-6 left-6 z-50 flex flex-col items-start pointer-events-auto">
+            {showBgMenu && (
+                <div className="mb-3 p-3 rounded-2xl bg-slate-900/90 border border-slate-700 backdrop-blur-xl shadow-2xl animate-fade-in flex flex-wrap gap-3 max-w-[280px]">
+                    {BG_IMAGES.map((bg) => (
+                        <button
+                            key={bg.id}
+                            onClick={(e) => { e.stopPropagation(); changeBg(bg.url); }}
+                            className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all hover:scale-105 active:scale-95 ${customBg === bg.url ? "border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.5)]" : "border-slate-700 hover:border-slate-500"}`}
+                        >
+                            {bg.url ? (
+                                <img src={bg.url} className="w-full h-full object-cover" alt={bg.name} />
+                            ) : (
+                                <div className="w-full h-full bg-slate-950 flex items-center justify-center">
+                                    <span className="text-xs font-semibold text-slate-500">Standart</span>
+                                </div>
+                            )}
+                        </button>
+                    ))}
+                    <button onClick={(e) => { e.stopPropagation(); setShowBgMenu(false); }} className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-slate-800 border border-slate-600 text-slate-400 hover:text-white flex items-center justify-center transition-colors shadow-lg">
+                        <X size={14} />
+                    </button>
+                </div>
+            )}
+            <button
+                onClick={(e) => { e.stopPropagation(); setShowBgMenu(!showBgMenu); }}
+                className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white/70 hover:text-white transition-all backdrop-blur-md active:scale-95 shadow-lg"
+                title="Orqa fonni o'zgartirish"
+            >
+                <ImageIcon size={20} />
+            </button>
         </div>
     );
 
@@ -270,6 +320,7 @@ export default function KassirLoginPage() {
                         </form>
                     </div>
                 </div>
+                <BgPicker />
             </div>
         );
     }
@@ -482,6 +533,7 @@ export default function KassirLoginPage() {
                         </div>
                     </div>
                 )}
+                <BgPicker />
             </div>
         );
     }
