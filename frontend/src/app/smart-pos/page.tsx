@@ -2098,6 +2098,7 @@ export default function UbtPosPage() {
                     waiter: store.kassirSession?.name || "",
                     time: timeStr,
                     orderNum: Math.floor(Math.random() * 9000) + 1000,
+                    servicePercent: isTimeBased ? 0 : (selTable.serviceFee ?? 0),
                     paymentMethod: method,
                     cashAmount: method === "Naqd" ? grandTotal : 0,
                     cardAmount: method === "Karta" ? grandTotal : 0,
@@ -2184,6 +2185,7 @@ export default function UbtPosPage() {
                     tableZone: selTable.zone || "", tableType: "Na stol",
                     waiter: store.kassirSession?.name || "",
                     time: timeStr, orderNum: Math.floor(Math.random() * 9000) + 1000,
+                    servicePercent: isTimeBased ? 0 : (selTable.serviceFee ?? 0),
                     paymentMethod: method,
                     cashAmount: method === "Naqd" ? grandTotal : 0,
                     cardAmount: method === "Karta" ? grandTotal : 0,
@@ -3143,6 +3145,7 @@ export default function UbtPosPage() {
                                                     onPay={handleTablePayDirect}
                                                     onClose={() => setShowTablePay(false)}
                                                     loading={tablePayLoading}
+                                                    servicePct={selTable.serviceFee ?? 0}
                                                 />
                                             )}
 
