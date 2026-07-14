@@ -1243,7 +1243,7 @@ export default function UbtPosPage() {
 
     useEffect(() => {
         fetchReservations();
-        const intv = setInterval(fetchReservations, 120000);
+        const intv = setInterval(fetchReservations, 30000); // 30 soniya (avval 2 daqiqa edi)
         return () => clearInterval(intv);
     }, [fetchReservations]);
 
@@ -1864,16 +1864,18 @@ export default function UbtPosPage() {
         const hdrs: Record<string, string> = { "Content-Type": "application/json" };
         if (token) hdrs["Authorization"] = `Bearer ${token}`;
 
+        const normalizeItems = (raw: any[]): any[] => raw.map((it: any) =>
+            it?.item ? it : {
+                item: { id: it.name || "", name: it.name || "", price: Number(it.price) || 0, categoryId: "", inStock: true },
+                qty: Number(it.qty ?? it.quantity ?? 1),
+            }
+        );
+
         try {
+            // ─── Delivery zakazlari DB'dan ───────────────────────────────────────
             const resDl = await fetch("/api/smart/yetkazish", { headers: hdrs });
             if (resDl.ok) {
                 const data = await resDl.json();
-                const normalizeItems = (raw: any[]): any[] => raw.map((it: any) =>
-                    it?.item ? it : {
-                        item: { id: it.name || "", name: it.name || "", price: Number(it.price) || 0, categoryId: "", inStock: true },
-                        qty: Number(it.qty ?? it.quantity ?? 1),
-                    }
-                );
                 const activeOrders = Array.isArray(data.orders)
                     ? data.orders.filter((o: any) => o.status !== "delivered" && o.status !== "cancelled")
                     : [];
@@ -1906,9 +1908,9 @@ export default function UbtPosPage() {
         store.fetchSmartTables();
         fetchPrinterStatus();
         fetchTwAndDlOrders();
-        
-        // Table/order polling (30 seconds)
-        const ti = setInterval(() => { store.fetchSmartTables(); fetchTwAndDlOrders(); }, 30000);
+
+        // ─── Jadval/buyurtma polling — har 10 soniyada ───────────────────────────
+        const ti = setInterval(() => { store.fetchSmartTables(); fetchTwAndDlOrders(); }, 10000);
 
         // Printer status (90 seconds)
         const pi = setInterval(() => fetchPrinterStatus(), 90000);
@@ -1931,8 +1933,60 @@ export default function UbtPosPage() {
             }
         }, 60000);
 
-        return () => { clearInterval(ti); clearInterval(pi); clearInterval(si); };
+        // ─── Brauzer diqqatga qaytganda DARHOL yangilanadi ───────────────────────
+        const handleVisible = () => {
+            if (document.visibilityState === "visible") {
+                store.fetchSmartTables();
+                fetchTwAndDlOrders();
+            }
+        };
+        const handleFocus = () => {
+            store.fetchSmartTables();
+            fetchTwAndDlOrders();
+        };
+        document.addEventListener("visibilitychange", handleVisible);
+        window.addEventListener("focus", handleFocus);
+
+        return () => {
+            clearInterval(ti);
+            clearInterval(pi);
+            clearInterval(si);
+            document.removeEventListener("visibilitychange", handleVisible);
+            window.removeEventListener("focus", handleFocus);
+        };
     }, [store, fetchTwAndDlOrders]);
+
+    // ─── Ochiq stol buyurtmalarini DB'dan har 10 soniyada yangilash ─────────────
+    // (boshqa qurilmadan — ofitsiant plansheti, boshqa kassa — qo'shilgan taomlar avtomatik ko'rinadi)
+    useEffect(() => {
+        if (!selTable) return;
+        const tableId = selTable.id;
+        const interval = setInterval(() => {
+            fetchTableOrdersFromDB(tableId);
+        }, 10000);
+        return () => clearInterval(interval);
+    }, [selTable?.id, fetchTableOrdersFromDB]);
+
+    // ─── Tables yangilanganda yopilgan/bo'sh stollarni localStorage'dan tozalash ──
+    // (To'lov qilingan stol buyurtmalari eski keshda qolmasin)
+    useEffect(() => {
+        if (!store.smartTables.length) return;
+        const freeTables = new Set(
+            store.smartTables.filter(t => t.status === "free").map(t => t.id)
+        );
+        if (!freeTables.size) return;
+        setTableOrders(prev => {
+            const cleaned = { ...prev };
+            let changed = false;
+            freeTables.forEach(id => {
+                if (cleaned[id] && cleaned[id].length > 0) {
+                    delete cleaned[id];
+                    changed = true;
+                }
+            });
+            return changed ? cleaned : prev;
+        });
+    }, [store.smartTables, setTableOrders]);
 
     // Fullscreen state listener
     useEffect(() => {
