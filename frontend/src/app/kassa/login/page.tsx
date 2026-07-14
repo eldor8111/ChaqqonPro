@@ -40,6 +40,7 @@ export default function KassirLoginPage() {
     const [pinError, setPinError] = useState("");
     const [pinLoading, setPinLoading] = useState(false);
     const [forceConfirm, setForceConfirm] = useState(false);
+    const [customBg, setCustomBg] = useState("");
 
     // Redirect if already logged in
     useEffect(() => {
@@ -47,6 +48,12 @@ export default function KassirLoginPage() {
             router.replace("/smart-pos");
         }
     }, [kassirSession, router]);
+
+    // Read custom background from localStorage
+    useEffect(() => {
+        const saved = localStorage.getItem("eviko_screensaver_bg");
+        if (saved) setCustomBg(saved);
+    }, []);
 
     // Load staff list
     const loadStaff = useCallback(async () => {
@@ -134,10 +141,15 @@ export default function KassirLoginPage() {
     };
 
     // ─── BACKGROUND ───────────────────────────────────────────────────────────
-    // Yorqin, rang-barang "aurora" foni — jonli gradient (amber→pushti→binafsha→ko'k)
-    // + harakatlanuvchi nur dog'lari. Oq matn/logo saqlanadi: markazда juda yengil
-    // (qorong'i EMAS) skrim oq matn o'qilishini ta'minlaydi. Tashqi rasm yo'q.
-    const BG = (
+    const BG = customBg ? (
+        <div className="absolute inset-0 z-0 overflow-hidden bg-slate-950">
+            <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000" style={{ backgroundImage: `url(${customBg})` }} />
+            <div className="absolute inset-0 bg-slate-950/50" />
+            <div className="absolute inset-0 pointer-events-none" style={{
+                background: "radial-gradient(ellipse 110% 110% at 50% 50%, transparent 52%, rgba(3,7,20,0.6) 100%)"
+            }} />
+        </div>
+    ) : (
         <div className="absolute inset-0 z-0 overflow-hidden">
             <style>{`
                 @keyframes evikoGlowA { 0%,100%{transform:translate(-8%,-6%) scale(1)} 50%{transform:translate(6%,4%) scale(1.18)} }
