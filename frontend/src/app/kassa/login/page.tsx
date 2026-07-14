@@ -51,6 +51,7 @@ export default function KassirLoginPage() {
     const [forceConfirm, setForceConfirm] = useState(false);
     const [customBg, setCustomBg] = useState("");
     const [showBgMenu, setShowBgMenu] = useState(false);
+    const [userClickedBack, setUserClickedBack] = useState(false);
 
     const changeBg = (url: string) => {
         setCustomBg(url);
@@ -95,10 +96,10 @@ export default function KassirLoginPage() {
     }, [loadStaff]);
 
     useEffect(() => {
-        if (typeof window !== "undefined" && window.location.search.includes("lock=1") && deviceSession && !kassirSession && !showStaff) {
+        if (typeof window !== "undefined" && window.location.search.includes("lock=1") && deviceSession && !kassirSession && !showStaff && !userClickedBack) {
             openStaffList();
         }
-    }, [deviceSession, kassirSession, showStaff, openStaffList]);
+    }, [deviceSession, kassirSession, showStaff, openStaffList, userClickedBack]);
 
     // Device login
     const handleDeviceLogin = async (e: FormEvent) => {
@@ -370,7 +371,14 @@ export default function KassirLoginPage() {
                 <div className="relative z-10 flex items-center justify-between px-8 pt-6 pb-4 flex-shrink-0"
                     style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
                     <div className="flex items-center gap-3">
-                        <button onClick={() => setShowStaff(false)}
+                        <button onClick={() => {
+                                setUserClickedBack(true);
+                                setShowStaff(false);
+                                // lock=1 ni URL dan olib tashlaymiz
+                                if (typeof window !== "undefined" && window.location.search.includes("lock=1")) {
+                                    window.history.replaceState({}, "", window.location.pathname);
+                                }
+                            }}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
                             style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.7)" }}>
                             <ChevronLeft size={14} /> Ortga
