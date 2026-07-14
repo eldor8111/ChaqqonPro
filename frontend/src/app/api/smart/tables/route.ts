@@ -23,10 +23,21 @@ async function getAuthTenantId(request: NextRequest): Promise<string | null> {
     return null;
 }
 
+// ─── 5s server-side cache ────────────────────────────────────────────────
+// Bir vaqtda bir nechta client so'rov yuborganda DB ni kamaytiradi.
+// PUT/POST/DELETE larda cache tozalanadi.
+const _tablesCache = new Map<string, { data: any; expiresAt: number }>();
+const TABLES_CACHE_TTL = 5_000;
+function invalidateTablesCache(tenantId: string) { _tablesCache.delete(tenantId); }
+
 export async function GET(request: NextRequest) {
     try {
         const tenantId = await getAuthTenantId(request);
         if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+        // Cache hit check
+        const cached = _tablesCache.get(tenantId);
+        if (cached && Date.now() < cached.expiresAt) return NextResponse.json(cached.data);
 
         const tables = await prisma.smartTable.findMany({
             where: { tenantId },
@@ -64,11 +75,14 @@ export async function GET(request: NextRequest) {
             return a.tableNumber.localeCompare(b.tableNumber);
         });
 
-        return NextResponse.json({ tables: tablesWithFee });
+        const result = { tables: tablesWithFee };
+        _tablesCache.set(tenantId, { data: result, expiresAt: Date.now() + TABLES_CACHE_TTL });
+        return NextResponse.json(result);
     } catch (error) {
         return NextResponse.json({ error: "Server error" }, { status: 500 });
     }
 }
+
 
 export async function POST(request: NextRequest) {
     try {
@@ -87,6 +101,7 @@ export async function POST(request: NextRequest) {
             }
         });
 
+        invalidateTablesCache(tenantId);
         return NextResponse.json({ success: true, table }, { status: 201 });
     } catch (error) {
         return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -113,6 +128,7 @@ export async function PUT(request: NextRequest) {
             data: { status, order, amount, since, waiter }
         });
 
+        invalidateTablesCache(tenantId);
         return NextResponse.json({ success: true, table });
     } catch (error) {
         return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -139,6 +155,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
         }
 
+        invalidateTablesCache(tenantId);
         return NextResponse.json({ success: true });
     } catch (error) {
         return NextResponse.json({ error: "Server error" }, { status: 500 });

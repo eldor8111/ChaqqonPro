@@ -104,19 +104,24 @@ export default function PosPrintersPage() {
     }, []);
 
     useEffect(() => {
+        let active = true;
         (async () => {
             await loadPrinters();
             await loadJobs();
-            setLoading(false);
+            if (active) setLoading(false);
             probeAll();
         })();
-        // Har 10s: worker tick + navbat + statuslar
+        // Har 30s: navbat + statuslar (processTick desktop agent tomonidan bajariladi, brauzerdan emas)
         pollRef.current = setInterval(async () => {
-            await processTick();
             await Promise.all([loadPrinters(), loadJobs()]);
-        }, 10000);
-        return () => { if (pollRef.current) clearInterval(pollRef.current); };
-    }, [loadPrinters, loadJobs, probeAll, processTick]);
+        }, 30000);
+        return () => {
+            active = false;
+            if (pollRef.current) clearInterval(pollRef.current);
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // bo'sh deps: useCallback funksiyalar barqaror, qayta ro'yxatdan o'tish kerak emas
+
 
     // ── Discovery ───────────────────────────────────────────────
     const handleDiscover = async () => {

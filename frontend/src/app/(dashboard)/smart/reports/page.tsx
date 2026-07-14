@@ -271,15 +271,15 @@ export default function UbtReportsPage() {
                                             <tr key={i} className="hover:bg-slate-100 transition-colors">
                                                 <td className="w-10 text-slate-400 font-bold">{i + 1}</td>
                                                 <td className="w-14">
-                                                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-black/40 border border-white/10 flex items-center justify-center">
-                                                        {d.image ? <img src={d.image} alt={d.name} className="w-full h-full object-cover" /> : <Utensils size={14} className="text-slate-500" />}
+                                                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center">
+                                                        {d.image ? <img src={d.image} alt={d.name} className="w-full h-full object-cover" /> : <Utensils size={14} className="text-slate-400" />}
                                                     </div>
                                                 </td>
-                                                <td className="font-bold text-slate-200">{d.name}</td>
+                                                <td className="font-bold text-slate-800">{d.name}</td>
                                                 <td className="text-right whitespace-nowrap">
-                                                    <span className="px-2 py-1 rounded bg-blue-500/20 text-blue-400 font-medium">{d.qty} ta</span>
+                                                    <span className="px-2 py-1 rounded-md bg-blue-50 text-blue-600 font-bold text-xs">{d.qty} ta</span>
                                                 </td>
-                                                <td className="text-right whitespace-nowrap text-emerald-400 font-black tracking-tight">{formatCurrency(d.revenue)}</td>
+                                                <td className="text-right whitespace-nowrap text-emerald-600 font-black tracking-tight">{formatCurrency(d.revenue)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -327,7 +327,7 @@ export default function UbtReportsPage() {
                                     </div>
                                 </div>
                                 <div className="mt-8 border-t border-surface-border pt-6">
-                                    <h3 className="text-lg font-bold text-slate-200 mb-4">So'nggi tranzaksiyalar hujjati ({recentTransactions.length} ta)</h3>
+                                    <h3 className="text-lg font-bold text-slate-800 mb-4">So'nggi tranzaksiyalar hujjati ({recentTransactions.length} ta)</h3>
                                     {recentTransactions.length === 0 ? (
                                         <p className="text-slate-400 text-sm">Tranzaksiyalar mavjud emas.</p>
                                     ) : (
@@ -352,24 +352,24 @@ export default function UbtReportsPage() {
                                                                     className="cursor-pointer hover:bg-surface-elevated/50 transition-colors"
                                                                     onClick={() => setExpandedTxId(isExpanded ? null : tx.id)}
                                                                 >
-                                                                    <td className="text-slate-400 whitespace-nowrap">
+                                                                    <td className="text-slate-500 whitespace-nowrap">
                                                                         <div className="flex items-center gap-2">
-                                                                            <span className="text-slate-500 text-[10px]">{isExpanded ? '▼' : '▶'}</span>
+                                                                            <span className="text-slate-400 text-[10px]">{isExpanded ? '▼' : '▶'}</span>
                                                                             {dStr}
                                                                         </div>
                                                                     </td>
-                                                                    <td className="font-medium text-slate-200">{tx.kassirName || "Admin"}</td>
+                                                                    <td className="font-medium text-slate-800">{tx.kassirName || "Admin"}</td>
                                                                     <td>
                                                                         <span className={clsx(
-                                                                            "px-2 py-1 rounded text-xs font-semibold whitespace-nowrap",
-                                                                            tx.method?.includes("Naqd") ? "bg-emerald-500/10 text-emerald-400" :
-                                                                            tx.method?.includes("Karta") || tx.method?.includes("Plastik") ? "bg-blue-500/10 text-blue-400" :
-                                                                            "bg-slate-500/10 text-slate-400"
+                                                                            "px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap",
+                                                                            tx.method?.includes("Naqd") ? "bg-emerald-50 text-emerald-600" :
+                                                                            tx.method?.includes("Karta") || tx.method?.includes("Plastik") ? "bg-blue-50 text-blue-600" :
+                                                                            "bg-slate-100 text-slate-600"
                                                                         )}>
                                                                             {tx.method || "Boshqa"}
                                                                         </span>
                                                                     </td>
-                                                                    <td className="font-bold text-emerald-400">{formatCurrency(tx.amount)}</td>
+                                                                    <td className="font-bold text-emerald-600">{formatCurrency(tx.amount)}</td>
                                                                 </tr>
                                                                 {isExpanded && tx.items && tx.items.length > 0 && (
                                                                     <tr className="bg-surface-card/40">
@@ -425,12 +425,12 @@ export default function UbtReportsPage() {
                                     <tbody>
                                         {WAITER_DATA.map((w, i) => (
                                             <tr key={i}>
-                                                <td className="font-semibold text-brand-400 whitespace-nowrap">👤 {w.name}</td>
+                                                <td className="font-semibold text-brand-600 whitespace-nowrap">{w.name}</td>
                                                 <td className="whitespace-nowrap">{w.orders} ta</td>
-                                                <td className="font-medium text-emerald-400 whitespace-nowrap">{formatCurrency(w.revenue)}</td>
+                                                <td className="font-bold text-emerald-600 whitespace-nowrap">{formatCurrency(w.revenue)}</td>
                                                 <td className="whitespace-nowrap">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-amber-400">★ {w.rating.toFixed(1)}</span>
+                                                        <span className="text-amber-500 font-bold text-sm">★ {w.rating.toFixed(1)}</span>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -461,11 +461,11 @@ export default function UbtReportsPage() {
                                     <tbody>
                                         {CASHIER_DATA.map((c, i) => (
                                             <tr key={i}>
-                                                <td className="font-semibold whitespace-nowrap">👩‍💼 {c.name}</td>
+                                                <td className="font-semibold text-slate-800 whitespace-nowrap">{c.name}</td>
                                                 <td className="whitespace-nowrap">{c.transactions} ta</td>
-                                                <td className="text-green-400 whitespace-nowrap">{formatCurrency(c.cash)}</td>
-                                                <td className="text-blue-400 whitespace-nowrap">{formatCurrency(c.card)}</td>
-                                                <td className="font-bold text-emerald-400 whitespace-nowrap">{formatCurrency(c.amount)}</td>
+                                                <td className="text-green-600 whitespace-nowrap font-medium">{formatCurrency(c.cash)}</td>
+                                                <td className="text-blue-600 whitespace-nowrap font-medium">{formatCurrency(c.card)}</td>
+                                                <td className="font-bold text-emerald-600 whitespace-nowrap">{formatCurrency(c.amount)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -544,7 +544,7 @@ export default function UbtReportsPage() {
                                             <li key={i} className="flex items-center justify-between p-3 rounded-lg bg-surface-elevated border border-surface-border">
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                                                    <span className="font-medium text-slate-200">{e.category}</span>
+                                                    <span className="font-medium text-slate-700">{e.category}</span>
                                                 </div>
                                                 <span className="font-semibold text-slate-800">{formatCurrency(e.amount)}</span>
                                             </li>
@@ -587,7 +587,7 @@ export default function UbtReportsPage() {
                                             <li key={i} className="flex items-center justify-between p-3 rounded-lg bg-surface-elevated border border-surface-border">
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                                                    <span className="font-medium text-slate-200">{e.type}</span>
+                                                    <span className="font-medium text-slate-700">{e.type}</span>
                                                 </div>
                                                 <span className="font-semibold text-slate-800">{formatCurrency(e.amount)}</span>
                                             </li>

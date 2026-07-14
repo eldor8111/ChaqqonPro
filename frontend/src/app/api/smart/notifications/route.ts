@@ -5,6 +5,11 @@ import { getSession } from "@/lib/backend/auth";
 import { jwtVerify } from "jose";
 import { JWT_SECRET } from "@/lib/backend/jwt";
 
+// ─── Server-side simple cache (60s TTL) ────────────────────────────────────
+// Har bir so'rovda DB'ga bormaymiz — 60s ichida bitta cache bo'ladi.
+const _cache = new Map<string, { data: any; expiresAt: number }>();
+const CACHE_TTL = 60_000;
+
 // Autentifikatsiyani tekshirib, Tenant ID sini olish
 async function getAuthTenantId(request: NextRequest): Promise<string | null> {
     try {
@@ -38,6 +43,12 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Cache hit check
+    const cached = _cache.get(tenantId);
+    if (cached && Date.now() < cached.expiresAt) {
+        return NextResponse.json(cached.data);
+    }
+
     try {
         const notifications = [];
         let idCounter = 1;
@@ -45,7 +56,8 @@ export async function GET(request: NextRequest) {
         // 1. Zaxira tugayotgan mahsulotlarni izlash (Product)
         const products = await prisma.product.findMany({
             where: { tenantId },
-            select: { name: true, stock: true, minStock: true, unit: true }
+            select: { name: true, stock: true, minStock: true, unit: true },
+            take: 200,
         });
 
         for (const p of products) {
@@ -64,7 +76,8 @@ export async function GET(request: NextRequest) {
         const newDeliveries = await prisma.deliveryOrder.findMany({
             where: { tenantId, status: "new" },
             select: { orderNumber: true, customerName: true, createdAt: true },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            take: 10,
         });
 
         for (const d of newDeliveries) {
@@ -77,9 +90,9 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        // Qolgan yana nimadir qo'shish kerak bo'lsa shu yerda qilinadi...
-
-        return NextResponse.json({ notifications });
+        const result = { notifications };
+        _cache.set(tenantId, { data: result, expiresAt: Date.now() + CACHE_TTL });
+        return NextResponse.json(result);
 
     } catch (error) {
         console.error("Notifications API error:", error);

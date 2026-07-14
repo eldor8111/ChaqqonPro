@@ -57,6 +57,13 @@ export default function TaomlarPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
     const [recipeForm, setRecipeForm] = useState({ ombor: "", turi: "xomashyo", xomashyoId: "", amount: "" });
+    const [isNewMenuModalOpen, setIsNewMenuModalOpen] = useState(false);
+    const [newMenuName, setNewMenuName] = useState("");
+    const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+    type BulkRow = { name: string; categoryId: string; price: string; printer: string; unit: string; type: string; sortOrder: string; image: string | null; warehouse: string };
+    const emptyBulkRow = (): BulkRow => ({ name: "", categoryId: "", price: "", printer: "", unit: "dona", type: "taom", sortOrder: "", image: null, warehouse: "" });
+    const [bulkRows, setBulkRows] = useState<BulkRow[]>([emptyBulkRow()]);
+    const [bulkSaving, setBulkSaving] = useState(false);
 
     // Modifier state
     const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
@@ -297,6 +304,41 @@ export default function TaomlarPage() {
         await loadFromDB();
     };
 
+    const handleBulkSave = async () => {
+        const validRows = bulkRows.filter(r => r.name.trim());
+        if (validRows.length === 0) { alert("Kamida 1 ta taom nomi kiriting!"); return; }
+        setBulkSaving(true);
+        let count = 0;
+        for (const row of validRows) {
+            const catName = dbCategories.find(c => c.id === row.categoryId)?.name || "Umumiy";
+            await fetch("/api/smart/menu", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: row.name.trim(),
+                    category: catName,
+                    sellingPrice: Number(row.price) || 0,
+                    costPrice: 0,
+                    type: row.type,
+                    unit: row.unit || "dona",
+                    printerIp: row.printer || null,
+                    image: row.image || null,
+                    sortOrder: row.sortOrder || "",
+                    warehouse: row.type === "mahsulot" ? (row.warehouse || null) : null,
+                    inStock: true,
+                    autoCalculate: true,
+                    hasBarcode: false,
+                })
+            });
+            count++;
+        }
+        setBulkSaving(false);
+        setIsBulkModalOpen(false);
+        setBulkRows([emptyBulkRow()]);
+        await loadFromDB();
+        alert(`${count} ta taom muvaffaqiyatli qo'shildi!`);
+    };
+
     return (
         <div className="animate-fade-in relative bg-white border border-slate-200">
             {/* Header Top */}
@@ -306,30 +348,19 @@ export default function TaomlarPage() {
                         <div className="w-2.5 h-7 bg-blue-500 rounded text-transparent">|</div>
                         <h1 className="text-xl sm:text-[22px] font-bold text-slate-900">{t('nav.nom_dishes')}</h1>
                     </div>
-                    <button className="flex items-center gap-2 px-2 py-1.5 bg-[#f4f5f7] text-slate-700 rounded-md text-sm hover:bg-slate-200 transition font-bold border border-slate-300">
-                        <Trash2 size={14} /> Arxivga o'ting
+                    <button className="flex items-center gap-2 px-3 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm hover:bg-slate-200 transition font-bold border border-slate-300 shadow-sm">
+                        <Trash2 size={16} /> Arxivga o'ting
                     </button>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                    <button 
-                        onClick={() => {
-                            const csvContent = "data:text/csv;charset=utf-8," 
-                                + ["Nomi,Turi,O'lchov,Tannarx,Sotish narxi,Qoldiq,Holat"].join(",") + "\n"
-                                + filteredTaomlar.map(t => `${t.name},${t.type},${t.unit},${t.cost},${t.price},${t.stock},${t.inStock ? "Faol" : "Nofaol"}`).join("\n");
-                            const encodedUri = encodeURI(csvContent);
-                            const link = document.createElement("a");
-                            link.setAttribute("href", encodedUri);
-                            link.setAttribute("download", "taomlar.csv");
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                        }}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-[#00b050] text-white rounded text-sm hover:bg-[#009b47] transition font-bold shadow-sm w-full sm:w-auto"
+                    <button
+                        onClick={() => { setBulkRows([emptyBulkRow()]); setIsBulkModalOpen(true); }}
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600 transition font-bold shadow-md w-full sm:w-auto"
                     >
-                        <FileSpreadsheet size={16} /> EXCEL dasturini yuklab oling
+                        <Plus size={16} /> Ko'plikda qo'shish
                     </button>
-                    <button onClick={() => handleOpenModal()} className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition font-bold shadow-sm w-full sm:w-auto">
-                        {t('common.add')} <Plus size={16} />
+                    <button onClick={() => handleOpenModal()} className="flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition font-bold shadow-md w-full sm:w-auto">
+                        {t('common.add')} <Plus size={18} />
                     </button>
                 </div>
             </div>
@@ -343,7 +374,7 @@ export default function TaomlarPage() {
                             placeholder={t('common.search')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full px-4 py-2 border border-slate-200 rounded text-sm outline-none focus:border-blue-400 placeholder:text-slate-300"
+                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 placeholder:text-slate-400 font-medium transition-all"
                         />
                     </div>
                     <div className="flex-1 max-w-[300px] relative text-slate-600 font-bold">
@@ -367,7 +398,7 @@ export default function TaomlarPage() {
                     </div>
                 </div>
                 <div className="flex items-center gap-3 w-full lg:w-auto">
-                    <button onClick={() => { setSearchQuery(""); setSelectedCategory(""); }} className="w-full lg:w-auto px-6 py-2 border border-[#f6a0a8] text-[#e3342f] rounded text-sm hover:bg-red-50 transition font-medium">
+                    <button onClick={() => { setSearchQuery(""); setSelectedCategory(""); }} className="w-full lg:w-auto px-6 py-2.5 border border-red-200 text-red-500 rounded-lg text-sm hover:bg-red-50 hover:border-red-300 transition font-bold shadow-sm">
                         {t('common.filter') + ' ' + t('common.delete') || 'Tozalash'}
                     </button>
                 </div>
@@ -375,25 +406,25 @@ export default function TaomlarPage() {
 
             {/* Content area */}
             <div className="p-2 overflow-x-auto">
-                <table className="w-full text-xs text-left border-separate border-spacing-y-2">
-                    <thead className="bg-[#e4ebf5] text-slate-800 font-black border-b-none text-[11px] uppercase tracking-wide">
+                <table className="w-full text-sm text-left border-separate border-spacing-y-2">
+                    <thead className="bg-slate-50 text-slate-500 font-bold text-xs uppercase tracking-wider">
                         <tr>
-                            <th className="px-1.5 py-2 rounded-l-lg border-r border-[#d4dceb] font-bold text-center">№</th>
-                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold">Rasm</th>
-                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold">{t('common.name')}</th>
-                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold">Turi</th>
-                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold text-center">Birlik</th>
-                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold text-right">Tannarx</th>
-                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold text-right">Narx</th>
-                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold">Menyu</th>
-                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold">Printer</th>
-                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold">Retseptlar</th>
-                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold text-center">Qoldiq</th>
-                            <th className="px-1 py-2 border-r border-[#d4dceb] text-center font-bold text-[10px]">
+                            <th className="px-3 py-3 rounded-l-xl font-bold text-center">№</th>
+                            <th className="px-3 py-3 font-bold">Rasm</th>
+                            <th className="px-3 py-3 font-bold">{t('common.name')}</th>
+                            <th className="px-3 py-3 font-bold">Turi</th>
+                            <th className="px-3 py-3 font-bold text-center">Birlik</th>
+                            <th className="px-3 py-3 font-bold text-right">Tannarx</th>
+                            <th className="px-3 py-3 font-bold text-right">Narx</th>
+                            <th className="px-3 py-3 font-bold">Menyu</th>
+                            <th className="px-3 py-3 font-bold">Printer</th>
+                            <th className="px-3 py-3 font-bold">Retseptlar</th>
+                            <th className="px-3 py-3 font-bold text-center">Qoldiq</th>
+                            <th className="px-3 py-3 text-center font-bold">
                                 Avto
                             </th>
-                            <th className="px-1.5 py-2 border-r border-[#d4dceb] font-bold text-center">{t('common.status')}</th>
-                            <th className="px-1 py-2 rounded-r-lg font-bold"></th>
+                            <th className="px-3 py-3 font-bold text-center">{t('common.status')}</th>
+                            <th className="px-3 py-3 rounded-r-xl font-bold"></th>
                         </tr>
                     </thead>
                     <tbody className="text-slate-700">
@@ -404,12 +435,12 @@ export default function TaomlarPage() {
                         ) : filteredTaomlar.map((item: any) => {
                             const category = dbCategories.find(c => c.id === item.categoryId);
                             return (
-                                <tr key={item.id} className="bg-[#f0f3f8] hover:bg-[#e4ebf5] transition text-slate-900 font-semibold">
-                                    <td className="px-1.5 py-1.5 rounded-l-lg border-r border-[#e4ebf5]">
-                                        <input type="text" value={item.sortOrder || "1"} readOnly className="w-8 h-8 px-1 bg-white border border-slate-300 rounded text-center text-xs outline-none text-slate-800 font-bold" />
+                                <tr key={item.id} className="bg-white hover:bg-slate-50 border border-slate-100 shadow-sm transition text-slate-800 font-medium rounded-xl group">
+                                    <td className="px-3 py-2.5 rounded-l-xl">
+                                        <input type="text" value={item.sortOrder || "1"} readOnly className="w-8 h-8 px-1 bg-slate-50 border border-slate-200 rounded-lg text-center text-xs outline-none text-slate-700 font-bold" />
                                     </td>
-                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5]">
-                                        <div className="w-10 h-10 bg-[#eef1f6] rounded border border-[#e4ebf5] flex items-center justify-center text-slate-400 relative overflow-hidden">
+                                    <td className="px-3 py-2.5">
+                                        <div className="w-10 h-10 bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 relative overflow-hidden">
                                             {item.image ? (
                                                 <img src={item.image} alt="dish" className="w-full h-full object-contain p-0.5" />
                                             ) : (
@@ -417,47 +448,47 @@ export default function TaomlarPage() {
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-1.5 py-1.5 font-black text-[13px] border-r border-[#e4ebf5] max-w-[150px] truncate">{item.name}</td>
-                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5]">{item.type === "mahsulot" ? "Mahsulot" : "Taomlar"}</td>
-                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] text-center font-bold">{item.unit || "np"}</td>
-                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] text-right text-slate-700">{formatCurrency(item.cost).replace("so'm", "UZS")}</td>
-                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] text-right font-black text-slate-900">{formatCurrency(item.price).replace("so'm", "UZS")}</td>
-                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] text-slate-800">{category?.name || ""}</td>
-                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] leading-snug font-bold">
+                                    <td className="px-3 py-2.5 font-bold text-sm max-w-[150px] truncate">{item.name}</td>
+                                    <td className="px-3 py-2.5 text-slate-500">{item.type === "mahsulot" ? "Mahsulot" : "Taomlar"}</td>
+                                    <td className="px-3 py-2.5 text-center font-semibold text-slate-500">{item.unit || "np"}</td>
+                                    <td className="px-3 py-2.5 text-right text-slate-500">{formatCurrency(item.cost).replace("so'm", "UZS")}</td>
+                                    <td className="px-3 py-2.5 text-right font-black text-emerald-600">{formatCurrency(item.price).replace("so'm", "UZS")}</td>
+                                    <td className="px-3 py-2.5 text-slate-600 font-semibold">{category?.name || ""}</td>
+                                    <td className="px-3 py-2.5 leading-snug font-bold">
                                         {(() => {
                                             const ip = (item as any).printerIp || item.printer;
-                                            if (!ip) return <span className="text-slate-400">-</span>;
+                                            if (!ip) return <span className="text-slate-300">-</span>;
                                             const found = printersList.find(p => p.ipAddress === ip);
-                                            return <span className="text-blue-700 text-[11px]">{found ? found.name : ip}</span>;
+                                            return <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-[11px]">{found ? found.name : ip}</span>;
                                         })()}
                                     </td>
-                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5]">
-                                        <div className="flex items-center gap-1.5 font-bold whitespace-nowrap text-slate-800">
-                                            <div className="p-0.5 border border-slate-500 rounded-sm">
-                                                <List size={12} className="text-slate-700" />
+                                    <td className="px-3 py-2.5">
+                                        <div className="flex items-center gap-1.5 font-bold whitespace-nowrap text-slate-600">
+                                            <div className="p-1 bg-slate-100 rounded-md">
+                                                <List size={14} className="text-slate-500" />
                                             </div>
                                             Retsept ({item.recipes?.length || 0} ta)
                                         </div>
                                     </td>
-                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5]">
-                                        <div className="flex items-center bg-[#e4ebf5] border border-blue-500 rounded text-[#3490dc] overflow-hidden w-16 h-8">
-                                            <input type="text" value={item.stock || "-"} readOnly className="w-10 bg-transparent px-2 text-center text-xs outline-none font-black flex-1 text-slate-900" />
+                                    <td className="px-3 py-2.5">
+                                        <div className="flex items-center bg-blue-50 border border-blue-200 rounded-lg text-blue-600 overflow-hidden w-16 h-8">
+                                            <input type="text" value={item.stock || "-"} readOnly className="w-10 bg-transparent px-2 text-center text-xs outline-none font-black flex-1" />
                                             <button className="pr-2 bg-transparent hover:opacity-80"><RotateCw size={13} /></button>
                                         </div>
                                     </td>
-                                    <td className="px-1.5 py-1.5 text-center border-r border-[#e4ebf5]">
-                                        <div className={`w-5 h-5 rounded-full mx-auto ${item.autoCalculate ? "bg-[#00b050]" : "bg-slate-400 border border-slate-500"}`} />
+                                    <td className="px-3 py-2.5 text-center">
+                                        <div className={`w-5 h-5 rounded-full mx-auto shadow-inner ${item.autoCalculate ? "bg-emerald-500" : "bg-slate-300"}`} />
                                     </td>
-                                    <td className="px-1.5 py-1.5 border-r border-[#e4ebf5] text-center">
+                                    <td className="px-3 py-2.5 text-center">
                                         {item.inStock ? (
-                                            <span onClick={() => handleToggleStatus(item)} className="cursor-pointer select-none border border-[#00b050] text-[#00b050] px-2 py-0.5 rounded text-[10px] font-black w-max mx-auto bg-white hover:bg-green-50 transition-colors">#faol</span>
+                                            <span onClick={() => handleToggleStatus(item)} className="cursor-pointer select-none bg-emerald-50 border border-emerald-200 text-emerald-600 px-2.5 py-1 rounded-md text-[11px] font-bold w-max mx-auto hover:bg-emerald-100 transition-colors">#faol</span>
                                         ) : (
-                                            <span onClick={() => handleToggleStatus(item)} className="cursor-pointer select-none border border-slate-500 text-slate-700 px-2 py-0.5 rounded text-[10px] font-black w-max mx-auto bg-white shadow-sm hover:bg-slate-50 transition-colors">#nofaol</span>
+                                            <span onClick={() => handleToggleStatus(item)} className="cursor-pointer select-none bg-slate-50 border border-slate-200 text-slate-500 px-2.5 py-1 rounded-md text-[11px] font-bold w-max mx-auto hover:bg-slate-100 transition-colors">#nofaol</span>
                                         )}
                                     </td>
-                                    <td className="px-1.5 py-1.5 rounded-r-lg space-x-2 text-right">
-                                        <button onClick={() => handleOpenModal(item)} className="p-1.5 border border-[#3490dc] text-[#3490dc] hover:bg-blue-50 bg-white rounded transition"><Pencil size={13} /></button>
-                                        <button onClick={() => handleDelete(item.id)} className="p-1.5 border border-[#e3342f] text-[#e3342f] hover:bg-red-50 bg-white rounded transition"><Trash2 size={13} /></button>
+                                    <td className="px-3 py-2.5 rounded-r-xl space-x-2 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onClick={() => handleOpenModal(item)} className="p-2 border border-blue-200 text-blue-600 hover:bg-blue-50 bg-white rounded-lg transition shadow-sm"><Pencil size={14} /></button>
+                                        <button onClick={() => handleDelete(item.id)} className="p-2 border border-red-200 text-red-600 hover:bg-red-50 bg-white rounded-lg transition shadow-sm"><Trash2 size={14} /></button>
                                     </td>
                                 </tr>
                             );
@@ -483,87 +514,103 @@ export default function TaomlarPage() {
                         </button>
                     </div>
 
-                    <form onSubmit={handleSave} className="flex-1 flex flex-col lg:flex-row gap-6 overflow-y-auto lg:overflow-hidden min-h-0 px-6 py-4">
+                    <form onSubmit={handleSave} className="flex-1 overflow-y-auto px-6 py-6 bg-slate-50/50">
+                        <div className="max-w-3xl mx-auto flex flex-col gap-6 pb-20">
 
-                            {/* Left column - 2/3 width */}
-                            <div className="flex-[2] lg:overflow-y-auto space-y-6 pb-4">
+                            {/* Main Info Block */}
+                            <div className="space-y-6">
                                 <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm space-y-8">
-                                    {/* Image upload box - drag & drop */}
-                                    <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-2">Rasm</label>
-                                        <div
-                                            className={`relative w-full h-48 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden group
-                                                ${formData.image ? "border-blue-400 bg-blue-50" : "border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50"}`}
-                                            onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add("border-blue-500", "bg-blue-100"); }}
-                                            onDragLeave={(e) => { e.currentTarget.classList.remove("border-blue-500", "bg-blue-100"); }}
-                                            onDrop={(e) => {
-                                                e.preventDefault();
-                                                e.currentTarget.classList.remove("border-blue-500", "bg-blue-100");
-                                                const file = e.dataTransfer.files?.[0];
-                                                if (file && file.type.startsWith("image/")) {
-                                                    const reader = new FileReader();
-                                                    reader.onloadend = () => setFormData({ ...formData, image: reader.result as string });
-                                                    reader.readAsDataURL(file);
-                                                }
-                                            }}
-                                            onClick={() => (document.getElementById("taom-rasm-input") as HTMLInputElement)?.click()}
-                                        >
-                                            {formData.image ? (
-                                                <>
-                                                    <img src={formData.image} alt="taom rasmi" className="absolute inset-0 w-full h-full object-contain p-2" />
-                                                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2">
-                                                        <ImageIcon size={28} className="text-white" />
-                                                        <span className="text-white text-sm font-bold">Rasmni o&apos;zgartirish</span>
+                                    
+                                    <div className="flex flex-col sm:flex-row gap-8">
+                                        {/* Image upload box - 3x4 format */}
+                                        <div className="shrink-0">
+                                            <label className="block text-sm font-bold text-slate-700 mb-2">Rasm (3x4)</label>
+                                            <div
+                                                className={`relative w-36 h-48 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden group
+                                                    ${formData.image ? "border-blue-400 bg-blue-50" : "border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50"}`}
+                                                onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add("border-blue-500", "bg-blue-100"); }}
+                                                onDragLeave={(e) => { e.currentTarget.classList.remove("border-blue-500", "bg-blue-100"); }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    e.currentTarget.classList.remove("border-blue-500", "bg-blue-100");
+                                                    const file = e.dataTransfer.files?.[0];
+                                                    if (file && file.type.startsWith("image/")) {
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => setFormData({ ...formData, image: reader.result as string });
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                                onClick={() => (document.getElementById("taom-rasm-input") as HTMLInputElement)?.click()}
+                                            >
+                                                {formData.image ? (
+                                                    <>
+                                                        <img src={formData.image} alt="taom rasmi" className="absolute inset-0 w-full h-full object-cover" />
+                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2">
+                                                            <ImageIcon size={24} className="text-white" />
+                                                            <span className="text-white text-xs font-bold text-center px-2">O'zgartirish</span>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, image: null }); }}
+                                                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 shadow z-10"
+                                                        >
+                                                            <X size={12} />
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <div className="flex flex-col items-center gap-2 pointer-events-none text-slate-400 px-4 text-center">
+                                                        <ImageIcon size={32} className="text-slate-300" />
+                                                        <p className="text-xs font-bold text-slate-500">Rasm yuklash</p>
+                                                        <p className="text-[10px] text-slate-400">PNG, JPG</p>
                                                     </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, image: null }); }}
-                                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 shadow z-10"
+                                                )}
+                                            </div>
+                                            <input
+                                                id="taom-rasm-input"
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => setFormData({ ...formData, image: reader.result as string });
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+
+                                        <div className="flex-1 flex flex-col justify-between space-y-4">
+                                            <div>
+                                                <label className="block text-sm font-black text-slate-900 mb-1.5">Nomi <span className="text-red-600">*</span></label>
+                                                <input type="text" placeholder="Nomni kiriting" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required className="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-600 transition placeholder:text-slate-400 font-bold text-slate-900 shadow-sm" />
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm font-black text-slate-900 mb-1.5">Menyu</label>
+                                                    <select 
+                                                        value={formData.categoryId} 
+                                                        onChange={e => {
+                                                            if (e.target.value === "ADD_NEW") {
+                                                                setIsNewMenuModalOpen(true);
+                                                            } else {
+                                                                setFormData({ ...formData, categoryId: e.target.value });
+                                                            }
+                                                        }} 
+                                                        className="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-600 transition appearance-none bg-white font-bold text-slate-900 shadow-sm"
                                                     >
-                                                        <X size={14} />
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <div className="flex flex-col items-center gap-2 pointer-events-none text-slate-400">
-                                                    <ImageIcon size={36} className="text-slate-300" />
-                                                    <p className="text-sm font-bold text-slate-500">Rasmni bu yerga tashlang</p>
-                                                    <p className="text-xs text-slate-400">yoki bosib yukl ang (PNG, JPG, WEBP)</p>
+                                                        <option value="">Menyuni tanlang</option>
+                                                        {dbCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                                                        <option value="ADD_NEW" className="font-bold text-blue-600 bg-blue-50">+ Yangi menyu qo'shish</option>
+                                                    </select>
                                                 </div>
-                                            )}
+                                                <div>
+                                                    <label className="block text-sm font-black text-slate-900 mb-1.5">Saralashtirish</label>
+                                                    <input type="text" placeholder="Tartib raqami" value={formData.sortOrder || ""} onChange={e => setFormData({ ...formData, sortOrder: e.target.value })} className="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-600 transition placeholder:text-slate-400 font-bold text-slate-900 shadow-sm" />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <input
-                                            id="taom-rasm-input"
-                                            type="file"
-                                            accept="image/*"
-                                            className="hidden"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) {
-                                                    const reader = new FileReader();
-                                                    reader.onloadend = () => setFormData({ ...formData, image: reader.result as string });
-                                                    reader.readAsDataURL(file);
-                                                }
-                                            }}
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="block text-sm font-black text-slate-900 mb-2">Nomi <span className="text-red-600">*</span></label>
-                                            <input type="text" placeholder="Nomni kiriting" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required className="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-600 transition placeholder:text-slate-400 font-bold text-slate-900" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-black text-slate-900 mb-2">Menyu</label>
-                                            <select value={formData.categoryId} onChange={e => setFormData({ ...formData, categoryId: e.target.value })} className="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-600 transition appearance-none bg-white font-bold text-slate-900">
-                                                <option value="">Menyuni tanlang</option>
-                                                {dbCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-2">Saralashtirish</label>
-                                        <input type="text" placeholder="Saralashtirishni kiriting" value={formData.sortOrder || ""} onChange={e => setFormData({ ...formData, sortOrder: e.target.value })} className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 transition placeholder:text-slate-300" />
                                     </div>
 
                                     <div className="pt-4 border-t border-slate-100">
@@ -669,8 +716,8 @@ export default function TaomlarPage() {
                                 </div>
                             </div>
 
-                            {/* Right column - 1/3 width */}
-                            <div className="flex-[1] bg-white rounded-2xl p-6 lg:p-8 border border-slate-200 shadow-sm space-y-6 lg:overflow-y-auto">
+                            {/* Additional Settings Block (Previously Right Column) */}
+                            <div className="bg-white rounded-2xl p-6 lg:p-8 border border-slate-200 shadow-sm space-y-6">
 
                                 {/* Type toggle */}
                                 <div className="flex p-1 bg-slate-200 rounded-xl max-w-sm">
@@ -810,12 +857,13 @@ export default function TaomlarPage() {
                                     </button>
                                 </div>
 
-                                <div className="pt-4">
-                                    <button type="submit" className="w-[120px] py-3 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-600/20">
+                                <div className="pt-6 border-t border-slate-100">
+                                    <button type="submit" className="w-full py-4 rounded-xl bg-blue-600 text-white text-base font-black hover:bg-blue-700 transition shadow-md">
                                         {editingItem ? t('common.edit') : t('common.add')}
                                     </button>
                                 </div>
                             </div>
+                        </div>
                     </form>
                 </div>,
                 document.body
@@ -989,6 +1037,294 @@ export default function TaomlarPage() {
                                     setIsRecipeModalOpen(false);
                                 }} className="px-6 py-2.5 bg-[#007bff] text-white rounded-md text-[13px] font-bold hover:bg-[#0069d9] transition shadow-sm whitespace-nowrap h-[38px] flex items-center">
                                     Qo'shish
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {/* Sub Modal: Yangi menyu qo'shish */}
+            {isNewMenuModalOpen && createPortal(
+                <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in px-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm flex flex-col border border-slate-200">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50 shrink-0">
+                            <h3 className="text-base font-black text-slate-900">Yangi menyu qo'shish</h3>
+                            <button onClick={() => setIsNewMenuModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-white text-slate-600 hover:bg-slate-100 rounded-full transition border border-slate-200">
+                                <X size={16} strokeWidth={2.5} />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Menyu nomi</label>
+                                <input
+                                    type="text"
+                                    placeholder="Masalan: Milliy taomlar"
+                                    value={newMenuName}
+                                    onChange={e => setNewMenuName(e.target.value)}
+                                    autoFocus
+                                    className="w-full border border-slate-300 focus:border-blue-500 rounded-xl px-4 py-3 text-sm outline-none font-bold placeholder:text-slate-300 transition"
+                                />
+                            </div>
+                            <div className="flex justify-end gap-3 pt-2">
+                                <button type="button" onClick={() => setIsNewMenuModalOpen(false)} className="px-4 py-2.5 rounded-xl text-slate-700 hover:bg-slate-100 text-sm font-bold transition">
+                                    Bekor qilish
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (newMenuName.trim()) {
+                                            const newId = "cat_" + Date.now();
+                                            const newCat = { id: newId, name: newMenuName.trim() };
+                                            setDbCategories(prev => [...prev, newCat]);
+                                            setFormData({ ...formData, categoryId: newId });
+                                            setNewMenuName("");
+                                            setIsNewMenuModalOpen(false);
+                                        }
+                                    }}
+                                    className="px-6 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition shadow-sm"
+                                >
+                                    Qo'shish
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {/* Bulk Add Modal */}
+            {isBulkModalOpen && createPortal(
+                <div className="fixed inset-0 z-[140] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl flex flex-col border border-slate-200 max-h-[90vh]">
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50 shrink-0 rounded-t-2xl">
+                            <div className="flex items-center gap-3">
+                                <div className="w-2 h-7 bg-emerald-500 rounded"></div>
+                                <div>
+                                    <h3 className="text-base font-black text-slate-900">Ko'plikda taom qo'shish</h3>
+                                    <p className="text-xs text-slate-500 font-medium mt-0.5">Har bir qatorga taom ma'lumotlarini kiriting, tayyor bo'lgach "Saqlash" tugmasini bosing</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setIsBulkModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-white text-slate-600 hover:bg-slate-100 rounded-full transition border border-slate-200">
+                                <X size={16} strokeWidth={2.5} />
+                            </button>
+                        </div>
+
+                        {/* Table */}
+                        <div className="overflow-x-auto overflow-y-auto flex-1 px-4 py-4">
+                            {/* Column Headers */}
+                            <div className="grid gap-2 mb-2 px-2 min-w-[1050px]" style={{gridTemplateColumns: '2fr 1.1fr 0.85fr 1.1fr 0.75fr 0.75fr 1fr 0.6fr 44px 32px'}}>
+                                <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Taom nomi <span className="text-red-500">*</span></span>
+                                <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Menyu</span>
+                                <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Sotish narxi</span>
+                                <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Printer</span>
+                                <span className="text-xs font-black text-slate-500 uppercase tracking-wider">O'lchov</span>
+                                <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Turi</span>
+                                <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Sklad</span>
+                                <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Sort</span>
+                                <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Rasm</span>
+                                <span className="w-8"></span>
+                            </div>
+
+                            <div className="space-y-2 min-w-[1050px]">
+                                {bulkRows.map((row, idx) => (
+                                    <div key={idx} className="grid gap-2 items-center bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 hover:border-blue-300 transition" style={{gridTemplateColumns: '2fr 1.1fr 0.85fr 1.1fr 0.75fr 0.75fr 1fr 0.6fr 44px 32px'}}>
+                                        {/* Nomi */}
+                                        <input
+                                            type="text"
+                                            placeholder={`${idx + 1}. Taom nomi...`}
+                                            value={row.name}
+                                            onChange={e => {
+                                                const updated = [...bulkRows];
+                                                updated[idx] = { ...updated[idx], name: e.target.value };
+                                                setBulkRows(updated);
+                                                // Auto-add new row when typing in the last row
+                                                if (idx === bulkRows.length - 1 && e.target.value.trim()) {
+                                                    setBulkRows([...updated, emptyBulkRow()]);
+                                                }
+                                            }}
+                                            className="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 font-bold placeholder:text-slate-300 bg-white transition"
+                                        />
+                                        {/* Menyu */}
+                                        <select
+                                            value={row.categoryId}
+                                            onChange={e => {
+                                                const updated = [...bulkRows];
+                                                updated[idx] = { ...updated[idx], categoryId: e.target.value };
+                                                setBulkRows(updated);
+                                            }}
+                                            className="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 font-medium bg-white appearance-none transition"
+                                        >
+                                            <option value="">Tanlang</option>
+                                            {dbCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                                        </select>
+                                        {/* Narx */}
+                                        <input
+                                            type="number"
+                                            placeholder="0"
+                                            value={row.price}
+                                            onChange={e => {
+                                                const updated = [...bulkRows];
+                                                updated[idx] = { ...updated[idx], price: e.target.value };
+                                                setBulkRows(updated);
+                                            }}
+                                            className="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 font-bold placeholder:text-slate-300 bg-white transition"
+                                        />
+                                        {/* Printer */}
+                                        <select
+                                            value={row.printer}
+                                            onChange={e => {
+                                                const updated = [...bulkRows];
+                                                updated[idx] = { ...updated[idx], printer: e.target.value };
+                                                setBulkRows(updated);
+                                            }}
+                                            className="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 font-medium bg-white appearance-none transition w-full"
+                                        >
+                                            <option value="">Printer yo'q</option>
+                                            {printersList.map(p => (
+                                                <option key={p.id} value={p.ipAddress}>{p.name}</option>
+                                            ))}
+                                        </select>
+                                        {/* O'lchov */}
+                                        <select
+                                            value={row.unit}
+                                            onChange={e => {
+                                                const updated = [...bulkRows];
+                                                updated[idx] = { ...updated[idx], unit: e.target.value };
+                                                setBulkRows(updated);
+                                            }}
+                                            className="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 font-medium bg-white appearance-none transition"
+                                        >
+                                            <option value="dona">Dona</option>
+                                            <option value="kg">Kg</option>
+                                            <option value="litr">Litr</option>
+                                            <option value="porsiya">Porsiya</option>
+                                        </select>
+                                        {/* Turi */}
+                                        <select
+                                            value={row.type}
+                                            onChange={e => {
+                                                const updated = [...bulkRows];
+                                                updated[idx] = { ...updated[idx], type: e.target.value, warehouse: e.target.value === "taom" ? "" : updated[idx].warehouse };
+                                                setBulkRows(updated);
+                                            }}
+                                            className="border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 font-medium bg-white appearance-none transition"
+                                        >
+                                            <option value="taom">Taom</option>
+                                            <option value="mahsulot">Mahsulot</option>
+                                        </select>
+                                        {/* Sklad — only when mahsulot */}
+                                        {row.type === "mahsulot" ? (
+                                            <select
+                                                value={row.warehouse}
+                                                onChange={e => {
+                                                    const updated = [...bulkRows];
+                                                    updated[idx] = { ...updated[idx], warehouse: e.target.value };
+                                                    setBulkRows(updated);
+                                                }}
+                                                className="border-2 border-orange-300 rounded-lg px-2 py-2 text-xs outline-none focus:border-orange-500 font-bold bg-orange-50 appearance-none transition w-full"
+                                            >
+                                                <option value="">Sklad yo'q</option>
+                                                <option value="Asosiy Ombor">Asosiy Ombor</option>
+                                                <option value="Zaxira Ombor">Zaxira Ombor</option>
+                                                <option value="Bufet Ombor">Bufet Ombor</option>
+                                            </select>
+                                        ) : (
+                                            <div className="flex items-center justify-center text-slate-300 text-xs font-medium">—</div>
+                                        )}
+                                        {/* Sort Order */}
+                                        <input
+                                            type="number"
+                                            placeholder="0"
+                                            value={row.sortOrder}
+                                            onChange={e => {
+                                                const updated = [...bulkRows];
+                                                updated[idx] = { ...updated[idx], sortOrder: e.target.value };
+                                                setBulkRows(updated);
+                                            }}
+                                            className="border border-slate-300 rounded-lg px-2 py-2 text-sm outline-none focus:border-blue-500 font-bold placeholder:text-slate-300 bg-white transition text-center"
+                                        />
+                                        {/* Rasm */}
+                                        <label className="relative w-10 h-10 flex items-center justify-center cursor-pointer rounded-lg border-2 border-dashed border-slate-300 hover:border-blue-400 overflow-hidden group transition shrink-0">
+                                            {row.image ? (
+                                                <>
+                                                    <img src={row.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                                        <ImageIcon size={12} className="text-white" />
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <ImageIcon size={16} className="text-slate-400 group-hover:text-blue-500 transition" />
+                                            )}
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={e => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => {
+                                                            const updated = [...bulkRows];
+                                                            updated[idx] = { ...updated[idx], image: reader.result as string };
+                                                            setBulkRows(updated);
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+                                        {/* Delete row */}
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (bulkRows.length === 1) return;
+                                                setBulkRows(bulkRows.filter((_, i) => i !== idx));
+                                            }}
+                                            className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition shrink-0"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Add row manually */}
+                            <button
+                                type="button"
+                                onClick={() => setBulkRows([...bulkRows, emptyBulkRow()])}
+                                className="mt-3 flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-emerald-600 border border-dashed border-emerald-300 rounded-xl w-full justify-center hover:bg-emerald-50 transition"
+                            >
+                                <Plus size={16} /> Yangi qator qo'shish
+                            </button>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between shrink-0 bg-slate-50 rounded-b-2xl">
+                            <span className="text-sm text-slate-500 font-medium">
+                                {bulkRows.filter(r => r.name.trim()).length} ta taom saqlashga tayyor
+                            </span>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsBulkModalOpen(false)}
+                                    className="px-5 py-2.5 rounded-xl text-slate-700 hover:bg-slate-200 text-sm font-bold transition border border-slate-300"
+                                >
+                                    Bekor qilish
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleBulkSave}
+                                    disabled={bulkSaving}
+                                    className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-black hover:bg-emerald-700 transition shadow-md disabled:opacity-60 flex items-center gap-2"
+                                >
+                                    {bulkSaving ? (
+                                        <><RotateCw size={16} className="animate-spin" /> Saqlanmoqda...</>
+                                    ) : (
+                                        <><Check size={16} /> Hammasini saqlash</>
+                                    )}
                                 </button>
                             </div>
                         </div>

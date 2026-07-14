@@ -2,7 +2,7 @@
  * /api/smart/print-queue/process — server-worker tick
  * Server o'zi pending joblarni claim qilib chop etadi (EXE rejimi —
  * server printer bilan bitta lokal tarmoqda).
- * POS sahifasi yoki tray-agent har 5-10s da chaqiradi.
+ * Desktop agent (tray-agent.js) har 1s da chaqiradi.
  */
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";

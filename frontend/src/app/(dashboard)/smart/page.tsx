@@ -1015,38 +1015,46 @@ export default function UbtPage() {
 
                 {!loading && (
                     <div className="space-y-4">
+                        {/* Top 3-Column Stats Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            {/* Bugungi savdo */}
+                            <StatCard label="Bugungi savdo" value={`${fmt(totalRevenue)} so'm`} icon={ShoppingBag}
+                                gradient="bg-gradient-to-br from-blue-600 to-blue-800"
+                                sub={`${stats.today.count} ta tranzaksiya`} />
+
+                            {/* Premium Finance Summary */}
+                            <div className="rounded-3xl p-6 relative overflow-hidden shadow-sm"
+                                style={{ background: "rgba(59,130,246,0.05)", border: "1px solid rgba(59,130,246,0.2)" }}>
+                                <div className="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/10 blur-[40px] rounded-full pointer-events-none" />
+                                <p className="text-xs font-bold text-blue-600 mb-1.5 flex items-center gap-1.5"><DollarSign size={14} />{t('reports.netProfit')}</p>
+                                <p className="text-4xl font-black text-slate-800 tracking-tight">
+                                    {fmt(stats.finance.netProfit)} <span className="text-base text-blue-600 font-bold">so'm</span>
+                                </p>
+
+                                <div className="flex items-center justify-between gap-4 mt-6 pt-5 border-t border-blue-500/20">
+                                    <div>
+                                        <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-600 mb-1 flex items-center gap-1"><TrendingUp size={12} />{t('dashboard.totalRevenue')}</p>
+                                        <p className="text-sm font-bold text-slate-800">{fmt(stats.finance.totalIncome)}</p>
+                                    </div>
+                                    <div className="w-px h-8 bg-blue-500/30" />
+                                    <div>
+                                        <p className="text-[10px] uppercase tracking-widest font-bold text-red-500 mb-1 flex items-center gap-1"><TrendingDown size={12} />{t('reports.totalExpense')}</p>
+                                        <p className="text-sm font-bold text-slate-800">- {fmt(stats.finance.totalExpense)}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Jami zakazlar */}
+                            <StatCard label="Jami zakazlar" value={`${stats.today.count} ta`} icon={Package}
+                                gradient="bg-gradient-to-br from-indigo-500 to-indigo-700"
+                                sub="Bugungi barcha buyurtmalar" />
+                        </div>
+
                         {/* Main Content Grid */}
-                        <div className="grid grid-cols-12 gap-5">
+                        <div className="grid grid-cols-12 gap-5 mt-5">
 
                             {/* Left Column: Finance & Payment Types (4 width) */}
                             <div className="col-span-12 lg:col-span-4 space-y-5">
-
-                                {/* Bugungi savdo */}
-                                <StatCard label="Bugungi savdo" value={`${fmt(totalRevenue)} so'm`} icon={ShoppingBag}
-                                    gradient="bg-gradient-to-br from-blue-600 to-blue-800"
-                                    sub={`${stats.today.count} ta tranzaksiya`} />
-
-                                {/* Premium Finance Summary */}
-                                <div className="rounded-3xl p-6 relative overflow-hidden shadow-sm"
-                                    style={{ background: "rgba(59,130,246,0.05)", border: "1px solid rgba(59,130,246,0.2)" }}>
-                                    <div className="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/10 blur-[40px] rounded-full pointer-events-none" />
-                                    <p className="text-xs font-bold text-blue-600 mb-1.5 flex items-center gap-1.5"><DollarSign size={14} />{t('reports.netProfit')}</p>
-                                    <p className="text-4xl font-black text-slate-800 tracking-tight">
-                                        {fmt(stats.finance.netProfit)} <span className="text-base text-blue-600 font-bold">so'm</span>
-                                    </p>
-
-                                    <div className="flex items-center justify-between gap-4 mt-6 pt-5 border-t border-blue-500/20">
-                                        <div>
-                                            <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-600 mb-1 flex items-center gap-1"><TrendingUp size={12} />{t('dashboard.totalRevenue')}</p>
-                                            <p className="text-sm font-bold text-slate-800">{fmt(stats.finance.totalIncome)}</p>
-                                        </div>
-                                        <div className="w-px h-8 bg-blue-500/30" />
-                                        <div>
-                                            <p className="text-[10px] uppercase tracking-widest font-bold text-red-500 mb-1 flex items-center gap-1"><TrendingDown size={12} />{t('reports.totalExpense')}</p>
-                                            <p className="text-sm font-bold text-slate-800">- {fmt(stats.finance.totalExpense)}</p>
-                                        </div>
-                                    </div>
-                                </div>
 
                                 {/* Dynamic Payment Breakdown */}
                                 <div className="rounded-3xl overflow-hidden shadow-sm bg-white border border-slate-200">

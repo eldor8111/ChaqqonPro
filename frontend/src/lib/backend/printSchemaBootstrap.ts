@@ -5,11 +5,11 @@
  */
 import { prisma } from "@/lib/backend/db";
 
-let bootstrapped = false;
+const globalAny = globalThis as any;
 
 export async function ensurePrintSchema(): Promise<void> {
-    if (bootstrapped) return;
-    bootstrapped = true;
+    if (globalAny.__printSchemaBootstrapped) return;
+    globalAny.__printSchemaBootstrapped = true;
 
     // SmartPrinter ga yangi ustunlar (mavjud bo'lsa xato — e'tiborsiz)
     const alters = [

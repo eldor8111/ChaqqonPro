@@ -1162,7 +1162,11 @@ export default function UbtPosPage() {
     const store = useStore();
     const tables = store.smartTables;
     const waiterName = store.kassirSession?.name ?? "Xodim";
-    const hasPaymentPerm = ["Kassir", "Administrator", "Menejer", "Manablog"].includes((store.kassirSession as any)?.role) || store.kassirSession?.id === "admin" || !store.kassirSession;
+    const _sess = store.kassirSession || (store as any).deviceSession;
+    const _perms = _sess?.permissions || [];
+    const hasPaymentPerm = ["Administrator", "Manablog"].includes((_sess as any)?.role) || _sess?.id === "admin" || !_sess || _perms.includes("acceptCash") || _perms.includes("Kassir");
+    const hasVoidPerm = ["Administrator", "Manablog"].includes((_sess as any)?.role) || _sess?.id === "admin" || !_sess || _perms.includes("refunds") || _perms.includes("Menejer");
+    const hasDiscountPerm = ["Administrator", "Manablog"].includes((_sess as any)?.role) || _sess?.id === "admin" || !_sess || _perms.includes("discounts");
 
     const [printerStatus, setPrinterStatus] = useState<{ id: string; name: string; online: boolean }[]>([]);
     const [pingStatus, setPingStatus] = useState<Record<string, "ok" | "fail" | "checking">>({});
@@ -1268,9 +1272,13 @@ export default function UbtPosPage() {
     const [cancelError, setCancelError] = useState("");
 
     const requireCancelCode = (action: () => void) => {
+        if (hasVoidPerm) {
+            action();
+            return;
+        }
         const adminCode = _menuCache?.cancelCode;
         if (!adminCode) {
-            action();
+            alert("Sizda bekor qilish huquqi yo'q. Iltimos adminga murojaat qiling.");
             return;
         }
         setCancelInput("");
@@ -2412,12 +2420,15 @@ export default function UbtPosPage() {
         return c;
     }, [tables]);
 
-    const TABS = [
-        { id: "tables",      icon: UtensilsCrossed, label: t("tablesLabel", lang),    count: activeCnt, color: "bg-sky-500" },
-        { id: "takeaway",    icon: Package,          label: t("takeawayLabel", lang), count: twOrders.filter(o => o.status === "pending").length, color: "bg-blue-500" },
-        { id: "delivery",    icon: Bike,             label: t("deliveryLabel", lang), count: dlOrders.filter(o => o.status === "pending").length, color: "bg-purple-500" },
+    const _canZal = _perms.includes("zal") || !_perms.some((p: string) => ["zal", "delivery", "takeaway"].includes(p));
+    const _canDelivery = _perms.includes("delivery") || !_perms.some((p: string) => ["zal", "delivery", "takeaway"].includes(p));
+    const _canTakeaway = _perms.includes("takeaway") || !_perms.some((p: string) => ["zal", "delivery", "takeaway"].includes(p));
 
-    ] as const;
+    const TABS = [
+        ...(_canZal ? [{ id: "tables",      icon: UtensilsCrossed, label: t("tablesLabel", lang),    count: activeCnt, color: "bg-sky-500" }] : []),
+        ...(_canTakeaway ? [{ id: "takeaway",    icon: Package,          label: t("takeawayLabel", lang), count: twOrders.filter(o => o.status === "pending").length, color: "bg-blue-500" }] : []),
+        ...(_canDelivery ? [{ id: "delivery",    icon: Bike,             label: t("deliveryLabel", lang), count: dlOrders.filter(o => o.status === "pending").length, color: "bg-purple-500" }] : []),
+    ] as any;
 
     return (
     <PosCtx.Provider value={{ lang, dark }}>

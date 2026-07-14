@@ -242,7 +242,7 @@ export default function MoliyaPage() {
                             {(["all", "income", "expense"] as const).map(tab => (
                                 <button key={tab} onClick={() => setActiveTab(tab)}
                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === tab ? "bg-blue-500 text-white" : "text-slate-500 hover:text-slate-800 bg-slate-100"}`}>
-                                    {tab === "all" ? t('common.all') || "Barchasi" : tab === "income" ? "✅ Kirimlar" : "❌ Xarajatlar"}
+                                    {tab === "all" ? t('common.all') : tab === "income" ? "Kirimlar" : "Xarajatlar"}
                                 </button>
                             ))}
                             <button onClick={fetchData} className="p-1.5 text-slate-500 hover:text-slate-800 bg-slate-100 rounded-lg transition">

@@ -73,12 +73,8 @@ export default function RootLayout({
                 <meta name="apple-mobile-web-app-title" content="EVIKO" />
                 {/* manifest endi metadata orqali beriladi (route bo'yicha override qilinadi) */}
                 <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                <link
-                    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-                    rel="stylesheet"
-                />
+                {/* Times New Roman system font ishlatilmoqda */}
+                <style>{`* { font-family: 'Times New Roman', Times, serif !important; }`}</style>
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{

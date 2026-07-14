@@ -51,9 +51,10 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
             } catch {}
         };
         fetchNotifs();
-        const interval = setInterval(fetchNotifs, 60000); // 1 daqiqada yangilanadi
+        const interval = setInterval(fetchNotifs, 120000); // 2 daqiqada yangilanadi
         return () => { mounted = false; clearInterval(interval); };
-    }, [user?.id, showNotif]); // Also refresh when opened
+    }, [user?.id]); // showNotif olib tashlandi — har ochilganda re-subscribe bo'lmas uchun
+
 
     return (
         <>
