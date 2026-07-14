@@ -7,8 +7,26 @@ import {
     Plus, Minus, Receipt, X, CreditCard, Banknote,
     Search, CheckCircle, Check, RefreshCw, Printer,
     ShoppingBag, Lock, Phone, MapPin, User, Calendar,
-    Sun, ChevronLeft, TrendingUp, BarChart2
+    Sun, ChevronLeft, TrendingUp, BarChart2, ImageIcon
 } from "lucide-react";
+
+// POS Backgrounds
+const POS_BACKGROUNDS = [
+    { id: "default", value: "", name: "Standart (Bo'sh)", type: "color" },
+    { id: "c1", value: "#0f172a", name: "To'q ko'k", type: "color" },
+    { id: "c2", value: "#1c1917", name: "To'q jigarrang", type: "color" },
+    { id: "c3", value: "#000000", name: "Qora", type: "color" },
+    { id: "i1", value: "https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=1920&auto=format&fit=crop", name: "Restoran 1", type: "image" },
+    { id: "i2", value: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1920&auto=format&fit=crop", name: "Restoran 2", type: "image" },
+    { id: "i3", value: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1920&auto=format&fit=crop", name: "Oshxona", type: "image" },
+    { id: "i4", value: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1920&auto=format&fit=crop", name: "Taom", type: "image" },
+    { id: "i5", value: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop", name: "Abstrakt 1", type: "image" },
+    { id: "i6", value: "https://images.unsplash.com/photo-1600565193334-c7746241b714?q=80&w=1920&auto=format&fit=crop", name: "Abstrakt 2", type: "image" },
+    { id: "i7", value: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1920&auto=format&fit=crop", name: "Arxitektura", type: "image" },
+    { id: "i8", value: "https://images.unsplash.com/photo-1505934333218-8fe9d9c878ee?q=80&w=1920&auto=format&fit=crop", name: "Kafe 1", type: "image" },
+    { id: "i9", value: "https://images.unsplash.com/photo-1525610553991-2bede1a236e2?q=80&w=1920&auto=format&fit=crop", name: "Kafe 2", type: "image" },
+    { id: "i10", value: "https://images.unsplash.com/photo-1495474472200-cce190af1d03?q=80&w=1920&auto=format&fit=crop", name: "Kofe", type: "image" },
+];
 import { useStore, SmartTable } from "@/lib/store";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 
@@ -1209,6 +1227,21 @@ export default function UbtPosPage() {
     const [tab, setTab] = useState<"tables" | "takeaway" | "delivery" | "reservation">("tables");
     const [showLanDiscover, setShowLanDiscover] = useState(false);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    
+    // Background selection states
+    const [posBg, setPosBg] = useState("");
+    const [showPosBgMenu, setShowPosBgMenu] = useState(false);
+
+    useEffect(() => {
+        const savedBg = localStorage.getItem("eviko_pos_bg");
+        if (savedBg) setPosBg(savedBg);
+    }, []);
+
+    const changePosBg = (val: string) => {
+        setPosBg(val);
+        localStorage.setItem("eviko_pos_bg", val);
+        setShowPosBgMenu(false);
+    };
     const [lanDiscoveredList, setLanDiscoveredList] = useState<{ ip: string; port: number; method?: string; name?: string }[]>([]);
     const [loadingLanDiscover, setLoadingLanDiscover] = useState(false);
     const [lanSaving, setLanSaving] = useState("");
@@ -2523,7 +2556,16 @@ export default function UbtPosPage() {
 
     return (
     <PosCtx.Provider value={{ lang, dark }}>
-        <div className={`h-screen flex flex-col overflow-hidden select-none ${dark ? "dark" : ""} ${th.bg(dark)}`}>
+        <div 
+            className={`h-screen flex flex-col overflow-hidden select-none ${dark ? "dark" : ""} ${!posBg ? th.bg(dark) : (dark ? "text-slate-200" : "text-slate-800")}`}
+            style={
+                posBg 
+                ? (posBg.startsWith("http") || posBg.startsWith("/") || posBg.startsWith("data:"))
+                    ? { backgroundImage: `url(${posBg})`, backgroundSize: "cover", backgroundPosition: "center" }
+                    : { backgroundColor: posBg, backgroundImage: "none" }
+                : {}
+            }
+        >
             {showScreensaver && (
                 <LockScreensaver onUnlock={() => router.replace("/kassa/login?lock=1")} />
             )}
@@ -2687,6 +2729,49 @@ export default function UbtPosPage() {
                                                 <span>🎧</span> TEX YORDAM
                                             </button>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Background selection */}
+                        <div className="relative z-[120]">
+                            <button 
+                                onClick={() => setShowPosBgMenu(!showPosBgMenu)}
+                                className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${dark ? "bg-slate-700 text-white hover:bg-slate-600" : "bg-slate-200 text-slate-800 hover:bg-slate-300"} ${showPosBgMenu ? "ring-2 ring-sky-400" : ""}`} 
+                                title="Fonni o'zgartirish"
+                            >
+                                <ImageIcon size={15} />
+                            </button>
+                            
+                            {/* Overlay */}
+                            {showPosBgMenu && (
+                                <div className="fixed inset-0 z-[125]" onClick={() => setShowPosBgMenu(false)} />
+                            )}
+
+                            {/* Dropdown opens UPWARD/RIGHTWARD */}
+                            <div className={`absolute bottom-full left-full ml-2 mb-0 w-64 transition-all origin-bottom-left transform z-[130] ${showPosBgMenu ? "opacity-100 pointer-events-auto scale-100" : "opacity-0 pointer-events-none scale-95"}`}>
+                                <div className={`rounded-xl shadow-2xl border p-3 ${dark ? "bg-gray-800 border-gray-700 shadow-black/50" : "bg-white border-gray-200 shadow-gray-200/50"}`}>
+                                    <h4 className={`text-xs font-bold mb-3 ${dark ? "text-slate-300" : "text-slate-700"}`}>Orqa fonni tanlash</h4>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {POS_BACKGROUNDS.map((bg) => (
+                                            <button
+                                                key={bg.id}
+                                                onClick={() => changePosBg(bg.value)}
+                                                className={`relative w-full aspect-square rounded-lg overflow-hidden border-2 transition-all hover:scale-105 active:scale-95 ${posBg === bg.value ? "border-amber-400 shadow-md" : "border-transparent"}`}
+                                                title={bg.name}
+                                                style={bg.type === "color" && bg.value ? { backgroundColor: bg.value } : {}}
+                                            >
+                                                {bg.type === "color" && !bg.value && (
+                                                    <div className={`w-full h-full flex items-center justify-center ${dark ? "bg-slate-900" : "bg-slate-100"}`}>
+                                                        <span className="text-[9px] font-bold">X</span>
+                                                    </div>
+                                                )}
+                                                {bg.type === "image" && (
+                                                    <img src={bg.value} className="w-full h-full object-cover" alt={bg.name} />
+                                                )}
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
