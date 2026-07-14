@@ -1208,6 +1208,7 @@ export default function UbtPosPage() {
     const [pingStatus, setPingStatus] = useState<Record<string, "ok" | "fail" | "checking">>({});
     const [tab, setTab] = useState<"tables" | "takeaway" | "delivery" | "reservation">("tables");
     const [showLanDiscover, setShowLanDiscover] = useState(false);
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [lanDiscoveredList, setLanDiscoveredList] = useState<{ ip: string; port: number; method?: string; name?: string }[]>([]);
     const [loadingLanDiscover, setLoadingLanDiscover] = useState(false);
     const [lanSaving, setLanSaving] = useState("");
@@ -2638,12 +2639,23 @@ export default function UbtPosPage() {
                         <div className={`w-10 h-px mb-1 ${dark ? "bg-white/10" : "bg-slate-200"}`} />
 
                         {/* Profile avatar with dropdown — opens upward */}
-                        <div className="relative group z-[120]">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm cursor-pointer border-2 transition-all ${dark ? "bg-gray-600 text-gray-200 border-gray-500 hover:border-sky-400" : "bg-gray-200 text-gray-700 border-gray-300 hover:border-sky-400"}`}>
+                        <div className="relative z-[120]">
+                            <div 
+                                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm cursor-pointer border-2 transition-all ${dark ? "bg-gray-600 text-gray-200 border-gray-500 hover:border-sky-400" : "bg-gray-200 text-gray-700 border-gray-300 hover:border-sky-400"} ${showProfileMenu ? "border-sky-400" : ""}`}>
                                 {waiterName.charAt(0)}
                             </div>
+                            
+                            {/* Overlay to close menu when clicking outside */}
+                            {showProfileMenu && (
+                                <div 
+                                    className="fixed inset-0 z-[125]" 
+                                    onClick={() => setShowProfileMenu(false)}
+                                />
+                            )}
+
                             {/* Dropdown opens UPWARD */}
-                            <div className="absolute bottom-full left-full ml-2 mb-0 w-72 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all origin-bottom-left transform scale-95 group-hover:scale-100 z-[130]">
+                            <div className={`absolute bottom-full left-full ml-2 mb-0 w-72 transition-all origin-bottom-left transform z-[130] ${showProfileMenu ? "opacity-100 pointer-events-auto scale-100" : "opacity-0 pointer-events-none scale-95"}`}>
                                 <div className={`rounded-xl shadow-2xl border overflow-hidden ${dark ? "bg-gray-800 border-gray-700 shadow-black/50" : "bg-white border-gray-200 shadow-gray-200/50"}`}>
                                     <div className="p-3">
                                         {/* Attendance Widget */}
