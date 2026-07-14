@@ -371,6 +371,9 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
         if (_menuCache) { setMenu(_menuCache.items); setCats_(_menuCache.cats); }
         fetch("/api/smart/menu").then(r => r.json()).then(d => {
             const items = d.items ?? []; const cats = d.categories ?? [];
+            // Himoya: agar API bo'sh massiv qaytarsa (auth xatosi, server restart),
+            // mavjud keshdan foydalanib turish — taomlar o'chib ketmasin
+            if (items.length === 0 && _menuCache && _menuCache.items.length > 0) return;
             _menuCache = { items, cats, cancelCode: d.cancelCode || "", paymentMethods: d.paymentMethods || [], blockSell: !!d.blockSell };
             _menuCacheAt = Date.now();
             setMenu(items); setCats_(cats);
@@ -399,10 +402,15 @@ function MenuPanel({ onConfirm, onPay, kassirPrinterIp, autoPrintReceipt, instan
         const fetchMenu = () => {
             fetch("/api/smart/menu").then(r => r.json()).then(d => {
                 const items = d.items ?? []; const cats = d.categories ?? [];
+                // Himoya: agar API bo'sh massiv qaytarsa (token muddati tugagan, server restart)
+                // — mavjud taomlarni O'CHIRMAYDI, balki eski ma'lumotni saqlab qoladi
+                if (items.length === 0 && _menuCache && _menuCache.items.length > 0) return;
                 _menuCache = { items, cats, cancelCode: d.cancelCode || "", paymentMethods: d.paymentMethods || [], blockSell: !!d.blockSell };
                 _menuCacheAt = Date.now();
                 setMenu(items); setCats_(cats);
-            }).catch(() => {});
+            }).catch(() => {
+                // Tarmoq xatosi — eski ma'lumotni saqlab qolamiz
+            });
         };
         const interval = setInterval(fetchMenu, 30 * 1000); // har 30 soniyada
         return () => clearInterval(interval);
