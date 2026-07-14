@@ -128,7 +128,7 @@ export default function LockScreensaver({ onUnlock }: { onUnlock: () => void }) 
                 }} />
             ))}
 
-            <div className="relative h-full flex flex-col items-center justify-center px-6 text-center">
+            <div className="relative h-full flex flex-col items-center justify-center px-6 text-center pointer-events-none">
                 {/* Soat */}
                 <div className="ss-fade-down mb-10">
                     <p className="text-white font-black text-6xl md:text-7xl tabular-nums tracking-wider">
@@ -173,7 +173,7 @@ export default function LockScreensaver({ onUnlock }: { onUnlock: () => void }) 
                 </div>
 
                 {/* Orqa fon tanlash tugmasi */}
-                <div className="absolute bottom-6 left-6 z-50 flex flex-col items-start">
+                <div className="absolute bottom-6 left-6 z-50 flex flex-col items-start pointer-events-auto">
                     {showBgMenu && (
                         <div className="mb-3 p-3 rounded-2xl bg-slate-900/90 border border-slate-700 backdrop-blur-xl shadow-2xl animate-fade-in flex flex-wrap gap-3 max-w-[280px]">
                             {BG_IMAGES.map((bg) => (
