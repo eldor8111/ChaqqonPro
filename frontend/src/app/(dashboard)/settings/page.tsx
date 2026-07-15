@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import {
     Building2, Users, Shield, Database, ClipboardList,
-    Globe, Check, Plus, Edit, Lock, Bell, Server, Key, X, Printer, UtensilsCrossed, Trash2, ChevronRight, ChevronDown, Settings, Eye, EyeOff, CreditCard, DownloadCloud
+    Globe, Check, Plus, Edit, Lock, Bell, Server, Key, X, Printer, UtensilsCrossed, Trash2, ChevronRight, ChevronDown, Settings, Eye, EyeOff, CreditCard, DownloadCloud, QrCode
 } from "lucide-react";
+import QrCodeModal from "@/components/ui/QrCodeModal";
 import { mockBranches } from "@/lib/mockData";
 import { useLang } from "@/lib/LangContext";
 import { useStore, StaffMember, ALL_PERMISSIONS, ROLE_DEFAULT_PERMISSIONS } from "@/lib/store";
@@ -151,6 +152,20 @@ export default function SettingsPage() {
     const [permDraft, setPermDraft] = useState<string[]>([]);
     const [receiptDraft, setReceiptDraft] = useState<any>(null);
     const [ubtDraft, setUbtDraft] = useState<any>(null);
+
+    // QR Menu state
+    const [selectedTableForQr, setSelectedTableForQr] = useState<any>(null);
+    const [qrTenantId, setQrTenantId] = useState<string>("");
+    const [qrRestaurantName, setQrRestaurantName] = useState<string>("");
+
+    useEffect(() => {
+        fetch("/api/smart/me").then(r => r.json()).then(d => {
+            if (d.tenantId) {
+                setQrTenantId(d.tenantId);
+                setQrRestaurantName(d.name || "Restoran");
+            }
+        }).catch(() => {});
+    }, []);
 
     // Zone & Table state
     const [isZoneModalOpen, setIsZoneModalOpen] = useState(false);
@@ -1962,10 +1977,24 @@ export default function SettingsPage() {
                                                             }
                                                         }
                                                     }}
-                                                    className={`absolute top-2 right-10 p-1.5 rounded-lg transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100 ${table.isActive === false ? "text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10" : "text-emerald-500 dark:text-emerald-400 hover:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
+                                                    className={`absolute top-2 right-18 p-1.5 rounded-lg transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100 ${table.isActive === false ? "text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10" : "text-emerald-500 dark:text-emerald-400 hover:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
                                                     title={table.isActive === false ? "Stolni ko'rsatish" : "Stolni yashirish"}
                                                 >
                                                     {table.isActive === false ? <EyeOff size={14} /> : <Eye size={14} />}
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        const z = ubtDraft?.zones?.find((z: any) => z.id === selectedZoneForModal);
+                                                        setSelectedTableForQr({
+                                                            id: table.id,
+                                                            name: table.name,
+                                                            zone: z?.name || ""
+                                                        });
+                                                    }}
+                                                    className="absolute top-2 right-10 p-1.5 text-slate-400 dark:text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100"
+                                                    title="QR Kod menyu"
+                                                >
+                                                    <QrCode size={14} />
                                                 </button>
                                                 <button
                                                     onClick={() => {
@@ -2005,6 +2034,15 @@ export default function SettingsPage() {
                         </div>
                     </div>
                 )}
+
+            {selectedTableForQr && qrTenantId && (
+                <QrCodeModal
+                    table={selectedTableForQr}
+                    tenantId={qrTenantId}
+                    restaurantName={qrRestaurantName}
+                    onClose={() => setSelectedTableForQr(null)}
+                />
+            )}
 
         </div>
     );

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
     Bell, Globe, ChevronDown, Search, LogOut,
     Building2, Check, Settings, Eye, EyeOff, X, Lock, KeyRound, CheckCircle2, AlertCircle, Printer,
-    Trash2, AlertTriangle, ShieldAlert, Menu
+    Trash2, AlertTriangle, ShieldAlert, Menu, BellRing, Utensils
 } from "lucide-react";
 import { useLang } from "@/lib/LangContext";
 import { useFrontendStore } from "@/lib/frontend/store";
@@ -35,6 +35,10 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
     const [selectedBranch, setSelectedBranch] = useState(mockBranches[0]);
     const [showBranch, setShowBranch] = useState(false);
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
+    
+    // Waiter calls state
+    const [waiterCalls, setWaiterCalls] = useState<any[]>([]);
+    const [showWaiterNotif, setShowWaiterNotif] = useState(false);
 
     const settings = user?.tenant?.settings || {};
     const useMultiBranch = settings.useMultiBranch ?? false;
@@ -54,6 +58,38 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
         const interval = setInterval(fetchNotifs, 120000); // 2 daqiqada yangilanadi
         return () => { mounted = false; clearInterval(interval); };
     }, [user?.id]); // showNotif olib tashlandi — har ochilganda re-subscribe bo'lmas uchun
+
+    // Waiter calls fetcher
+    useEffect(() => {
+        let mounted = true;
+        const tenantId = user?.tenant?.id;
+        if (!tenantId) return;
+
+        const fetchWaiterCalls = async () => {
+            try {
+                const res = await fetch(`/api/menu/${tenantId}/call-waiter`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (mounted && data.calls) {
+                        setWaiterCalls(data.calls);
+                    }
+                }
+            } catch {}
+        };
+        
+        fetchWaiterCalls();
+        const interval = setInterval(fetchWaiterCalls, 10000); // Har 10 soniyada tekshiradi
+        return () => { mounted = false; clearInterval(interval); };
+    }, [user?.tenant?.id]);
+
+    const removeWaiterCall = async (tableId: string) => {
+        const tenantId = user?.tenant?.id;
+        if (!tenantId) return;
+        setWaiterCalls(prev => prev.filter(c => c.tableId !== tableId));
+        try {
+            await fetch(`/api/menu/${tenantId}/call-waiter?tableId=${tableId}`, { method: "DELETE" });
+        } catch {}
+    };
 
 
     return (
@@ -147,6 +183,45 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
                             </div>
                         )}
                     </div>
+
+                    {/* Waiter Calls Notification */}
+                    {waiterCalls.length > 0 && (
+                        <div className="relative">
+                            <button
+                                onClick={() => { setShowWaiterNotif(!showWaiterNotif); setShowNotif(false); setShowLang(false); setShowBranch(false); }}
+                                className="relative p-2 rounded-xl bg-danger/10 text-danger hover:bg-danger/20 transition-all shadow-[0_0_12px_rgba(239,68,68,0.3)] animate-pulse"
+                            >
+                                <BellRing size={18} />
+                                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-danger text-white text-[10px] font-bold flex items-center justify-center">
+                                    {waiterCalls.length}
+                                </span>
+                            </button>
+                            {showWaiterNotif && (
+                                <div className="absolute top-full mt-2 right-0 w-80 glass-card shadow-card py-2 z-50 animate-fade-in max-h-96 overflow-y-auto" style={{ border: "1px solid rgba(239,68,68,0.2)" }}>
+                                    <p className="px-4 pb-2 text-xs font-bold text-danger uppercase tracking-wider border-b border-danger/10 flex items-center gap-2">
+                                        <BellRing size={14} /> Ofitsiant chaqiruvlari
+                                    </p>
+                                    {waiterCalls.map(call => (
+                                        <div key={call.tableId} className="px-4 py-3 hover:bg-danger/5 transition-colors border-b border-danger/10 last:border-0 flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm font-black text-slate-800 flex items-center gap-1.5">
+                                                    <Utensils size={14} className="text-danger" /> Stol {call.tableNumber}
+                                                </p>
+                                                {call.message && <p className="text-[11px] font-bold text-danger mt-0.5">{call.message}</p>}
+                                                <p className="text-[10px] text-slate-500 mt-1">{new Date(call.calledAt).toLocaleTimeString("uz-UZ")} da chaqirdi</p>
+                                            </div>
+                                            <button
+                                                onClick={() => removeWaiterCall(call.tableId)}
+                                                className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 text-xs font-bold flex items-center gap-1 transition-colors"
+                                            >
+                                                <Check size={12} /> Bajarildi
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Notifications */}
                     <div className="relative">

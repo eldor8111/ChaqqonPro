@@ -9,7 +9,7 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "uz",
-  "id": "EVIKO POS-admin",
+  "id": "EVIKO-admin",
   "categories": ["business", "productivity", "finance"],
   "prefer_related_applications": false,
   "icons": [
