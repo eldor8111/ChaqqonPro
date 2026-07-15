@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
         const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId },
-            select: { id: true, name: true, settings: true }
+            select: { id: true, shopName: true, settings: true }
         });
 
         if (!tenant) {
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
             tenantId: tenant.id,
-            name: tenant.name,
+            name: tenant.shopName,
             restaurantInfo,
         });
     } catch (error) {

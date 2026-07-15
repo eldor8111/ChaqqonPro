@@ -21,7 +21,7 @@ export async function GET(
         // Tenant mavjudligini tekshirish va restoran ma'lumotlarini olish
         const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId },
-            select: { id: true, name: true, settings: true }
+            select: { id: true, shopName: true, settings: true }
         });
 
         if (!tenant) {
@@ -110,7 +110,7 @@ export async function GET(
         return NextResponse.json({
             restaurant: {
                 id: tenant.id,
-                name: tenant.name,
+                name: tenant.shopName,
                 ...restaurantInfo,
             },
             table: tableInfo,
