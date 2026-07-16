@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import { waiterCalls } from "@/lib/waiter-calls-store";
+import { prisma } from "@/lib/backend/db";
 
 function getJwtSecret(): Uint8Array {
     const secret = process.env.JWT_SECRET;
@@ -26,21 +26,31 @@ export async function GET(req: NextRequest) {
         const { tenantId } = payload;
         if (!tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        const calls: Array<{ tableId: string; tableNumber: string; calledAt: string; message?: string }> = [];
-
-        waiterCalls.forEach((value, key) => {
-            const [tid, tableId] = key.split(":");
-            if (tid === tenantId) {
-                calls.push({
-                    tableId,
-                    tableNumber: value.tableNumber,
-                    calledAt: value.calledAt.toISOString(),
-                    message: value.message,
-                });
+        // Muddati o'tganlarni avtomatik o'chirish
+        await prisma.waiterCall.deleteMany({
+            where: {
+                tenantId,
+                expiresAt: { lt: new Date() },
             }
         });
 
-        return NextResponse.json({ calls });
+        // Faol chaqiruvlarni database'dan olish
+        const calls = await prisma.waiterCall.findMany({
+            where: {
+                tenantId,
+                status: "active",
+            },
+            orderBy: { calledAt: "desc" },
+        });
+
+        return NextResponse.json({
+            calls: calls.map(c => ({
+                tableId: c.tableId,
+                tableNumber: c.tableNumber,
+                calledAt: c.calledAt.toISOString(),
+                message: c.message,
+            }))
+        });
     } catch (error: any) {
         return NextResponse.json({ error: "Server xatoligi", details: error.message }, { status: 500 });
     }
@@ -67,7 +77,13 @@ export async function DELETE(req: NextRequest) {
         const tableId = url.searchParams.get("tableId");
 
         if (tableId) {
-            waiterCalls.delete(`${tenantId}:${tableId}`);
+            await prisma.waiterCall.deleteMany({
+                where: {
+                    tenantId,
+                    tableId,
+                    status: "active",
+                }
+            });
         }
 
         return NextResponse.json({ success: true });

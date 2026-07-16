@@ -5,10 +5,8 @@ import { prisma } from "@/lib/backend/db";
 // ─── Waiter Call API ────────────────────────────────────────────────────────
 // Mijoz QR kod menyusidan ofitsiant chaqiradi.
 // Bu endpoint ham autentifikatsiya talab ETMAYDI.
+// Barcha ma'lumotlar DATABASE da saqlanadi.
 // ─────────────────────────────────────────────────────────────────────────────
-
-import { waiterCalls } from "@/lib/waiter-calls-store";
-
 
 export async function POST(
     request: NextRequest,
@@ -43,20 +41,27 @@ export async function POST(
             return NextResponse.json({ error: "Stol topilmadi" }, { status: 404 });
         }
 
-        // Chaqiruvni saqlash
-        const key = `${tenantId}:${tableId}`;
-        waiterCalls.set(key, {
-            calledAt: new Date(),
-            tableNumber: table.tableNumber,
-            message: message || undefined,
+        // Eski active chaqiruvni o'chirish (agar mavjud bo'lsa)
+        await prisma.waiterCall.deleteMany({
+            where: {
+                tenantId,
+                tableId,
+                status: "active",
+            }
         });
 
-        // 5 daqiqadan keyin avtomatik o'chirish
-        setTimeout(() => {
-            if (waiterCalls.get(key)?.calledAt) {
-                waiterCalls.delete(key);
+        // Yangi chaqiruvni database'ga saqlash
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 daqiqadan keyin expire
+        await prisma.waiterCall.create({
+            data: {
+                tenantId,
+                tableId,
+                tableNumber: table.tableNumber,
+                message: message || null,
+                status: "active",
+                expiresAt,
             }
-        }, 5 * 60 * 1000);
+        });
 
         return NextResponse.json({
             success: true,
@@ -76,21 +81,32 @@ export async function GET(
 ) {
     try {
         const { tenantId } = params;
-        const calls: Array<{ tableId: string; tableNumber: string; calledAt: string; message?: string }> = [];
 
-        waiterCalls.forEach((value, key) => {
-            const [tid, tableId] = key.split(":");
-            if (tid === tenantId) {
-                calls.push({
-                    tableId,
-                    tableNumber: value.tableNumber,
-                    calledAt: value.calledAt.toISOString(),
-                    message: value.message,
-                });
+        // Muddati o'tganlarni avtomatik o'chirish
+        await prisma.waiterCall.deleteMany({
+            where: {
+                tenantId,
+                expiresAt: { lt: new Date() },
             }
         });
 
-        return NextResponse.json({ calls });
+        // Faol chaqiruvlarni olish
+        const calls = await prisma.waiterCall.findMany({
+            where: {
+                tenantId,
+                status: "active",
+            },
+            orderBy: { calledAt: "desc" },
+        });
+
+        return NextResponse.json({
+            calls: calls.map(c => ({
+                tableId: c.tableId,
+                tableNumber: c.tableNumber,
+                calledAt: c.calledAt.toISOString(),
+                message: c.message,
+            }))
+        });
     } catch (error) {
         return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
     }
@@ -107,7 +123,13 @@ export async function DELETE(
         const tableId = url.searchParams.get("tableId");
 
         if (tableId) {
-            waiterCalls.delete(`${tenantId}:${tableId}`);
+            await prisma.waiterCall.deleteMany({
+                where: {
+                    tenantId,
+                    tableId,
+                    status: "active",
+                }
+            });
         }
 
         return NextResponse.json({ success: true });

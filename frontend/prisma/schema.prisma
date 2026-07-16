@@ -393,11 +393,28 @@ model SmartTable {
   createdAt    DateTime           @default(now())
   orders       KDSOrder[]
   reservations SmartReservation[]
+  waiterCalls  WaiterCall[]
   tenant       Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, section, tableNumber])
   @@index([tenantId])
   @@index([tenantId, status])
+}
+
+model WaiterCall {
+  id           String     @id @default(cuid())
+  tenantId     String
+  tableId      String
+  tableNumber  String
+  message      String?
+  status       String     @default("active")
+  calledAt     DateTime   @default(now())
+  dismissedAt  DateTime?
+  expiresAt    DateTime
+  table        SmartTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+  @@index([tableId])
 }
 
 model KDSOrder {

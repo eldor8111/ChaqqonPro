@@ -1,3 +1,3 @@
-// Shared in-memory store for waiter calls
-// Key: `${tenantId}:${tableId}`, Value: { calledAt: Date, tableNumber: string, message?: string }
-export const waiterCalls = new Map<string, { calledAt: Date; tableNumber: string; message?: string }>();
+// Waiter calls now stored in database (WaiterCall model)
+// This file is kept for backward compatibility but no longer used as primary store
+// All API routes now use prisma directly
