@@ -30,7 +30,7 @@ export default function StaffLoginPage() {
                 setHydrated(true);
 
                 // Auto-redirect if session is active
-                const session = useStore.getState().kassirSession;
+                const session = useStore.getState().kassirSession as any;
                 if (session && session.token) {
                     if (session.role === "Manablog" || session.role === "Apparat") {
                         router.replace("/kassa/login");
