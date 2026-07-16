@@ -281,6 +281,15 @@ export default function Sidebar({ mobileOpen = false, onMobileClose, onMobileOpe
                     );
                 })}
 
+                {/* Hamburger to open full menu */}
+                <button
+                    onClick={onMobileOpen}
+                    className="flex-1 flex flex-col items-center gap-1 py-2.5 text-xs font-medium text-slate-400"
+                    id="mobile-menu-trigger"
+                >
+                    <Menu size={20} />
+                    <span className="text-[10px] leading-none">Menyu</span>
+                </button>
 
             </nav>
         </>
