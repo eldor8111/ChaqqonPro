@@ -132,9 +132,13 @@ export async function POST(request: NextRequest) {
         const id = `cm${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
         
         // Obuna muddatini hisoblash (expiresAt)
-        const subDays = settings?.subscriptionDays || 30;
+        const subDays = settings?.subscriptionDays ?? 7;
         const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + subDays);
+        if (subDays > 0) {
+            expiresAt.setDate(expiresAt.getDate() + subDays);
+        } else {
+            // 0 kun = sinov muddati yo'q, status bloklangan
+        }
         
         const settingsStr = JSON.stringify(settings || {});
 

@@ -62,9 +62,11 @@ export async function PUT(
             values.push(JSON.stringify(body.settings));
             
             // Obuna muddatini yangilash
-            const subDays = body.settings.subscriptionDays || 30;
+            const subDays = body.settings.subscriptionDays ?? 7;
             const expiresAt = new Date();
-            expiresAt.setDate(expiresAt.getDate() + subDays);
+            if (subDays > 0) {
+                expiresAt.setDate(expiresAt.getDate() + subDays);
+            }
             
             sets.push("expiresAt = ?");
             values.push(expiresAt);

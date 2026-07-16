@@ -81,7 +81,7 @@ export default function DashboardLayout({
                 )}
                 <Header onMobileMenuOpen={openMobileSidebar} />
                 <TopNav />
-                <main className="flex-1 min-w-0 min-h-0 overflow-y-auto p-4 pb-20 md:pb-4 w-full h-full">
+                <main className="flex-1 min-w-0 min-h-0 overflow-y-auto p-2 md:p-4 pb-20 md:pb-4 w-full h-full">
                     {subscriptionExpired && !isBillingPage ? (
                         <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-surface-card rounded-2xl border border-surface-border animate-fade-in mx-auto max-w-2xl mt-12">
                             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6 shadow-sm">

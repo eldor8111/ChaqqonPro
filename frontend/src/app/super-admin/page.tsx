@@ -40,7 +40,7 @@ const WEEKDAYS = [
 ];
 const DEFAULT_SETTINGS = {
     workDays: ["mon","tue","wed","thu","fri","sat"],
-    subscriptionDays: 30,
+    subscriptionDays: 7,
     tariffPrice: 0, useWarehouse: true, useLoyalty: false, useMultiBranch: false,
     useCRM: false, useAnalytics: true, contacts: [] as {type:string;value:string}[],
     country: "Uzbekiston", region: "", city: "", currencies: ["UZS"], telegramGroupId: "", description: "",
@@ -1011,22 +1011,52 @@ export default function SuperAdminPage() {
                                 </div>
                                 {/* Subscription Days */}
                                 <div className="mt-4">
-                                    <label className={labelClass}>Obuna muddati (kun) <span className="text-sky-400 font-normal">— to'lov muddati</span></label>
+                                    <label className={labelClass}>
+                                        Sinov muddati (kun) 
+                                        <span className="text-amber-400 font-normal ml-1">— qo'lda belgilanadi</span>
+                                    </label>
                                     <div className="flex items-center gap-3 mt-2">
                                         <input
                                             type="number"
-                                            min="1"
+                                            min="0"
                                             max="365"
-                                            value={formData.settings.subscriptionDays ?? 30}
-                                            onChange={(e) => fs("subscriptionDays", Math.max(1, +e.target.value))}
-                                            className={`${inputClass} w-36 text-center text-2xl font-black text-sky-300`}
+                                            value={formData.settings.subscriptionDays ?? 7}
+                                            onChange={(e) => fs("subscriptionDays", Math.max(0, +e.target.value))}
+                                            className={`${inputClass} w-36 text-center text-2xl font-black ${(formData.settings.subscriptionDays ?? 7) === 0 ? 'text-red-400' : 'text-sky-300'}`}
                                         />
                                         <div>
-                                            <p className="text-sm font-semibold text-slate-700">kun obuna</p>
-                                            <p className="text-xs text-slate-400 mt-0.5">
-                                                To'lov sanasidan {formData.settings.subscriptionDays ?? 30} kun o'tgach — akk <span className="text-red-400 font-bold">bloklashga tushadi</span>
-                                            </p>
+                                            {(formData.settings.subscriptionDays ?? 7) === 0 ? (
+                                                <>
+                                                    <p className="text-sm font-semibold text-red-500">Sinov muddati yo'q</p>
+                                                    <p className="text-xs text-slate-400 mt-0.5">
+                                                        Tashkilot darhol <span className="text-red-400 font-bold">bloklangan</span> holda yaratiladi
+                                                    </p>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <p className="text-sm font-semibold text-slate-700">kun sinov muddati</p>
+                                                    <p className="text-xs text-slate-400 mt-0.5">
+                                                        {formData.settings.subscriptionDays ?? 7} kundan so'ng akk <span className="text-red-400 font-bold">bloklashga tushadi</span>
+                                                    </p>
+                                                </>
+                                            )}
                                         </div>
+                                    </div>
+                                    <div className="flex gap-2 mt-2">
+                                        {[0, 3, 7, 14, 30].map(d => (
+                                            <button
+                                                key={d}
+                                                type="button"
+                                                onClick={() => fs("subscriptionDays", d)}
+                                                className={`px-3 py-1 rounded-lg text-xs font-bold border transition-all ${
+                                                    (formData.settings.subscriptionDays ?? 7) === d
+                                                        ? "bg-sky-500 text-white border-sky-500"
+                                                        : "bg-white text-slate-500 border-slate-200 hover:border-sky-400 hover:text-sky-500"
+                                                }`}
+                                            >
+                                                {d === 0 ? "Yo'q" : `${d} kun`}
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
                             </section>
