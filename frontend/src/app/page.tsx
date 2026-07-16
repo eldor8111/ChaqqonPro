@@ -652,8 +652,6 @@ function LoginForm() {
     const [showOferta, setShowOferta] = useState(false);
     const [showFeatures, setShowFeatures] = useState(false);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
-    const [loginModeState, setLoginModeState] = useState<"admin" | "staff">("admin");
-    const [staffUsername, setStaffUsername] = useState("");
     const router = useRouter();
     const { isAuthenticated, setUser, user, _hasHydrated } = useFrontendStore();
 
@@ -723,53 +721,9 @@ function LoginForm() {
         e.preventDefault();
         setError("");
 
-        // Xodimlar uchun oferta tekshiruvi shart emas
-        if (!agreed && loginModeState !== "staff") {
+        if (!agreed) {
             setError("Iltimos, oferta shartlarini qabul qiling");
             setShowOferta(true);
-            return;
-        }
-
-        if (loginModeState === "staff") {
-            const val = staffUsername.trim();
-            if (!val || !password) {
-                setError("Iltimos, Xodim Logini va parolni kiriting");
-                return;
-            }
-            setIsLoading(true);
-            try {
-                const res = await fetch("/api/kassir/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username: val, password }),
-                });
-                const data = await res.json();
-                if (!res.ok) { setError(data.error || "Login yoki parol xato"); return; }
-                const staffData = { ...data.session.user, token: data.session.token, shopCode: data.shopCode, shopType: data.shopType };
-                useStore.getState().setDeviceSession(staffData);
-
-                // Agar Manablog (Kassa apparati) kiritilgan bo'lsa, xodim tanlash pini so'raladi
-                if (staffData.role === "Manablog" || staffData.role === "Apparat" || staffData.name?.toLowerCase().includes("apparat")) {
-                    router.push("/kassa/login");
-                } else {
-                    // Shaxsiy xodim login bo'lsa, to'g'ridan-to'g'ri o'z ish stoliga kiradi
-                    useStore.getState().setKassirSession(staffData);
-
-                    if (staffData.role === "Ofitsiant") {
-                        router.push("/mobile/waiter");
-                    } else if (staffData.role === "Kuryer") {
-                        router.push("/mobile/courier");
-                    } else if (staffData.role === "Zavsklad" || staffData.role === "Omborchi") {
-                        router.push("/mobile/inventory");
-                    } else {
-                        router.push("/smart-pos"); // Default kassir
-                    }
-                }
-            } catch {
-                setError("Tizimga ulanishda xatolik yuz berdi");
-            } finally {
-                setIsLoading(false);
-            }
             return;
         }
 
@@ -952,16 +906,6 @@ function LoginForm() {
                                     </div>
                                 </div>
 
-                                {/* ── TABS ── */}
-                                <div className="mb-5 flex p-1 bg-slate-100 rounded-xl border border-slate-200">
-                                    <button type="button" onClick={() => setLoginModeState("admin")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${loginModeState === "admin" ? "bg-white text-blue-700 shadow-sm border border-slate-200/50" : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"}`}>
-                                        <ShieldCheck size={14} /> Admin Panel
-                                    </button>
-                                    <button type="button" onClick={() => setLoginModeState("staff")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${loginModeState === "staff" ? "bg-white text-blue-700 shadow-sm border border-slate-200/50" : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"}`}>
-                                        <Users size={14} /> Xodimlar
-                                    </button>
-                                </div>
-
                                 {/* Error */}
                                 {error && (
                                     <div className="mb-3 flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
@@ -975,50 +919,28 @@ function LoginForm() {
                                 {/* Form */}
                                 <form onSubmit={handleLogin} className="space-y-3">
                                     {/* ── ADMIN: phone field ── */}
-                                    {loginModeState === "admin" && (
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                                Telefon raqam (Login)
-                                            </label>
-                                            <div className="relative">
-                                                <Phone size={14} className="absolute left-3 top-3 text-slate-400" />
-                                                <input
-                                                    id="login-phone"
-                                                    type="text"
-                                                    value={phone}
-                                                    onChange={handlePhoneChange}
-                                                    onFocus={(e) => {
-                                                        if (!e.target.value.startsWith(PHONE_PREFIX)) {
-                                                            setPhone(PHONE_PREFIX);
-                                                        }
-                                                    }}
-                                                    autoComplete="tel"
-                                                    className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50 border border-slate-200 placeholder-slate-400 transition-all duration-200 outline-none hover:border-slate-300 focus:ring-2 ${focusClass}`}
-                                                    placeholder="+998 90 123 45 67"
-                                                />
-                                            </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                                            Telefon raqam (Login)
+                                        </label>
+                                        <div className="relative">
+                                            <Phone size={14} className="absolute left-3 top-3 text-slate-400" />
+                                            <input
+                                                id="login-phone"
+                                                type="text"
+                                                value={phone}
+                                                onChange={handlePhoneChange}
+                                                onFocus={(e) => {
+                                                    if (!e.target.value.startsWith(PHONE_PREFIX)) {
+                                                        setPhone(PHONE_PREFIX);
+                                                    }
+                                                }}
+                                                autoComplete="tel"
+                                                className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50 border border-slate-200 placeholder-slate-400 transition-all duration-200 outline-none hover:border-slate-300 focus:ring-2 ${focusClass}`}
+                                                placeholder="+998 90 123 45 67"
+                                            />
                                         </div>
-                                    )}
-
-                                    {/* ── STAFF: username field ── */}
-                                    {loginModeState === "staff" && (
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                                                Xodim Logini <span className="lowercase text-[10px] normal-case">(Ism, raqam yoki @login)</span>
-                                            </label>
-                                            <div className="relative">
-                                                <User size={14} className="absolute left-3 top-3 text-slate-400" />
-                                                <input
-                                                    id="staff-username"
-                                                    type="text"
-                                                    value={staffUsername}
-                                                    onChange={(e) => setStaffUsername(e.target.value)}
-                                                    className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-slate-800 bg-slate-50 border border-slate-200 placeholder-slate-400 transition-all duration-200 outline-none hover:border-slate-300 focus:ring-2 ${focusClass}`}
-                                                    placeholder="Masalan: eldorbek yoki 901234567"
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
+                                    </div>
 
                                     {/* Password */}
                                     <div>
@@ -1044,7 +966,6 @@ function LoginForm() {
                                             </button>
                                         </div>
                                         <div className="mt-1.5 flex justify-end">
-                                            {loginModeState === "admin" && (
                                             <button
                                                 type="button"
                                                 onClick={() => setShowForgotPassword(true)}
@@ -1052,7 +973,6 @@ function LoginForm() {
                                             >
                                                 Parolni unutdingizmi?
                                             </button>
-                                            )}
                                         </div>
                                     </div>
 
@@ -1078,7 +998,7 @@ function LoginForm() {
                                     <button
                                         id="login-submit-btn"
                                         type="submit"
-                                        disabled={isLoading || (loginModeState === "admin" && !agreed)}
+                                        disabled={isLoading || !agreed}
                                         className={`w-full relative overflow-hidden rounded-xl py-3 text-sm font-bold text-white active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg group ${btnClass}`}
                                     >
                                         <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/15 to-transparent skew-x-12" />
@@ -1089,8 +1009,8 @@ function LoginForm() {
                                             </div>
                                         ) : (
                                             <div className="flex items-center justify-center gap-2">
-                                                {loginModeState === "admin" ? <currentType.icon size={15} /> : <Users size={15} />}
-                                                <span>{loginModeState === "admin" ? `${currentType.label} Admin sifatida kirish` : "Xodim sifatida kirish"}</span>
+                                                <currentType.icon size={15} />
+                                                <span>{currentType.label} Admin sifatida kirish</span>
                                                 <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform duration-200" />
                                             </div>
                                         )}
