@@ -15,8 +15,41 @@ export default function StaffLoginPage() {
     const [shopCode, setShopCode] = useState("");
     const [requireShopCode, setRequireShopCode] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [hydrated, setHydrated] = useState(false);
 
-    useEffect(() => { setMounted(true); }, []);
+    useEffect(() => {
+        setMounted(true);
+        // Wait for Zustand store to load from localStorage
+        let attempts = 0;
+        const MAX = 40;
+        const id = setInterval(() => {
+            attempts++;
+            const isHydrated = (useStore as any).persist?.hasHydrated?.() ?? true;
+            if (isHydrated || attempts >= MAX) {
+                clearInterval(id);
+                setHydrated(true);
+
+                // Auto-redirect if session is active
+                const session = useStore.getState().kassirSession;
+                if (session && session.token) {
+                    if (session.role === "Manablog" || session.role === "Apparat") {
+                        router.replace("/kassa/login");
+                    } else if (session.role === "Ofitsiant") {
+                        router.replace("/mobile/waiter");
+                    } else if (session.role === "Kuryer") {
+                        router.replace("/mobile/courier");
+                    } else if (session.role === "Zavsklad" || session.role === "Omborchi") {
+                        router.replace("/mobile/inventory");
+                    } else {
+                        router.replace("/smart-pos");
+                    }
+                }
+            }
+        }, 50);
+        return () => clearInterval(id);
+    }, [router]);
+
+    const activeSession = hydrated ? useStore.getState().kassirSession : null;
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -92,7 +125,14 @@ export default function StaffLoginPage() {
         }
     };
 
-    if (!mounted) return null;
+    if (!mounted || !hydrated || (activeSession && activeSession.token)) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-3">
+                <div className="w-10 h-10 border-[3px] border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+                <p className="text-slate-400 text-xs font-bold tracking-widest uppercase">Yuklanmoqda...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-start sm:justify-center px-4 py-6 overflow-y-auto relative">
