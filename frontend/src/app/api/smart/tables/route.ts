@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
             if (z?.tables && Array.isArray(z.tables)) {
                 tableJson = z.tables.find((tb: any) => tb.name === t.tableNumber) ?? null;
             }
-            const isActive = tableJson ? tableJson.isActive !== false : false;
+            const isActive = tableJson ? tableJson.isActive !== false : true;
             return { ...t, serviceFee: fee, extraPriceType, extraPriceValue, isActive };
         }).filter(t => t.isActive);
 
