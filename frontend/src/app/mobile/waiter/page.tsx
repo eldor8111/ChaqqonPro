@@ -191,7 +191,7 @@ export default function MobileWaiterPage() {
             </div>
         );
     }
-    const sess = store.kassirSession;
+    
     const handleLogout = () => { store.kassirLogout(); router.push("/login/staff"); };
 
     const changeQty = (id: string, name: string, price: number, delta: number) => {
