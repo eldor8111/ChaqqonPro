@@ -1,65 +1,82 @@
 const { PrismaClient } = require('@prisma/client');
-const fs = require('fs');
-const path = require('path');
-
-console.log("=== DIAGNOSTIC START ===");
-console.log("DATABASE_URL Env Variable:", process.env.DATABASE_URL);
-console.log("Current working directory:", process.cwd());
-
-// Check dev.db in different paths
-const pathsToCheck = [
-  path.join(__dirname, 'dev.db'),
-  path.join(__dirname, 'prisma', 'dev.db'),
-  path.join(__dirname, '.next', 'standalone', 'dev.db'),
-  '/root/eldor/chaqqonpro/frontend/dev.db',
-  '/root/eldor/chaqqonpro/frontend/.next/standalone/dev.db',
-  '/root/eldor/chaqqonpro/frontend/prisma/dev.db'
-];
-
-pathsToCheck.forEach(p => {
-  if (fs.existsSync(p)) {
-    const stats = fs.statSync(p);
-    console.log(`FOUND DB: ${p} - Size: ${(stats.size / 1024).toFixed(2)} KB - Modified: ${stats.mtime}`);
-  } else {
-    console.log(`NOT FOUND DB: ${p}`);
-  }
-});
-
-// Check .env files contents
-const envFiles = [
-  path.join(__dirname, '.env'),
-  path.join(__dirname, '.env.production'),
-  path.join(__dirname, '.next', 'standalone', '.env')
-];
-
-envFiles.forEach(f => {
-  if (fs.existsSync(f)) {
-    console.log(`--- ${f} ---`);
-    const content = fs.readFileSync(f, 'utf8');
-    const dbUrlLine = content.split('\n').find(l => l.includes('DATABASE_URL'));
-    console.log(dbUrlLine || "DATABASE_URL not found in this env file");
-  } else {
-    console.log(`NOT FOUND ENV: ${f}`);
-  }
-});
-
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("\n=== PRISMA QUERY CHECK ===");
+  console.log("=== SAMIR DIAGNOSTICS ===");
   try {
-    const tenants = await prisma.tenant.findMany({
-      select: { id: true, shopName: true, shopCode: true }
+    // 1. Samir ismli xodimlarni topamiz
+    const staff = await prisma.staff.findMany({
+      where: { name: { contains: "Samir" } }
     });
-    console.log("Tenants count in current connection:", tenants.length);
-    console.log("Tenants list:", JSON.stringify(tenants, null, 2));
+    console.log("Samir count:", staff.length);
+    console.log("Samir staff records:", JSON.stringify(staff, null, 2));
 
-    const tables = await prisma.smartTable.findMany({
-      select: { id: true, tenantId: true, tableNumber: true, status: true, section: true }
-    });
-    console.log("Tables count in current connection:", tables.length);
+    if (staff.length === 0) {
+      console.log("No staff named Samir found. Let's find all staff:");
+      const allStaff = await prisma.staff.findMany({
+        select: { id: true, name: true, role: true, tenantId: true }
+      });
+      console.log("All staff:", JSON.stringify(allStaff, null, 2));
+      return;
+    }
+
+    for (const s of staff) {
+      console.log(`\nAnalyzing tenant for Samir (${s.name}) tenantId: ${s.tenantId}:`);
+      
+      // 2. Tenant settings
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: s.tenantId },
+        select: { id: true, shopName: true, settings: true }
+      });
+      console.log("Tenant info:", tenant.id, tenant.shopName);
+      console.log("Tenant Settings raw length:", tenant.settings ? tenant.settings.length : 0);
+      try {
+        const parsed = JSON.parse(tenant.settings);
+        console.log("Parsed Settings (smartSettings):", JSON.stringify(parsed.smartSettings, null, 2));
+      } catch (e) {
+        console.log("Failed to parse settings JSON:", e.message);
+      }
+
+      // 3. Tables in database for this tenant
+      const tables = await prisma.smartTable.findMany({
+        where: { tenantId: s.tenantId }
+      });
+      console.log(`DB Tables count for this tenant: ${tables.length}`);
+      console.log("DB Tables:", JSON.stringify(tables.map(t => ({ id: t.id, number: t.tableNumber, section: t.section, status: t.status })), null, 2));
+
+      // 4. Simulate the API route tables filter logic
+      let ubtZones = [];
+      if (tenant.settings) {
+        try {
+          const parsed = JSON.parse(tenant.settings);
+          ubtZones = parsed.smartSettings?.zones || [];
+        } catch {}
+      }
+      
+      const filtered = tables.map(t => {
+        const z = ubtZones.find(zone => zone.name === t.section);
+        const fee = z?.serviceFee !== undefined ? Number(z.serviceFee) : 0;
+        let tableJson = null;
+        if (z?.tables && Array.isArray(z.tables)) {
+          tableJson = z.tables.find(tb => tb.name === t.tableNumber) ?? null;
+        }
+        // What we do in GET:
+        const isActive = tableJson ? tableJson.isActive !== false : false;
+        return { 
+          tableNumber: t.tableNumber, 
+          section: t.section, 
+          isActive, 
+          hasZoneInSettings: !!z, 
+          hasTableInSettings: !!tableJson 
+        };
+      });
+
+      console.log("Simulation of tables GET filter results:");
+      console.log(JSON.stringify(filtered, null, 2));
+      console.log("Active tables returned:", filtered.filter(f => f.isActive).length);
+    }
   } catch (err) {
-    console.error("Prisma error:", err);
+    console.error("Error:", err);
   } finally {
     await prisma.$disconnect();
   }
