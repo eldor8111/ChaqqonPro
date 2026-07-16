@@ -931,7 +931,7 @@ export default function UbtPage() {
 
     return (
         <div className="animate-fade-in">
-            <div className="rounded-2xl p-5 space-y-5" style={{ background: "linear-gradient(160deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)" }}>
+            <div className="rounded-2xl p-3 md:p-5 space-y-3 md:space-y-5" style={{ background: "linear-gradient(160deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)" }}>
 
                 {/* HEADER */}
                 <div className="flex items-center justify-between flex-wrap gap-3">
@@ -1130,7 +1130,7 @@ export default function UbtPage() {
                         </div>
 
                         {/* Top Dishes Chart */}
-                        <div className="rounded-2xl p-5 shadow-sm bg-white border border-slate-200">
+                        <div className="rounded-2xl p-3 md:p-5 shadow-sm bg-white border border-slate-200">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-2">
                                     <UtensilsCrossed size={15} className="text-slate-400" />
@@ -1144,51 +1144,51 @@ export default function UbtPage() {
                                     <p className="text-sm">Ma'lumot topilmadi</p>
                                 </div>
                             ) : (
-                                <div className="flex flex-col gap-4 mt-5 w-full">
+                                <div className="flex flex-col gap-3 mt-4 w-full">
                                     {DISH_DATA.map((dish: any, i: number) => {
                                         const maxRev = DISH_DATA[0]?.revenue || 1;
                                         const pct = Math.max((dish.revenue / maxRev) * 100, 2);
                                         return (
-                                            <div key={dish.name} className="relative flex items-center p-4 rounded-[24px] overflow-hidden group transition-all duration-300 transform hover:-translate-y-1 bg-white border border-slate-100 shadow-sm hover:shadow-md">
+                                            <div key={dish.name} className="relative flex items-center p-2.5 md:p-4 rounded-[24px] overflow-hidden group transition-all duration-300 transform hover:-translate-y-1 bg-white border border-slate-100 shadow-sm hover:shadow-md">
                                                 {/* Progress Bar Background */}
                                                 <div className="absolute top-0 left-0 bottom-0 bg-blue-50 z-0 transition-all duration-1000" style={{ width: `${pct}%` }}></div>
-
+ 
                                                 {/* Rank Badge */}
-                                                <div className="relative z-10 w-12 flex-shrink-0 flex justify-center">
+                                                <div className="relative z-10 w-8 md:w-12 flex-shrink-0 flex justify-center">
                                                     {i === 0 ? (
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 text-amber-700 flex items-center justify-center text-lg font-black shadow-sm border border-amber-300">1</div>
+                                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 text-amber-700 flex items-center justify-center text-sm md:text-lg font-black shadow-sm border border-amber-300">1</div>
                                                     ) : i === 1 ? (
-                                                        <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-lg font-black shadow-sm border border-slate-200">2</div>
+                                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-sm md:text-lg font-black shadow-sm border border-slate-200">2</div>
                                                     ) : i === 2 ? (
-                                                        <div className="w-10 h-10 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center text-lg font-black shadow-sm border border-orange-200">3</div>
+                                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center text-sm md:text-lg font-black shadow-sm border border-orange-200">3</div>
                                                     ) : (
-                                                        <div className="w-9 h-9 text-slate-500 flex items-center justify-center text-base font-bold bg-slate-50 rounded-full border border-slate-200">{i + 1}</div>
+                                                        <div className="w-7 h-7 md:w-9 md:h-9 text-slate-500 flex items-center justify-center text-xs md:text-base font-bold bg-slate-50 rounded-full border border-slate-200">{i + 1}</div>
                                                     )}
                                                 </div>
-
+ 
                                                 {/* Image */}
-                                                <div className="relative z-10 w-16 h-16 rounded-2xl overflow-hidden ml-5 bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                                <div className="relative z-10 w-12 h-12 md:w-16 md:h-16 rounded-2xl overflow-hidden ml-2.5 md:ml-5 bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-sm">
                                                     {dish.image && dish.image !== "" ? (
                                                         <img src={dish.image} alt={dish.name} className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-2 transition-transform duration-700" />
                                                     ) : (
-                                                        <UtensilsCrossed size={24} className="text-slate-400 group-hover:text-blue-500 transition-colors" />
+                                                        <UtensilsCrossed size={18} className="text-slate-400 group-hover:text-blue-500 transition-colors" />
                                                     )}
                                                 </div>
-
+ 
                                                 {/* Name & Stats */}
-                                                <div className="relative z-10 flex-1 ml-4 sm:ml-6 flex md:items-center justify-between flex-col md:flex-row gap-2 md:gap-0">
-                                                    <div>
-                                                        <h3 className="text-slate-800 text-sm sm:text-base lg:text-lg font-extrabold truncate max-w-[150px] sm:max-w-[280px] tracking-wide">{dish.name}</h3>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[11px] font-bold border border-blue-100">{dish.qty} ta</span>
-                                                            <span className="text-slate-500 text-xs font-bold">sotildi</span>
+                                                <div className="relative z-10 flex-1 ml-3 sm:ml-6 flex md:items-center justify-between flex-col md:flex-row gap-1.5 md:gap-0 min-w-0">
+                                                    <div className="min-w-0">
+                                                        <h3 className="text-slate-800 text-xs md:text-base lg:text-lg font-extrabold truncate pr-1 tracking-wide">{dish.name}</h3>
+                                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                                            <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] md:text-[11px] font-bold border border-blue-100">{dish.qty} ta</span>
+                                                            <span className="text-slate-500 text-[11px] font-bold">sotildi</span>
                                                         </div>
                                                     </div>
-                                                    <div className="text-left md:text-right">
-                                                        <p className="text-emerald-600 text-base sm:text-lg lg:text-xl font-black tracking-tighter">
+                                                    <div className="text-left md:text-right flex-shrink-0">
+                                                        <p className="text-emerald-600 text-sm md:text-base lg:text-xl font-black tracking-tight leading-none">
                                                             {formatCurrency(dish.revenue)}
                                                         </p>
-                                                        <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-wider">Jami tushum</p>
+                                                        <p className="text-[8px] md:text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-wider leading-none">Jami tushum</p>
                                                     </div>
                                                 </div>
                                             </div>
