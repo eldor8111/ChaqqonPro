@@ -332,7 +332,7 @@ export default function MobileWaiterPage() {
 
     // ─── HEADER shared ───────────────────────────────────────────────────────
     const Header = ({ title, sub, onBack }: { title: string; sub?: string; onBack?: () => void }) => (
-        <header className="bg-white border-b border-slate-100 px-3 pt-2 pb-0 sticky top-0 z-20">
+        <header className="bg-white border-b border-slate-100 px-3 pt-8 pb-0 sticky top-0 z-20">
             <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
                     {onBack && (
@@ -600,7 +600,7 @@ export default function MobileWaiterPage() {
         const existingTotal = existingCart.reduce((s, c) => s + c.price * c.qty, 0);
         return (
             <div className="flex flex-col h-screen bg-slate-50">
-                <header className="bg-white border-b border-slate-100 sticky top-0 z-20">
+                <header className="bg-white border-b border-slate-100 sticky top-0 z-20 pt-8">
                     <div className="flex items-center justify-between px-4 py-3">
                         <button onClick={() => { setView("tables"); setSelectedTable(null); setCart([]); setExistingCart([]); }} className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center active:scale-95">
                             <ChevronLeft size={18} className="text-slate-600" />
@@ -657,7 +657,7 @@ export default function MobileWaiterPage() {
         );
         return (
             <div className="flex flex-col h-screen bg-slate-50">
-                <header className="bg-white border-b border-slate-100 sticky top-0 z-20">
+                <header className="bg-white border-b border-slate-100 sticky top-0 z-20 pt-8">
                     <div className="flex items-center justify-between px-4 py-3">
                         <button onClick={() => { setView("tables"); setSelectedTable(null); setCart([]); setExistingCart([]); }} className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center active:scale-95">
                             <ChevronLeft size={18} className="text-slate-600" />
