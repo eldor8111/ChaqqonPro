@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useStore, SmartTable } from "@/lib/store";
-import { UtensilsCrossed, LogOut, ChevronLeft, Plus, Minus, Send, BarChart2, RefreshCw, X, Search, Check, Clock, TrendingUp, ShoppingBag } from "lucide-react";
+import { UtensilsCrossed, LogOut, ChevronLeft, Plus, Minus, Send, BarChart2, RefreshCw, X, Search, Check, Clock, TrendingUp, ShoppingBag, Settings, Camera } from "lucide-react";
 
 interface MenuItem { id: string; name: string; categoryId: string; price: number; image?: string; inStock: boolean; }
 interface Category { id: string; name: string; }
@@ -11,7 +11,7 @@ interface CartItem { id: string; name: string; price: number; qty: number; }
 interface MyStats { today: { total: number; count: number }; week: { total: number; count: number }; month: { total: number; count: number }; hourlyTimeline: { hour: string; total: number }[]; recentOrders: { id: string, amount: number; method: string; time: string; items: { name: string, qty: number, price: number }[] }[]; }
 
 function fmt(n: number) { return n.toLocaleString("uz-UZ") + " so'm"; }
-type ViewType = "tables" | "menu" | "stats" | "cart";
+type ViewType = "tables" | "menu" | "stats" | "cart" | "settings";
 
 export default function MobileWaiterPage() {
     const router = useRouter();
@@ -33,8 +33,32 @@ export default function MobileWaiterPage() {
     const [statsLoading, setStatsLoading] = useState(false);
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
     const [installPrompt, setInstallPrompt] = useState<any>(null);
+    const [avatar, setAvatar] = useState<string>("");
 
     const token = store.kassirSession?.token || store.deviceSession?.token;
+    const sess = store.kassirSession;
+
+    // Load avatar from localStorage
+    useEffect(() => {
+        if (typeof window !== "undefined" && sess?.id) {
+            const stored = localStorage.getItem(`waiter_avatar_${sess.id}`);
+            if (stored) setAvatar(stored);
+        }
+    }, [sess?.id]);
+
+    const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64 = reader.result as string;
+            setAvatar(base64);
+            if (sess?.id) {
+                localStorage.setItem(`waiter_avatar_${sess.id}`, base64);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
 
     useEffect(() => {
         const handler = (e: any) => { e.preventDefault(); setInstallPrompt(e); };
@@ -289,6 +313,15 @@ export default function MobileWaiterPage() {
                         </button>
                     )}
                     <div className="flex items-center gap-2">
+                        {sess && (
+                            avatar ? (
+                                <img src={avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-slate-200" />
+                            ) : (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-[10px] font-black uppercase shadow-sm">
+                                    {sess.name.slice(0, 2).toUpperCase()}
+                                </div>
+                            )
+                        )}
                         <div>
                             <h1 className="text-base font-black text-slate-800 leading-tight flex items-center gap-2">
                                 {title}
@@ -315,7 +348,7 @@ export default function MobileWaiterPage() {
             </div>
             {!onBack && (
                 <div className="flex border-b border-slate-100">
-                    {([["tables", UtensilsCrossed, "Stollar"], ["stats", BarChart2, "Otchot"]] as const).map(([id, Icon, label]) => (
+                    {([["tables", UtensilsCrossed, "Stollar"], ["stats", BarChart2, "Otchot"], ["settings", Settings, "Sozlamalar"]] as const).map(([id, Icon, label]) => (
                         <button key={id} onClick={() => setView(id as ViewType)} className={`flex-1 py-2.5 text-[11px] font-bold flex items-center justify-center gap-1.5 border-b-2 transition-colors ${view === id ? "text-blue-600 border-blue-500" : "text-slate-400 border-transparent"}`}>
                             <Icon size={12} /> {label}
                         </button>
@@ -324,6 +357,91 @@ export default function MobileWaiterPage() {
             )}
         </header>
     );
+
+    // ─── SETTINGS VIEW ───────────────────────────────────────────────────────
+    if (view === "settings") {
+        return (
+            <div className="flex flex-col min-h-screen bg-slate-50">
+                <Header title="Sozlamalar" sub={`${sess.name} · Ofitsiant`} />
+                <main className="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
+                    {/* Profile glass card */}
+                    <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col items-center text-center">
+                        <div className="relative mb-3">
+                            {avatar ? (
+                                <img src={avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-slate-50 shadow-md" />
+                            ) : (
+                                <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-blue-500/10">
+                                    {sess.name.slice(0, 2).toUpperCase()}
+                                </div>
+                            )}
+                            <label className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center cursor-pointer shadow-md hover:bg-blue-500 active:scale-95 transition-all">
+                                <Camera size={14} />
+                                <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                            </label>
+                        </div>
+                        <h2 className="text-base font-black text-slate-800">{sess.name}</h2>
+                        <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mt-0.5">{sess.role}</p>
+
+                        <div className="mt-4 pt-4 border-t border-slate-100 w-full text-left space-y-2">
+                            <div className="flex justify-between text-xs font-bold">
+                                <span className="text-slate-400">Login / Telefon:</span>
+                                <span className="text-slate-800">{sess.username || sess.phone || "+998..."}</span>
+                            </div>
+                            <div className="flex justify-between text-xs font-bold">
+                                <span className="text-slate-400">Filial kodi:</span>
+                                <span className="text-slate-800">{sess.shopCode || "Asosiy"}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Today's General Analysis (Umumiy tahlil) */}
+                    <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                        <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3.5 flex items-center gap-1.5">
+                            <BarChart2 size={12} /> Umumiy tahlil (Bugun)
+                        </h3>
+                        {statsLoading && !stats ? (
+                            <div className="flex justify-center py-6">
+                                <RefreshCw size={20} className="animate-spin text-blue-500" />
+                            </div>
+                        ) : stats ? (
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mb-1">Bugungi savdo</p>
+                                    <p className="text-sm font-black text-slate-800">{fmt(stats.today.total)}</p>
+                                </div>
+                                <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mb-1">Zakazlar soni</p>
+                                    <p className="text-sm font-black text-slate-800">{stats.today.count} ta</p>
+                                </div>
+                                <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 col-span-2 flex justify-between items-center">
+                                    <div>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Haftalik savdo</p>
+                                        <p className="text-xs font-black text-slate-800">{fmt(stats.week.total)}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Oylik savdo</p>
+                                        <p className="text-xs font-black text-slate-800">{fmt(stats.month.total)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <button onClick={fetchStats} className="w-full py-3 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all">
+                                <RefreshCw size={13} /> Ma'lumotlarni yuklash
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Exit/Change user */}
+                    <button
+                        onClick={handleLogout}
+                        className="w-full py-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 font-bold text-xs active:scale-[0.98] transition-all flex items-center justify-center gap-2 hover:bg-rose-100"
+                    >
+                        <LogOut size={14} /> Chiqish
+                    </button>
+                </main>
+            </div>
+        );
+    }
 
     // ─── STATS VIEW ──────────────────────────────────────────────────────────
     if (view === "stats") {
@@ -523,16 +641,18 @@ export default function MobileWaiterPage() {
                 </header>
 
                 <main className="flex-1 overflow-y-auto px-4 py-3 pb-28">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                         {filteredMenu.map(item => {
                             const inCart = cart.find(c => c.id === item.id);
                             const inExisting = existingCart.find(c => c.id === item.id);
                             return (
                                 <div key={item.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
                                     {item.image ? (
-                                        <img src={item.image} alt={item.name} className="w-full h-28 object-cover shrink-0" />
+                                        <div className="w-full h-28 bg-slate-50/60 flex items-center justify-center shrink-0 p-1">
+                                            <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                                        </div>
                                     ) : (
-                                        <div className="w-full h-20 bg-slate-50 flex items-center justify-center shrink-0">
+                                        <div className="w-full h-28 bg-slate-50 flex items-center justify-center shrink-0">
                                             <UtensilsCrossed size={24} className="text-slate-200" />
                                         </div>
                                     )}
@@ -615,7 +735,7 @@ export default function MobileWaiterPage() {
                                 <button onClick={() => store.fetchSmartTables()} className="px-5 py-2.5 bg-blue-500 text-white rounded-xl text-sm font-bold flex items-center gap-2 active:scale-95"><RefreshCw size={13} /> Yangilash</button>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                                 {uniqueZones.map(zone => {
                                     const zoneTables = store.smartTables.filter(t => t.zone === zone);
                                     const busyCount = zoneTables.filter(t => t.status === "occupied" || t.status === "receipt").length;
@@ -643,7 +763,7 @@ export default function MobileWaiterPage() {
                                 <ChevronLeft size={12} /> Ortga qaytish
                             </button>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                             {store.smartTables.filter(t => t.zone === activeZone).map(t => {
                                 const isBusy = t.status === "occupied";
                                 const isReceipt = t.status === "receipt";
