@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:2:1-31:12
-INJECTED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:2:1-31:12
-INJECTED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:2:1-31:12
-INJECTED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:2:1-31:12
+ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:2:1-44:12
+INJECTED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:2:1-44:12
+INJECTED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:2:1-44:12
+INJECTED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:2:1-44:12
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\E-co\.gradle\caches\transforms-3\3f914756df4879ac6d8b8fe8b56efc27\transformed\material-1.11.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.appcompat:appcompat-resources:1.6.1] C:\Users\E-co\.gradle\caches\transforms-3\bb560607554a179907898b8fb4d5bab8\transformed\jetified-appcompat-resources-1.6.1\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] C:\Users\E-co\.gradle\caches\transforms-3\ef3835823e273ce1a1d98e781f63c7af\transformed\constraintlayout-2.0.1\AndroidManifest.xml:2:1-11:12
@@ -62,9 +62,27 @@ uses-permission#android.permission.ACCESS_NETWORK_STATE
 ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:6:5-79
 	android:name
 		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:6:22-76
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
+ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:7:5-80
+	android:name
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:7:22-77
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:8:5-81
+	android:name
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:8:22-78
+uses-permission#android.permission.CAMERA
+ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:9:5-65
+	android:name
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:9:22-62
+uses-feature#android.hardware.camera
+ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:10:5-85
+	android:required
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:10:58-82
+	android:name
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:10:19-57
 application
-ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:11:5-29:19
-INJECTED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:11:5-29:19
+ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:12:5-42:19
+INJECTED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:12:5-42:19
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\E-co\.gradle\caches\transforms-3\3f914756df4879ac6d8b8fe8b56efc27\transformed\material-1.11.0\AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.11.0] C:\Users\E-co\.gradle\caches\transforms-3\3f914756df4879ac6d8b8fe8b56efc27\transformed\material-1.11.0\AndroidManifest.xml:22:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.0.1] C:\Users\E-co\.gradle\caches\transforms-3\ef3835823e273ce1a1d98e781f63c7af\transformed\constraintlayout-2.0.1\AndroidManifest.xml:9:5-20
@@ -86,37 +104,57 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\E-co\.gradle\cache
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.12.0] C:\Users\E-co\.gradle\caches\transforms-3\db75ed1f68acb34d092f2590d97474f6\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:15:9-35
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:17:9-35
 	android:label
-		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:14:9-41
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:16:9-41
+	android:roundIcon
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:15:9-54
 	android:icon
-		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:13:9-58
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:14:9-43
 	android:allowBackup
-		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:12:9-35
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:13:9-35
 	android:theme
-		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:16:9-43
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:18:9-43
 	android:usesCleartextTraffic
-		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:17:9-44
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:19:9-44
 activity#uz.smart.admin.MainActivity
-ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:19:9-28:20
+ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:21:9-31:20
+	android:screenOrientation
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:24:13-49
 	android:exported
-		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:21:13-36
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:23:13-36
 	android:configChanges
-		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:22:13-74
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:25:13-74
 	android:theme
-		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:23:13-59
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:26:13-59
 	android:name
-		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:20:13-41
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:22:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:24:13-27:29
+ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:27:13-30:29
 action#android.intent.action.MAIN
-ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:25:17-69
+ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:28:17-69
 	android:name
-		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:25:25-66
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:28:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:26:17-77
+ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:29:17-77
 	android:name
-		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:26:27-74
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:29:27-74
+provider#androidx.core.content.FileProvider
+ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:33:9-41:20
+	android:grantUriPermissions
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:37:13-47
+	android:authorities
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:35:13-62
+	android:exported
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:36:13-37
+	android:name
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:34:13-62
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:38:13-40:54
+	android:resource
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:40:17-51
+	android:name
+		ADDED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml:39:17-67
 uses-sdk
 INJECTED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\E-co\Downloads\ChaqqonPro-main\Smart pos\android\app\src\main\AndroidManifest.xml

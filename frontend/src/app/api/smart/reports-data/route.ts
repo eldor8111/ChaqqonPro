@@ -93,6 +93,26 @@ export async function GET(req: NextRequest) {
             where: { tenantId: session.tenantId },
             select: { name: true, role: true },
         });
+
+        // Fetch KDSOrders to count how many orders each waiter placed ("urgan zakazlar")
+        const kdsOrdersForKPI = await prisma.kDSOrder.findMany({
+            where: { tenantId: session.tenantId, priority: "cart", createdAt: filterClause },
+            select: { description: true }
+        });
+
+        const waiterPlacedCount: Record<string, number> = {};
+        for (const ord of kdsOrdersForKPI) {
+            try {
+                const parsed = JSON.parse(ord.description);
+                if (!Array.isArray(parsed) && parsed.waiterName) {
+                    const wName = String(parsed.waiterName).trim();
+                    if (wName) {
+                        const matchedName = staffList.find(s => s.name.trim().toLowerCase() === wName.toLowerCase())?.name || wName;
+                        waiterPlacedCount[matchedName] = (waiterPlacedCount[matchedName] || 0) + 1;
+                    }
+                }
+            } catch {}
+        }
         
         const staffMap: Record<string, any> = {};
         for (const s of staffList) {
@@ -107,8 +127,23 @@ export async function GET(req: NextRequest) {
                 transactions: 0,
                 sales: 0,
                 cash: 0,
-                card: 0
+                card: 0,
+                ordersPlaced: waiterPlacedCount[s.name] || 0
             };
+        }
+
+        for (const [wName, count] of Object.entries(waiterPlacedCount)) {
+            if (!staffMap[wName]) {
+                staffMap[wName] = {
+                    name: wName,
+                    roles: ["Ofitsiant"],
+                    transactions: 0,
+                    sales: 0,
+                    cash: 0,
+                    card: 0,
+                    ordersPlaced: count
+                };
+            }
         }
         
         const incomeByMethod: Record<string, { total: number; count: number }> = {};

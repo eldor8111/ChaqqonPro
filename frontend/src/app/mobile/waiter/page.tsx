@@ -13,6 +13,30 @@ interface MyStats { today: { total: number; count: number }; week: { total: numb
 function fmt(n: number) { return n.toLocaleString("uz-UZ") + " so'm"; }
 type ViewType = "tables" | "menu" | "stats" | "cart" | "settings";
 
+// Notification sound player using Web Audio API
+function playNotificationSound() {
+    try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const playChime = (time: number, freq: number) => {
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(freq, time);
+            gainNode.gain.setValueAtTime(0.2, time);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.55);
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start(time);
+            osc.stop(time + 0.6);
+        };
+        const now = audioCtx.currentTime;
+        playChime(now, 880); // A5
+        playChime(now + 0.15, 1046.50); // C6
+    } catch (e) {
+        console.error("Audio error:", e);
+    }
+}
+
 export default function MobileWaiterPage() {
     const router = useRouter();
     const store = useStore();
@@ -38,8 +62,64 @@ export default function MobileWaiterPage() {
     const cameraInputRef = useRef<HTMLInputElement>(null);
     const galleryInputRef = useRef<HTMLInputElement>(null);
 
+    // Active waiter calls
+    const [activeCalls, setActiveCalls] = useState<Array<{ tableId: string; tableNumber: string; calledAt: string; message?: string }>>([]);
+
     const token = store.kassirSession?.token || store.deviceSession?.token;
     const sess = store.kassirSession;
+
+    // Waiter calls poller
+    useEffect(() => {
+        if (!token) return;
+        let active = true;
+
+        const pollCalls = async () => {
+            try {
+                const res = await fetch("/api/mobile/waiter-calls", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const d = await res.json();
+                    if (!active) return;
+                    
+                    const newCalls = d.calls || [];
+                    
+                    setActiveCalls(prev => {
+                        const prevIds = new Set(prev.map(c => c.tableId));
+                        const hasNew = newCalls.some((c: any) => !prevIds.has(c.tableId));
+                        if (hasNew) {
+                            playNotificationSound();
+                            if (typeof navigator !== "undefined" && navigator.vibrate) {
+                                navigator.vibrate([200, 100, 200]);
+                            }
+                        }
+                        return newCalls;
+                    });
+                }
+            } catch (err) {
+                console.error("Error polling waiter calls:", err);
+            }
+        };
+
+        pollCalls();
+        const interval = setInterval(pollCalls, 7000); // Check every 7 seconds
+        return () => {
+            active = false;
+            clearInterval(interval);
+        };
+    }, [token]);
+
+    const dismissCall = async (tableId: string) => {
+        setActiveCalls(prev => prev.filter(c => c.tableId !== tableId));
+        try {
+            await fetch(`/api/mobile/waiter-calls?tableId=${tableId}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+        } catch (err) {
+            console.error("Error dismissing call:", err);
+        }
+    };
 
     // Load avatar from localStorage
     useEffect(() => {
@@ -330,6 +410,25 @@ export default function MobileWaiterPage() {
     const cartCount = cart.reduce((s, c) => s + c.qty, 0);
     const maxHour = stats ? Math.max(...(stats.hourlyTimeline || []).map(h => h.total), 1) : 1;
 
+    // ─── ACTIVE CALLS POPUP ──────────────────────────────────────────────────
+    const renderActiveCallsPopup = () => {
+        if (activeCalls.length === 0) return null;
+        return (
+            <div className="fixed top-28 left-4 right-4 z-50 space-y-2 pointer-events-none">
+                {activeCalls.map(call => (
+                    <div key={call.tableId} className="pointer-events-auto bg-gradient-to-r from-red-600 to-orange-500 text-white rounded-2xl p-4 shadow-xl flex items-center justify-between gap-3 animate-bounce">
+                        <div className="min-w-0">
+                            <p className="text-xs font-bold uppercase text-red-100">Chaqiruv keldi! 🔔</p>
+                            <p className="text-sm font-black">{call.tableNumber}-Stol chaqiryapti</p>
+                            {call.message && <p className="text-[11px] bg-black/10 px-2 py-0.5 rounded mt-1 inline-block">{call.message}</p>}
+                        </div>
+                        <button onClick={() => dismissCall(call.tableId)} className="bg-white text-red-600 font-black px-4 py-2 rounded-xl text-xs shrink-0 active:scale-95 transition-all">Bordim 🏃</button>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
     // ─── HEADER shared ───────────────────────────────────────────────────────
     const Header = ({ title, sub, onBack }: { title: string; sub?: string; onBack?: () => void }) => (
         <header className="bg-white border-b border-slate-100 px-3 pt-8 pb-0 sticky top-0 z-20">
@@ -391,6 +490,7 @@ export default function MobileWaiterPage() {
         return (
             <div className="flex flex-col min-h-screen bg-slate-50">
                 <Header title="Sozlamalar" sub={`${sess.name} · Ofitsiant`} />
+                {renderActiveCallsPopup()}
                 <main className="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
                     {/* Hidden inputs for camera & gallery */}
                     <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleAvatarFromInput} className="hidden" />
@@ -515,6 +615,7 @@ export default function MobileWaiterPage() {
         return (
             <div className="flex flex-col min-h-screen bg-slate-50">
                 <Header title="Mening Otchotim" sub={`${sess.name} · Ofitsiant`} />
+                {renderActiveCallsPopup()}
                 <main className="flex-1 overflow-y-auto p-4 space-y-4 pb-10">
                     {statsLoading && !stats ? (
                         <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
@@ -600,6 +701,7 @@ export default function MobileWaiterPage() {
         const existingTotal = existingCart.reduce((s, c) => s + c.price * c.qty, 0);
         return (
             <div className="flex flex-col h-screen bg-slate-50">
+                {renderActiveCallsPopup()}
                 <header className="bg-white border-b border-slate-100 sticky top-0 z-20 pt-8">
                     <div className="flex items-center justify-between px-4 py-3">
                         <button onClick={() => { setView("tables"); setSelectedTable(null); setCart([]); setExistingCart([]); }} className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center active:scale-95">
@@ -657,6 +759,7 @@ export default function MobileWaiterPage() {
         );
         return (
             <div className="flex flex-col h-screen bg-slate-50">
+                {renderActiveCallsPopup()}
                 <header className="bg-white border-b border-slate-100 sticky top-0 z-20 pt-8">
                     <div className="flex items-center justify-between px-4 py-3">
                         <button onClick={() => { setView("tables"); setSelectedTable(null); setCart([]); setExistingCart([]); }} className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center active:scale-95">
@@ -789,6 +892,7 @@ export default function MobileWaiterPage() {
     return (
         <div className="flex flex-col min-h-screen bg-slate-50">
             <Header title="EVIKO Mobile" sub={`${sess.name} · Ofitsiant`} />
+            {renderActiveCallsPopup()}
             <main className="flex-1 overflow-y-auto p-4 pb-10">
                 {!activeZone ? (
                     <>

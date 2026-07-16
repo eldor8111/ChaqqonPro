@@ -143,7 +143,8 @@ export default function UbtReportsPage() {
             .filter((s: any) => Array.isArray(s.roles) ? s.roles.includes("Ofitsiant") : typeof s.roles === "string" && s.roles.includes("Ofitsiant"))
             .map((s: any) => ({
                 name: s.name,
-                orders: s.transactions || 0,
+                ordersPlaced: s.ordersPlaced || 0,
+                ordersClosed: s.transactions || 0,
                 revenue: s.sales || 0,
                 rating: 4.5 + Math.random() * 0.5,
             }));
@@ -417,16 +418,18 @@ export default function UbtReportsPage() {
                                     <thead>
                                         <tr>
                                             <th>Ofitsiant</th>
-                                            <th className="whitespace-nowrap">Xizmat qilingan zakazlar</th>
+                                            <th className="whitespace-nowrap">Urgan buyurtmalari (Oshxona)</th>
+                                            <th className="whitespace-nowrap">Yopgan buyurtmalari (To'lov)</th>
                                             <th className="whitespace-nowrap">Keltirilgan tushum</th>
-                                            <th className="whitespace-nowrap">Reyting / Choy-chaqa</th>
+                                            <th className="whitespace-nowrap">Reyting</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {WAITER_DATA.map((w, i) => (
                                             <tr key={i}>
                                                 <td className="font-semibold text-brand-600 whitespace-nowrap">{w.name}</td>
-                                                <td className="whitespace-nowrap">{w.orders} ta</td>
+                                                <td className="whitespace-nowrap font-bold text-sky-600">{w.ordersPlaced} ta</td>
+                                                <td className="whitespace-nowrap font-bold text-emerald-600">{w.ordersClosed} ta</td>
                                                 <td className="font-bold text-emerald-600 whitespace-nowrap">{formatCurrency(w.revenue)}</td>
                                                 <td className="whitespace-nowrap">
                                                     <div className="flex items-center gap-2">

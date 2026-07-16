@@ -3,7 +3,7 @@
     <color name="brand">#2563eb</color>
     <color name="brand_dark">#1d4ed8</color>
     <color name="surface">#0f172a</color>
-    <string name="app_name">EVIKO Xodimlar</string>
+    <string name="app_name">EVIKO</string>
     <style name="Theme.Smart" parent="Theme.MaterialComponents.Light.NoActionBar">
         
         <item name="colorPrimary">@color/brand</item>

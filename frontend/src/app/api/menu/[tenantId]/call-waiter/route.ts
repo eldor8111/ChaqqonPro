@@ -7,9 +7,8 @@ import { prisma } from "@/lib/backend/db";
 // Bu endpoint ham autentifikatsiya talab ETMAYDI.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// In-memory store for waiter calls (real app'da DB yoki WebSocket ishlatish kerak)
-// Key: `${tenantId}:${tableId}`, Value: { calledAt: Date, tableNumber: string }
-const waiterCalls = new Map<string, { calledAt: Date; tableNumber: string; message?: string }>();
+import { waiterCalls } from "@/lib/waiter-calls-store";
+
 
 export async function POST(
     request: NextRequest,

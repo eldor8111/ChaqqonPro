@@ -1,4 +1,4 @@
-#Thu Jul 16 15:03:22 UZT 2026
+#Thu Jul 16 17:35:16 UZT 2026
 base.2=C\:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\10\\classes.dex
 path.2=10/classes.dex
 base.1=C\:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Rounded rectangle background -->
+    <path
+        android:fillColor="#2962FF"
+        android:pathData="M4,4 L44,4 Q48,4 48,8 L48,40 Q48,44 44,44 L4,44 Q0,44 0,40 L0,8 Q0,4 4,4 Z" />
+
+    <!-- Letter E -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M6,16 L6,32 L13,32 L13,30 L8.5,30 L8.5,25 L12,25 L12,23 L8.5,23 L8.5,18 L13,18 L13,16 Z" />
+
+    <!-- Letter V -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M14,16 L17.5,30 L19,30 L22.5,16 L20.5,16 L18.25,27 L16,16 Z" />
+
+    <!-- Letter I -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,16 L24,32 L26.5,32 L26.5,16 Z" />
+
+    <!-- Letter K -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,16 L28,32 L30.5,32 L30.5,25 L35,32 L38,32 L33,24 L37.5,16 L35,16 L30.5,23 L30.5,16 Z" />
+
+    <!-- Letter O -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M39,24 C39,20 41,16 43.5,16 C46,16 48,20 48,24 C48,28 46,32 43.5,32 C41,32 39,28 39,24 Z M41,24 C41,27 42,30 43.5,30 C45,30 46,27 46,24 C46,21 45,18 43.5,18 C42,18 41,21 41,24 Z" />
+</vector>
