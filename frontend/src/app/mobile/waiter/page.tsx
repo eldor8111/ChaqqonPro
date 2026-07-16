@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useStore, SmartTable } from "@/lib/store";
-import { UtensilsCrossed, LogOut, ChevronLeft, Plus, Minus, Send, BarChart2, RefreshCw, X, Search, Check, Clock, TrendingUp, ShoppingBag, Settings, Camera } from "lucide-react";
+import { UtensilsCrossed, LogOut, ChevronLeft, Plus, Minus, Send, BarChart2, RefreshCw, X, Search, Check, Clock, TrendingUp, ShoppingBag, Settings, Camera, ImagePlus } from "lucide-react";
 
 interface MenuItem { id: string; name: string; categoryId: string; price: number; image?: string; inStock: boolean; }
 interface Category { id: string; name: string; }
@@ -34,6 +34,9 @@ export default function MobileWaiterPage() {
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
     const [installPrompt, setInstallPrompt] = useState<any>(null);
     const [avatar, setAvatar] = useState<string>("");
+    const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+    const cameraInputRef = useRef<HTMLInputElement>(null);
+    const galleryInputRef = useRef<HTMLInputElement>(null);
 
     const token = store.kassirSession?.token || store.deviceSession?.token;
     const sess = store.kassirSession;
@@ -46,18 +49,43 @@ export default function MobileWaiterPage() {
         }
     }, [sess?.id]);
 
-    const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    // Circular crop helper — takes image file, crops to circle, returns base64
+    const cropToCircle = (file: File) => {
         const reader = new FileReader();
         reader.onloadend = () => {
-            const base64 = reader.result as string;
-            setAvatar(base64);
-            if (sess?.id) {
-                localStorage.setItem(`waiter_avatar_${sess.id}`, base64);
-            }
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const size = 256;
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext("2d")!;
+                // Draw circular clipping
+                ctx.beginPath();
+                ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.clip();
+                // Cover-fit the image
+                const scale = Math.max(size / img.width, size / img.height);
+                const w = img.width * scale;
+                const h = img.height * scale;
+                ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+                const base64 = canvas.toDataURL("image/png", 0.92);
+                setAvatar(base64);
+                if (sess?.id) localStorage.setItem(`waiter_avatar_${sess.id}`, base64);
+            };
+            img.src = reader.result as string;
         };
         reader.readAsDataURL(file);
+    };
+
+    const handleAvatarFromInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        cropToCircle(file);
+        setShowAvatarPicker(false);
+        // Reset input so same file can be re-selected
+        e.target.value = "";
     };
 
     useEffect(() => {
@@ -304,53 +332,53 @@ export default function MobileWaiterPage() {
 
     // ─── HEADER shared ───────────────────────────────────────────────────────
     const Header = ({ title, sub, onBack }: { title: string; sub?: string; onBack?: () => void }) => (
-        <header className="bg-white border-b border-slate-100 px-4 pt-4 pb-0 sticky top-0 z-20">
-            <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
+        <header className="bg-white border-b border-slate-100 px-3 pt-2 pb-0 sticky top-0 z-20">
+            <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-2">
                     {onBack && (
-                        <button onClick={onBack} className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600 active:scale-95 transition-all">
-                            <ChevronLeft size={18} />
+                        <button onClick={onBack} className="w-8 h-8 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600 active:scale-95 transition-all">
+                            <ChevronLeft size={16} />
                         </button>
                     )}
                     <div className="flex items-center gap-2">
                         {sess && (
                             avatar ? (
-                                <img src={avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-slate-200" />
+                                <img src={avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover border border-slate-200" />
                             ) : (
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-[10px] font-black uppercase shadow-sm">
+                                <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-[9px] font-black uppercase shadow-sm">
                                     {sess.name.slice(0, 2).toUpperCase()}
                                 </div>
                             )
                         )}
                         <div>
-                            <h1 className="text-base font-black text-slate-800 leading-tight flex items-center gap-2">
+                            <h1 className="text-sm font-black text-slate-800 leading-tight flex items-center gap-1.5">
                                 {title}
                                 {!onBack && (
                                     <button onClick={() => { store.fetchSmartTables(); fetchMenu(); if (view === 'stats') fetchStats(); }} className="p-1 rounded-full bg-blue-50 text-blue-500 active:scale-95 transition-all">
-                                        <RefreshCw size={14} />
+                                        <RefreshCw size={12} />
                                     </button>
                                 )}
                             </h1>
-                            {sub && <p className="text-[11px] font-semibold text-blue-600 uppercase tracking-widest">{sub}</p>}
+                            {sub && <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-widest">{sub}</p>}
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                     {installPrompt && (
-                        <button onClick={handleInstall} className="px-3 py-1.5 bg-emerald-500 text-white text-[10px] font-bold rounded-lg shadow-sm active:scale-95 transition-all animate-pulse">
+                        <button onClick={handleInstall} className="px-2.5 py-1 bg-emerald-500 text-white text-[10px] font-bold rounded-lg shadow-sm active:scale-95 transition-all animate-pulse">
                             O'rnatish
                         </button>
                     )}
-                    <button onClick={handleLogout} className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 active:scale-95 transition-all">
-                        <LogOut size={15} />
+                    <button onClick={handleLogout} className="w-8 h-8 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 active:scale-95 transition-all">
+                        <LogOut size={14} />
                     </button>
                 </div>
             </div>
             {!onBack && (
                 <div className="flex border-b border-slate-100">
                     {([["tables", UtensilsCrossed, "Stollar"], ["stats", BarChart2, "Otchot"], ["settings", Settings, "Sozlamalar"]] as const).map(([id, Icon, label]) => (
-                        <button key={id} onClick={() => setView(id as ViewType)} className={`flex-1 py-2.5 text-[11px] font-bold flex items-center justify-center gap-1.5 border-b-2 transition-colors ${view === id ? "text-blue-600 border-blue-500" : "text-slate-400 border-transparent"}`}>
-                            <Icon size={12} /> {label}
+                        <button key={id} onClick={() => setView(id as ViewType)} className={`flex-1 py-2 text-[10px] font-bold flex items-center justify-center gap-1 border-b-2 transition-colors ${view === id ? "text-blue-600 border-blue-500" : "text-slate-400 border-transparent"}`}>
+                            <Icon size={11} /> {label}
                         </button>
                     ))}
                 </div>
@@ -364,20 +392,59 @@ export default function MobileWaiterPage() {
             <div className="flex flex-col min-h-screen bg-slate-50">
                 <Header title="Sozlamalar" sub={`${sess.name} · Ofitsiant`} />
                 <main className="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
+                    {/* Hidden inputs for camera & gallery */}
+                    <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleAvatarFromInput} className="hidden" />
+                    <input ref={galleryInputRef} type="file" accept="image/*" onChange={handleAvatarFromInput} className="hidden" />
+
+                    {/* Avatar picker modal */}
+                    {showAvatarPicker && (
+                        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowAvatarPicker(false)}>
+                            <div className="bg-white w-full max-w-xs rounded-t-3xl sm:rounded-3xl p-5 pb-8 sm:pb-5 shadow-2xl" onClick={e => e.stopPropagation()}>
+                                <div className="w-10 h-1 rounded-full bg-slate-200 mx-auto mb-4 sm:hidden" />
+                                <h3 className="text-sm font-black text-slate-800 mb-4 text-center">Rasm tanlash</h3>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => { cameraInputRef.current?.click(); }}
+                                        className="flex-1 flex flex-col items-center gap-2 py-5 bg-blue-50 border-2 border-blue-200 rounded-2xl active:scale-95 transition-all"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                                            <Camera size={22} />
+                                        </div>
+                                        <span className="text-xs font-black text-blue-700">Kamera</span>
+                                    </button>
+                                    <button
+                                        onClick={() => { galleryInputRef.current?.click(); }}
+                                        className="flex-1 flex flex-col items-center gap-2 py-5 bg-emerald-50 border-2 border-emerald-200 rounded-2xl active:scale-95 transition-all"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+                                            <ImagePlus size={22} />
+                                        </div>
+                                        <span className="text-xs font-black text-emerald-700">Galereya</span>
+                                    </button>
+                                </div>
+                                <button onClick={() => setShowAvatarPicker(false)} className="w-full mt-3 py-2.5 text-xs font-bold text-slate-400 bg-slate-50 rounded-xl active:scale-95 transition-all">
+                                    Bekor qilish
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Profile glass card */}
                     <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col items-center text-center">
                         <div className="relative mb-3">
                             {avatar ? (
-                                <img src={avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-slate-50 shadow-md" />
+                                <img src={avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-[0_4px_20px_rgba(0,0,0,0.1)]" />
                             ) : (
                                 <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-blue-500/10">
                                     {sess.name.slice(0, 2).toUpperCase()}
                                 </div>
                             )}
-                            <label className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center cursor-pointer shadow-md hover:bg-blue-500 active:scale-95 transition-all">
-                                <Camera size={14} />
-                                <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
-                            </label>
+                            <button
+                                onClick={() => setShowAvatarPicker(true)}
+                                className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center cursor-pointer shadow-lg shadow-blue-500/30 hover:bg-blue-500 active:scale-90 transition-all border-2 border-white"
+                            >
+                                <Camera size={15} />
+                            </button>
                         </div>
                         <h2 className="text-base font-black text-slate-800">{sess.name}</h2>
                         <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mt-0.5">{(sess as any).role || "Ofitsiant"}</p>
