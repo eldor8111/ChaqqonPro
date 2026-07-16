@@ -941,8 +941,8 @@ export default function UbtPage() {
                     </div>
 
                     {/* ── Period Selector ── */}
-                    <div className="flex flex-col items-end gap-2">
-                        <div className="flex items-center gap-1 p-1 rounded-2xl"
+                    <div className="flex flex-col items-stretch md:items-end gap-2 w-full md:w-auto">
+                        <div className="flex items-center gap-1 p-1 rounded-2xl overflow-x-auto max-w-full whitespace-nowrap scrollbar-none"
                             style={{ background: "rgba(15,23,42,0.06)", border: "1px solid rgba(15,23,42,0.1)" }}>
                             {(["hourly", "daily", "monthly", "yearly", "custom"] as Period[]).map((p) => (
                                 <button
@@ -952,7 +952,7 @@ export default function UbtPage() {
                                         if (p === "custom") setShowCalendar(true);
                                         else { setShowCalendar(false); mutate(); }
                                     }}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 ${period === p
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex-shrink-0 ${period === p
                                             ? "bg-blue-600 text-white shadow-md shadow-blue-500/30 scale-105"
                                             : "text-slate-500 hover:text-slate-700 hover:bg-white/60"
                                         }`}
