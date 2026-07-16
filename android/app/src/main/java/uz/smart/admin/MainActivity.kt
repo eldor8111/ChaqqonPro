@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
     private var cameraPhotoPath: String? = null
 
     companion object {
-        private const val BASE_URL = "https://chaqqonpro.e-code.uz/login/staff"
+        private const val BASE_URL = "https://chaqqonpro.e-code.uz/"
         private const val INPUT_FILE_REQUEST_CODE = 1
         private const val PERMISSIONS_REQUEST_CODE = 2
     }
@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         // Enable local storage and IndexedDB for Zustand store
         settings.databaseEnabled = true
 
-        WebView.setWebContentsDebuggingEnabled(false) // Set true for dev only
+        WebView.setWebContentsDebuggingEnabled(false) // Set false for dev only
 
         webView.setBackgroundColor(Color.WHITE)
 

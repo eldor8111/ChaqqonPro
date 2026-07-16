@@ -95,24 +95,15 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
     return (
         <>
             <header className="h-16 flex items-center justify-between px-4 md:px-6 bg-surface-card border-b border-surface-border flex-shrink-0 relative">
-                {/* Center: Logo (Absolute) */}
-                <div className="absolute left-1/2 -translate-x-1/2 pointer-events-none">
-                    <div className="animate-fade-in flex items-center gap-2">
-                        <span className="font-black text-[22px] md:text-[26px] tracking-wider text-slate-800 uppercase">
+                {/* Left: Logo + Branch selector + Search */}
+                <div className="flex items-center gap-3 md:gap-4">
+                    {/* Logo */}
+                    <div className="animate-fade-in flex items-center gap-2 mr-2">
+                        <span className="font-black text-lg md:text-2xl tracking-wider text-slate-800 uppercase">
                             EVIKO<span className="text-blue-600"> POS</span>
                         </span>
                     </div>
-                </div>
-                {/* Left: Hamburger (mobile) + Branch selector + Search */}
-                <div className="flex items-center gap-2 md:gap-4">
-                    {/* Mobile hamburger */}
-                    <button
-                        onClick={onMobileMenuOpen}
-                        className="md:hidden p-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-surface-elevated transition-all"
-                        aria-label="Menyu"
-                    >
-                        <Menu size={20} />
-                    </button>
+
                     {/* Branch selector */}
                     {useMultiBranch && (
                         <div className="relative">
@@ -121,7 +112,7 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
                                 className="flex items-center gap-2 bg-surface-elevated px-3 py-2 rounded-xl border border-surface-border hover:border-brand-500/50 transition-all text-sm text-slate-200"
                             >
                                 <Building2 size={15} className="text-brand-400" />
-                                <span className="max-w-[140px] truncate">{selectedBranch.name}</span>
+                                <span className="max-w-[100px] md:max-w-[140px] truncate">{selectedBranch.name}</span>
                                 <ChevronDown size={14} className="text-slate-400" />
                             </button>
                             {showBranch && (
@@ -159,11 +150,11 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
                     <div className="relative">
                         <button
                             onClick={() => { setShowLang(!showLang); setShowNotif(false); setShowBranch(false); }}
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-surface-elevated transition-all text-sm border border-surface-border"
+                            className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1.5 md:py-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-surface-elevated transition-all text-xs md:text-sm border border-surface-border"
                         >
-                            <Globe size={15} />
+                            <Globe size={14} className="md:w-[15px] md:h-[15px]" />
                             <span>{languages.find(l => l.code === lang)?.flag}</span>
-                            <span className="uppercase text-xs font-medium">{lang}</span>
+                            <span className="uppercase text-[10px] md:text-xs font-medium">{lang}</span>
                         </button>
                         {showLang && (
                             <div className="absolute top-full mt-2 right-0 w-44 glass-card shadow-card py-1 z-50 animate-fade-in">

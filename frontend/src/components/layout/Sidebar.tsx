@@ -89,8 +89,6 @@ const NAV_ITEMS: NavItem[] = [
 const MOBILE_BOTTOM_NAV = [
     { href: "/smart", icon: Home, label: "Bosh sahifa" },
     { href: "/smart/reports", icon: PieChart, label: "Hisobotlar" },
-    { href: "/smart/users", icon: Users, label: "Xodimlar" },
-    { href: "/smart/ombor/qoldiqlar", icon: ShoppingBag, label: "Ombor" },
 ];
 
 interface SidebarProps {
@@ -282,15 +280,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose, onMobileOpe
                         </Link>
                     );
                 })}
-                {/* Hamburger to open full menu */}
-                <button
-                    onClick={onMobileOpen}
-                    className="flex-1 flex flex-col items-center gap-1 py-2.5 text-xs font-medium text-slate-400"
-                    id="mobile-menu-trigger"
-                >
-                    <Menu size={20} />
-                    <span className="text-[10px] leading-none">Menyu</span>
-                </button>
+
 
             </nav>
         </>
