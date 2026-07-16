@@ -235,7 +235,7 @@ export default function MobileWaiterPage() {
                 body: JSON.stringify({
                     tableId: selectedTable.id,
                     items,
-                    waiterName: sess.name,
+                    waiterName: sess?.name || "",
                     shotId: activeShot,
                 }),
             });
