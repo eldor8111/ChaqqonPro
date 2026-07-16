@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand">#2563eb</color>
+    <color name="brand_dark">#1d4ed8</color>
+    <color name="surface">#0f172a</color>
+    <string name="app_name">EVIKO Xodimlar</string>
+    <style name="Theme.Smart" parent="Theme.MaterialComponents.Light.NoActionBar">
+        
+        <item name="colorPrimary">@color/brand</item>
+        <item name="colorPrimaryVariant">@color/brand_dark</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+    </style>
+    <style name="Theme.Smart.NoActionBar" parent="Theme.Smart">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

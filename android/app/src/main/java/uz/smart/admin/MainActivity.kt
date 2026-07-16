@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var loadingView: FrameLayout
 
     companion object {
-        private const val BASE_URL = "https://smart.e-code.uz"
+        private const val BASE_URL = "https://chaqqonpro.e-code.uz/login/staff"
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -106,7 +106,7 @@ class MainActivity : AppCompatActivity() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 val url = request?.url?.toString() ?: return false
                 // Allow navigation within our domain
-                return if (url.startsWith(BASE_URL)) {
+                return if (url.startsWith("https://chaqqonpro.e-code.uz")) {
                     view?.loadUrl(url)
                     true
                 } else {

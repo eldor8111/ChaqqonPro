@@ -1,0 +1,13 @@
+R_DEF: Internal format may change without notice
+local
+color brand
+color brand_dark
+color surface
+id loading_view
+id offline_view
+id retry_button
+id webview
+layout activity_main
+string app_name
+style Theme.Smart
+style Theme.Smart.NoActionBar

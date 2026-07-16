@@ -1,0 +1,1409 @@
+{
+    "variants": [
+        {
+            "testFixturesArtifact": null,
+            "mainArtifact": {
+                "variantSourceProvider": null,
+                "multiFlavorSourceProvider": null
+            },
+            "productFlavors": [
+                
+            ],
+            "androidTestArtifact": {
+                "variantSourceProvider": null,
+                "multiFlavorSourceProvider": null
+            },
+            "buildType": "debug",
+            "unitTestArtifact": {
+                "variantSourceProvider": null,
+                "multiFlavorSourceProvider": null
+            },
+            "name": "debug"
+        },
+        {
+            "testFixturesArtifact": null,
+            "mainArtifact": {
+                "variantSourceProvider": null,
+                "multiFlavorSourceProvider": null
+            },
+            "productFlavors": [
+                
+            ],
+            "androidTestArtifact": null,
+            "buildType": "release",
+            "unitTestArtifact": {
+                "variantSourceProvider": null,
+                "multiFlavorSourceProvider": null
+            },
+            "name": "release"
+        }
+    ],
+    "projectType": "APPLICATION",
+    "bootClasspath": [
+        {
+            "directory": false,
+            "file": true,
+            "freeSpace": 97228730368,
+            "canonicalPath": "C:\\Users\\E-co\\AppData\\Local\\Android\\Sdk\\platforms\\android-34\\android.jar",
+            "usableSpace": 97228730368,
+            "hidden": false,
+            "totalSpace": 230073479168,
+            "path": "C:\\Users\\E-co\\AppData\\Local\\Android\\Sdk\\platforms\\android-34\\android.jar",
+            "name": "android.jar",
+            "absolute": true,
+            "absolutePath": "C:\\Users\\E-co\\AppData\\Local\\Android\\Sdk\\platforms\\android-34\\android.jar",
+            "parent": "C:\\Users\\E-co\\AppData\\Local\\Android\\Sdk\\platforms\\android-34"
+        }
+    ],
+    "productFlavorSourceSets": [
+        
+    ],
+    "buildFolder": {
+        "directory": true,
+        "file": false,
+        "freeSpace": 97228730368,
+        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\build",
+        "usableSpace": 97228730368,
+        "hidden": false,
+        "totalSpace": 230073479168,
+        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\build",
+        "name": "build",
+        "absolute": true,
+        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\build",
+        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app"
+    },
+    "buildName": "n/a",
+    "mainSourceSet": {
+        "androidTestSourceProvider": {
+            "baselineProfileDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\baselineProfiles",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\baselineProfiles",
+                    "name": "baselineProfiles",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\baselineProfiles",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest"
+                }
+            ],
+            "aidlDirectories": null,
+            "assetsDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\assets",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\assets",
+                    "name": "assets",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\assets",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest"
+                }
+            ],
+            "customDirectories": [
+                
+            ],
+            "renderscriptDirectories": null,
+            "jniLibsDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\jniLibs",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\jniLibs",
+                    "name": "jniLibs",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\jniLibs",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest"
+                }
+            ],
+            "resourcesDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\resources",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\resources",
+                    "name": "resources",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\resources",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest"
+                }
+            ],
+            "manifestFile": {
+                "directory": false,
+                "file": false,
+                "freeSpace": 0,
+                "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\AndroidManifest.xml",
+                "usableSpace": 0,
+                "hidden": false,
+                "totalSpace": 0,
+                "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\AndroidManifest.xml",
+                "name": "AndroidManifest.xml",
+                "absolute": true,
+                "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\AndroidManifest.xml",
+                "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest"
+            },
+            "shadersDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\shaders",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\shaders",
+                    "name": "shaders",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\shaders",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest"
+                }
+            ],
+            "resDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\res",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\res",
+                    "name": "res",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\res",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest"
+                }
+            ],
+            "mlModelsDirectories": null,
+            "kotlinDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\kotlin",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\kotlin",
+                    "name": "kotlin",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\kotlin",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest"
+                },
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\java",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\java",
+                    "name": "java",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\java",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest"
+                }
+            ],
+            "name": "androidTest",
+            "javaDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\java",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\java",
+                    "name": "java",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest\\java",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTest"
+                }
+            ]
+        },
+        "sourceProvider": {
+            "baselineProfileDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\baselineProfiles",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\baselineProfiles",
+                    "name": "baselineProfiles",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\baselineProfiles",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main"
+                }
+            ],
+            "aidlDirectories": null,
+            "assetsDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\assets",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\assets",
+                    "name": "assets",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\assets",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main"
+                }
+            ],
+            "customDirectories": [
+                
+            ],
+            "renderscriptDirectories": null,
+            "jniLibsDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\jniLibs",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\jniLibs",
+                    "name": "jniLibs",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\jniLibs",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main"
+                }
+            ],
+            "resourcesDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\resources",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\resources",
+                    "name": "resources",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\resources",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main"
+                }
+            ],
+            "manifestFile": {
+                "directory": false,
+                "file": true,
+                "freeSpace": 97228730368,
+                "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\AndroidManifest.xml",
+                "usableSpace": 97228730368,
+                "hidden": false,
+                "totalSpace": 230073479168,
+                "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\AndroidManifest.xml",
+                "name": "AndroidManifest.xml",
+                "absolute": true,
+                "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\AndroidManifest.xml",
+                "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main"
+            },
+            "shadersDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\shaders",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\shaders",
+                    "name": "shaders",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\shaders",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main"
+                }
+            ],
+            "resDirectories": [
+                {
+                    "directory": true,
+                    "file": false,
+                    "freeSpace": 97228730368,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\res",
+                    "usableSpace": 97228730368,
+                    "hidden": false,
+                    "totalSpace": 230073479168,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\res",
+                    "name": "res",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\res",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main"
+                }
+            ],
+            "mlModelsDirectories": null,
+            "kotlinDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\kotlin",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\kotlin",
+                    "name": "kotlin",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\kotlin",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main"
+                },
+                {
+                    "directory": true,
+                    "file": false,
+                    "freeSpace": 97228730368,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\java",
+                    "usableSpace": 97228730368,
+                    "hidden": false,
+                    "totalSpace": 230073479168,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\java",
+                    "name": "java",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\java",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main"
+                }
+            ],
+            "name": "main",
+            "javaDirectories": [
+                {
+                    "directory": true,
+                    "file": false,
+                    "freeSpace": 97228730368,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\java",
+                    "usableSpace": 97228730368,
+                    "hidden": false,
+                    "totalSpace": 230073479168,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\java",
+                    "name": "java",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main\\java",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\main"
+                }
+            ]
+        },
+        "testFixturesSourceProvider": null,
+        "unitTestSourceProvider": {
+            "baselineProfileDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\baselineProfiles",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\baselineProfiles",
+                    "name": "baselineProfiles",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\baselineProfiles",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test"
+                }
+            ],
+            "aidlDirectories": null,
+            "assetsDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\assets",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\assets",
+                    "name": "assets",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\assets",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test"
+                }
+            ],
+            "customDirectories": [
+                
+            ],
+            "renderscriptDirectories": null,
+            "jniLibsDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\jniLibs",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\jniLibs",
+                    "name": "jniLibs",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\jniLibs",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test"
+                }
+            ],
+            "resourcesDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\resources",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\resources",
+                    "name": "resources",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\resources",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test"
+                }
+            ],
+            "manifestFile": {
+                "directory": false,
+                "file": false,
+                "freeSpace": 0,
+                "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\AndroidManifest.xml",
+                "usableSpace": 0,
+                "hidden": false,
+                "totalSpace": 0,
+                "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\AndroidManifest.xml",
+                "name": "AndroidManifest.xml",
+                "absolute": true,
+                "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\AndroidManifest.xml",
+                "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test"
+            },
+            "shadersDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\shaders",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\shaders",
+                    "name": "shaders",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\shaders",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test"
+                }
+            ],
+            "resDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\res",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\res",
+                    "name": "res",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\res",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test"
+                }
+            ],
+            "mlModelsDirectories": null,
+            "kotlinDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\kotlin",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\kotlin",
+                    "name": "kotlin",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\kotlin",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test"
+                },
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\java",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\java",
+                    "name": "java",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\java",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test"
+                }
+            ],
+            "name": "test",
+            "javaDirectories": [
+                {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\java",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\java",
+                    "name": "java",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test\\java",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\test"
+                }
+            ]
+        }
+    },
+    "buildTypeSourceSets": [
+        {
+            "androidTestSourceProvider": {
+                "baselineProfileDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\baselineProfiles",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\baselineProfiles",
+                        "name": "baselineProfiles",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\baselineProfiles",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug"
+                    }
+                ],
+                "aidlDirectories": null,
+                "assetsDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\assets",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\assets",
+                        "name": "assets",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\assets",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug"
+                    }
+                ],
+                "customDirectories": [
+                    
+                ],
+                "renderscriptDirectories": null,
+                "jniLibsDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\jniLibs",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\jniLibs",
+                        "name": "jniLibs",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\jniLibs",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug"
+                    }
+                ],
+                "resourcesDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\resources",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\resources",
+                        "name": "resources",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\resources",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug"
+                    }
+                ],
+                "manifestFile": {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\AndroidManifest.xml",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\AndroidManifest.xml",
+                    "name": "AndroidManifest.xml",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\AndroidManifest.xml",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug"
+                },
+                "shadersDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\shaders",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\shaders",
+                        "name": "shaders",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\shaders",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug"
+                    }
+                ],
+                "resDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\res",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\res",
+                        "name": "res",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\res",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug"
+                    }
+                ],
+                "mlModelsDirectories": null,
+                "kotlinDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\kotlin",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\kotlin",
+                        "name": "kotlin",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\kotlin",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug"
+                    },
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\java",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\java",
+                        "name": "java",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\java",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug"
+                    }
+                ],
+                "name": "androidTestDebug",
+                "javaDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\java",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\java",
+                        "name": "java",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug\\java",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\androidTestDebug"
+                    }
+                ]
+            },
+            "sourceProvider": {
+                "baselineProfileDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\baselineProfiles",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\baselineProfiles",
+                        "name": "baselineProfiles",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\baselineProfiles",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug"
+                    }
+                ],
+                "aidlDirectories": null,
+                "assetsDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\assets",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\assets",
+                        "name": "assets",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\assets",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug"
+                    }
+                ],
+                "customDirectories": [
+                    
+                ],
+                "renderscriptDirectories": null,
+                "jniLibsDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\jniLibs",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\jniLibs",
+                        "name": "jniLibs",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\jniLibs",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug"
+                    }
+                ],
+                "resourcesDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\resources",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\resources",
+                        "name": "resources",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\resources",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug"
+                    }
+                ],
+                "manifestFile": {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\AndroidManifest.xml",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\AndroidManifest.xml",
+                    "name": "AndroidManifest.xml",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\AndroidManifest.xml",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug"
+                },
+                "shadersDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\shaders",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\shaders",
+                        "name": "shaders",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\shaders",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug"
+                    }
+                ],
+                "resDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\res",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\res",
+                        "name": "res",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\res",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug"
+                    }
+                ],
+                "mlModelsDirectories": null,
+                "kotlinDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\kotlin",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\kotlin",
+                        "name": "kotlin",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\kotlin",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug"
+                    },
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\java",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\java",
+                        "name": "java",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\java",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug"
+                    }
+                ],
+                "name": "debug",
+                "javaDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\java",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\java",
+                        "name": "java",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug\\java",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\debug"
+                    }
+                ]
+            },
+            "testFixturesSourceProvider": null,
+            "unitTestSourceProvider": {
+                "baselineProfileDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\baselineProfiles",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\baselineProfiles",
+                        "name": "baselineProfiles",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\baselineProfiles",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug"
+                    }
+                ],
+                "aidlDirectories": null,
+                "assetsDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\assets",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\assets",
+                        "name": "assets",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\assets",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug"
+                    }
+                ],
+                "customDirectories": [
+                    
+                ],
+                "renderscriptDirectories": null,
+                "jniLibsDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\jniLibs",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\jniLibs",
+                        "name": "jniLibs",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\jniLibs",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug"
+                    }
+                ],
+                "resourcesDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\resources",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\resources",
+                        "name": "resources",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\resources",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug"
+                    }
+                ],
+                "manifestFile": {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\AndroidManifest.xml",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\AndroidManifest.xml",
+                    "name": "AndroidManifest.xml",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\AndroidManifest.xml",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug"
+                },
+                "shadersDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\shaders",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\shaders",
+                        "name": "shaders",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\shaders",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug"
+                    }
+                ],
+                "resDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\res",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\res",
+                        "name": "res",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\res",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug"
+                    }
+                ],
+                "mlModelsDirectories": null,
+                "kotlinDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\kotlin",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\kotlin",
+                        "name": "kotlin",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\kotlin",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug"
+                    },
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\java",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\java",
+                        "name": "java",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\java",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug"
+                    }
+                ],
+                "name": "testDebug",
+                "javaDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\java",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\java",
+                        "name": "java",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug\\java",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testDebug"
+                    }
+                ]
+            }
+        },
+        {
+            "androidTestSourceProvider": null,
+            "sourceProvider": {
+                "baselineProfileDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\baselineProfiles",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\baselineProfiles",
+                        "name": "baselineProfiles",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\baselineProfiles",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release"
+                    }
+                ],
+                "aidlDirectories": null,
+                "assetsDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\assets",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\assets",
+                        "name": "assets",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\assets",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release"
+                    }
+                ],
+                "customDirectories": [
+                    
+                ],
+                "renderscriptDirectories": null,
+                "jniLibsDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\jniLibs",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\jniLibs",
+                        "name": "jniLibs",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\jniLibs",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release"
+                    }
+                ],
+                "resourcesDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\resources",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\resources",
+                        "name": "resources",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\resources",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release"
+                    }
+                ],
+                "manifestFile": {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\AndroidManifest.xml",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\AndroidManifest.xml",
+                    "name": "AndroidManifest.xml",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\AndroidManifest.xml",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release"
+                },
+                "shadersDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\shaders",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\shaders",
+                        "name": "shaders",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\shaders",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release"
+                    }
+                ],
+                "resDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\res",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\res",
+                        "name": "res",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\res",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release"
+                    }
+                ],
+                "mlModelsDirectories": null,
+                "kotlinDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\kotlin",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\kotlin",
+                        "name": "kotlin",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\kotlin",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release"
+                    },
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\java",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\java",
+                        "name": "java",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\java",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release"
+                    }
+                ],
+                "name": "release",
+                "javaDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\java",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\java",
+                        "name": "java",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release\\java",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\release"
+                    }
+                ]
+            },
+            "testFixturesSourceProvider": null,
+            "unitTestSourceProvider": {
+                "baselineProfileDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\baselineProfiles",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\baselineProfiles",
+                        "name": "baselineProfiles",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\baselineProfiles",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease"
+                    }
+                ],
+                "aidlDirectories": null,
+                "assetsDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\assets",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\assets",
+                        "name": "assets",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\assets",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease"
+                    }
+                ],
+                "customDirectories": [
+                    
+                ],
+                "renderscriptDirectories": null,
+                "jniLibsDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\jniLibs",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\jniLibs",
+                        "name": "jniLibs",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\jniLibs",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease"
+                    }
+                ],
+                "resourcesDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\resources",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\resources",
+                        "name": "resources",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\resources",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease"
+                    }
+                ],
+                "manifestFile": {
+                    "directory": false,
+                    "file": false,
+                    "freeSpace": 0,
+                    "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\AndroidManifest.xml",
+                    "usableSpace": 0,
+                    "hidden": false,
+                    "totalSpace": 0,
+                    "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\AndroidManifest.xml",
+                    "name": "AndroidManifest.xml",
+                    "absolute": true,
+                    "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\AndroidManifest.xml",
+                    "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease"
+                },
+                "shadersDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\shaders",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\shaders",
+                        "name": "shaders",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\shaders",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease"
+                    }
+                ],
+                "resDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\res",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\res",
+                        "name": "res",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\res",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease"
+                    }
+                ],
+                "mlModelsDirectories": null,
+                "kotlinDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\kotlin",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\kotlin",
+                        "name": "kotlin",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\kotlin",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease"
+                    },
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\java",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\java",
+                        "name": "java",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\java",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease"
+                    }
+                ],
+                "name": "testRelease",
+                "javaDirectories": [
+                    {
+                        "directory": false,
+                        "file": false,
+                        "freeSpace": 0,
+                        "canonicalPath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\java",
+                        "usableSpace": 0,
+                        "hidden": false,
+                        "totalSpace": 0,
+                        "path": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\java",
+                        "name": "java",
+                        "absolute": true,
+                        "absolutePath": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease\\java",
+                        "parent": "C:\\Users\\E-co\\Downloads\\ChaqqonPro-main\\Smart pos\\android\\app\\src\\testRelease"
+                    }
+                ]
+            }
+        }
+    ],
+    "path": ":app"
+}
