@@ -183,7 +183,7 @@ export default function MobileWaiterPage() {
     }, []);
 
     // Sessiya yo'q yoki hali yuklanmoqda — oppoq ekran o'rniga spinner ko'rsatamiz
-    if (!mounted || !store.kassirSession) {
+    if (!mounted || !sess) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-3">
                 <div className="w-10 h-10 border-[3px] border-blue-200 border-t-blue-600 rounded-full animate-spin" />
@@ -380,12 +380,12 @@ export default function MobileWaiterPage() {
                             </label>
                         </div>
                         <h2 className="text-base font-black text-slate-800">{sess.name}</h2>
-                        <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mt-0.5">{sess.role}</p>
+                        <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mt-0.5">{(sess as any).role || "Ofitsiant"}</p>
 
                         <div className="mt-4 pt-4 border-t border-slate-100 w-full text-left space-y-2">
                             <div className="flex justify-between text-xs font-bold">
                                 <span className="text-slate-400">Login / Telefon:</span>
-                                <span className="text-slate-800">{sess.username || sess.phone || "+998..."}</span>
+                                <span className="text-slate-800">{(sess as any).username || (sess as any).phone || "+998..."}</span>
                             </div>
                             <div className="flex justify-between text-xs font-bold">
                                 <span className="text-slate-400">Filial kodi:</span>
