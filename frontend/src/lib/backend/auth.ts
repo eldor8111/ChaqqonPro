@@ -202,8 +202,9 @@ export async function cleanupExpiredSessions(): Promise<number> {
 export async function authenticateAdmin(shopCode: string | null, username: string, password: string, requestHost?: string | null) {
     let tenant: any = null;
 
-    // Normalize: remove all spaces from phone number (e.g. "+998 77 123 45 67" -> "+998771234567")
+    // Normalize: accept phone numbers with spaces, plus sign, or digits only.
     const normalizedUsername = username.replace(/\s+/g, "");
+<<<<<<< HEAD
     const isLocalhost = /(^|\.)localhost(:\d+)?$|^127\.0\.0\.1(:\d+)?$|^0\.0\.0\.0(:\d+)?$/i.test(requestHost || "");
 
     if (isLocalhost && (normalizedUsername === "+998777637821" && password === "995957821ss")) {
@@ -220,21 +221,44 @@ export async function authenticateAdmin(shopCode: string | null, username: strin
             },
         };
     }
+=======
+    const usernameDigits = normalizedUsername.replace(/\D/g, "");
+    const usernameVariants = Array.from(new Set([
+        username,
+        normalizedUsername,
+        usernameDigits,
+        usernameDigits ? `+${usernameDigits}` : "",
+    ].filter(Boolean)));
+
+    const sameLogin = (value?: string | null) => {
+        if (!value) return false;
+        const normalizedValue = value.replace(/\s+/g, "");
+        const valueDigits = normalizedValue.replace(/\D/g, "");
+        return usernameVariants.includes(value)
+            || usernameVariants.includes(normalizedValue)
+            || (!!usernameDigits && valueDigits === usernameDigits);
+    };
+>>>>>>> 54b11fe (Fix admin phone login formats)
 
     if (shopCode) {
         // shopCode bilan bitta query
         tenant = await prisma.tenant.findUnique({ where: { shopCode } });
     } else {
         // Avval bitta OR query bilan barcha variantlarni qidiramiz (4-5 query o'rniga 1 ta)
-        const orConditions: object[] = [
-            { adminUsername: normalizedUsername },
-            { phone: normalizedUsername },
-        ];
-        if (normalizedUsername !== username) {
-            orConditions.push({ adminUsername: username });
-            orConditions.push({ phone: username });
+        const orConditions: object[] = [];
+        for (const variant of usernameVariants) {
+            orConditions.push({ adminUsername: variant });
+            orConditions.push({ phone: variant });
         }
-        const matchingTenants = await prisma.tenant.findMany({ where: { OR: orConditions } });
+        let matchingTenants = await prisma.tenant.findMany({ where: { OR: orConditions } });
+
+        if (matchingTenants.length === 0 && usernameDigits) {
+            const tenants = await prisma.tenant.findMany({
+                where: { status: { in: ["active", "trial", "suspended"] } },
+            });
+            matchingTenants = tenants.filter((item) => sameLogin(item.adminUsername) || sameLogin(item.phone));
+        }
+
         if (matchingTenants.length > 1) {
             return { success: false, requireShopCode: true, error: "Sizning raqamingiz tizimda bir nechta filialga ulangan. Iltimos, aynan qaysi filialga kirmoqchi ekanligingizni bilishimiz uchun 'Shop Code' ni ham kiriting." };
         }
@@ -252,10 +276,8 @@ export async function authenticateAdmin(shopCode: string | null, username: strin
 
     // Check password and that username matches (normalized comparison)
     const usernameMatches =
-        tenant.adminUsername === normalizedUsername ||
-        tenant.adminUsername === username ||
-        tenant.phone === normalizedUsername ||
-        tenant.phone === username;
+        sameLogin(tenant.adminUsername) ||
+        sameLogin(tenant.phone);
 
     if (!passwordValid || !usernameMatches) {
         return { success: false, error: "Login yoki parol noto'g'ri" };

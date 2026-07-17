@@ -21,16 +21,16 @@ async function getAuthTenantId(request: NextRequest): Promise<string | null> {
 }
 
 const _tableReady = prisma.$executeRawUnsafe(
-    "CREATE TABLE IF NOT EXISTS UbtIngredient (" +
+    "CREATE TABLE IF NOT EXISTS \"UbtIngredient\" (" +
         "id          TEXT PRIMARY KEY," +
-        "tenantId    TEXT NOT NULL," +
+        "\"tenantId\"    TEXT NOT NULL," +
         "name        TEXT NOT NULL," +
         "unit        TEXT NOT NULL," +
-        "stock       REAL NOT NULL DEFAULT 0," +
-        "price       REAL NOT NULL DEFAULT 0," +
+        "stock       DOUBLE PRECISION NOT NULL DEFAULT 0," +
+        "price       DOUBLE PRECISION NOT NULL DEFAULT 0," +
         "type        TEXT NOT NULL DEFAULT 'xomashyo'," +
-        "categoryId  TEXT NULL," +
-        "createdAt   TEXT NOT NULL DEFAULT (datetime('now'))" +
+        "\"categoryId\"  TEXT NULL," +
+        "\"createdAt\"   TEXT NOT NULL DEFAULT (NOW()::TEXT)" +
     ")"
 ).catch(() => {});
 
@@ -44,13 +44,13 @@ export async function GET(req: NextRequest) {
         let rows: any[];
         if (type) {
             rows = await prisma.$queryRawUnsafe(
-                "SELECT id, name, unit, stock, price, type, categoryId, createdAt FROM UbtIngredient WHERE tenantId=? AND type=? ORDER BY createdAt ASC",
+                "SELECT id, name, unit, stock, price, type, \"categoryId\", \"createdAt\" FROM \"UbtIngredient\" WHERE \"tenantId\"=$1 AND type=$2 ORDER BY \"createdAt\" ASC",
                 tenantId, type
             );
         } else {
             // type parametr yo'q — barcha ingredientlarni qaytarish (xomashyo + polfabrikat)
             rows = await prisma.$queryRawUnsafe(
-                "SELECT id, name, unit, stock, price, type, categoryId, createdAt FROM UbtIngredient WHERE tenantId=? ORDER BY type ASC, createdAt ASC",
+                "SELECT id, name, unit, stock, price, type, \"categoryId\", \"createdAt\" FROM \"UbtIngredient\" WHERE \"tenantId\"=$1 ORDER BY type ASC, \"createdAt\" ASC",
                 tenantId
             );
         }
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
         if (id) {
             // Update
             await prisma.$executeRawUnsafe(
-                "UPDATE UbtIngredient SET name=?, unit=?, stock=?, price=?, type=?, categoryId=? WHERE id=? AND tenantId=?", 
+                "UPDATE \"UbtIngredient\" SET name=$1, unit=$2, stock=$3, price=$4, type=$5, \"categoryId\"=$6 WHERE id=$7 AND \"tenantId\"=$8", 
                 name, unit, stock, price, ingType, catId, id, tenantId
             );
             return NextResponse.json({ success: true, id });
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
             // Create
             const newId = "ing_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
             await prisma.$executeRawUnsafe(
-                "INSERT INTO UbtIngredient (id, tenantId, name, unit, stock, price, type, categoryId) VALUES (?,?,?,?,?,?,?,?)",
+                "INSERT INTO \"UbtIngredient\" (id, \"tenantId\", name, unit, stock, price, type, \"categoryId\") VALUES ($1,$2,$3,$4,$5,$6,$7,$8)",
                 newId, tenantId, name, unit, stock, price, ingType, catId
             );
             return NextResponse.json({ success: true, id: newId });
@@ -101,7 +101,7 @@ export async function DELETE(req: NextRequest) {
         const { id } = await req.json();
         if (!id) return NextResponse.json({ error: "ID kiritilmagan" }, { status: 400 });
         
-        await prisma.$executeRawUnsafe("DELETE FROM UbtIngredient WHERE id=? AND tenantId=?", id, tenantId);
+        await prisma.$executeRawUnsafe("DELETE FROM \"UbtIngredient\" WHERE id=$1 AND \"tenantId\"=$2", id, tenantId);
         return NextResponse.json({ success: true });
     } catch (e) {
         return NextResponse.json({ error: String(e) }, { status: 500 });

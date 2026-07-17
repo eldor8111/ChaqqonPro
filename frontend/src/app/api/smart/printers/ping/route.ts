@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
         if (!tenantId) return NextResponse.json([]);
 
         const rows: any[] = await (prisma.$queryRawUnsafe(
-            `SELECT id, name, ipAddress, port FROM SmartPrinter WHERE tenantId=? ORDER BY createdAt ASC`,
+            `SELECT id, name, "ipAddress", port FROM "SmartPrinter" WHERE "tenantId"=$1 ORDER BY "createdAt" ASC`,
             tenantId
         ) as Promise<any[]>).catch(() => []);
 

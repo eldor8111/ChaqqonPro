@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
             let products: any[] = [];
             if (itemIds.length > 0) {
                 products = await prisma.$queryRawUnsafe(
-                    `SELECT id, printerIp FROM Product WHERE tenantId = ? AND id IN (${itemIds.map(() => '?').join(',')})`,
+                    `SELECT id, "printerIp" FROM "Product" WHERE "tenantId" = $1 AND id IN (${itemIds.map((_: any, i: number) => '$' + (i + 2)).join(',')})`,
                     auth.tenantId, ...itemIds
                 );
             }
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
             if (!fallbackPrinterIp) {
                 try {
                 const fallbackPrinters: any[] = await prisma.$queryRawUnsafe(
-                    `SELECT ipAddress FROM SmartPrinter WHERE tenantId = ? ORDER BY createdAt ASC LIMIT 1`,
+                    `SELECT "ipAddress" FROM "SmartPrinter" WHERE "tenantId" = $1 ORDER BY "createdAt" ASC LIMIT 1`,
                     auth.tenantId
                 );
                 if (fallbackPrinters.length > 0) {

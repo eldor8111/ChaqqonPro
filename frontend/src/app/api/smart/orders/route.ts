@@ -82,7 +82,7 @@ export async function PATCH(request: NextRequest) {
 
         // Find order whose ID ends with idSuffix (exact suffix match, no wildcard injection)
         const orders: any[] = await prisma.$queryRawUnsafe(
-            `SELECT id FROM KDSOrder WHERE tenantId=? AND substr(id, -${idSuffix.length}) = ? LIMIT 1`,
+            `SELECT id FROM "KDSOrder" WHERE "tenantId"=$1 AND RIGHT(id, ${idSuffix.length}) = $2 LIMIT 1`,
             tenantId, idSuffix
         );
         if (!orders.length) return NextResponse.json({ error: "Buyurtma topilmadi" }, { status: 404 });

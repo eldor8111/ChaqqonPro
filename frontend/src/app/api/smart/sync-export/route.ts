@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
         // Kategoriyalar UbtCategory jadvalidan (Prisma client'da accessor yo'q — raw SQL)
         let categories: any[] = [];
         try {
-            categories = await prisma.$queryRawUnsafe(`SELECT * FROM UbtCategory WHERE tenantId = ?`, tenantId) as any[];
+            categories = await prisma.$queryRawUnsafe(`SELECT * FROM "UbtCategory" WHERE "tenantId" = $1`, tenantId) as any[];
         } catch { /* jadval bo'lmasa skip */ }
 
         return NextResponse.json({

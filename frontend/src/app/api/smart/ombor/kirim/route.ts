@@ -33,11 +33,11 @@ export async function GET(req: Request) {
 
         // Fetch all rows with extra columns
         const rows: any[] = await prisma.$queryRawUnsafe(`
-            SELECT ir.*, p.name as pName
-            FROM InventoryReceipt ir
-            LEFT JOIN Product p ON ir.productId = p.id
-            WHERE ir.tenantId = ?
-            ORDER BY ir.createdAt DESC
+            SELECT ir.*, p.name as "pName"
+            FROM "InventoryReceipt" ir
+            LEFT JOIN "Product" p ON ir."productId" = p.id
+            WHERE ir."tenantId" = $1
+            ORDER BY ir."createdAt" DESC
         `, session.tenantId);
 
         // Group by documentId (fall back to id if no documentId)
@@ -136,7 +136,7 @@ export async function POST(req: Request) {
                 if (pType === "xomashyo" || pType === "polfabrikat") {
                     try {
                         const ingRows: any[] = await prisma.$queryRawUnsafe(
-                            "SELECT id, name, unit, stock FROM UbtIngredient WHERE id=? AND tenantId=? LIMIT 1",
+                            "SELECT id, name, unit, stock FROM \"UbtIngredient\" WHERE id=$1 AND \"tenantId\"=$2 LIMIT 1",
                             pId, session.tenantId
                         );
                         if (ingRows.length > 0 && status === 'accepted') {
@@ -144,7 +144,7 @@ export async function POST(req: Request) {
                             pUnit = ingRows[0].unit;
                             const newStock = Number(ingRows[0].stock || 0) + qty;
                             await prisma.$executeRawUnsafe(
-                                "UPDATE UbtIngredient SET stock=?, price=? WHERE id=? AND tenantId=?",
+                                "UPDATE \"UbtIngredient\" SET stock=$1, price=$2 WHERE id=$3 AND \"tenantId\"=$4",
                                 newStock, costUzs, pId, session.tenantId
                             );
                         }
@@ -177,7 +177,7 @@ export async function POST(req: Request) {
 
             // Raw SQL orqali qo'shimcha ustunlarni yangilaymiz
             await prisma.$executeRawUnsafe(
-                `UPDATE InventoryReceipt SET currency=?, invoiceNo=?, documentId=?, costPriceUzs=?, totalCostUzs=? WHERE id=?`,
+                `UPDATE "InventoryReceipt" SET currency=$1, "invoiceNo"=$2, "documentId"=$3, "costPriceUzs"=$4, "totalCostUzs"=$5 WHERE id=$6`,
                 currency || "UZS", invoiceNo || null, documentId,
                 costUzs, totalUzs,
                 receipt.id
@@ -205,7 +205,7 @@ export async function POST(req: Request) {
                 });
                 // documentId bilan bog'laymiz (o'chirishda kerak)
                 await prisma.$executeRawUnsafe(
-                    `UPDATE KassiHarakat SET refId = ? WHERE id = ?`,
+                    `UPDATE "KassiHarakat" SET "refId" = $1 WHERE id = $2`,
                     documentId, kh.id
                 );
             }
@@ -242,9 +242,9 @@ export async function DELETE(req: Request) {
 
         // 1️⃣ Get all items of this document (with productType from notes)
         const rows: any[] = await prisma.$queryRawUnsafe(`
-            SELECT id, productId, productName, quantity, unit, costPriceUzs, totalCostUzs, notes, status
-            FROM InventoryReceipt
-            WHERE documentId = ? AND tenantId = ?
+            SELECT id, "productId", "productName", quantity, unit, "costPriceUzs", "totalCostUzs", notes, status
+            FROM "InventoryReceipt"
+            WHERE "documentId" = $1 AND "tenantId" = $2
         `, documentId, session.tenantId);
 
         if (!rows.length) {
@@ -269,13 +269,13 @@ export async function DELETE(req: Request) {
                     // UbtIngredient stock kamaytirish
                     try {
                         const ingRows: any[] = await prisma.$queryRawUnsafe(
-                            "SELECT id, stock FROM UbtIngredient WHERE id=? AND tenantId=? LIMIT 1",
+                            "SELECT id, stock FROM \"UbtIngredient\" WHERE id=$1 AND \"tenantId\"=$2 LIMIT 1",
                             pId || row.productName, session.tenantId
                         );
                         if (ingRows.length > 0) {
                             const newStock = Math.max(0, Number(ingRows[0].stock || 0) - qty);
                             await prisma.$executeRawUnsafe(
-                                "UPDATE UbtIngredient SET stock=? WHERE id=? AND tenantId=?",
+                                "UPDATE \"UbtIngredient\" SET stock=$1 WHERE id=$2 AND \"tenantId\"=$3",
                                 newStock, ingRows[0].id, session.tenantId
                             );
                         }
@@ -299,7 +299,7 @@ export async function DELETE(req: Request) {
 
         // 3️⃣ Rollback EXPENSE (KassiHarakat)
         const khRows: any[] = await prisma.$queryRawUnsafe(
-            `SELECT id FROM KassiHarakat WHERE refId=? AND tenantId=?`,
+            `SELECT id FROM "KassiHarakat" WHERE "refId"=$1 AND "tenantId"=$2`,
             documentId, session.tenantId
         );
         for (const kh of khRows) {

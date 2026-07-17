@@ -20,13 +20,13 @@ async function getAuthTenantId(request: NextRequest): Promise<string | null> {
 }
 
 const _tableReady = prisma.$executeRawUnsafe(
-    "CREATE TABLE IF NOT EXISTS UbtCategory (" +
+    "CREATE TABLE IF NOT EXISTS \"UbtCategory\" (" +
         "id          TEXT PRIMARY KEY," +
-        "tenantId    TEXT NOT NULL," +
+        "\"tenantId\"    TEXT NOT NULL," +
         "name        TEXT NOT NULL," +
         "type        TEXT NOT NULL DEFAULT 'taom'," +
-        "itemCount   INTEGER NOT NULL DEFAULT 0," +
-        "createdAt   TEXT NOT NULL DEFAULT (datetime('now'))" +
+        "\"itemCount\"   INTEGER NOT NULL DEFAULT 0," +
+        "\"createdAt\"   TEXT NOT NULL DEFAULT (NOW()::TEXT)" +
     ")"
 ).catch(() => {});
 
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
         
         const type = req.nextUrl.searchParams.get("type") || "taom";
         const rows: any[] = await prisma.$queryRawUnsafe(
-            "SELECT id, name, type, itemCount, createdAt FROM UbtCategory WHERE tenantId=? AND type=? ORDER BY createdAt ASC",
+            "SELECT id, name, type, \"itemCount\", \"createdAt\" FROM \"UbtCategory\" WHERE \"tenantId\"=$1 AND type=$2 ORDER BY \"createdAt\" ASC",
             tenantId, type
         );
         return NextResponse.json(rows);
@@ -59,13 +59,13 @@ export async function POST(req: NextRequest) {
         
         if (id && !id.startsWith("C")) {
             // Update
-            await prisma.$executeRawUnsafe("UPDATE UbtCategory SET name=?, type=? WHERE id=? AND tenantId=?", name, catType, id, tenantId);
+            await prisma.$executeRawUnsafe("UPDATE \"UbtCategory\" SET name=$1, type=$2 WHERE id=$3 AND \"tenantId\"=$4", name, catType, id, tenantId);
             return NextResponse.json({ success: true, id });
         } else {
             // Create
             const newId = "cat_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
             await prisma.$executeRawUnsafe(
-                "INSERT INTO UbtCategory (id, tenantId, name, type, itemCount) VALUES (?,?,?,?,?)",
+                "INSERT INTO \"UbtCategory\" (id, \"tenantId\", name, type, \"itemCount\") VALUES ($1,$2,$3,$4,$5)",
                 newId, tenantId, name, catType, 0
             );
             return NextResponse.json({ success: true, id: newId });
@@ -84,7 +84,7 @@ export async function DELETE(req: NextRequest) {
         const { id } = await req.json();
         if (!id) return NextResponse.json({ error: "ID kiritilmagan" }, { status: 400 });
         
-        await prisma.$executeRawUnsafe("DELETE FROM UbtCategory WHERE id=? AND tenantId=?", id, tenantId);
+        await prisma.$executeRawUnsafe("DELETE FROM \"UbtCategory\" WHERE id=$1 AND \"tenantId\"=$2", id, tenantId);
         return NextResponse.json({ success: true });
     } catch (e) {
         return NextResponse.json({ error: String(e) }, { status: 500 });
