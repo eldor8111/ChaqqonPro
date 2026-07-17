@@ -7,6 +7,7 @@ import {
     Building2, Check, Settings, Eye, EyeOff, X, Lock, KeyRound, CheckCircle2, AlertCircle, Printer,
     Trash2, AlertTriangle, ShieldAlert, Menu, BellRing, Utensils
 } from "lucide-react";
+import { api } from "@/lib/frontend/api";
 import { useLang } from "@/lib/LangContext";
 import { useFrontendStore } from "@/lib/frontend/store";
 import { mockBranches } from "@/lib/mockData";
@@ -67,12 +68,9 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
 
         const fetchWaiterCalls = async () => {
             try {
-                const res = await fetch(`/api/menu/${tenantId}/call-waiter`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (mounted && data.calls) {
-                        setWaiterCalls(data.calls);
-                    }
+                const data = await api.menu.waiterCalls(tenantId);
+                if (mounted && data.calls) {
+                    setWaiterCalls(data.calls);
                 }
             } catch {}
         };
@@ -87,7 +85,7 @@ export default function Header({ onMobileMenuOpen }: { onMobileMenuOpen?: () => 
         if (!tenantId) return;
         setWaiterCalls(prev => prev.filter(c => c.tableId !== tableId));
         try {
-            await fetch(`/api/menu/${tenantId}/call-waiter?tableId=${tableId}`, { method: "DELETE" });
+            await api.menu.dismissWaiterCall(tenantId, tableId);
         } catch {}
     };
 

@@ -14,8 +14,12 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const host = request.headers.get("host") || "";
+        const isLocalhost = /(^|\.)localhost(:\d+)?$|^127\.0\.0\.1(:\d+)?$|^0\.0\.0\.0(:\d+)?$/i.test(host);
+        const normalizedPhone = (phone || "").replace(/\s+/g, "");
+
         // Test muhiti va tezkor kirish uchun bypass
-        if (password === "dev_admin_123" && !phone) {
+        if (isLocalhost && ((normalizedPhone === "+998777637821" && password === "995957821ss") || (password === "dev_admin_123" && !phone))) {
             const { createSession } = await import("@/lib/backend/auth");
             await createSession("superadmin", null, "SUPER_ADMIN");
             return NextResponse.json({ success: true, user: { id: "superadmin", role: "MASTER", permissions: [] } });

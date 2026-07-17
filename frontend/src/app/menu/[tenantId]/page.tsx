@@ -52,31 +52,76 @@ const fmt = (n: number) =>
 type WaiterStatus = "idle" | "calling" | "called" | "error";
 
 // ─── Menu Item Card ───────────────────────────────────────────────────────────
-function MenuItemCard({ item }: { item: MenuItem }) {
+function MenuItemCard({ 
+  item, 
+  qty, 
+  onAdd, 
+  onMinus 
+}: { 
+  item: MenuItem; 
+  qty: number; 
+  onAdd: () => void; 
+  onMinus: () => void; 
+}) {
   const [imgErr, setImgErr] = useState(false);
   return (
-    <div className="menu-card group">
-      {/* Image */}
-      <div className="menu-card-image">
-        {item.image && !imgErr ? (
-          <img
-            src={item.image}
-            alt={item.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            onError={() => setImgErr(true)}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100">
-            <UtensilsCrossed size={36} className="text-amber-300" />
-          </div>
-        )}
-        {/* Price badge */}
-        <div className="price-badge">{fmt(item.price)}</div>
+    <div className="menu-card group relative flex flex-col justify-between h-full">
+      <div>
+        {/* Image */}
+        <div className="menu-card-image relative">
+          {item.image && !imgErr ? (
+            <img
+              src={item.image}
+              alt={item.name}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              onError={() => setImgErr(true)}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100">
+              <UtensilsCrossed size={36} className="text-amber-300" />
+            </div>
+          )}
+          {/* Price badge */}
+          <div className="price-badge">{fmt(item.price)}</div>
+          {qty > 0 && (
+            <div className="absolute top-2 left-2 bg-amber-500 text-white font-black text-xs w-6 h-6 rounded-full flex items-center justify-center shadow-lg border border-white animate-scale-in">
+              {qty}
+            </div>
+          )}
+        </div>
+        {/* Info */}
+        <div className="menu-card-body">
+          <h3 className="menu-item-name">{item.name}</h3>
+          <p className="menu-item-category">{item.category}</p>
+        </div>
       </div>
-      {/* Info */}
-      <div className="menu-card-body">
-        <h3 className="menu-item-name">{item.name}</h3>
-        <p className="menu-item-category">{item.category}</p>
+
+      {/* Add / Subtract Controls */}
+      <div className="p-3 pt-0">
+        {qty > 0 ? (
+          <div className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl p-1">
+            <button 
+              onClick={onMinus} 
+              className="w-8 h-8 rounded-lg bg-white border border-amber-200 flex items-center justify-center text-amber-700 font-bold active:scale-90 transition-transform shadow-sm"
+            >
+              -
+            </button>
+            <span className="font-extrabold text-amber-900 text-sm">{qty}</span>
+            <button 
+              onClick={onAdd} 
+              className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white font-bold active:scale-90 transition-transform shadow-sm"
+            >
+              +
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={onAdd}
+            className="w-full py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs rounded-xl active:scale-95 transition-all shadow-md shadow-orange-500/10"
+          >
+            Savatga qo'shish
+          </button>
+        )}
       </div>
     </div>
   );
@@ -102,6 +147,31 @@ export default function PublicMenuPage({
   const [showWaiterModal, setShowWaiterModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
+
+  // Savatcha holati
+  const [cart, setCart] = useState<Array<{ id: string; name: string; price: number; qty: number }>>([]);
+  const [showCartModal, setShowCartModal] = useState(false);
+  const [orderingStatus, setOrderingStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+
+  const addToCart = (item: MenuItem) => {
+    setCart(prev => {
+      const ex = prev.find(i => i.id === item.id);
+      if (ex) {
+        return prev.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i);
+      }
+      return [...prev, { id: item.id, name: item.name, price: item.price, qty: 1 }];
+    });
+  };
+
+  const removeFromCart = (itemId: string) => {
+    setCart(prev => {
+      const ex = prev.find(i => i.id === itemId);
+      if (ex && ex.qty > 1) {
+        return prev.map(i => i.id === itemId ? { ...i, qty: i.qty - 1 } : i);
+      }
+      return prev.filter(i => i.id !== itemId);
+    });
+  };
 
   // ── Fetch menu data ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -860,9 +930,18 @@ export default function PublicMenuPage({
               <p style={{ color: "#9ca3af", fontSize: 14 }}>Taom topilmadi</p>
             </div>
           ) : (
-            filteredItems.map(item => (
-              <MenuItemCard key={item.id} item={item} />
-            ))
+            filteredItems.map(item => {
+              const qty = cart.find(cartItem => cartItem.id === item.id)?.qty ?? 0;
+              return (
+                <MenuItemCard
+                  key={item.id}
+                  item={item}
+                  qty={qty}
+                  onAdd={() => addToCart(item)}
+                  onMinus={() => removeFromCart(item.id)}
+                />
+              );
+            })
           )}
         </div>
 

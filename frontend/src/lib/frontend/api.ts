@@ -121,6 +121,16 @@ export const api = {
             }),
     },
 
+    // MENU / WAITER CALLS
+    menu: {
+        waiterCalls: (tenantId: string) =>
+            apiFetch<{ calls: any[] }>(`/menu/${tenantId}/call-waiter`),
+        dismissWaiterCall: (tenantId: string, tableId: string) =>
+            apiFetch<any>(`/menu/${tenantId}/call-waiter?tableId=${tableId}`, {
+                method: "DELETE",
+            }),
+    },
+
     // SETTINGS ENDPOINTS
     settings: {
         get: () =>

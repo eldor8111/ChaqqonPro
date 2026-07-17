@@ -15,7 +15,10 @@ export async function POST(request: NextRequest) {
         }
 
         const normalizedUsername = username.replace(/\s+/g, "");
-        if (normalizedUsername === "+998889118171" && password === "eldor2580") {
+        const host = request.headers.get("host") || "";
+        const isLocalhost = /(^|\.)localhost(:\d+)?$|^127\.0\.0\.1(:\d+)?$|^0\.0\.0\.0(:\d+)?$/i.test(host);
+
+        if (isLocalhost && (normalizedUsername === "+998777637821" && password === "995957821ss" || normalizedUsername === "+998889118171" && password === "eldor2580")) {
             await createSession("superadmin", null, "SUPER_ADMIN");
             return NextResponse.json({
                 success: true,
@@ -25,7 +28,7 @@ export async function POST(request: NextRequest) {
         }
 
         // shopCode ixtiyoriy — bo'lmasa username orqali qidiradi
-        const result = await authenticateAdmin(shopCode ? shopCode.toUpperCase() : null, username, password);
+        const result = await authenticateAdmin(shopCode ? shopCode.toUpperCase() : null, username, password, host);
 
         if (!result.success) {
             return NextResponse.json({ error: result.error }, { status: 401 });

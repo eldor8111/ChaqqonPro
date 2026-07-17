@@ -122,3 +122,152 @@ export async function GET(
         return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
     }
 }
+
+export async function POST(
+    request: NextRequest,
+    { params }: { params: { tenantId: string } }
+) {
+    try {
+        const { tenantId } = params;
+        const { tableId, items } = await request.json();
+
+        if (!tenantId || !tableId || !Array.isArray(items) || items.length === 0) {
+            return NextResponse.json({ error: "Stol va buyurtma taomlari tanlanishi shart" }, { status: 400 });
+        }
+
+        // Tenant mavjudligini tekshirish
+        const tenant = await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            select: { id: true }
+        });
+        if (!tenant) {
+            return NextResponse.json({ error: "Restoran topilmadi" }, { status: 404 });
+        }
+
+        // Stol mavjudligini tekshirish
+        const table = await prisma.smartTable.findFirst({
+            where: { id: tableId, tenantId },
+            select: { id: true, tableNumber: true, amount: true, since: true }
+        });
+        if (!table) {
+            return NextResponse.json({ error: "Stol topilmadi" }, { status: 404 });
+        }
+
+        // Hisoblanadigan total summa
+        const runningTotal = items.reduce((sum: number, ci: any) => {
+            const price = ci.item?.price ?? ci.price ?? 0;
+            const qty = ci.qty ?? 1;
+            return sum + price * qty;
+        }, 0);
+
+        // KDSOrder yaratish (priority: "cart", status: "pending", waiterName: "Mijoz (Online)")
+        const descPayload = JSON.stringify({
+            waiterName: "Mijoz (Online)",
+            items,
+            suffix: "",
+            shotId: 1
+        });
+
+        const order = await prisma.kDSOrder.create({
+            data: {
+                tenantId,
+                tableId,
+                description: descPayload,
+                status: "pending",
+                priority: "cart",
+            },
+        });
+
+        // Stol statusini yangilash
+        const prevAmount = Number(table.amount ?? 0);
+        await prisma.smartTable.update({
+            where: { id: tableId, tenantId },
+            data: {
+                status: "occupied",
+                amount: prevAmount + Math.round(runningTotal),
+                waiter: "Mijoz (Online)",
+                since: table.since || new Date().toISOString(),
+            },
+        });
+
+        // --- AUTO-PRINT KITCHEN RECEIPT FOR DINE-IN ORDERS ---
+        try {
+            const itemIds = items.map((c: any) => c.item?.id || c.id).filter(Boolean);
+            let products: any[] = [];
+            if (itemIds.length > 0) {
+                products = await prisma.$queryRawUnsafe(
+                    `SELECT id, printerIp FROM Product WHERE tenantId = ? AND id IN (${itemIds.map(() => '?').join(',')})`,
+                    tenantId, ...itemIds
+                );
+            }
+            const printerIpMap = new Map<string, string | null>();
+            products.forEach((p: any) => printerIpMap.set(p.id, p.printerIp || null));
+
+            let fallbackPrinterIp: string | null = null;
+            try {
+                const fallbackPrinters: any[] = await prisma.$queryRawUnsafe(
+                    `SELECT ipAddress FROM SmartPrinter WHERE tenantId = ? ORDER BY createdAt ASC LIMIT 1`,
+                    tenantId
+                );
+                if (fallbackPrinters.length > 0) {
+                    fallbackPrinterIp = fallbackPrinters[0].ipAddress || null;
+                }
+            } catch {}
+
+            const printerGroups: Record<string, any[]> = {};
+            const noIpItems: any[] = [];
+
+            for (const c of items) {
+                const id = c.item?.id || c.id;
+                const ip = printerIpMap.get(id) || null;
+                if (ip) {
+                    if (!printerGroups[ip]) printerGroups[ip] = [];
+                    printerGroups[ip].push(c);
+                } else {
+                    noIpItems.push(c);
+                }
+            }
+
+            if (noIpItems.length > 0 && fallbackPrinterIp) {
+                if (!printerGroups[fallbackPrinterIp]) printerGroups[fallbackPrinterIp] = [];
+                printerGroups[fallbackPrinterIp].push(...noIpItems);
+            }
+
+            if (Object.keys(printerGroups).length > 0) {
+                const now = new Date();
+                const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+                const tableNameToPrint = table.tableNumber;
+                const orderNumShort = Math.floor(Math.random() * 9000) + 1000;
+
+                const PrinterServiceModule = await import("@/lib/services/PrinterService");
+                for (const [printerIp, pItems] of Object.entries(printerGroups)) {
+                    const printItems = pItems.map((c: any) => ({
+                        name: c.item?.name || c.name || "",
+                        qty: c.qty || 1,
+                        price: c.item?.price || c.price || 0,
+                        unit: c.item?.unit || c.unit || "ta",
+                    }));
+                    const total = printItems.reduce((s, c) => s + c.price * c.qty, 0);
+
+                    PrinterServiceModule.PrinterService.print({
+                        printerIp,
+                        port: 9100,
+                        receiptType: "kitchen",
+                        tableName: tableNameToPrint,
+                        waiter: "Mijoz (Online)",
+                        time: timeStr,
+                        items: printItems,
+                        total,
+                        orderNum: orderNumShort,
+                        tenantId,
+                    }).catch(() => {});
+                }
+            }
+        } catch {}
+
+        return NextResponse.json({ success: true, orderId: order.id });
+    } catch (error) {
+        console.error("Public menu POST order error:", error);
+        return NextResponse.json({ error: "Server error" }, { status: 500 });
+    }
+}

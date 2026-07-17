@@ -7,7 +7,7 @@ const os = require("os");
 
 const execFileAsync = promisify(execFile);
 
-const SERVER_URL = "https://chaqqonpro.uz";
+const SERVER_URL = process.env.SERVER_URL || "https://chaqqonpro.e-code.uz";
 
 async function getWindowsPrinters() {
     try {

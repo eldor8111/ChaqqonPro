@@ -415,13 +415,51 @@ function UbtStaffContent() {
     const [showPosForm, setShowPosForm] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [form, setForm] = useState({ ...emptyForm, posPerms: defaultPosPermissions() });
+    const [waiterCalls, setWaiterCalls] = useState<any[]>([]);
+    const [waiterCallsLoading, setWaiterCallsLoading] = useState(false);
 
+    const { user } = useFrontendStore();
     const updateForm = (updates: Partial<typeof emptyForm>) => setForm(f => ({ ...f, ...updates }));
 
     useEffect(() => {
         if (roleQuery && ROLES.includes(roleQuery)) setRoleFilter(roleQuery);
         else setRoleFilter("all");
     }, [roleQuery]);
+
+    useEffect(() => {
+        const tenantId = user?.tenant?.id;
+        if (!tenantId) return;
+
+        let mounted = true;
+        const loadWaiterCalls = async () => {
+            setWaiterCallsLoading(true);
+            try {
+                const data = await api.menu.waiterCalls(tenantId);
+                if (mounted && data.calls) {
+                    setWaiterCalls(data.calls);
+                }
+            } catch (error) {
+                console.error("Waiter calls load error", error);
+            } finally {
+                if (mounted) setWaiterCallsLoading(false);
+            }
+        };
+
+        loadWaiterCalls();
+        const interval = setInterval(loadWaiterCalls, 10000);
+        return () => { mounted = false; clearInterval(interval); };
+    }, [user?.tenant?.id]);
+
+    const removeWaiterCall = async (tableId: string) => {
+        const tenantId = user?.tenant?.id;
+        if (!tenantId) return;
+        setWaiterCalls(prev => prev.filter(c => c.tableId !== tableId));
+        try {
+            await api.menu.dismissWaiterCall(tenantId, tableId);
+        } catch (error) {
+            console.error("Waiter call dismiss error", error);
+        }
+    };
 
     const { data, isLoading, isError, error: queryError } = useQuery({
         queryKey: ["staff"],
@@ -512,6 +550,42 @@ function UbtStaffContent() {
                     <button onClick={() => openNew(roleFilter !== "all" && roleFilter !== "POS apparati" ? roleFilter : "Ofitsiant")} className="btn-primary flex items-center gap-2">
                         <Plus size={16} /> {t('common.add')} {t('staff.employee') || 'Xodim'}
                     </button>
+                </div>
+            </div>
+
+            {/* Waiter call notifications */}
+            <div className="grid gap-4">
+                <div className="glass-card border border-surface-border p-4">
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <p className="text-sm text-slate-500 uppercase tracking-[0.2em]">Ofitsiant chaqiruvlari</p>
+                            <h2 className="text-2xl font-bold text-slate-800">{waiterCalls.length}</h2>
+                        </div>
+                        <div className="rounded-full bg-blue-100 text-blue-600 px-3 py-1 text-xs font-semibold">
+                            {waiterCallsLoading ? "Yuklanmoqda..." : waiterCalls.length > 0 ? "Faol" : "Yo'q"}
+                        </div>
+                    </div>
+
+                    <div className="mt-4 space-y-3">
+                        {waiterCalls.length === 0 ? (
+                            <p className="text-sm text-slate-500">Hozircha ofitsiant chaqiruvi yo'q.</p>
+                        ) : waiterCalls.map(call => (
+                            <div key={call.tableId} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div>
+                                        <p className="text-sm font-semibold text-slate-800">Stol {call.tableNumber}</p>
+                                        {call.message && <p className="text-xs text-slate-500 mt-1">{call.message}</p>}
+                                    </div>
+                                    <span className="text-[11px] text-slate-400">{new Date(call.calledAt).toLocaleTimeString("uz-UZ")}</span>
+                                </div>
+                                <div className="mt-3 flex items-center justify-end gap-2">
+                                    <button onClick={() => removeWaiterCall(call.tableId)} className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full hover:bg-emerald-100 transition-colors">
+                                        Bajarildi
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 
