@@ -81,6 +81,85 @@ async function processLogoForReceipt(dataUrl: string): Promise<{ raster: string;
     });
 }
 
+const DEFAULT_SMART_SETTINGS = {
+    serviceFee: 10,
+    enableKDS: true,
+    enableWaiterApp: true,
+    tablesCount: 20,
+};
+
+function normalizeSmartKey(value: string | null | undefined) {
+    return (value || "").trim().toLowerCase();
+}
+
+function sortSmartTablesByName(a: string, b: string) {
+    const numA = parseInt(a.match(/\d+/)?.at(0) || "0", 10);
+    const numB = parseInt(b.match(/\d+/)?.at(0) || "0", 10);
+    if (numA !== numB) return numA - numB;
+    return a.localeCompare(b);
+}
+
+function mergeSmartSettingsWithDbTables(smartSettingsSource: any, dbTables: any[]) {
+    const smartSettings = { ...DEFAULT_SMART_SETTINGS, ...(smartSettingsSource || {}) };
+    const zones = Array.isArray(smartSettings.zones)
+        ? smartSettings.zones.map((zone: any) => ({
+            ...zone,
+            tables: Array.isArray(zone.tables) ? zone.tables.map((table: any) => ({ ...table })) : [],
+        }))
+        : [];
+
+    const zoneByName = new Map<string, any>();
+    for (const zone of zones) {
+        if (zone?.name) zoneByName.set(normalizeSmartKey(zone.name), zone);
+    }
+
+    for (const table of dbTables || []) {
+        const section = table.section || "Main";
+        const zoneKey = normalizeSmartKey(section);
+        let zone = zoneByName.get(zoneKey);
+
+        if (!zone) {
+            zone = {
+                id: `db:${section}`,
+                name: section,
+                branchId: "",
+                serviceFee: 0,
+                extraPriceType: "Qo'shimcha narx",
+                tables: [],
+            };
+            zones.push(zone);
+            zoneByName.set(zoneKey, zone);
+        }
+
+        if (!Array.isArray(zone.tables)) zone.tables = [];
+        if (!zone.id) zone.id = `db:${section}`;
+
+        const tableIdx = zone.tables.findIndex((item: any) =>
+            item?.dbId === table.id ||
+            (!item?.dbId && normalizeSmartKey(item?.name) === normalizeSmartKey(table.tableNumber))
+        );
+        const existingTable = tableIdx >= 0 ? zone.tables[tableIdx] : null;
+        const mergedTable = {
+            ...(existingTable || {}),
+            id: existingTable?.id || table.id,
+            dbId: table.id,
+            name: table.tableNumber,
+            capacity: table.capacity || existingTable?.capacity || 4,
+        };
+
+        if (tableIdx >= 0) zone.tables[tableIdx] = mergedTable;
+        else zone.tables.push(mergedTable);
+    }
+
+    for (const zone of zones) {
+        if (Array.isArray(zone.tables)) {
+            zone.tables.sort((a: any, b: any) => sortSmartTablesByName(String(a?.name || ""), String(b?.name || "")));
+        }
+    }
+
+    return { ...smartSettings, zones };
+}
+
 export default function SettingsPage() {
     const { t } = useLang();
     const { user } = useFrontendStore();
@@ -110,6 +189,15 @@ export default function SettingsPage() {
         queryFn: () => api.settings.get(),
         enabled: !!user?.tenant?.id,
     });
+    const { data: smartTablesData, refetch: refetchSmartTablesForSettings } = useQuery({
+        queryKey: ["smartTablesForSettings", user?.tenant?.id],
+        queryFn: async () => {
+            const res = await fetch("/api/smart/tables");
+            if (!res.ok) return { tables: [] };
+            return res.json();
+        },
+        enabled: !!user?.tenant?.id && shopType === "smart",
+    });
     const branches = (settingsData as any)?.tenant?.settings?.branches || [];
     const shopSettings = (settingsData as any)?.tenant || null;
     const receiptSettings = (settingsData as any)?.tenant?.settings?.receiptSettings || {
@@ -136,7 +224,10 @@ export default function SettingsPage() {
 
     const updateSettingsMutation = useMutation({
         mutationFn: (newSettings: any) => api.settings.update(newSettings),
-        onSuccess: () => refetchSettings()
+        onSuccess: () => {
+            refetchSettings();
+            refetchSmartTablesForSettings();
+        }
     });
 
     const [activeTab, setActiveTab] = useState("branches");
@@ -191,21 +282,17 @@ export default function SettingsPage() {
     }, [settingsData]);
 
     // Sync ubtDraft
-    const smartSettings = (settingsData as any)?.tenant?.settings?.smartSettings || {
-        serviceFee: 10,
-        enableKDS: true,
-        enableWaiterApp: true,
-        tablesCount: 20
-    };
+    const smartSettings = mergeSmartSettingsWithDbTables(
+        (settingsData as any)?.tenant?.settings?.smartSettings,
+        (smartTablesData as any)?.tables || []
+    );
     useEffect(() => {
         if (settingsData) {
             const currentTenantId = (settingsData as any)?.tenant?.id;
-            if (!ubtDraft || (ubtDraft as any)._tenantId !== currentTenantId) {
-                setUbtDraft({ ...smartSettings, _tenantId: currentTenantId });
-            }
+            setUbtDraft({ ...smartSettings, _tenantId: currentTenantId });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [settingsData]);
+    }, [settingsData, smartTablesData]);
 
     function openPermissions(member: StaffMember) {
         setPermTarget(member);
@@ -1594,7 +1681,11 @@ export default function SettingsPage() {
                                         </button>
                                     </div>
                                     <div className="space-y-4">
-                                        {(ubtDraft?.zones || []).map((zone: any) => (
+                                        {(ubtDraft?.zones || []).map((zone: any) => {
+                                            const visibleTableCount = Array.isArray(zone.tables)
+                                                ? zone.tables.filter((table: any) => table.isActive !== false).length
+                                                : 0;
+                                            return (
                                             <div key={zone.id} className="bg-surface-elevated rounded-xl border border-surface-border overflow-hidden">
                                                 <div
                                                     className="flex flex-col sm:flex-row items-center justify-between p-4 cursor-pointer hover:bg-surface-border/50 transition-colors gap-3"
@@ -1604,6 +1695,7 @@ export default function SettingsPage() {
                                                         <h4 className="font-bold text-slate-800 flex items-center gap-2 text-[15px]">
                                                             {zone.name}
                                                             {zone.branchId && <span className="text-[10px] px-2 py-0.5 bg-slate-800 text-slate-300 rounded-full">{zone.branchId}</span>}
+                                                            <span className="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full">{visibleTableCount} ta stol</span>
                                                         </h4>
                                                         <p className="text-xs text-slate-400 mt-1">
                                                             Xizmat haqi: {zone.serviceFee}% • Narx: {zone.extraPriceType}
@@ -1616,7 +1708,9 @@ export default function SettingsPage() {
                                                                 const newZones = ubtDraft.zones.filter((z: any) => z.id !== zone.id);
                                                                 setUbtDraft({ ...ubtDraft, zones: newZones });
                                                                 // Delete all tables in this zone from DB
-                                                                fetch(`/api/smart/tables?section=${encodeURIComponent(zone.name)}`, { method: "DELETE" }).catch(() => {});
+                                                                fetch(`/api/smart/tables?section=${encodeURIComponent(zone.name)}`, { method: "DELETE" })
+                                                                    .then(() => refetchSmartTablesForSettings())
+                                                                    .catch(() => {});
                                                             }}
                                                             className="p-1.5 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
                                                             title="Zonani o'chirish"
@@ -1629,7 +1723,8 @@ export default function SettingsPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
@@ -1911,6 +2006,7 @@ export default function SettingsPage() {
                                         // Also update tenant settings
                                         const currentSettings = (settingsData as any)?.tenant?.settings || {};
                                         updateSettingsMutation.mutate({ ...currentSettings, smartSettings: updatedDraft });
+                                        refetchSmartTablesForSettings();
                                     }
                                     setIsTableModalOpen(false);
                                     setTableForm({ id: "", zoneId: "", name: "", capacity: "" });
@@ -1986,7 +2082,7 @@ export default function SettingsPage() {
                                                     onClick={() => {
                                                         const z = ubtDraft?.zones?.find((z: any) => z.id === selectedZoneForModal);
                                                         setSelectedTableForQr({
-                                                            id: table.id,
+                                                            id: table.dbId || table.id,
                                                             name: table.name,
                                                             zone: z?.name || ""
                                                         });
@@ -2008,7 +2104,9 @@ export default function SettingsPage() {
                                                             const q = table.dbId 
                                                                 ? `id=${encodeURIComponent(table.dbId)}` 
                                                                 : `section=${encodeURIComponent(zoneName)}&tableNumber=${encodeURIComponent(table.name)}`;
-                                                            fetch(`/api/smart/tables?${q}`, { method: "DELETE" }).catch(() => {});
+                                                            fetch(`/api/smart/tables?${q}`, { method: "DELETE" })
+                                                                .then(() => refetchSmartTablesForSettings())
+                                                                .catch(() => {});
                                                         }
                                                     }}
                                                     className="absolute top-2 right-2 p-1.5 text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100"

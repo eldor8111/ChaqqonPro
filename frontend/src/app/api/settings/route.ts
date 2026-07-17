@@ -5,6 +5,96 @@ import { prisma } from "@/lib/backend/db";
 import { createAuditLog } from "@/lib/backend/audit";
 import { PrinterService } from "@/lib/services/PrinterService";
 
+function normalizeKey(value: string | null | undefined) {
+    return (value || "").trim().toLowerCase();
+}
+
+function sortTableNames(a: string, b: string) {
+    const numA = parseInt(a.match(/\d+/)?.at(0) || "0", 10);
+    const numB = parseInt(b.match(/\d+/)?.at(0) || "0", 10);
+    if (numA !== numB) return numA - numB;
+    return a.localeCompare(b);
+}
+
+async function mergeDbTablesIntoSmartSettings(tenantId: string, settings: Record<string, any>) {
+    const dbTables = await prisma.smartTable.findMany({
+        where: { tenantId },
+        select: { id: true, tableNumber: true, capacity: true, section: true },
+        orderBy: [{ section: "asc" }, { tableNumber: "asc" }],
+    });
+
+    if (dbTables.length === 0) return settings;
+
+    const nextSettings = { ...settings };
+    const smartSettings = {
+        serviceFee: 10,
+        enableKDS: true,
+        enableWaiterApp: true,
+        tablesCount: 20,
+        ...(nextSettings.smartSettings || {}),
+    };
+    const zones = Array.isArray(smartSettings.zones)
+        ? smartSettings.zones.map((zone: any) => ({
+            ...zone,
+            tables: Array.isArray(zone.tables) ? zone.tables.map((table: any) => ({ ...table })) : [],
+        }))
+        : [];
+
+    const zoneByName = new Map<string, any>();
+    for (const zone of zones) {
+        if (zone?.name) zoneByName.set(normalizeKey(zone.name), zone);
+    }
+
+    for (const table of dbTables) {
+        const section = table.section || "Main";
+        const zoneKey = normalizeKey(section);
+        let zone = zoneByName.get(zoneKey);
+
+        if (!zone) {
+            zone = {
+                id: `db:${section}`,
+                name: section,
+                branchId: "",
+                serviceFee: 0,
+                extraPriceType: "Qo'shimcha narx",
+                tables: [],
+            };
+            zones.push(zone);
+            zoneByName.set(zoneKey, zone);
+        }
+
+        if (!Array.isArray(zone.tables)) zone.tables = [];
+        if (!zone.id) zone.id = `db:${section}`;
+
+        const tableIdx = zone.tables.findIndex((item: any) =>
+            item?.dbId === table.id ||
+            (!item?.dbId && normalizeKey(item?.name) === normalizeKey(table.tableNumber))
+        );
+
+        const existingTable = tableIdx >= 0 ? zone.tables[tableIdx] : null;
+        const mergedTable = {
+            ...(existingTable || {}),
+            id: existingTable?.id || table.id,
+            dbId: table.id,
+            name: table.tableNumber,
+            capacity: table.capacity || existingTable?.capacity || 4,
+        };
+
+        if (tableIdx >= 0) zone.tables[tableIdx] = mergedTable;
+        else zone.tables.push(mergedTable);
+    }
+
+    for (const zone of zones) {
+        if (Array.isArray(zone.tables)) {
+            zone.tables.sort((a: any, b: any) => sortTableNames(String(a?.name || ""), String(b?.name || "")));
+        }
+    }
+
+    smartSettings.zones = zones;
+    nextSettings.smartSettings = smartSettings;
+    return nextSettings;
+}
+
 export async function GET(request: NextRequest) {
     try {
         const session = await getSession();
@@ -14,12 +104,14 @@ export async function GET(request: NextRequest) {
 
         if (!tenant) return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
 
-        let settings = { branches: [{ id: "B-1", name: "Asosiy Filial", city: "Toshkent", manager: tenant.ownerName }] };
+        let settings: Record<string, any> = { branches: [{ id: "B-1", name: "Asosiy Filial", city: "Toshkent", manager: tenant.ownerName }] };
         if ((tenant as any).settings) {
             try {
                 settings = JSON.parse((tenant as any).settings);
             } catch (e) { }
         }
+
+        settings = await mergeDbTablesIntoSmartSettings(tenantId, settings);
 
         return NextResponse.json({
             tenant: {
