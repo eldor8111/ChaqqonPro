@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
         // Use raw query to avoid needing a prisma client regeneration which locks on windows
         const logs = await prisma.$queryRaw`
             SELECT id, user, action, detail, time(createdAt, 'localtime') as time, strftime('%Y-%m-%d', createdAt) as date, type 
-            FROM AuditLog 
+            FROM \"AuditLog\" 
             WHERE tenantId = ${tenantId} 
             ORDER BY createdAt DESC 
             LIMIT 100

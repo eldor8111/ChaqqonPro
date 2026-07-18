@@ -34,8 +34,8 @@ export async function GET(req: Request) {
         // Fetch all rows with extra columns
         const rows: any[] = await prisma.$queryRawUnsafe(`
             SELECT ir.*, p.name as "pName"
-            FROM "InventoryReceipt" ir
-            LEFT JOIN "Product" p ON ir."productId" = p.id
+            FROM \"InventoryReceipt\" ir
+            LEFT JOIN \"Product\" p ON ir."productId" = p.id
             WHERE ir."tenantId" = $1
             ORDER BY ir."createdAt" DESC
         `, session.tenantId);
@@ -177,7 +177,7 @@ export async function POST(req: Request) {
 
             // Raw SQL orqali qo'shimcha ustunlarni yangilaymiz
             await prisma.$executeRawUnsafe(
-                `UPDATE "InventoryReceipt" SET currency=$1, "invoiceNo"=$2, "documentId"=$3, "costPriceUzs"=$4, "totalCostUzs"=$5 WHERE id=$6`,
+                `UPDATE \"InventoryReceipt\" SET currency=$1, "invoiceNo"=$2, "documentId"=$3, "costPriceUzs"=$4, "totalCostUzs"=$5 WHERE id=$6`,
                 currency || "UZS", invoiceNo || null, documentId,
                 costUzs, totalUzs,
                 receipt.id
@@ -205,7 +205,7 @@ export async function POST(req: Request) {
                 });
                 // documentId bilan bog'laymiz (o'chirishda kerak)
                 await prisma.$executeRawUnsafe(
-                    `UPDATE "KassiHarakat" SET "refId" = $1 WHERE id = $2`,
+                    `UPDATE \"KassiHarakat\" SET "refId" = $1 WHERE id = $2`,
                     documentId, kh.id
                 );
             }
@@ -243,7 +243,7 @@ export async function DELETE(req: Request) {
         // 1️⃣ Get all items of this document (with productType from notes)
         const rows: any[] = await prisma.$queryRawUnsafe(`
             SELECT id, "productId", "productName", quantity, unit, "costPriceUzs", "totalCostUzs", notes, status
-            FROM "InventoryReceipt"
+            FROM \"InventoryReceipt\"
             WHERE "documentId" = $1 AND "tenantId" = $2
         `, documentId, session.tenantId);
 
@@ -299,7 +299,7 @@ export async function DELETE(req: Request) {
 
         // 3️⃣ Rollback EXPENSE (KassiHarakat)
         const khRows: any[] = await prisma.$queryRawUnsafe(
-            `SELECT id FROM "KassiHarakat" WHERE "refId"=$1 AND "tenantId"=$2`,
+            `SELECT id FROM \"KassiHarakat\" WHERE "refId"=$1 AND "tenantId"=$2`,
             documentId, session.tenantId
         );
         for (const kh of khRows) {

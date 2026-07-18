@@ -1,0 +1,1 @@
+console.log(SELECT id FROM " SmartPrinter\);

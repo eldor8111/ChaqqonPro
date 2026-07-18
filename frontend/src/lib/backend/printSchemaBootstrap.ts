@@ -13,13 +13,13 @@ export async function ensurePrintSchema(): Promise<void> {
 
     // SmartPrinter ga yangi ustunlar (mavjud bo'lsa xato — e'tiborsiz)
     const alters = [
-        `ALTER TABLE "SmartPrinter" ADD COLUMN "role" TEXT NOT NULL DEFAULT 'cashier'`,
-        `ALTER TABLE "SmartPrinter" ADD COLUMN "paperWidth" INTEGER NOT NULL DEFAULT 80`,
-        `ALTER TABLE "SmartPrinter" ADD COLUMN "status" TEXT NOT NULL DEFAULT 'unknown'`,
-        `ALTER TABLE "SmartPrinter" ADD COLUMN "isActive" BOOLEAN NOT NULL DEFAULT 1`,
-        `ALTER TABLE "SmartPrinter" ADD COLUMN "isDefault" BOOLEAN NOT NULL DEFAULT 0`,
-        `ALTER TABLE "SmartPrinter" ADD COLUMN "lastSeenAt" DATETIME`,
-        `ALTER TABLE "SmartPrinter" ADD COLUMN "latencyMs" INTEGER`,
+        `ALTER TABLE \"SmartPrinter\" ADD COLUMN "role" TEXT NOT NULL DEFAULT 'cashier'`,
+        `ALTER TABLE \"SmartPrinter\" ADD COLUMN "paperWidth" INTEGER NOT NULL DEFAULT 80`,
+        `ALTER TABLE \"SmartPrinter\" ADD COLUMN "status" TEXT NOT NULL DEFAULT 'unknown'`,
+        `ALTER TABLE \"SmartPrinter\" ADD COLUMN "isActive" BOOLEAN NOT NULL DEFAULT 1`,
+        `ALTER TABLE \"SmartPrinter\" ADD COLUMN "isDefault" BOOLEAN NOT NULL DEFAULT 0`,
+        `ALTER TABLE \"SmartPrinter\" ADD COLUMN "lastSeenAt" DATETIME`,
+        `ALTER TABLE \"SmartPrinter\" ADD COLUMN "latencyMs" INTEGER`,
     ];
     for (const sql of alters) {
         try { await prisma.$executeRawUnsafe(sql); } catch { /* ustun allaqachon bor */ }

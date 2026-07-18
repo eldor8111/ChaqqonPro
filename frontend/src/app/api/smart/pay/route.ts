@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
             // 🔴 KALKULYATSIYA — Find product and its recipes, then deduct stock
             try {
                 const products: any[] = await prisma.$queryRawUnsafe(
-                    `SELECT id, name, stock, unit, recipes, "autoCalculate" FROM \"Product\"" WHERE "tenantId"=$1 AND name=$2 LIMIT 1`,
+                    `SELECT id, name, stock, unit, recipes, "autoCalculate" FROM \"Product\" WHERE "tenantId"=$1 AND name=$2 LIMIT 1`,
                     tenantId, item.name
                 );
                 const product = products[0] ?? null;
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
                     if (product.stock > 0) {
                         const newStock = Math.max(0, product.stock - item.qty);
                         await prisma.$executeRawUnsafe(
-                            `UPDATE \"Product\"" SET stock=$1 WHERE id=$2 AND "tenantId"=$3`,
+                            `UPDATE \"Product\" SET stock=$1 WHERE id=$2 AND "tenantId"=$3`,
                             newStock, product.id, tenantId
                         );
 
@@ -170,14 +170,14 @@ export async function POST(request: NextRequest) {
                             try {
                                 // Mavjud zaxirani tekshirish
                                 const ingRows: any[] = await prisma.$queryRawUnsafe(
-                                    `SELECT id, stock, unit, name FROM \"UbtIngredient\"" WHERE id=$1 AND "tenantId"=$2 LIMIT 1`,
+                                    `SELECT id, stock, unit, name FROM \"UbtIngredient\" WHERE id=$1 AND "tenantId"=$2 LIMIT 1`,
                                     recipe.xomashyoId, tenantId
                                 );
                                 if (ingRows.length > 0) {
                                     const ing = ingRows[0];
                                     const newIngStock = Math.max(0, Number(ing.stock) - totalDeduct);
                                      await prisma.$executeRawUnsafe(
-                                        `UPDATE \"UbtIngredient\"" SET stock=$1 WHERE id=$2 AND "tenantId"=$3`,
+                                        `UPDATE \"UbtIngredient\" SET stock=$1 WHERE id=$2 AND "tenantId"=$3`,
                                         newIngStock, ing.id, tenantId
                                     );
 

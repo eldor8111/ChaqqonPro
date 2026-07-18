@@ -15,13 +15,13 @@ export async function PUT(
         if (!name) return NextResponse.json({ error: "Nom majburiy" }, { status: 400 });
 
         const existing: any[] = await prisma.$queryRawUnsafe(
-            `SELECT id FROM "UbtSupplier" WHERE id = $1 AND "tenantId" = $2`,
+            `SELECT id FROM \"UbtSupplier\" WHERE id = $1 AND "tenantId" = $2`,
             params.id, session.tenantId
         );
         if (!existing.length) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
 
         await prisma.$executeRawUnsafe(
-            `UPDATE "UbtSupplier" SET name = $1, phone = $2, info = $3, currency = $4 WHERE id = $5 AND "tenantId" = $6`,
+            `UPDATE \"UbtSupplier\" SET name = $1, phone = $2, info = $3, currency = $4 WHERE id = $5 AND "tenantId" = $6`,
             name, phone || null, info || null, currency || "UZS", params.id, session.tenantId
         );
 
@@ -40,13 +40,13 @@ export async function DELETE(
         if (!session?.tenantId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const existing: any[] = await prisma.$queryRawUnsafe(
-            `SELECT id FROM "UbtSupplier" WHERE id = $1 AND "tenantId" = $2`,
+            `SELECT id FROM \"UbtSupplier\" WHERE id = $1 AND "tenantId" = $2`,
             params.id, session.tenantId
         );
         if (!existing.length) return NextResponse.json({ error: "Topilmadi" }, { status: 404 });
 
         await prisma.$executeRawUnsafe(
-            `DELETE FROM "UbtSupplier" WHERE id = $1 AND "tenantId" = $2`,
+            `DELETE FROM \"UbtSupplier\" WHERE id = $1 AND "tenantId" = $2`,
             params.id, session.tenantId
         );
 

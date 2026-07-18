@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
         let products: any[] = [];
         if (ids.length > 0) {
             products = await prisma.$queryRawUnsafe(
-                `SELECT id, "printerIp" FROM \"Product\"" WHERE "tenantId" = $1 AND id IN (${ids.map((_: any, i: number) => '$' + (i + 2)).join(",")})`,
+                `SELECT id, "printerIp" FROM \"Product\" WHERE "tenantId" = $1 AND id IN (${ids.map((_: any, i: number) => '$' + (i + 2)).join(",")})`,
                 auth.tenantId, ...ids
             );
         }
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
         let fallbackIp: string | null = null;
         try {
             const fp: any[] = await prisma.$queryRawUnsafe(
-                `SELECT "ipAddress", role FROM "SmartPrinter" WHERE "tenantId" = $1 AND ("isActive" IS NULL OR "isActive" = 1) ORDER BY (role = 'kitchen') DESC, "createdAt" ASC LIMIT 1`,
+                `SELECT "ipAddress", role FROM \"SmartPrinter\" WHERE "tenantId" = $1 AND ("isActive" IS NULL OR "isActive" = 1) ORDER BY (role = 'kitchen') DESC, "createdAt" ASC LIMIT 1`,
                 auth.tenantId
             );
             if (fp.length > 0) fallbackIp = fp[0].ipAddress || null;

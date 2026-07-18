@@ -206,7 +206,7 @@ export async function POST(
             let fallbackPrinterIp: string | null = null;
             try {
                 const fallbackPrinters: any[] = await prisma.$queryRawUnsafe(
-                    `SELECT ipAddress FROM SmartPrinter WHERE tenantId = ? ORDER BY createdAt ASC LIMIT 1`,
+                    `SELECT ipAddress FROM \"SmartPrinter\" WHERE tenantId = ? ORDER BY createdAt ASC LIMIT 1`,
                     tenantId
                 );
                 if (fallbackPrinters.length > 0) {

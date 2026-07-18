@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
         if (!staffPrinterIp) {
             try {
                 const printers: any[] = await (prisma.$queryRawUnsafe(
-                    `SELECT ipAddress, port FROM SmartPrinter WHERE tenantId=? ORDER BY createdAt ASC LIMIT 1`,
+                    `SELECT ipAddress, port FROM \"SmartPrinter\" WHERE tenantId=? ORDER BY createdAt ASC LIMIT 1`,
                     authenticatedTenant.id
                 ) as Promise<any[]>);
                 if (printers.length > 0) {
