@@ -33,49 +33,44 @@ export async function PUT(
             }
         }
 
-        const existing = await prisma.$queryRaw`
-            SELECT id FROM Tenant WHERE id = ${params.id}
-        ` as any[];
+        const existing = await prisma.tenant.findUnique({
+            where: { id: params.id }
+        });
 
-        if (!existing.length) {
+        if (!existing) {
             return NextResponse.json({ error: "Do'kon topilmadi" }, { status: 404 });
         }
 
-        const sets: string[] = [];
-        const values: any[] = [];
+        const data: any = {};
 
-        if (body.shopName) { sets.push("shopName = ?"); values.push(body.shopName); }
-        if (body.ownerName) { sets.push("ownerName = ?"); values.push(body.ownerName); }
-        if (body.phone !== undefined) { sets.push("phone = ?"); values.push(body.phone); }
-        if (body.email !== undefined) { sets.push("email = ?"); values.push(body.email); }
-        if (body.address !== undefined) { sets.push("address = ?"); values.push(body.address); }
-        if (body.plan) { sets.push("plan = ?"); values.push(body.plan); }
-        if (body.status) { sets.push("status = ?"); values.push(body.status); }
-        if (body.adminUsername) { sets.push("adminUsername = ?"); values.push(body.adminUsername); }
+        if (body.shopName) data.shopName = body.shopName;
+        if (body.ownerName) data.ownerName = body.ownerName;
+        if (body.phone !== undefined) data.phone = body.phone;
+        if (body.email !== undefined) data.email = body.email;
+        if (body.address !== undefined) data.address = body.address;
+        if (body.plan) data.plan = body.plan;
+        if (body.status) data.status = body.status;
+        if (body.adminUsername) data.adminUsername = body.adminUsername;
         if (body.adminPassword) {
-            const hash = await hashPassword(body.adminPassword);
-            sets.push("adminPasswordHash = ?");
-            values.push(hash);
+            data.adminPasswordHash = await hashPassword(body.adminPassword);
         }
         if (body.settings !== undefined) {
-            sets.push("settings = ?");
-            values.push(JSON.stringify(body.settings));
+            data.settings = JSON.stringify(body.settings);
             
             // Obuna muddatini yangilash
             const subDays = body.settings.subscriptionDays ?? 7;
             const expiresAt = new Date();
             if (subDays > 0) {
                 expiresAt.setDate(expiresAt.getDate() + subDays);
+                data.expiresAt = expiresAt;
             }
-            
-            sets.push("expiresAt = ?");
-            values.push(expiresAt);
         }
 
-        if (sets.length > 0) {
-            const sql = `UPDATE Tenant SET ${sets.join(", ")} WHERE id = ?`;
-            values.push(params.id);
-            await prisma.$executeRawUnsafe(sql, ...values);
+        if (Object.keys(data).length > 0) {
+            await prisma.tenant.update({
+                where: { id: params.id },
+                data
+            });
         }
 
         return NextResponse.json({ success: true });
@@ -94,20 +89,18 @@ export async function DELETE(
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const existing = await prisma.$queryRaw`
-            SELECT id FROM Tenant WHERE id = ${params.id}
-        ` as any[];
+        const existing = await prisma.tenant.findUnique({
+            where: { id: params.id }
+        });
 
-        if (!existing.length) {
+        if (!existing) {
             return NextResponse.json({ error: "Do'kon topilmadi" }, { status: 404 });
         }
 
-        // Delete related data first, then tenant
-        await prisma.$executeRaw`DELETE FROM Staff WHERE tenantId = ${params.id}`;
-        await prisma.$executeRaw`DELETE FROM Product WHERE tenantId = ${params.id}`;
-        await prisma.$executeRaw`DELETE FROM Customer WHERE tenantId = ${params.id}`;
-        await prisma.$executeRaw`DELETE FROM "Transaction" WHERE tenantId = ${params.id}`;
-        await prisma.$executeRaw`DELETE FROM Tenant WHERE id = ${params.id}`;
+        // Deleting tenant will cascade delete all related models in Postgres because of @relation(onDelete: Cascade)
+        await prisma.tenant.delete({
+            where: { id: params.id }
+        });
 
         return NextResponse.json({ success: true, message: "Do'kon o'chirildi" });
     } catch (error) {

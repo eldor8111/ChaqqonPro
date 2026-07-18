@@ -19,10 +19,11 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "tenantId kerak" }, { status: 400 });
     }
 
-    const staffList = await prisma.$queryRawUnsafe(
-        "SELECT id, name, username, role, status, branch FROM Staff WHERE tenantId = ? ORDER BY createdAt DESC",
-        tenantId
-    ) as any[];
+    const staffList = await prisma.staff.findMany({
+        where: { tenantId },
+        select: { id: true, name: true, username: true, role: true, status: true, branch: true },
+        orderBy: { createdAt: 'desc' }
+    });
 
     return NextResponse.json({ success: true, staff: staffList });
 }
@@ -40,32 +41,29 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "staffId va newPassword kerak" }, { status: 400 });
     }
 
-    const existing = await prisma.$queryRawUnsafe(
-        "SELECT id, name, username FROM Staff WHERE id = ?",
-        staffId
-    ) as any[];
+    const existing = await prisma.staff.findUnique({
+        where: { id: staffId },
+        select: { id: true, name: true, username: true }
+    });
 
-    if (!existing.length) {
+    if (!existing) {
         return NextResponse.json({ error: "Staff topilmadi" }, { status: 404 });
     }
 
     const hash = await hashPassword(newPassword);
-    const sets: string[] = ["passwordHash = ?"];
-    const values: any[] = [hash];
+    const data: any = { passwordHash: hash };
 
     if (newUsername) {
-        sets.push("username = ?");
-        values.push(newUsername.replace(/^\+/, ""));
+        data.username = newUsername.replace(/^\+/, "");
     }
 
-    values.push(staffId);
-    await prisma.$executeRawUnsafe(
-        `UPDATE Staff SET ${sets.join(", ")} WHERE id = ?`,
-        ...values
-    );
+    await prisma.staff.update({
+        where: { id: staffId },
+        data
+    });
 
     return NextResponse.json({
         success: true,
-        message: `${existing[0].name} uchun parol yangilandi`,
+        message: `${existing.name} uchun parol yangilandi`,
     });
 }

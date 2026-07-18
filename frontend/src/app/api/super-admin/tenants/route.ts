@@ -39,23 +39,21 @@ export async function GET(_request: NextRequest) {
 
         let query;
         if (!isMaster && platformUser?.role === "Agent") {
-            query = prisma.$queryRaw`
-                SELECT id, shopCode, billingId, shopName, ownerName, phone, email, address, plan, status, adminUsername, settings, agentCode, createdAt
-                FROM Tenant
-                WHERE agentCode = ${platformUser.agentCode || ""}
-                ORDER BY createdAt DESC
-            ` as Promise<any[]>;
+            query = prisma.tenant.findMany({
+                where: { agentCode: platformUser.agentCode || "" },
+                select: { id: true, shopCode: true, billingId: true, shopName: true, ownerName: true, phone: true, email: true, address: true, plan: true, status: true, adminUsername: true, settings: true, agentCode: true, createdAt: true },
+                orderBy: { createdAt: 'desc' }
+            });
         } else {
-            query = prisma.$queryRaw`
-                SELECT id, shopCode, billingId, shopName, ownerName, phone, email, address, plan, status, adminUsername, settings, agentCode, createdAt
-                FROM Tenant
-                ORDER BY createdAt DESC
-            ` as Promise<any[]>;
+            query = prisma.tenant.findMany({
+                select: { id: true, shopCode: true, billingId: true, shopName: true, ownerName: true, phone: true, email: true, address: true, plan: true, status: true, adminUsername: true, settings: true, agentCode: true, createdAt: true },
+                orderBy: { createdAt: 'desc' }
+            });
         }
         const tenants = await query;
 
         return NextResponse.json({
-            tenants: tenants.map(t => ({
+            tenants: tenants.map((t: any) => ({
                 ...t,
                 settings: t.settings ? JSON.parse(t.settings) : {},
             })),
@@ -119,10 +117,10 @@ export async function POST(request: NextRequest) {
         for (let attempt = 0; attempt < 20; attempt++) {
             const num = Math.floor(1000 + Math.random() * 9000);
             const candidate = `SHOP${num}`;
-            const taken = await prisma.$queryRaw`
-                SELECT id FROM Tenant WHERE shopCode = ${candidate}
-            ` as any[];
-            if (taken.length === 0) { shopCode = candidate; break; }
+            const taken = await prisma.tenant.findUnique({
+                where: { shopCode: candidate }
+            });
+            if (!taken) { shopCode = candidate; break; }
         }
         if (!shopCode) {
             return NextResponse.json({ error: "Do'kon kodi generatsiya qilib bo'lmadi" }, { status: 500 });
@@ -136,8 +134,6 @@ export async function POST(request: NextRequest) {
         const expiresAt = new Date();
         if (subDays > 0) {
             expiresAt.setDate(expiresAt.getDate() + subDays);
-        } else {
-            // 0 kun = sinov muddati yo'q, status bloklangan
         }
         
         const settingsStr = JSON.stringify(settings || {});
@@ -146,19 +142,34 @@ export async function POST(request: NextRequest) {
         let billingId = "";
         for (let attempt = 0; attempt < 10; attempt++) {
             const candidate = Math.floor(10000000 + Math.random() * 90000000).toString();
-            const existing = await prisma.$queryRaw`
-                SELECT id FROM Tenant WHERE billingId = ${candidate}
-            ` as any[];
-            if (existing.length === 0) { billingId = candidate; break; }
+            const existing = await prisma.tenant.findUnique({
+                where: { billingId: candidate }
+            });
+            if (!existing) { billingId = candidate; break; }
         }
         if (!billingId) {
             return NextResponse.json({ error: "Billing ID generatsiya qilib bo'lmadi, qayta urinib ko'ring" }, { status: 500 });
         }
 
-        await prisma.$executeRaw`
-            INSERT INTO Tenant (id, shopCode, billingId, shopName, ownerName, phone, email, address, plan, status, adminUsername, adminPasswordHash, settings, agentCode, createdAt, expiresAt)
-            VALUES (${id}, ${shopCode}, ${billingId}, ${shopName}, ${ownerName}, ${phone || ""}, ${email || ""}, ${address || ""}, ${plan || "basic"}, ${status || "active"}, ${adminUsername}, ${passwordHash}, ${settingsStr}, ${agentCode || null}, datetime('now'), ${expiresAt})
-        `;
+        await prisma.tenant.create({
+            data: {
+                id,
+                shopCode,
+                billingId,
+                shopName,
+                ownerName,
+                phone: phone || "",
+                email: email || "",
+                address: address || "",
+                plan: plan || "basic",
+                status: status || "active",
+                adminUsername,
+                adminPasswordHash: passwordHash,
+                settings: settingsStr,
+                agentCode: agentCode || null,
+                expiresAt,
+            }
+        });
 
         return NextResponse.json({
             success: true,
