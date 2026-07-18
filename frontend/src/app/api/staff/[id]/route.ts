@@ -27,7 +27,7 @@ export async function PUT(
 
         // Check staff exists and belongs to tenant
         const existing = await prisma.$queryRaw`
-            SELECT id, tenantId FROM Staff WHERE id = ${params.id}
+            SELECT id, tenantId FROM \"Staff\" WHERE id = ${params.id}
         ` as any[];
 
         if (!existing.length || existing[0].tenantId !== tenantId) {
@@ -52,7 +52,7 @@ export async function PUT(
         }
 
         if (sets.length > 0) {
-            const sql = `UPDATE Staff SET ${sets.join(", ")} WHERE id = ?`;
+            const sql = `UPDATE \"Staff\" SET ${sets.join(", ")} WHERE id = ?`;
             values.push(params.id);
             await prisma.$executeRawUnsafe(sql, ...values);
 
@@ -61,13 +61,13 @@ export async function PUT(
                 try {
                     const phoneData = JSON.parse(body.phone);
                     if (phoneData.isMainMonoblock) {
-                        const otherManablogs = await prisma.$queryRaw`SELECT id, phone FROM Staff WHERE tenantId = ${tenantId} AND role = 'Manablog' AND id != ${params.id}` as any[];
+                        const otherManablogs = await prisma.$queryRaw`SELECT id, phone FROM \"Staff\" WHERE tenantId = ${tenantId} AND role = 'Manablog' AND id != ${params.id}` as any[];
                         for (const m of otherManablogs) {
                             try {
                                 const p2 = JSON.parse(m.phone || '{}');
                                 if (p2.isMainMonoblock) {
                                     p2.isMainMonoblock = false;
-                                    await prisma.$executeRaw`UPDATE Staff SET phone = ${JSON.stringify(p2)} WHERE id = ${m.id}`;
+                                    await prisma.$executeRaw`UPDATE \"Staff\" SET phone = ${JSON.stringify(p2)} WHERE id = ${m.id}`;
                                 }
                             } catch (e) {}
                         }
@@ -97,14 +97,14 @@ export async function DELETE(
         const tenantId = session.tenantId;
 
         const existing = await prisma.$queryRaw`
-            SELECT id, tenantId FROM Staff WHERE id = ${params.id}
+            SELECT id, tenantId FROM \"Staff\" WHERE id = ${params.id}
         ` as any[];
 
         if (!existing.length || existing[0].tenantId !== tenantId) {
             return NextResponse.json({ error: "Staff not found" }, { status: 404 });
         }
 
-        await prisma.$executeRaw`DELETE FROM Staff WHERE id = ${params.id}`;
+        await prisma.$executeRaw`DELETE FROM \"Staff\" WHERE id = ${params.id}`;
 
         await createAuditLog(tenantId, session.userId ? "Admin" : "System", "Xodim tizimdan o'chirildi", `ID: ${params.id}`, "delete");
 

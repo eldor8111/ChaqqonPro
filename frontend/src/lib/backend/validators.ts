@@ -19,15 +19,15 @@ export async function isPhoneGloballyUnique(phone: string, currentId?: string): 
     if (normalizedPhone.startsWith("{") && normalizedPhone.endsWith("}")) return true;
 
     // Check Tenant
-    const tenants = await prisma.$queryRaw`SELECT id FROM Tenant WHERE REPLACE(phone, ' ', '') = ${normalizedPhone}` as {id: string}[];
+    const tenants = await prisma.$queryRaw`SELECT id FROM \"Tenant\" WHERE REPLACE(phone, ' ', '') = ${normalizedPhone}` as {id: string}[];
     if (tenants.some(t => t.id !== currentId)) return false;
 
     // Check Staff
-    const staff = await prisma.$queryRaw`SELECT id FROM Staff WHERE REPLACE(phone, ' ', '') = ${normalizedPhone}` as {id: string}[];
+    const staff = await prisma.$queryRaw`SELECT id FROM \"Staff\" WHERE REPLACE(phone, ' ', '') = ${normalizedPhone}` as {id: string}[];
     if (staff.some(s => s.id !== currentId)) return false;
 
     // Check PlatformUser
-    const platformUsers = await prisma.$queryRaw`SELECT id FROM PlatformUser WHERE REPLACE(phone, ' ', '') = ${normalizedPhone}` as {id: string}[];
+    const platformUsers = await prisma.$queryRaw`SELECT id FROM \"PlatformUser\" WHERE REPLACE(phone, ' ', '') = ${normalizedPhone}` as {id: string}[];
     if (platformUsers.some(p => p.id !== currentId)) return false;
 
     return true;

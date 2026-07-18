@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
         // Fetch current expiry
         const rows = await prisma.$queryRaw`
-            SELECT id, expiresAt FROM Tenant WHERE id = ${tenantId}
+            SELECT id, expiresAt FROM \"Tenant\" WHERE id = ${tenantId}
         ` as any[];
 
         if (!rows.length) {
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         newExpiry.setDate(newExpiry.getDate() + Number(days));
 
         await prisma.$executeRaw`
-            UPDATE Tenant SET expiresAt = ${newExpiry}, status = 'active' WHERE id = ${tenantId}
+            UPDATE \"Tenant\" SET expiresAt = ${newExpiry}, status = 'active' WHERE id = ${tenantId}
         `;
 
         return NextResponse.json({

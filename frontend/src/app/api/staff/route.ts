@@ -16,7 +16,7 @@ export async function GET(_request: NextRequest) {
 
         const staff = await prisma.$queryRaw`
             SELECT id, tenantId, name, role, username, permissions, branch, phone, status, sales, transactions, createdAt
-            FROM Staff
+            FROM \"Staff\"
             WHERE tenantId = ${tenantId}
             ORDER BY name ASC
         ` as any[];
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
         const metaVal = staffMeta ? JSON.stringify(staffMeta) : "{}";
 
         await prisma.$executeRaw`
-            INSERT INTO Staff (id, tenantId, name, role, username, passwordHash, permissions, branch, phone, staffMeta, status, sales, transactions, createdAt)
+            INSERT INTO \"Staff\" (id, tenantId, name, role, username, passwordHash, permissions, branch, phone, staffMeta, status, sales, transactions, createdAt)
             VALUES (${id}, ${tenantId}, ${name}, ${roleVal}, ${username}, ${passwordHash}, ${permStr}, ${branchVal}, ${phoneVal}, ${metaVal}, 'active', 0, 0, datetime('now'))
         `;
 
@@ -82,13 +82,13 @@ export async function POST(request: NextRequest) {
             try {
                 const phoneData = JSON.parse(phoneVal);
                 if (phoneData.isMainMonoblock) {
-                    const otherManablogs = await prisma.$queryRaw`SELECT id, phone FROM Staff WHERE tenantId = ${tenantId} AND role = 'Manablog' AND id != ${id}` as any[];
+                    const otherManablogs = await prisma.$queryRaw`SELECT id, phone FROM \"Staff\" WHERE tenantId = ${tenantId} AND role = 'Manablog' AND id != ${id}` as any[];
                     for (const m of otherManablogs) {
                         try {
                             const p2 = JSON.parse(m.phone || '{}');
                             if (p2.isMainMonoblock) {
                                 p2.isMainMonoblock = false;
-                                await prisma.$executeRaw`UPDATE Staff SET phone = ${JSON.stringify(p2)} WHERE id = ${m.id}`;
+                                await prisma.$executeRaw`UPDATE \"Staff\" SET phone = ${JSON.stringify(p2)} WHERE id = ${m.id}`;
                             }
                         } catch (e) {}
                     }

@@ -42,11 +42,11 @@ export async function POST(req: NextRequest) {
         let categoriesCount = 0;
         if (Array.isArray(data.categories)) {
             try {
-                await prisma.$executeRawUnsafe(`DELETE FROM UbtCategory WHERE tenantId = ?`, data.tenantId);
+                await prisma.$executeRawUnsafe(`DELETE FROM \"UbtCategory\" WHERE tenantId = ?`, data.tenantId);
                 for (const c of data.categories) {
                     if (!c || !c.id) continue;
                     await prisma.$executeRawUnsafe(
-                        `INSERT INTO UbtCategory (id, tenantId, name, type, itemCount, createdAt) VALUES (?, ?, ?, ?, ?, ?)`,
+                        `INSERT INTO \"UbtCategory\" (id, tenantId, name, type, itemCount, createdAt) VALUES (?, ?, ?, ?, ?, ?)`,
                         c.id, c.tenantId || data.tenantId, c.name || "", c.type || "taom", c.itemCount || 0, c.createdAt || new Date().toISOString()
                     );
                     categoriesCount++;

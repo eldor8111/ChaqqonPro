@@ -40,14 +40,14 @@ export async function POST(req: Request) {
             if (isIngredient) {
                 // UbtIngredient stock'ni haqiqiy qoldiqqa o'rnatish
                 const ingRows: any[] = await prisma.$queryRawUnsafe(
-                    "SELECT id, name, unit FROM UbtIngredient WHERE id=? AND tenantId=? LIMIT 1",
+                    "SELECT id, name, unit FROM \"UbtIngredient\" WHERE id=? AND tenantId=? LIMIT 1",
                     productId, session.tenantId
                 );
                 if (ingRows.length > 0) {
                     pName = ingRows[0].name;
                     pUnit = ingRows[0].unit;
                     await prisma.$executeRawUnsafe(
-                        "UPDATE UbtIngredient SET stock=? WHERE id=? AND tenantId=?",
+                        "UPDATE \"UbtIngredient\" SET stock=? WHERE id=? AND tenantId=?",
                         Number(actualStock), productId, session.tenantId
                     );
                 }

@@ -66,7 +66,7 @@ export async function GET(
                     CASE WHEN image IS NOT NULL THEN image ELSE NULL END as image,
                     COALESCE(type, 'taom') as type,
                     COALESCE(inStock, 1) as inStock
-             FROM Product
+             FROM \"Product\"
              WHERE tenantId = ?
                AND COALESCE(inStock, 1) = 1
                AND COALESCE(type, 'taom') = 'taom'
@@ -78,7 +78,7 @@ export async function GET(
         let explicitCategories: any[] = [];
         try {
             explicitCategories = await prisma.$queryRawUnsafe(
-                `SELECT id, name FROM UbtCategory WHERE tenantId=? ORDER BY createdAt ASC`,
+                `SELECT id, name FROM \"UbtCategory\" WHERE tenantId=? ORDER BY createdAt ASC`,
                 tenantId
             );
         } catch { }
@@ -196,7 +196,7 @@ export async function POST(
             let products: any[] = [];
             if (itemIds.length > 0) {
                 products = await prisma.$queryRawUnsafe(
-                    `SELECT id, printerIp FROM Product WHERE tenantId = ? AND id IN (${itemIds.map(() => '?').join(',')})`,
+                    `SELECT id, printerIp FROM \"Product\" WHERE tenantId = ? AND id IN (${itemIds.map(() => '?').join(',')})`,
                     tenantId, ...itemIds
                 );
             }

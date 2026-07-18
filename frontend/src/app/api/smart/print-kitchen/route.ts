@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
         let products: any[] = [];
         if (ids.length > 0) {
             products = await prisma.$queryRawUnsafe(
-                `SELECT id, "printerIp" FROM "Product" WHERE "tenantId" = $1 AND id IN (${ids.map((_: any, i: number) => '$' + (i + 2)).join(",")})`,
+                `SELECT id, "printerIp" FROM \"Product\"" WHERE "tenantId" = $1 AND id IN (${ids.map((_: any, i: number) => '$' + (i + 2)).join(",")})`,
                 auth.tenantId, ...ids
             );
         }

@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
                     COALESCE("inStock", 1) as "inStock",
                     COALESCE("hasBarcode", 0) as "hasBarcode",
                     COALESCE("autoCalculate", 1) as "autoCalculate"
-             FROM "Product" WHERE "tenantId" = $1 ORDER BY category ASC, name ASC`,
+             FROM \"Product\"" WHERE "tenantId" = $1 ORDER BY category ASC, name ASC`,
             tenantId
         );
 
@@ -167,7 +167,7 @@ export async function GET(request: NextRequest) {
         let explicitCategories: any[] = [];
         try {
             explicitCategories = await prisma.$queryRawUnsafe(
-                `SELECT id, name FROM "UbtCategory" WHERE "tenantId"=$1 ORDER BY "createdAt" ASC`, 
+                `SELECT id, name FROM \"UbtCategory\"" WHERE "tenantId"=$1 ORDER BY "createdAt" ASC`, 
                 tenantId
             );
         } catch {
@@ -259,7 +259,7 @@ export async function POST(request: NextRequest) {
         let targetId = id;
         if (!targetId) {
             const existingByName: any[] = await prisma.$queryRawUnsafe(
-                `SELECT id FROM "Product" WHERE "tenantId"=$1 AND name=$2 LIMIT 1`,
+                `SELECT id FROM \"Product\"" WHERE "tenantId"=$1 AND name=$2 LIMIT 1`,
                 tenantId, name
             );
             if (existingByName.length > 0) targetId = existingByName[0].id;
@@ -272,14 +272,14 @@ export async function POST(request: NextRequest) {
             }
 
             await prisma.$executeRawUnsafe(
-                `UPDATE "Product" SET name=$1, category=$2, "sellingPrice"=$3, "costPrice"=$4, type=$5, warehouse=$6, stock=$7, unit=$8, image=$9, "printerIp"=$10, "isSetMenu"=$11, modifiers=$12, recipes=$13, "inStock"=$14, "hasBarcode"=$15, "autoCalculate"=$16 WHERE id=$17 AND "tenantId"=$18`,
+                `UPDATE \"Product\"" SET name=$1, category=$2, "sellingPrice"=$3, "costPrice"=$4, type=$5, warehouse=$6, stock=$7, unit=$8, image=$9, "printerIp"=$10, "isSetMenu"=$11, modifiers=$12, recipes=$13, "inStock"=$14, "hasBarcode"=$15, "autoCalculate"=$16 WHERE id=$17 AND "tenantId"=$18`,
                 name, catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, recipesVal, inStockVal, hasBarcodeVal, autoCalculateVal, targetId, tenantId
             );
             return NextResponse.json({ success: true, action: "updated", id: targetId });
         } else {
             const newId = `prod_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
             await prisma.$executeRawUnsafe(
-                `INSERT INTO "Product" (id, "tenantId", name, category, "sellingPrice", "costPrice", type, warehouse, stock, "minStock", unit, image, "printerIp", "isSetMenu", modifiers, recipes, "inStock", "hasBarcode", "autoCalculate", "createdAt")
+                `INSERT INTO \"Product\"" (id, "tenantId", name, category, "sellingPrice", "costPrice", type, warehouse, stock, "minStock", unit, image, "printerIp", "isSetMenu", modifiers, recipes, "inStock", "hasBarcode", "autoCalculate", "createdAt")
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 10, $10, $11, $12, $13, $14, $15, $16, $17, $18, NOW())`,
                 newId, tenantId, name, catVal, sellPrice, costPr, typeVal, warehouseVal, stk, utStr, imgVal, piVal, isSetMenuVal, modifiersVal, recipesVal, inStockVal, hasBarcodeVal, autoCalculateVal
             );
@@ -302,17 +302,17 @@ export async function DELETE(request: NextRequest) {
 
         if (id) {
             // Delete by id
-            const existing: any[] = await prisma.$queryRawUnsafe(`SELECT name FROM "Product" WHERE id=$1 AND "tenantId"=$2 LIMIT 1`, id, tenantId);
+            const existing: any[] = await prisma.$queryRawUnsafe(`SELECT name FROM \"Product\"" WHERE id=$1 AND "tenantId"=$2 LIMIT 1`, id, tenantId);
             if (existing.length > 0) {
                 const active = await isProductInActiveOrder(tenantId, existing[0].name, id);
                 if (active) return NextResponse.json({ error: "Faol zakazda bo'lgan mahsulotni o'chirish mumkin emas, mijoz oldin to'lov qilishi kerak!" }, { status: 400 });
             }
-            await prisma.$executeRawUnsafe(`DELETE FROM "Product" WHERE id=$1 AND "tenantId"=$2`, id, tenantId);
+            await prisma.$executeRawUnsafe(`DELETE FROM \"Product\"" WHERE id=$1 AND "tenantId"=$2`, id, tenantId);
         } else if (name) {
             // Delete by name (for nomenklatura sync)
             const active = await isProductInActiveOrder(tenantId, name);
             if (active) return NextResponse.json({ error: "Faol zakazda bo'lgan mahsulotni o'chirish mumkin emas, mijoz oldin to'lov qilishi kerak!" }, { status: 400 });
-            await prisma.$executeRawUnsafe(`DELETE FROM "Product" WHERE name=$1 AND "tenantId"=$2`, name, tenantId);
+            await prisma.$executeRawUnsafe(`DELETE FROM \"Product\"" WHERE name=$1 AND "tenantId"=$2`, name, tenantId);
         } else {
             return NextResponse.json({ error: "ID yoki nom kiritilmagan" }, { status: 400 });
         }
