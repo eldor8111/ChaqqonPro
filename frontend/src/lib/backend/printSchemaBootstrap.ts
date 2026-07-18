@@ -18,7 +18,7 @@ export async function ensurePrintSchema(): Promise<void> {
         `ALTER TABLE \"SmartPrinter\" ADD COLUMN "status" TEXT NOT NULL DEFAULT 'unknown'`,
         `ALTER TABLE \"SmartPrinter\" ADD COLUMN "isActive" BOOLEAN NOT NULL DEFAULT 1`,
         `ALTER TABLE \"SmartPrinter\" ADD COLUMN "isDefault" BOOLEAN NOT NULL DEFAULT 0`,
-        `ALTER TABLE \"SmartPrinter\" ADD COLUMN "lastSeenAt" DATETIME`,
+        `ALTER TABLE \"SmartPrinter\" ADD COLUMN "lastSeenAt" TIMESTAMP`,
         `ALTER TABLE \"SmartPrinter\" ADD COLUMN "latencyMs" INTEGER`,
     ];
     for (const sql of alters) {
@@ -37,13 +37,12 @@ export async function ensurePrintSchema(): Promise<void> {
             "attempts" INTEGER NOT NULL DEFAULT 0,
             "maxAttempts" INTEGER NOT NULL DEFAULT 5,
             "claimedBy" TEXT,
-            "claimedAt" DATETIME,
-            "printedAt" DATETIME,
-            "nextAttemptAt" DATETIME,
+            "claimedAt" TIMESTAMP,
+            "printedAt" TIMESTAMP,
+            "nextAttemptAt" TIMESTAMP,
             "lastError" TEXT,
-            "expiresAt" DATETIME NOT NULL,
-            "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            "updatedAt" DATETIME NOT NULL,
+            "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "updatedAt" TIMESTAMP NOT NULL,
             CONSTRAINT "PrintJob_printerId_fkey" FOREIGN KEY ("printerId") REFERENCES "SmartPrinter" ("id") ON DELETE CASCADE ON UPDATE CASCADE
         )`);
         await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrintJob_tenantId_status_idx" ON "PrintJob"("tenantId", "status")`);
@@ -58,7 +57,7 @@ export async function ensurePrintSchema(): Promise<void> {
             "detail" TEXT,
             "agentId" TEXT,
             "durationMs" INTEGER,
-            "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             CONSTRAINT "PrintLog_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "PrintJob" ("id") ON DELETE CASCADE ON UPDATE CASCADE
         )`);
         await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "PrintLog_tenantId_createdAt_idx" ON "PrintLog"("tenantId", "createdAt")`);
