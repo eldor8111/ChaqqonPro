@@ -1137,61 +1137,7 @@ export default function UbtPage() {
                             </div>
                         </div>
 
-                        {/* Tables & Zones */}
-                        <div className="rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200"
-                            style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)" }}>
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5">
-                                <div>
-                                    <p className="text-[11px] font-bold text-blue-300 uppercase tracking-widest flex items-center gap-2">
-                                        <UtensilsCrossed size={14} /> Stollar va joylar
-                                    </p>
-                                    <h2 className="text-xl font-black text-white mt-1">
-                                        {smartTables.length} ta stol, {tablesByZone.length} ta joy
-                                    </h2>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="px-3 py-2 rounded-xl bg-white/10 border border-white/10 text-white text-xs font-bold">
-                                        Band/Bron: {activeTables}
-                                    </div>
-                                    <button
-                                        onClick={() => setShowReservation(true)}
-                                        className="px-3 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-500 transition-colors flex items-center gap-2"
-                                    >
-                                        <Calendar size={14} /> Bron qo'shish
-                                    </button>
-                                </div>
-                            </div>
 
-                            {smartTables.length === 0 ? (
-                                <div className="rounded-2xl border border-dashed border-white/15 bg-white/5 py-10 text-center">
-                                    <UtensilsCrossed size={28} className="mx-auto text-slate-500 mb-2" />
-                                    <p className="text-sm font-bold text-slate-300">Hozircha stol qo'shilmagan</p>
-                                    <p className="text-xs text-slate-500 mt-1">Sozlamalar bo'limidan joy va stollar qo'shing.</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-6">
-                                    {tablesByZone.map(({ zone, tables }) => (
-                                        <div key={zone} className="space-y-3">
-                                            <div className="flex items-center justify-between">
-                                                <h3 className="text-white font-black text-base">{zone}</h3>
-                                                <span className="text-[11px] font-bold text-slate-300 bg-white/10 border border-white/10 px-2.5 py-1 rounded-full">
-                                                    {tables.length} ta stol
-                                                </span>
-                                            </div>
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-                                                {tables.map((table) => (
-                                                    <SmartTableCard
-                                                        key={table.id}
-                                                        table={table}
-                                                        onClick={() => setSelTable(table)}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
 
                         {/* Top Dishes Chart */}
                         <div className="rounded-2xl p-3 md:p-5 shadow-sm bg-white border border-slate-200">
