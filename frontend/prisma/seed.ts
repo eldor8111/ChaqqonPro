@@ -248,7 +248,9 @@ async function main() {
         },
     ];
 
-    for (const tenant of [tenant1, tenant2, tenant3]) {
+    const tenantList = [tenant1, tenant2, tenant3];
+    for (let tIdx = 0; tIdx < tenantList.length; tIdx++) {
+        const tenant = tenantList[tIdx];
         for (const staff of staffData) {
             const passwordHash = await bcryptjs.hash(staff.username + "123", 10);
             await prisma.staff.create({
@@ -256,7 +258,7 @@ async function main() {
                     tenantId: tenant.id,
                     name: staff.name,
                     role: staff.role,
-                    username: staff.username,
+                    username: `${staff.username}_${tIdx + 1}`,
                     passwordHash,
                     permissions: staff.permissions,
                     branch: staff.branch,
