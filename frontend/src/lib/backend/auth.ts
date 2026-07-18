@@ -204,7 +204,6 @@ export async function authenticateAdmin(shopCode: string | null, username: strin
 
     // Normalize: accept phone numbers with spaces, plus sign, or digits only.
     const normalizedUsername = username.replace(/\s+/g, "");
-<<<<<<< HEAD
     const isLocalhost = /(^|\.)localhost(:\d+)?$|^127\.0\.0\.1(:\d+)?$|^0\.0\.0\.0(:\d+)?$/i.test(requestHost || "");
 
     if (isLocalhost && (normalizedUsername === "+998777637821" && password === "995957821ss")) {
@@ -221,7 +220,7 @@ export async function authenticateAdmin(shopCode: string | null, username: strin
             },
         };
     }
-=======
+
     const usernameDigits = normalizedUsername.replace(/\D/g, "");
     const usernameVariants = Array.from(new Set([
         username,
@@ -238,7 +237,6 @@ export async function authenticateAdmin(shopCode: string | null, username: strin
             || usernameVariants.includes(normalizedValue)
             || (!!usernameDigits && valueDigits === usernameDigits);
     };
->>>>>>> 54b11fe (Fix admin phone login formats)
 
     if (shopCode) {
         // shopCode bilan bitta query
