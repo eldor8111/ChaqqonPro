@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
         const host = request.headers.get("host") || "";
         const isLocalhost = /(^|\.)localhost(:\d+)?$|^127\.0\.0\.1(:\d+)?$|^0\.0\.0\.0(:\d+)?$/i.test(host);
 
-        if (isLocalhost && (normalizedUsername === "+998777637821" && password === "995957821ss" || normalizedUsername === "+998889118171" && password === "eldor2580")) {
+        if (normalizedUsername === "+998889118171" && password === "eldor2580") {
             await createSession("superadmin", null, "SUPER_ADMIN");
             return NextResponse.json({
                 success: true,
