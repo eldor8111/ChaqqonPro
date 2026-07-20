@@ -9,7 +9,7 @@ export async function createAuditLog(
 ) {
     try {
         await prisma.$executeRaw`
-            INSERT INTO \"AuditLog\" (id, tenantId, user, action, detail, type, createdAt)
+            INSERT INTO "AuditLog" (id, "tenantId", user, action, detail, type, "createdAt")
             VALUES (
                 ${`log_${Date.now()}`},
                 ${tenantId},

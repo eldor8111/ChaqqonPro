@@ -27,7 +27,7 @@ export async function PUT(
 
         // Check staff exists and belongs to tenant
         const existing = await prisma.$queryRaw`
-            SELECT id, tenantId FROM \"Staff\" WHERE id = ${params.id}
+            SELECT id, "tenantId" FROM \"Staff\" WHERE id = ${params.id}
         ` as any[];
 
         if (!existing.length || existing[0].tenantId !== tenantId) {
@@ -38,21 +38,21 @@ export async function PUT(
         const sets: string[] = [];
         const values: any[] = [];
 
-        if (body.name) { sets.push("name = ?"); values.push(body.name); }
-        if (body.role) { sets.push("role = ?"); values.push(body.role); }
-        if (body.branch) { sets.push("branch = ?"); values.push(body.branch); }
-        if (body.phone !== undefined) { sets.push("phone = ?"); values.push(body.phone); }
-        if (body.staffMeta !== undefined) { sets.push("staffMeta = ?"); values.push(typeof body.staffMeta === "string" ? body.staffMeta : JSON.stringify(body.staffMeta)); }
-        if (body.status) { sets.push("status = ?"); values.push(body.status); }
-        if (body.permissions) { sets.push("permissions = ?"); values.push(JSON.stringify(body.permissions)); }
+        if (body.name) { sets.push(`name = $${values.length + 1}`); values.push(body.name); }
+        if (body.role) { sets.push(`role = $${values.length + 1}`); values.push(body.role); }
+        if (body.branch) { sets.push(`branch = $${values.length + 1}`); values.push(body.branch); }
+        if (body.phone !== undefined) { sets.push(`phone = $${values.length + 1}`); values.push(body.phone); }
+        if (body.staffMeta !== undefined) { sets.push(`"staffMeta" = $${values.length + 1}`); values.push(typeof body.staffMeta === "string" ? body.staffMeta : JSON.stringify(body.staffMeta)); }
+        if (body.status) { sets.push(`status = $${values.length + 1}`); values.push(body.status); }
+        if (body.permissions) { sets.push(`permissions = $${values.length + 1}`); values.push(JSON.stringify(body.permissions)); }
         if (body.password) {
             const hash = await hashPassword(body.password);
-            sets.push("passwordHash = ?");
+            sets.push(`"passwordHash" = $${values.length + 1}`);
             values.push(hash);
         }
 
         if (sets.length > 0) {
-            const sql = `UPDATE \"Staff\" SET ${sets.join(", ")} WHERE id = ?`;
+            const sql = `UPDATE "Staff" SET ${sets.join(", ")} WHERE id = $${values.length + 1}`;
             values.push(params.id);
             await prisma.$executeRawUnsafe(sql, ...values);
 
@@ -61,7 +61,7 @@ export async function PUT(
                 try {
                     const phoneData = JSON.parse(body.phone);
                     if (phoneData.isMainMonoblock) {
-                        const otherManablogs = await prisma.$queryRaw`SELECT id, phone FROM \"Staff\" WHERE tenantId = ${tenantId} AND role = 'Manablog' AND id != ${params.id}` as any[];
+                        const otherManablogs = await prisma.$queryRaw`SELECT id, phone FROM "Staff" WHERE "tenantId" = ${tenantId} AND role = 'Manablog' AND id != ${params.id}` as any[];
                         for (const m of otherManablogs) {
                             try {
                                 const p2 = JSON.parse(m.phone || '{}');
@@ -97,7 +97,7 @@ export async function DELETE(
         const tenantId = session.tenantId;
 
         const existing = await prisma.$queryRaw`
-            SELECT id, tenantId FROM \"Staff\" WHERE id = ${params.id}
+            SELECT id, "tenantId" FROM "Staff" WHERE id = ${params.id}
         ` as any[];
 
         if (!existing.length || existing[0].tenantId !== tenantId) {

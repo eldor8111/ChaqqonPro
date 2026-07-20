@@ -13,10 +13,10 @@ export async function GET(request: NextRequest) {
 
         // Use raw query to avoid needing a prisma client regeneration which locks on windows
         const logs = await prisma.$queryRaw`
-            SELECT id, user, action, detail, time(createdAt, 'localtime') as time, strftime('%Y-%m-%d', createdAt) as date, type 
+            SELECT id, user, action, detail, to_char("createdAt" AT TIME ZONE 'Asia/Tashkent', 'HH24:MI:SS') as time, to_char("createdAt" AT TIME ZONE 'Asia/Tashkent', 'YYYY-MM-DD') as date, type 
             FROM \"AuditLog\" 
-            WHERE tenantId = ${tenantId} 
-            ORDER BY createdAt DESC 
+            WHERE "tenantId" = ${tenantId} 
+            ORDER BY "createdAt" DESC 
             LIMIT 100
         ` as any[];
 
