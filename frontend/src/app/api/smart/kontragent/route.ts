@@ -18,7 +18,7 @@ const _ensureSupplierTable = prisma.$executeRawUnsafe(`
 
 const _ensureSupplierCurrency = (async () => {
     try {
-        await prisma.$executeRawUnsafe(`ALTER TABLE \"UbtSupplier\" ADD COLUMN currency TEXT DEFAULT 'UZS'`);
+        await prisma.$executeRawUnsafe(`ALTER TABLE "UbtSupplier" ADD COLUMN currency TEXT DEFAULT 'UZS'`);
     } catch {}
 })();
 
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 
         // Suppliers from raw table
         const suppliers: any[] = await prisma.$queryRawUnsafe(
-            `SELECT id, name, phone, info, currency FROM \"UbtSupplier\" WHERE "tenantId" = $1 ORDER BY name ASC LIMIT 300`,
+            `SELECT id, name, phone, info, currency FROM "UbtSupplier" WHERE "tenantId" = $1 ORDER BY name ASC LIMIT 300`,
             session.tenantId
         );
 
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 
         const id = Math.random().toString(36).slice(2, 12);
         await prisma.$executeRawUnsafe(
-            `INSERT INTO \"UbtSupplier\" (id, "tenantId", name, phone, info, currency) VALUES ($1, $2, $3, $4, $5, $6)`,
+            `INSERT INTO "UbtSupplier" (id, "tenantId", name, phone, info, currency) VALUES ($1, $2, $3, $4, $5, $6)`,
             id, session.tenantId, name, phone || null, info || null, currency || "UZS"
         );
 

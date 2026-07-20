@@ -42,7 +42,7 @@ export async function POST(req: Request) {
                 // UbtIngredient jadvalidan stock ayirish
                 writeoffProductId = null; // FK yo'q xomashyo uchun
                 const ingRows: any[] = await prisma.$queryRawUnsafe(
-                    "SELECT id, name, unit, stock, price FROM \"UbtIngredient\" WHERE id=? AND tenantId=? LIMIT 1",
+                    "SELECT id, name, unit, stock, price FROM \"UbtIngredient\" WHERE id=$1 AND \"tenantId\"=$2 LIMIT 1",
                     productId, session.tenantId
                 );
                 if (ingRows.length > 0) {
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
                     itemCost = Number(ingRows[0].price) || 0;
                     const newStock = Math.max(0, Number(ingRows[0].stock) - Number(quantity));
                     await prisma.$executeRawUnsafe(
-                        "UPDATE \"UbtIngredient\" SET stock=? WHERE id=? AND tenantId=?",
+                        "UPDATE \"UbtIngredient\" SET stock=$1 WHERE id=$2 AND \"tenantId\"=$3",
                         newStock, productId, session.tenantId
                     );
                 }
