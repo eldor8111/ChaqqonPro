@@ -27,7 +27,7 @@ export async function PUT(
 
         // Check staff exists and belongs to tenant
         const existing = await prisma.$queryRaw`
-            SELECT id, "tenantId" FROM \"Staff\" WHERE id = ${params.id}
+            SELECT id, "tenantId" FROM "Staff" WHERE id = ${params.id}
         ` as any[];
 
         if (!existing.length || existing[0].tenantId !== tenantId) {
@@ -67,7 +67,7 @@ export async function PUT(
                                 const p2 = JSON.parse(m.phone || '{}');
                                 if (p2.isMainMonoblock) {
                                     p2.isMainMonoblock = false;
-                                    await prisma.$executeRaw`UPDATE \"Staff\" SET phone = ${JSON.stringify(p2)} WHERE id = ${m.id}`;
+                                    await prisma.$executeRaw`UPDATE "Staff" SET phone = ${JSON.stringify(p2)} WHERE id = ${m.id}`;
                                 }
                             } catch (e) {}
                         }
@@ -104,7 +104,7 @@ export async function DELETE(
             return NextResponse.json({ error: "Staff not found" }, { status: 404 });
         }
 
-        await prisma.$executeRaw`DELETE FROM \"Staff\" WHERE id = ${params.id}`;
+        await prisma.$executeRaw`DELETE FROM "Staff" WHERE id = ${params.id}`;
 
         await createAuditLog(tenantId, session.userId ? "Admin" : "System", "Xodim tizimdan o'chirildi", `ID: ${params.id}`, "delete");
 
