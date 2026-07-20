@@ -624,19 +624,19 @@ model PlatformSettings {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model UbtCategory {
-  id        String? @id
+  id        String  @id @default(cuid())
   tenantId  String
   name      String
   type      String  @default("taom")
   itemCount Int     @default(0)
-  createdAt String  @default("datetime('now')")
+  createdAt String  @default("")
 
   @@ignore
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model UbtIngredient {
-  id         String? @id
+  id         String  @id @default(cuid())
   tenantId   String
   name       String
   unit       String
@@ -644,20 +644,20 @@ model UbtIngredient {
   price      Float   @default(0)
   type       String  @default("xomashyo")
   categoryId String?
-  createdAt  String  @default("datetime('now')")
+  createdAt  String  @default("")
 
   @@ignore
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model UbtSupplier {
-  id        String?   @id @default("lower(hex(randomblob(8)))")
+  id        String   @id @default(cuid())
   tenantId  String
   name      String
   phone     String?
   info      String?
-  createdAt DateTime? @default(now())
-  currency  String?   @default("UZS")
+  createdAt DateTime @default(now())
+  currency  String   @default("UZS")
 
   @@ignore
 }

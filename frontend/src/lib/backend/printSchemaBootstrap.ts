@@ -16,8 +16,8 @@ export async function ensurePrintSchema(): Promise<void> {
         `ALTER TABLE \"SmartPrinter\" ADD COLUMN "role" TEXT NOT NULL DEFAULT 'cashier'`,
         `ALTER TABLE \"SmartPrinter\" ADD COLUMN "paperWidth" INTEGER NOT NULL DEFAULT 80`,
         `ALTER TABLE \"SmartPrinter\" ADD COLUMN "status" TEXT NOT NULL DEFAULT 'unknown'`,
-        `ALTER TABLE \"SmartPrinter\" ADD COLUMN "isActive" BOOLEAN NOT NULL DEFAULT 1`,
-        `ALTER TABLE \"SmartPrinter\" ADD COLUMN "isDefault" BOOLEAN NOT NULL DEFAULT 0`,
+        `ALTER TABLE "SmartPrinter" ADD COLUMN "isActive" BOOLEAN NOT NULL DEFAULT true`,
+        `ALTER TABLE "SmartPrinter" ADD COLUMN "isDefault" BOOLEAN NOT NULL DEFAULT false`,
         `ALTER TABLE \"SmartPrinter\" ADD COLUMN "lastSeenAt" TIMESTAMP`,
         `ALTER TABLE \"SmartPrinter\" ADD COLUMN "latencyMs" INTEGER`,
     ];
