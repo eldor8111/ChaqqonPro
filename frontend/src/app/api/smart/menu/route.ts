@@ -25,15 +25,15 @@ async function getAuthTenantId(request: NextRequest): Promise<string | null> {
 
 // Module-level: runs once when server starts, never blocks individual requests.
 const _ensurePrinterIpColumn = (async () => {
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE \"Product\" ADD COLUMN printerIp TEXT`); } catch {}
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE \"Product\" ADD COLUMN isSetMenu INTEGER DEFAULT 0`); } catch {}
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE \"Product\" ADD COLUMN modifiers TEXT`); } catch {}
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE \"Product\" ADD COLUMN type TEXT DEFAULT 'taom'`); } catch {}
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE \"Product\" ADD COLUMN warehouse TEXT`); } catch {}
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE \"Product\" ADD COLUMN inStock INTEGER DEFAULT 1`); } catch {}
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE \"Product\" ADD COLUMN hasBarcode INTEGER DEFAULT 0`); } catch {}
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE \"Product\" ADD COLUMN autoCalculate INTEGER DEFAULT 1`); } catch {}
-    try { await prisma.$executeRawUnsafe(`ALTER TABLE \"Product\" ADD COLUMN recipes TEXT`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN "printerIp" TEXT`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN "isSetMenu" INTEGER DEFAULT 0`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN modifiers TEXT`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN type TEXT DEFAULT 'taom'`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN warehouse TEXT`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN "inStock" INTEGER DEFAULT 1`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN "hasBarcode" INTEGER DEFAULT 0`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN "autoCalculate" INTEGER DEFAULT 1`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN recipes TEXT`); } catch {}
 })();
 
 

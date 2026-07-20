@@ -62,13 +62,13 @@ export async function GET(
 
         // Menyu mahsulotlari (faqat inStock=1 bo'lganlar)
         const products: any[] = await prisma.$queryRawUnsafe(
-            `SELECT id, name, category, sellingPrice,
+            `SELECT id, name, category, "sellingPrice",
                     CASE WHEN image IS NOT NULL THEN image ELSE NULL END as image,
                     COALESCE(type, 'taom') as type,
-                    COALESCE(inStock, 1) as inStock
-             FROM \"Product\"
-             WHERE tenantId = ?
-               AND COALESCE(inStock, 1) = 1
+                    COALESCE("inStock", 1) as "inStock"
+             FROM "Product"
+             WHERE "tenantId" = $1
+               AND COALESCE("inStock", 1) = 1
                AND COALESCE(type, 'taom') = 'taom'
              ORDER BY category ASC, name ASC`,
             tenantId
@@ -78,7 +78,7 @@ export async function GET(
         let explicitCategories: any[] = [];
         try {
             explicitCategories = await prisma.$queryRawUnsafe(
-                `SELECT id, name FROM \"UbtCategory\" WHERE tenantId=? ORDER BY createdAt ASC`,
+                `SELECT id, name FROM "UbtCategory" WHERE "tenantId"=$1 ORDER BY "createdAt" ASC`,
                 tenantId
             );
         } catch { }
@@ -195,8 +195,9 @@ export async function POST(
             const itemIds = items.map((c: any) => c.item?.id || c.id).filter(Boolean);
             let products: any[] = [];
             if (itemIds.length > 0) {
+                const placeholders = itemIds.map((_:any, i:number) => `$${i + 2}`).join(',');
                 products = await prisma.$queryRawUnsafe(
-                    `SELECT id, printerIp FROM \"Product\" WHERE tenantId = ? AND id IN (${itemIds.map(() => '?').join(',')})`,
+                    `SELECT id, "printerIp" FROM "Product" WHERE "tenantId" = $1 AND id IN (${placeholders})`,
                     tenantId, ...itemIds
                 );
             }
@@ -206,7 +207,7 @@ export async function POST(
             let fallbackPrinterIp: string | null = null;
             try {
                 const fallbackPrinters: any[] = await prisma.$queryRawUnsafe(
-                    `SELECT ipAddress FROM \"SmartPrinter\" WHERE tenantId = ? ORDER BY createdAt ASC LIMIT 1`,
+                    `SELECT "ipAddress" FROM "SmartPrinter" WHERE "tenantId" = $1 ORDER BY "createdAt" ASC LIMIT 1`,
                     tenantId
                 );
                 if (fallbackPrinters.length > 0) {
