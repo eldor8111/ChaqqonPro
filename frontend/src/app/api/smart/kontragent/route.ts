@@ -18,6 +18,7 @@ const _ensureSupplierTable = prisma.$executeRawUnsafe(`
 
 const _ensureSupplierCurrency = (async () => {
     try {
+        await _ensureSupplierTable;
         await prisma.$executeRawUnsafe(`ALTER TABLE "UbtSupplier" ADD COLUMN currency TEXT DEFAULT 'UZS'`);
     } catch {}
 })();
