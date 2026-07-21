@@ -19,7 +19,9 @@ export async function POST(request: NextRequest) {
 
         // Fetch current expiry
         const rows = await prisma.$queryRaw`
-            SELECT id, "expiresAt" FROM "Tenant" WHERE id = ${tenantId}
+            SELECT id, "validUntil"
+            FROM "Tenant"
+            WHERE id = ${tenantId}
         ` as any[];
 
         if (!rows.length) {
