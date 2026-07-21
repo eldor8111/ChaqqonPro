@@ -18,7 +18,7 @@ export async function PUT(
         const tenantId = session.tenantId;
         const body = await request.json();
 
-        if (body.phone) {
+        if (body.phone && !body.phone.trim().startsWith("{")) {
             const isUnique = await isPhoneGloballyUnique(body.phone, params.id);
             if (!isUnique) {
                 return NextResponse.json({ error: "Bu telefon raqami allaqachon tizimda band" }, { status: 409 });

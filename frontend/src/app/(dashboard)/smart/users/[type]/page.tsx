@@ -109,7 +109,13 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
 
     const updateStaffMutation = useMutation({
         mutationFn: ({ id, data }: { id: string, data: any }) => api.staff.update(id, data),
-        onSuccess: () => refetch()
+        onSuccess: () => {
+            refetch();
+            setEditingStaff(null);
+        },
+        onError: (error: any) => {
+            alert(`❌ Xato (Tahrirlash): ${error?.message || "Noma'lum xatolik"}`);
+        }
     });
 
     const deleteStaffMutation = useMutation({
