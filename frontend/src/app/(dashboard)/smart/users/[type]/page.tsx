@@ -101,6 +101,9 @@ export default function UsersDynamicPage({ params }: { params: { type: string } 
                 kitchenSection: "Issiq sex", canViewKds: true,
                 canAuditInventory: false, receiveLowStockAlerts: true, canWriteOff: false
             });
+        },
+        onError: (error: any) => {
+            alert(`❌ Xato: ${error?.message || "Noma'lum xatolik"}`);
         }
     });
 

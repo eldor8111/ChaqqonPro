@@ -45,23 +45,24 @@ export async function POST(request: NextRequest) {
         const { name, role, username, password, permissions, branch, phone, staffMeta } = body;
 
         if (!name || !username || !password) {
-            return NextResponse.json({ error: "Required fields missing" }, { status: 400 });
+            return NextResponse.json({ error: "Ism, login va parol majburiy maydonlar" }, { status: 400 });
         }
 
-        if (phone) {
+        // Only validate phone if it's a real phone number (not JSON metadata for Manablog)
+        if (phone && !phone.trim().startsWith("{")) {
             const isUnique = await isPhoneGloballyUnique(phone);
             if (!isUnique) {
                 return NextResponse.json({ error: "Bu telefon raqami tizimda allaqachon band" }, { status: 409 });
             }
         }
 
-        // Check if username already exists globally (across all tenants)
+        // Check if username already exists (globally across all tenants for security)
         const existing = await prisma.staff.findFirst({
             where: { username },
         });
 
         if (existing) {
-            return NextResponse.json({ error: "Username already exists system-wide" }, { status: 409 });
+            return NextResponse.json({ error: `"${username}" logini allaqachon band. Boshqa login tanlang` }, { status: 409 });
         }
 
         const passwordHash = await hashPassword(password);
